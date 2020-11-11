@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+import copy
+import json
+import subprocess
+import sys
+import urllib.parse
+
+import click
+import yaml
+
+
+def load_kong_yaml(path="./kong.yaml") -> dict:
+    with open(path, "r") as file:
+        contents = file.read()
+
+    return yaml.load(contents, Loader=yaml.FullLoader)
+
+
+def load_terraform_state() -> dict:
+    terraform = subprocess.run(["terraform", "output", "-json"],
+                               capture_output=True,
+                               check=True)
+    return json.loads(terraform.stdout)
+
+
+def _get_host(url):
+    return urllib.parse.urlparse(url).netloc
+
+
+def update_kong_urls(kong: dict, terraform: dict) -> dict:
+    url_map = {}
+    for k in terraform.keys():
+        if "cloudrun" in k and "_url" in k:
+            key = k.replace("cloudrun_", "").replace("_url", "")
+            url_map[key] = terraform[k]["value"]
+
+    out = copy.deepcopy(kong)
+
+    for service in out["services"]:
+        name = service["name"]
+        if name in url_map:
+            service["host"] = _get_host(url_map[name])
+
+        # specialcase graphiql
+        if name == "graphiql":
+            if "postgraphile" in url_map:
+                url = url_map["postgraphile"]
+                service["host"] = _get_host(url)
+
+        # special case variable start date
+        if name.startswith("postgrest") and "variable_start_date" in name:
+            if "postgrest" in url_map:
+                url = url_map["postgraphile"]
+                service["host"] = _get_host(url)
+
+    return out
+
+
+@click.command()
+@click.option(
+    "-t",
+    "--to",
+    default=None,
+    help="File name for output, if None results will be sent to stdout"
+)
+def main(to):
+    kong = load_kong_yaml()
+    terraform = load_terraform_state()
+    out = update_kong_urls(kong, terraform)
+
+    if to is None:
+        yaml.dump(out, sys.stdout)
+        print(out)
+        return
+    with open(to, "w") as f:
+        yaml.dump(out, f)
+
+
+if __name__ == "__main__":
+    main()

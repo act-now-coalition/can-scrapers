@@ -1,0 +1,690 @@
+_format_version: '1.1'
+_info:
+  select_tags:
+  - microservice
+services:
+- connect_timeout: 60000
+  host: apiclient-inunbrtacq-uk.a.run.app
+  name: apiclient
+  path: /client-request
+  plugins:
+  - config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    name: cors
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/csv
+      - text/csv; charset=utf-8
+      - application/json
+      - application/json; charset=utf-8
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    name: proxy-cache
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: 29c2e442-c4b8-4c93-90ba-6081fddbbcea
+    path_handling: v0
+    paths:
+    - /apiclient
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  - hosts:
+    - api.covid.valorum.ai
+    https_redirect_status_code: 426
+    id: a6a42400-c3c0-4e46-bb88-ae9dde8e3f2b
+    path_handling: v0
+    paths:
+    - /apiclient
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: clean-swagger-inunbrtacq-uk.a.run.app
+  name: clean_swagger
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: b690296d-45dd-455e-8e0c-42f0f3785d8b
+    path_handling: v0
+    paths:
+    - /swagger.json
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: 127.0.0.1
+  name: cmdc_auth
+  path: /auth
+  plugins:
+  - config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    name: cors
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 8080
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: 27bfb8a8-814f-4978-bb73-17cf85998281
+    path_handling: v0
+    paths:
+    - /auth
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: postgraphile-inunbrtacq-uk.a.run.app
+  name: graphiql
+  path: /graphiql
+  plugins:
+  - config:
+      add:
+        headers: []
+        json: []
+        json_types: []
+      append:
+        headers: []
+        json: []
+        json_types: []
+      remove:
+        headers:
+        - x-frame-options
+        - content-security-policy
+        json: []
+      rename:
+        headers: []
+      replace:
+        headers: []
+        json: []
+        json_types: []
+    enabled: true
+    name: response-transformer
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: 08529693-191d-42c0-b807-5e448d474373
+    path_handling: v0
+    paths:
+    - /graphiql
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: postgraphile-inunbrtacq-uk.a.run.app
+  name: postgraphile
+  path: /graphql
+  plugins:
+  - config:
+      content_type: application/json
+      flush_timeout: 2
+      http_endpoint: https://metrics-inunbrtacq-uk.a.run.app/metrics
+      keepalive: 1000
+      method: POST
+      queue_size: 1
+      retry_count: 10
+      timeout: 1000
+    enabled: true
+    name: http-log
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    name: key-auth
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: 6a592090-e5a2-4b42-9751-e819ed23c5c1
+    path_handling: v0
+    paths:
+    - /graphql
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: reports-inunbrtacq-uk.a.run.app
+  name: reports
+  path: /reports
+  plugins:
+  - config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    name: cors
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/plain
+      - application/json
+      - application/json; charset=utf-8
+      - text/csv
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    name: proxy-cache
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: d45b9b14-f1dc-4f38-bf76-8e1a2339021f
+    path_handling: v0
+    paths:
+    - /reports
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: latest-download-inunbrtacq-uk.a.run.app
+  name: latest_download
+  plugins:
+  - config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    name: cors
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/csv
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    name: proxy-cache
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covidcountydata
+    https_redirect_status_code: 426
+    id: 57a03329-26cd-4911-9924-1f6fd16a95c0
+    path_handling: v0
+    paths:
+    - /downloads
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  - hosts:
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: ff279f64-66b3-4524-85d9-76acc158bf3b
+    path_handling: v0
+    paths:
+    - /downloads
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: 34.86.253.115
+  name: postgrest
+  plugins:
+  - config:
+      content_type: application/json
+      flush_timeout: 2
+      http_endpoint: https://metrics-inunbrtacq-uk.a.run.app/metrics
+      keepalive: 1000
+      method: POST
+      queue_size: 1
+      retry_count: 10
+      timeout: 1000
+    enabled: true
+    name: http-log
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    name: key-auth
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - kong.covid.valorum.ai
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: ed12938e-8406-40d6-a26c-e25ce52345e9
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: 34.86.253.115
+  name: postgrest_instance
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    - api.covid.valorum.ai
+    - kong.covid.valorum.ai
+    https_redirect_status_code: 426
+    id: 33d6e162-d0e5-4ab7-b5dd-64172c68684d
+    path_handling: v0
+    paths:
+    - /test-postgrest
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: postgrest-inunbrtacq-uk.a.run.app
+  name: postgrest-us_covid_variable_start_date
+  path: /us_covid_variable_start_date
+  plugins:
+  - config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    name: key-auth
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/plain
+      - application/json
+      - application/json; charset=utf-8
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    name: proxy-cache
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      add:
+        body: []
+        headers: []
+        querystring: []
+      append:
+        body: []
+        headers:
+        - Accept-Profile:meta
+        querystring: []
+      http_method: null
+      remove:
+        body: []
+        headers: []
+        querystring: []
+      rename:
+        body: []
+        headers: []
+        querystring: []
+      replace:
+        body: []
+        headers: []
+        querystring: []
+        uri: null
+    enabled: true
+    name: request-transformer
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    name: us_covid_variable_start_date
+    path_handling: v0
+    paths:
+    - /us_covid_variable_start_date
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  host: variable-names-inunbrtacq-uk.a.run.app
+  name: variable_names
+  path: /variable_names
+  plugins:
+  - config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    name: cors
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - application/json
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    name: proxy-cache
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    https_redirect_status_code: 426
+    id: 0d815403-3c97-4d89-bbda-420744a73e71
+    path_handling: v0
+    paths:
+    - /variable_names
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+  write_timeout: 60000
+consumers:
+- username: anonymous
+  id: 9ea277b3-c661-4429-8f0f-b457eac4c602
