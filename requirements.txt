@@ -1,0 +1,14 @@
+pandas
+sqlalchemy
+requests
+ipython
+jupyter
+jupyterlab
+psycopg2-binary
+pyppeteer
+pyyaml
+click
+numpy
+us
+geopandas
+pytest
