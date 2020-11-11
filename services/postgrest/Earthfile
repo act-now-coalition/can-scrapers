@@ -1,0 +1,8 @@
+FROM postgrest/postgrest:v7.0.0
+
+docker:
+    ARG IMAGE_NAME=postgrest
+    SAVE IMAGE can/${IMAGE_NAME}:latest
+    ARG GCP_PROJECT
+    SAVE IMAGE --push gcr.io/${GCP_PROJECT}/${IMAGE_NAME}:latest
+

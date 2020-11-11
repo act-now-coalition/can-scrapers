@@ -1,0 +1,16 @@
+FROM alpine:3.11
+
+all:
+    ARG GCP_PROJECT
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./clean_swagger+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./client-microservice+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./latest_downloads+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./metrics-from-kong+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./nha_data_ingest+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./postgraphile+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./postgrest+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./report_generator+docker
+    BUILD --build-arg GCP_PROJECT=$GCP_PROJECT ./variable_names+docker
+
+
+

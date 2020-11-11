@@ -1,0 +1,4 @@
+google-cloud-storage
+pandas
+sqlalchemy
+git+https://github.com/valorumdata/cmdc-tools.git@nv_hospital_pdf#subdirectory=src"

@@ -1,0 +1,1200 @@
+_format_version: "1.1"
+services:
+- connect_timeout: 60000
+  host: apiclient-inunbrtacq-uk.a.run.app
+  name: apiclient
+  path: /client-request
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    id: 29c2e442-c4b8-4c93-90ba-6081fddbbcea
+    paths:
+    - /apiclient
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  - hosts:
+    - api.covid.valorum.ai
+    id: a6a42400-c3c0-4e46-bb88-ae9dde8e3f2b
+    paths:
+    - /apiclient
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: cors
+    config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: proxy-cache
+    config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/csv
+      - text/csv; charset=utf-8
+      - application/json
+      - application/json; charset=utf-8
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: clean-swagger-inunbrtacq-uk.a.run.app
+  name: clean_swagger
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: b690296d-45dd-455e-8e0c-42f0f3785d8b
+    paths:
+    - /swagger.json
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+- connect_timeout: 60000
+  host: 127.0.0.1
+  name: cmdc_auth
+  path: /auth
+  port: 8080
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: 27bfb8a8-814f-4978-bb73-17cf85998281
+    paths:
+    - /auth
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: cors
+    config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: postgraphile-inunbrtacq-uk.a.run.app
+  name: graphiql
+  path: /graphiql
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: 08529693-191d-42c0-b807-5e448d474373
+    paths:
+    - /graphiql
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: response-transformer
+    config:
+      add:
+        headers: []
+        json: []
+        json_types: []
+      append:
+        headers: []
+        json: []
+        json_types: []
+      remove:
+        headers:
+        - x-frame-options
+        - content-security-policy
+        json: []
+      rename:
+        headers: []
+      replace:
+        headers: []
+        json: []
+        json_types: []
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: latest-download-inunbrtacq-uk.a.run.app
+  name: latest_download
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covidcountydata
+    id: 57a03329-26cd-4911-9924-1f6fd16a95c0
+    paths:
+    - /downloads
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  - hosts:
+    - api.covidcountydata.org
+    id: ff279f64-66b3-4524-85d9-76acc158bf3b
+    paths:
+    - /downloads
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: cors
+    config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: proxy-cache
+    config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/csv
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: postgraphile-inunbrtacq-uk.a.run.app
+  name: postgraphile
+  path: /graphql
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: 6a592090-e5a2-4b42-9751-e819ed23c5c1
+    paths:
+    - /graphql
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: http-log
+    config:
+      content_type: application/json
+      flush_timeout: 2
+      http_endpoint: https://metrics-inunbrtacq-uk.a.run.app/metrics
+      keepalive: 1000
+      method: POST
+      queue_size: 1
+      retry_count: 10
+      timeout: 1000
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: key-auth
+    config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: 34.86.253.115
+  name: postgrest
+  port: 443
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - kong.covid.valorum.ai
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: ed12938e-8406-40d6-a26c-e25ce52345e9
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: http-log
+    config:
+      content_type: application/json
+      flush_timeout: 2
+      http_endpoint: https://metrics-inunbrtacq-uk.a.run.app/metrics
+      keepalive: 1000
+      method: POST
+      queue_size: 1
+      retry_count: 10
+      timeout: 1000
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: key-auth
+    config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: postgrest-inunbrtacq-uk.a.run.app
+  name: postgrest-us_covid_variable_start_date
+  path: /us_covid_variable_start_date
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    name: us_covid_variable_start_date
+    paths:
+    - /us_covid_variable_start_date
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: key-auth
+    config:
+      anonymous: 9ea277b3-c661-4429-8f0f-b457eac4c602
+      hide_credentials: true
+      key_in_body: false
+      key_names:
+      - apikey
+      run_on_preflight: true
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: proxy-cache
+    config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/plain
+      - application/json
+      - application/json; charset=utf-8
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: request-transformer
+    config:
+      add:
+        body: []
+        headers: []
+        querystring: []
+      append:
+        body: []
+        headers:
+        - Accept-Profile:meta
+        querystring: []
+      http_method: null
+      remove:
+        body: []
+        headers: []
+        querystring: []
+      rename:
+        body: []
+        headers: []
+        querystring: []
+      replace:
+        body: []
+        headers: []
+        querystring: []
+        uri: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: 34.86.253.115
+  name: postgrest_instance
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    - api.covid.valorum.ai
+    - kong.covid.valorum.ai
+    id: 33d6e162-d0e5-4ab7-b5dd-64172c68684d
+    paths:
+    - /test-postgrest
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+- connect_timeout: 60000
+  host: reports-inunbrtacq-uk.a.run.app
+  name: reports
+  path: /reports
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covid.valorum.ai
+    - api.covidcountydata.org
+    id: d45b9b14-f1dc-4f38-bf76-8e1a2339021f
+    paths:
+    - /reports
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: cors
+    config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: proxy-cache
+    config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - text/plain
+      - application/json
+      - application/json; charset=utf-8
+      - text/csv
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+- connect_timeout: 60000
+  host: variable-names-inunbrtacq-uk.a.run.app
+  name: variable_names
+  path: /variable_names
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  write_timeout: 60000
+  tags:
+  - microservice
+  routes:
+  - hosts:
+    - api.covidcountydata.org
+    id: 0d815403-3c97-4d89-bbda-420744a73e71
+    paths:
+    - /variable_names
+    path_handling: v0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    strip_path: true
+    tags:
+    - microservice
+    https_redirect_status_code: 426
+  plugins:
+  - name: cors
+    config:
+      credentials: false
+      exposed_headers: null
+      headers: null
+      max_age: null
+      methods:
+      - GET
+      - HEAD
+      - PUT
+      - PATCH
+      - POST
+      - DELETE
+      - OPTIONS
+      - TRACE
+      - CONNECT
+      origins:
+      - '*'
+      preflight_continue: false
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+  - name: proxy-cache
+    config:
+      cache_control: false
+      cache_ttl: 7200
+      content_type:
+      - application/json
+      memory:
+        dictionary_name: kong_db_cache
+      request_method:
+      - GET
+      - HEAD
+      response_code:
+      - 200
+      - 301
+      - 404
+      storage_ttl: null
+      strategy: memory
+      vary_headers: null
+      vary_query_params: null
+    enabled: true
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - microservice
+consumers:
+- username: ' me@test.com'
+  keyauth_credentials:
+  - key: nfycuT8Vf5KKlmrBFyxMspyGciLQW6VB
+- username: 2s@gmail.com
+  keyauth_credentials:
+  - key: KjWrc4qhD4UjR3sWVxaqWq408qGwG6CX
+- username: 474496988@qq.com
+  keyauth_credentials:
+  - key: Pp5jPjiavzK4o6NMgtnbEO8jr0bVJmR7
+- username: DrJPSchwartz@msn.com
+  keyauth_credentials:
+  - key: Q86i6mpGrVaD3iB6Ur7ribZKToFV9UlV
+- username: June68@hotmail.com
+  keyauth_credentials:
+  - key: JRl7bNCiShcYRu8S9KTphalnjNnpzrCS
+- username: Personsprojcts@gmail.com
+  keyauth_credentials:
+  - key: ECNKpTRE9oMm7YEAafIuSdTmFSzyHGul
+- username: RBY5@CDC.GOV
+  keyauth_credentials:
+  - key: NL1P5wrdmOflZWFGcbC64MpFHKyLAL16
+- username: 'Wilkiej18@gmail.com '
+  keyauth_credentials:
+  - key: Mse4Epn7SWVAWC8QiLaffJ91uSjEsCKC
+- username: alan.williams@redcross.org
+  keyauth_credentials:
+  - key: fB6vSrW0FKurHCdizherDNBAwnDH2IgI
+- username: alexlindgren@outlook.com
+  keyauth_credentials:
+  - key: 1osnYnX0hmU2OvDMvAoE3nOqeYJSUUMM
+- username: amm5ve@virginia.edu
+  keyauth_credentials:
+  - key: j3KzGBHVQOo8iEbuJNJsQc5SXOPYp6w4
+- username: anonymous
+  keyauth_credentials:
+  - key: 9ea277b3-c661-4429-8f0f-b457eac4c602
+- username: aric68@goodpostman.com
+  keyauth_credentials:
+  - key: E5zKGRuF4Q4Qudh7MiK1oTprUKcsYFB4
+- username: asboyer@gmail.com
+  keyauth_credentials:
+  - key: SJ3Ak5HinRWJuC5cOjAwRl2Wy3jusYPP
+- username: b.tengelsen@gmail.com
+  keyauth_credentials:
+  - key: EFdlLyAffUD4JuE63sa7WJJSEBmga3XS
+- username: b.v.schmid@ibv.uio.no
+  keyauth_credentials:
+  - key: 6nEqkyi0EzB08YdjGPCLJGNVPIv8bfms
+- username: batista.quent@gmail.com
+  keyauth_credentials:
+  - key: yMSHoTTQhi9zQLHP1du59SL81f1Q5v2n
+- username: blaze6@yatdew.com
+  keyauth_credentials:
+  - key: 3hHIrngHF3frWT4xxVfQCvdGgI96ceCL
+- username: broderick55@clientcaf.info
+  keyauth_credentials:
+  - key: oYvkuEvV5zp8YS4OICA4rS0U8W6pQut2
+- username: cc7768@gmail.com
+  keyauth_credentials:
+  - key: 1KXj7S4hReo7vEVoyBSueJDQMQnIVXXO
+- username: chase.coleman@valorumdata.com
+  keyauth_credentials:
+  - key: D4GCyVxvYdj6438VeiwMQDwV75ohGz7a
+- username: chris+test@covidactnow.org
+- username: chris@brull.me
+  keyauth_credentials:
+  - key: BnJQQ0RrsBTCzxrCham161r6uRNGNuhA
+- username: chris@covidactnow.org
+  keyauth_credentials:
+  - key: NFSdfT8wXakYIUoF4qOd3L2k5UkHbAY2
+- username: chrishenrick@gmail.com
+  keyauth_credentials:
+  - key: qLKUoR64sgL1A86UC7dd9sSaRZLGKNQ4
+- username: chriskelly@covidactnow.org
+  keyauth_credentials:
+  - key: 5BC8uSJI6i9a5WoibvXe5BodsWm25Yke
+- username: christopherwecke@gmail.com
+  keyauth_credentials:
+  - key: kq7tUbZ03ejzIwsMDeaAjqmKVhM4iuNT
+- username: cmichels@tpmblaw.com
+  keyauth_credentials:
+  - key: r0hdgu6je83pmtFMarfgoB0AS1mkwwvr
+- username: cody@replicahq.com
+  keyauth_credentials:
+  - key: fsvDynHFmm68YhF2SAwSnf4w3LVNIGts
+- username: daniel.stackman@gmail.com
+  keyauth_credentials:
+  - key: tQQUtBobl6JE1cs5ef3zMOFuxiOVgdSc
+- username: danupton1@aol.com
+  keyauth_credentials:
+  - key: 7PTjTbDDPpqZjjcB5zE6yOjE1D7HsRmH
+- username: dave@covidcaremap.org
+  keyauth_credentials:
+  - key: DlXdnBsiAhLtKCaUDuDBd1Vss5cvpufn
+- username: david.makovoz@rtx.com
+  keyauth_credentials:
+  - key: YGioEiRbdQz5CpJXkHlEiiiHAP6YBcJx
+- username: david@covidcaremap.org
+  keyauth_credentials:
+  - key: sHxFRagyYocIj8C8P3k5VEcjEMn5cEiZ
+- username: davidmakovoz@yahoo.com
+  keyauth_credentials:
+  - key: 7RViYpTqsns1xshaUaOC4vQPQ1H1MJZE
+- username: devilish.maestro@gmail.com
+  keyauth_credentials:
+  - key: DKEERajHQgQbJck1XnrSyfScLpX34zeT
+- username: downloadable_files@valorumdata.com
+  keyauth_credentials:
+  - key: aYg8o4HAAStjkkgyOG3bXKMEdoEwnv2S
+- username: downssi@ohsu.edu
+  keyauth_credentials:
+  - key: FNgcf2xhmq8VPBaRqreBPG8wjEJu2a8V
+- username: dravid@uchicago.edu
+  keyauth_credentials:
+  - key: Y4RmSGxLFPlLZW5sVE2ln38v0KscTgE6
+- username: emilyweimann92@outlook.com
+  keyauth_credentials:
+  - key: 3G3ueA98HKATkwsp1jZulQrclSrt6zu5
+- username: erica.moszkowski@gmail.com
+  keyauth_credentials:
+  - key: VXipSKFYGKweghcVgDPupEAX5Vc4nJqu
+- username: eugenepark85@gmail.com
+  keyauth_credentials:
+  - key: Ac7LtFDXFrBb73px8OHsEUIKxi1cfPWQ
+- username: foo@bar.com
+  keyauth_credentials:
+  - key: 3ElmNbGfFR2jPY1PA87I60lH4bl1RObZ
+- username: fredhertlein@curative.com
+  keyauth_credentials:
+  - key: c6Ujlqylo4Yt2nMtMPAZlJT9A1iuwRVV
+- username: fwijaya@gmu.edu
+  keyauth_credentials:
+  - key: fFDyS0PwG8SVpBaIzFKpKVbEuK5x8m6W
+- username: fwijaya@masonlive.gmu.edu
+  keyauth_credentials:
+  - key: erT0bJmOrreQpG2XdcIC6l9Z994Rb3rk
+- username: g@gmail.com
+  keyauth_credentials:
+  - key: ThPPartVnmOBwHI0e3fimbCI8O4XSUxX
+- username: georgehagstrom@gmail.com
+  keyauth_credentials:
+  - key: Epf68KP4ZrbgLYkd6tQB6yvD0BLkHhPB
+- username: hannah.shriver@nasdaq.com
+  keyauth_credentials:
+  - key: 0RcbtFK0IFBm3e3knhJN8SHVo7Dd5Az9
+- username: hlshriver@aol.com
+  keyauth_credentials:
+  - key: Yk5J54F6xaXjBBK4WyWH7ZmafclluPfB
+- username: ianb@discotech.me
+  keyauth_credentials:
+  - key: eeS1a14Luf1qfVy30dgioPlEUD9mDHnh
+- username: igor@covidactnow.org
+  keyauth_credentials:
+  - key: C6ggCXUu906STk8pIlj9SUKBuuAXGqLG
+- username: info@wccannabis.co
+  keyauth_credentials:
+  - key: 4WgEF76yfJjW6BmXjtF9qt3wHK9pGemj
+- username: jakewrnr@gmail.com
+  keyauth_credentials:
+  - key: 7p493nwQc9rMaIkvcJvzBOo7PBWmoTuu
+- username: james.custer@austin.utexas.edu
+  keyauth_credentials:
+  - key: I2xAkiZf5zD5D32aZWZb1Us9RuN8sedU
+- username: jason.mcdaniel@clearesult.com
+  keyauth_credentials:
+  - key: T8OVuTah55ivs9U1Lg6aAVYApRlq60Qd
+- username: jcburba@gmail.com
+  keyauth_credentials:
+  - key: d08HutgnIlscA8oE18Q3fLB5Bmaj8bwA
+- username: jennifer.hovis@gmail.com
+  keyauth_credentials:
+  - key: N71OgtV3gzVzEivpayY6zNJV85JLVcCX
+- username: jesseahouser@gmail.com
+  keyauth_credentials:
+  - key: Gekb5GmeY70xsFp8JRGtJnb9u6CobNH7
+- username: joe.reichert83@yatdew.com
+  keyauth_credentials:
+  - key: L1oCv1XQZDiGRf340emqyiw46dwKzppV
+- username: joerischasfoort@gmail.com
+  keyauth_credentials:
+  - key: in4nVVloZljy8TGgu3IK8XLw1RK64UwW
+- username: josep_hernan@outlook.com
+  keyauth_credentials:
+  - key: dBeYWyno9kjG0UaEyGXLOGXlTk8epDQj
+- username: josh@covidactnow.org
+  keyauth_credentials:
+  - key: Uga9Ej87V3uasdFOf3kltcH3ijvuTpai
+- username: joyce@replicahq.com
+  keyauth_credentials:
+  - key: FPJnOMp7gNRs2waMPjzFzb0Owb3Nd9H1
+- username: jpennell51@yahoo.com
+  keyauth_credentials:
+  - key: PDwn0lKvxWTJY3jYrXlZwUn0Nn3Dry0g
+- username: jrh@color.com
+  keyauth_credentials:
+  - key: CNQ5MTPVnDPGfndpI3ODFi7Kl8nqBiWX
+- username: jwasserman@rti.org
+  keyauth_credentials:
+  - key: iBTXmzziBggOW2iFNDpuPLuuagAvicFB
+- username: kathleen.jordan@lva.virginia.gov
+  keyauth_credentials:
+  - key: sb3AEQbGzfXKGnZxrvB85B17CtqwwWYf
+- username: kcomfortmason@gmail.com
+  keyauth_credentials:
+  - key: iKKGsfA29a7zcxnwL3Lxzokta4YdAs9o
+- username: kelly@tacc.utexas.edu
+  keyauth_credentials:
+  - key: 4nfrZWQ5hcWAwgCfYm4Chi2ZhOCBm7iW
+- username: kingsbury@communitydataplatforms.com
+  keyauth_credentials:
+  - key: Fkv79muQoen8zK7OuuPAdSbFt37hUMM9
+- username: kivan.polimis@gmail.com
+  keyauth_credentials:
+  - key: VjMyI2EvIvGtdoubCGraGhGi9vE0Vbrh
+- username: kivan@analyticsbyatlas.com
+  keyauth_credentials:
+  - key: 0VVMqlbP6Ne3Cx8VjmfXGW3oDUqp8UMu
+- username: kofman@gmail.com
+  keyauth_credentials:
+  - key: Dixk6oKQSS76VXaW76Pto9djAsDut54Q
+- username: kristin.stannard@gmail.com
+  keyauth_credentials:
+  - key: NBPx49h7RD62EL0B5YT11rErwgnMXK5B
+- username: lenny@citizen.com
+  keyauth_credentials:
+  - key: kwmm1fAYZq9Zo0bzfTesbZE9113zWbOM
+- username: leo.wang3@nttdata.com
+  keyauth_credentials:
+  - key: LvzlODYJcfNP7qhqUCnjct5Bl4JQoNHK
+- username: madpoet.one@gmail.com
+  keyauth_credentials:
+  - key: NoU5YpWWdlXhvC6jzqsNSqKe8DT1n6kN
+- username: maia.rosenfeld@scripps.com
+  keyauth_credentials:
+  - key: 14Vk0JyVOCkNMVN9gP74eihLW6uspzFU
+- username: manideepreddy1116@gmail.com
+  keyauth_credentials:
+  - key: MIMg4V1JrLMvWEpcnMK3w2jWpM5exCh8
+- username: matt@considine.net
+  keyauth_credentials:
+  - key: PuwdKzKM9LzDBp1Tno9v5iCHF1OIE8QX
+- username: matthew.d.littman@gmail.com
+  keyauth_credentials:
+  - key: IBzZ3SsdEtzHmLnbOeBYZvr8FfBK84We
+- username: matthew.miller@dal.frb.org
+  keyauth_credentials:
+  - key: v87Wko9Z6B7mOaWM9BUsLNnu1ZQNQ4VB
+- username: me@jacobwhite.us
+  keyauth_credentials:
+  - key: Ra6aVlFSPkBuwekYl1Z8dugJ6jciljn3
+- username: me@test.com
+  keyauth_credentials:
+  - key: 8hJCgOM7oGgM7CkVLP2N6xu5Lbud9rsK
+- username: michael@covidactnow.org
+  keyauth_credentials:
+  - key: 6nF12qosJ83lvIMIwxh0cdl9tN5vyl4C
+- username: mikeabrown2020@gmail.com
+  keyauth_credentials:
+  - key: p7lR70zi4K31HN9sQG8D3tPIaB85OqUu
+- username: mitsurukushizaki@gmail.com
+  keyauth_credentials:
+  - key: zTA1nuR2TtXCGTpo1nsd41ntrb3dqbk0
+- username: mkhan020@ucr.edu
+  keyauth_credentials:
+  - key: AGKKuge1O6yJTMVyAf1CuxJsDLh2eMGN
+- username: mwaugh@stern.nyu.edu
+  keyauth_credentials:
+  - key: Dwy45z6IaVlmx8tTj1rNwxKtRObQx9qk
+- username: naoyabpr@gmail.com
+  keyauth_credentials:
+  - key: K4rboQ3fePL6IJ5sG8nq65iHbLzzxw8T
+- username: nickcklein@gmail.com
+  keyauth_credentials:
+  - key: XuXq0568S07QrwLylOFhpAaNhTRCz8RU
+- username: nicole@dhitglobal.org
+  keyauth_credentials:
+  - key: ziOtohHFNcq1ww594d7fHLabCAVlW8V8
+- username: nigel.soria@ks.gov
+  keyauth_credentials:
+  - key: HBJDpboY2MwUlDmUFbAzPtDRQH7hkCeT
+- username: nsingh23@ncsu.edu
+  keyauth_credentials:
+  - key: Px9wCXFFEk9npnC1lBzSXuZx4pDF5865
+- username: okellem17@students.ecu.edu
+  keyauth_credentials:
+  - key: vcT4Ac0Md8Y2R50H2403Z4vY5lNeLGvs
+- username: parker.jackson@irvols.org
+  keyauth_credentials:
+  - key: BDszPe5J3XczotaYKAJAxHPyGHiKOEJv
+- username: pkollip1@jhu.edu
+  keyauth_credentials:
+  - key: be0O4ho97reIL2Vldi7DjKCqWd8998Ji
+- username: postgraphile
+  keyauth_credentials:
+  - key: 5AC67YjAsYPodNCc6QKYc00LAR5BeTQu
+- username: pwhowitt@gmail.com
+  keyauth_credentials:
+  - key: Hr8Luek2lUjkZs2VeYzwovD6LSugiMtl
+- username: ramaraju@uab.edu
+  keyauth_credentials:
+  - key: 2pOw0jvb7smozeVL5Om2jx7qSEARAbLJ
+- username: raphgott@gmail.com
+  keyauth_credentials:
+  - key: roZRl81rdQmcLcEOyr2JzJ1OCAAnP88K
+- username: rathod.dharitri@knights.ucf.edu
+  keyauth_credentials:
+  - key: NcV6GDFLEl6vJDqi5WzZBM8jDuzm28tQ
+- username: rby5@cdc.gov
+  keyauth_credentials:
+  - key: zMCtl1XRR9tIb2hC0zvY1oB5HFVh2O9x
+- username: riju.thomas@knights.ucf.edu
+  keyauth_credentials:
+  - key: funyaCH8LO6hdDa1ievbW1KdeaTHT8Xm
+- username: robinluckhurst@hotmail.com
+  keyauth_credentials:
+  - key: aC6TRuH7SEhorTqRISijMrwzwfkwyOH4
+- username: rreasons@humana.com
+  keyauth_credentials:
+  - key: CH3lnrNe2Q99TFVMPlfhZ14RgK7GzCDP
+- username: s3@gmail.com
+  keyauth_credentials:
+  - key: jqIG9CoaxgW1OnmR9Hlq5KutuYzJnQgZ
+- username: s456@gmail.com
+  keyauth_credentials:
+  - key: ffT3qxKZj8WOnDuf1SAK0AjY2wYvH4j1
+- username: s5@gmail.com
+  keyauth_credentials:
+  - key: tXOVQ5SkrgK6WYjoMXlrKmq5l6BjD2Dx
+- username: s@gmail.com
+  keyauth_credentials:
+  - key: yQnURrbx99BiUGZJ1ZhPN4a0tCLk11yv
+- username: sakethsundar2009@gmail.com
+  keyauth_credentials:
+  - key: aN45GEpnRhOdNAOGE5nwyt2MuRcqZBx1
+- username: sbadhrinathan@intelycare.com
+  keyauth_credentials:
+  - key: O2NP08nT0XQ6rrJUlx74r4g7rgay8i9X
+- username: scott.jennings@cru.org
+  keyauth_credentials:
+  - key: 3STkg6N6pwUSxsI1Kq7GvyUvDJGhlL6b
+- username: sgl290@nyu.com
+  keyauth_credentials:
+  - key: 1TrIBLw5WioLZFQKD7Y50orP8KJiCTZc
+- username: shawn.batz@clientcaf.info
+  keyauth_credentials:
+  - key: KsGsZaZvld8KUUBXl1sBLDOSxFfXJhyH
+- username: sheehanpj15@gmail.com
+  keyauth_credentials:
+  - key: AWWjV0egkRXe8GPm6JAB3NrUHRW3VDAe
+- username: shrutiisharrma@gmail.com
+  keyauth_credentials:
+  - key: 0Un4sS8lhKDtLYMcpsf2FCWaeo4WFKp9
+- username: sjgutta@gmail.com
+  keyauth_credentials:
+  - key: NqQnhsF6RyXASXrh421ZU2tus4DSZq7E
+- username: sonawanepuja95@gmail.com
+  keyauth_credentials:
+  - key: cJpX6rLsHTeTSfmqJX3J48SLO9PxRHfk
+- username: sophiecroome@gmail.com
+  keyauth_credentials:
+  - key: bWkK468G7ulsRWstWWBUSvNssnhLnMWw
+- username: spencer.lyon@ucf.edu
+  keyauth_credentials:
+  - key: 3Bva7vnHX9stRKc0oZ52GsbIXgHvXDMR
+- username: spencer.lyon@valorumdata.com
+  keyauth_credentials:
+  - key: PrQuWjdmcPwRM1SOmUh0XQivHCbeWX3Z
+- username: spencerlyon2@gmail.com
+  keyauth_credentials:
+  - key: sTEomXwU5ugnAFMDc3tTpNYboSzOVhkb
+- username: ssunda0159@inst.hcpss.org
+  keyauth_credentials:
+  - key: 9sYBFXVf3ajRdkpzlKK6NZZgfy9TBGpK
+- username: swagger-file
+  keyauth_credentials:
+  - key: R9EUXZbvHEMxfowsNtEtNzRw6d4HtrYf
+- username: tashawatkins@gmail.com
+  keyauth_credentials:
+  - key: A2fbkgHP68sAUa1V2c8708ZM2pKCOGdM
+- username: testing@valorumdata.com
+  keyauth_credentials:
+  - key: trXC26HyqwbiYX8qXZGPfqBcEn4iF9Gq
+- username: tom@covidactnow.org
+  keyauth_credentials:
+  - key: 0fP1B8LCizFO39jFZEmqGjceXX9RQchl
+- username: torrey.balistreri@yatdew.com
+  keyauth_credentials:
+  - key: VevcgIthdbMeNwqlYF6uXtWhpJqVWZXk
+- username: trevor.lyon@icloud.com
+  keyauth_credentials:
+  - key: yfy8LH53CRbT1aut5pgFOR83MgSCiNBu
+- username: tristan.reed@dc.gov
+  keyauth_credentials:
+  - key: PXH5tkgzPC0T6oKSoCzArFILPEA6LWcv
+- username: ts43@nyu.edu
+  keyauth_credentials:
+  - key: ucgWwcVRluESUwd0klc8ixKfb8S7HLO8
+- username: tteske@esri.com
+  keyauth_credentials:
+  - key: aBVs0vED0Snysafc0cInso5ioCPzwDdb
+- username: tweets@covidcountydata.org
+  keyauth_credentials:
+  - key: qZFj2iKw2heVUZtpXjUcqa7hUowRZ5B8
+- username: varun.satish@sydney.edu.au
+  keyauth_credentials:
+  - key: 3T3IwWdmdSFuXsmEQlPW8pXGBiA8m2a9
+- username: vbauman@bloomberglaw.com
+  keyauth_credentials:
+  - key: 3oTsWXC9ilXGHGE7d0K5ci7TZ28gr7XA
+- username: vgregory757@gmail.com
+  keyauth_credentials:
+  - key: 9LtlGDgOD7WLy4D4GbO0lMLII8tH32DI
+- username: victoria.gregory@nyu.edu
+  keyauth_credentials:
+  - key: MOAwRIEXx5Z14a8qwOJGcztz0dT58xmt
+- username: wkleathers@utexas.edu
+  keyauth_credentials:
+  - key: VMmwXlUxuYpo9MLTgGtPQdcF6AY5xyce
+- username: xwordman@gmail.com
+  keyauth_credentials:
+  - key: uOV2IV7ILQJlSly0aG4jg7jgJOhEpOUc
+- username: yuew3@andrew.cmu.edu
+  keyauth_credentials:
+  - key: 4EkAjrw3J5B2AB1hfbwdTDj7rInIgllM
+- username: zaplord89@gmail.com
+  keyauth_credentials:
+  - key: HnYVrt6r8h1WdcdIGMpfKUytxUBBcHAb
+- username: zeeshan@communitydataplatforms.com
+  keyauth_credentials:
+  - key: VcyBiPAOpT0f95LMhcfyaNf7vnezpU8G
+- username: zli387@emory.edu
+  keyauth_credentials:
+  - key: ZYKlnI67FMPZb9TjbtD1NTMG9IOwWNsW

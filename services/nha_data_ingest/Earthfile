@@ -1,0 +1,14 @@
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+
+docker:
+    RUN apt-get update && apt-get install -y git ghostscript python3-tk qt5-default
+    RUN pip install "git+https://github.com/valorumdata/cmdc-tools.git@nv_hospital_pdf#subdirectory=src"
+    RUN pip install --upgrade google-cloud-storage
+    RUN pip install pandas sqlalchemy pg8000
+    ENV PORT "${PORT:-8080}"
+    COPY ./app /app
+
+    ARG IMAGE_NAME=nha_data_ingest
+    SAVE IMAGE can/${IMAGE_NAME}:latest
+    ARG GCP_PROJECT
+    SAVE IMAGE --push gcr.io/${GCP_PROJECT}/${IMAGE_NAME}:latest

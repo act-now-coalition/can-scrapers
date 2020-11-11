@@ -1,0 +1,2 @@
+pandas
+covidcountydata>=0.8

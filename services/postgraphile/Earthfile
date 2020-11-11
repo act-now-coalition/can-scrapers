@@ -1,0 +1,21 @@
+FROM node:12-alpine
+WORKDIR /app
+
+deps:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    SAVE ARTIFACT package-lock.json AS LOCAL ./package-lock.json
+
+docker:
+    FROM +deps
+    COPY ./index.js /app/index.js
+    ENV PORT 8080
+    ENV POSTGRAPHILE_DB_SCHEMA api
+    EXPOSE 8080
+    CMD npm run start
+
+    ARG IMAGE_NAME=postgraphile
+    SAVE IMAGE can/${IMAGE_NAME}:latest
+    ARG GCP_PROJECT
+    SAVE IMAGE --push gcr.io/${GCP_PROJECT}/${IMAGE_NAME}:latest
+

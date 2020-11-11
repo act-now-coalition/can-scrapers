@@ -1,0 +1,23 @@
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+
+
+build:
+    # Use Python Wheels to produce package files into /wheels
+    RUN pip install wheel
+    COPY requirements.txt ./
+    RUN pip wheel -r requirements.txt --wheel-dir=wheels
+    RUN mkdir src
+    COPY ./app /src
+    SAVE ARTIFACT src /src
+    SAVE ARTIFACT wheels /wheels
+
+docker:
+    COPY +build/src src
+    COPY +build/wheels wheels
+    COPY requirements.txt ./
+    RUN pip install --no-index --find-links=wheels -r requirements.txt
+    ENV PORT "${PORT:-8080}"
+    ARG IMAGE_NAME=client_microservice
+    SAVE IMAGE can/${IMAGE_NAME}:latest
+    ARG GCP_PROJECT
+    SAVE IMAGE --push gcr.io/${GCP_PROJECT}/${IMAGE_NAME}:latest

@@ -1,0 +1,24 @@
+FROM python:3-alpine
+
+build:
+    # Use Python Wheels to produce package files into /wheels
+    RUN pip install wheel
+    COPY requirements.txt ./
+    RUN pip wheel -r requirements.txt --wheel-dir=wheels
+    RUN mkdir src
+    COPY ./main.py /src/main.py
+    SAVE ARTIFACT src /src
+    SAVE ARTIFACT wheels /wheels
+
+docker:
+    COPY +build/src src
+    COPY +build/wheels wheels
+    COPY requirements.txt ./
+    RUN pip install --no-index --find-links=wheels -r requirements.txt
+    ENV PORT 8080
+    ENTRYPOINT ["python", "src/main.py"]
+
+    ARG IMAGE_NAME=latest_download
+    SAVE IMAGE can/${IMAGE_NAME}:latest
+    ARG GCP_PROJECT
+    SAVE IMAGE --push gcr.io/${GCP_PROJECT}/${IMAGE_NAME}:latest
