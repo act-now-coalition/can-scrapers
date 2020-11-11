@@ -12,3 +12,4 @@ numpy
 us
 geopandas
 pytest
+black
