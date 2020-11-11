@@ -12,7 +12,7 @@ from .db_util import TempTable
 CMU = namedtuple(
     "CMU",
     ["category", "measurement", "unit", "age", "race", "sex"],
-    defaults=["cases", "cumulative", "people", "all", "all", "all"]
+    defaults=["cases", "cumulative", "people", "all", "all", "all"],
 )
 
 
@@ -91,26 +91,45 @@ class DatasetBaseNeedsDate(DatasetBase, ABC):
 
 
 def _build_on_conflict_do_nothing_query(
-        df: pd.DataFrame, t_home: str, t_temp: str, pk: str
-    ):
+    df: pd.DataFrame, t_home: str, t_temp: str, pk: str, s_home: str = "data"
+):
     colnames = ", ".join(list(df))
     cols = "(" + colnames + ")"
     if not pk.startswith("("):
         pk = f"({pk})"
 
     return f"""
-    INSERT INTO data.{t_home} {cols}
+    INSERT INTO {s_home}.{t_home} {cols}
     SELECT {colnames} from {t_temp}
     ON CONFLICT {pk} DO NOTHING;
     """
 
 
+def _ensure_covid_demographics(connstr: str, df: pd.DataFrame):
+    demo = ["age", "sex", "race"]
+    if len(set(demo) - set(list(df))) != 0:
+        raise ValueError("Couldn't find demographic columns")
+
+    unique_demos = df.groupby(demo)["value"].count().reset_index().drop("value", axis=1)
+    pk = f"({', '.join(demo)})"
+    t_home = "covid_demographics"
+    temp_name = "__" + t_home + str(random.randint(1000, 9999))
+    sql = _build_on_conflict_do_nothing_query(
+        unique_demos, t_home=t_home, pk=pk, s_home="meta", t_temp=temp_name
+    )
+
+    with sa.create_engine(connstr).connect() as conn:
+        kw = dict(temp=False, if_exists="replace", destroy=True)
+
+        with TempTable(df, temp_name, conn, **kw):
+            res = conn.execute(sql)
+            print(f"Inserted {res.rowcount} rows into demographics table")
+
+
 class InsertWithTempTable(DatasetBase, ABC):
     pk: str
 
-    def _insert_query(
-            self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str
-        ):
+    def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
 
         out = _build_on_conflict_do_nothing_query(df, table_name, temp_name, pk)
         return out
@@ -123,7 +142,8 @@ class InsertWithTempTable(DatasetBase, ABC):
 
             with TempTable(df, temp_name, conn, **kw):
                 sql = self._insert_query(df, table_name, temp_name, pk)
-                conn.execute(sql)
+                res = conn.execute(sql)
+                print(f"Inserted {res.rowcount} rows into {table_name}")
 
     def put(self, connstr: str, df=None):
         if df is None:
@@ -135,5 +155,8 @@ class InsertWithTempTable(DatasetBase, ABC):
         if not hasattr(self, "pk"):
             msg = "field `pk` must be set on subclass of OnConflictNothingBase"
             raise ValueError(msg)
+
+        if self.data_type == "covid":
+            _ensure_covid_demographics(connstr, df)
 
         self._put(connstr, df, self.table_name, self.pk)

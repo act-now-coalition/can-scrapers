@@ -349,6 +349,7 @@ CREATE TABLE meta.covid_demographics
     race TEXT,
     sex TEXT
 );
+CREATE UNIQUE INDEX idx_demo_values on meta.covid_demographics (age, race, sex);
 
 COMMENT ON TABLE meta.covid_demographics IS E'This table contains demographic categories that variables can belong to.
 
