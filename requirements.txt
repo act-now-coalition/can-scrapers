@@ -13,3 +13,7 @@ us
 geopandas
 pytest
 black
+xlrd
+isort
+importmagic
+epc
