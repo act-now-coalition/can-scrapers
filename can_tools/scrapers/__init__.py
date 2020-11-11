@@ -6,5 +6,7 @@ from .official import (
     FLCounty,
     FloridaHospital,
     NYCounty,
-    TXCounty
+    TXCounty,
+    IllinoisDemographics,
+    IllinoisHistorical,
 )
