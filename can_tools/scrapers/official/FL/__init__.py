@@ -60,7 +60,7 @@ class FloridaHospitalUsage(TableauNeedsClick):
         ).sum().reset_index()
 
         # Extract category information and add other context
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         out_cols = [
             "county", "category", "measurement", "unit",
@@ -148,7 +148,7 @@ class FloridaICUUsage(FloridaHospitalUsage):
         ).sum().reset_index()
 
         # Extract category information and add other context
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         out_cols = [
             "county", "category", "measurement", "unit",
@@ -252,7 +252,7 @@ class FLCounty(DatasetBaseNoDate, ArcGIS):
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         # Extract category information and add other variable context
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
             "vintage", "dt", "location", "category", "measurement", "unit",
