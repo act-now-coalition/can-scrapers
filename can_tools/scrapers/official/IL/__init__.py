@@ -3,10 +3,10 @@ import requests
 import us
 
 from ... import DatasetBaseNoDate
-from ..base import CMU, CountyData
+from ..base import CMU, StateDashboard
 
 
-class IllinoisHistorical(DatasetBaseNoDate, CountyData):
+class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
     has_location = False
     source = "https://www.dph.illinois.gov/covid19/covid19-statistics"
     state_fips = int(us.states.lookup("Illinois").fips)
@@ -18,7 +18,7 @@ class IllinoisHistorical(DatasetBaseNoDate, CountyData):
 
         return res.json()
 
-    def get(self):
+    def get(self) -> pd.DataFrame:
         url = "https://www.dph.illinois.gov/sitefiles/COVIDHistoricalTestResults.json?nocache=1"
         js = self._get_js(url)
         cats = {
@@ -57,14 +57,15 @@ class IllinoisHistorical(DatasetBaseNoDate, CountyData):
             "sex",
         ]
 
-        return (
-            pd.concat(to_cat, ignore_index=True, sort=True)
-            .drop_duplicates(subset=unique_cols)
+        return pd.concat(to_cat, ignore_index=True, sort=True).drop_duplicates(
+            subset=unique_cols
         )
 
 
 class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
-    def _handle_demo_subset(self, df, orig, final):
+    def _handle_demo_subset(
+        self, df: pd.DataFrame, orig: str, final: str
+    ) -> pd.DataFrame:
         "orig is demo colname in df, final is what we want it to be"
 
         cats = {
@@ -87,7 +88,7 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
             .rename(columns={temp: final})
         )
 
-    def get(self):
+    def get(self) -> pd.DataFrame:
         url = "https://idph.illinois.gov/DPHPublicInformation/api/COVID/GetCountyDemographics"
         js = self._get_js(url)
 
@@ -95,8 +96,6 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
         parts = []
         for county in js["county_demographics"]:
             name = county["County"]
-            cases = county["confirmed_cases"]
-            tests = county["total_tested"]
 
             parts.append(
                 self._handle_demo_subset(

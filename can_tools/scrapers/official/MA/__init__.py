@@ -6,11 +6,11 @@ import pandas as pd
 import requests
 import us
 
-from ... import DatasetBaseNeedsDate
-from ..base import CMU, CountyData
+from ...base import DatasetBaseNeedsDate
+from ..base import CMU, StateDashboard
 
 
-class Massachusetts(DatasetBaseNeedsDate, CountyData):
+class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
     start_date = "2020-04-29"
     source = (
         "https://www.mass.gov/info-details/"

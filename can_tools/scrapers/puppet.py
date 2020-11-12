@@ -7,6 +7,7 @@ from abc import ABC
 from contextlib import asynccontextmanager
 
 import pandas as pd
+
 import pyppeteer
 
 from .base import DatasetBase
@@ -18,12 +19,12 @@ CHROME_AGENT = (
 DEFAULT_VIEWPORT = {"width": 1280, "height": 800, "isMobile": False}
 
 
-def xpath_class_check(cls):
+def xpath_class_check(cls: str) -> str:
     return f"contains(concat(' ',normalize-space(@class),' '),' {cls} ')"
 
 
 @asynccontextmanager
-async def with_page(headless=True) -> pyppeteer.page.Page:
+async def with_page(headless: bool = True) -> pyppeteer.page.Page:
     browser = await pyppeteer.launch(headless=headless)
     try:
         page = await browser.newPage()
@@ -44,7 +45,12 @@ class TableauNeedsClick(DatasetBase, ABC):
         pass
 
     async def click_table(
-        self, page: pyppeteer.page.Page, x=281, y=350, repeats=3, delay=2
+        self,
+        page: pyppeteer.page.Page,
+        x: int = 281,
+        y: int = 350,
+        repeats: int = 3,
+        delay: int = 2,
     ):
         for i in range(repeats):
             await asyncio.sleep(delay)
@@ -95,6 +101,3 @@ class TableauNeedsClick(DatasetBase, ABC):
 
     def get(self) -> pd.DataFrame:
         return self._clean_df(asyncio.run(self._get()))
-
-    def put(self, conn):
-        pass

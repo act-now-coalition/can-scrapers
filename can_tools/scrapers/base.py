@@ -1,13 +1,12 @@
 import random
 from abc import ABC, abstractmethod
 from collections import namedtuple
-from typing import Optional
+from typing import List
 
 import pandas as pd
 import sqlalchemy as sa
 
 from .db_util import TempTable
-
 
 CMU = namedtuple(
     "CMU",
@@ -24,12 +23,13 @@ class DatasetBase(ABC):
     def __init__(self):
         pass
 
-
     def extract_CMU(
-                self, df, cmu,
-                columns=["category", "measurement", "unit", "age", "race", "sex"],
-                var_name="variable"
-        ):
+        self,
+        df: pd.DataFrame,
+        cmu: CMU,
+        columns: List[str] = ["category", "measurement", "unit", "age", "race", "sex"],
+        var_name: str = "variable",
+    ):
         """
         Adds columns "category", "measurement", and "unit" to df
 
@@ -51,29 +51,24 @@ class DatasetBase(ABC):
         """
         foo = df[var_name]
         return df.assign(
-            **{
-                c: foo.map(lambda x: cmu[x].__getattribute__(c))
-                for c in columns
-            }
+            **{c: foo.map(lambda x: cmu[x].__getattribute__(c)) for c in columns}
         )
 
     @abstractmethod
-    def put(self, conn, df):
+    def put(self, conn: sa.engine.base.Engine, df: pd.DataFrame):
         pass
 
-    def _retrieve_dt(self, tz="US/Eastern"):
+    def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         out = pd.Timestamp.utcnow().tz_convert(tz).normalize().tz_localize(None)
 
         return out
 
-    def _retrieve_vintage(self):
+    def _retrieve_vintage(self) -> pd.Timestamp:
         return pd.Timestamp.utcnow().floor("h")
-
-        pass
 
 
 class DatasetBaseNoDate(DatasetBase, ABC):
-    get_needs_date = False
+    get_needs_date: bool = False
 
     @abstractmethod
     def get(self):
@@ -81,7 +76,7 @@ class DatasetBaseNoDate(DatasetBase, ABC):
 
 
 class DatasetBaseNeedsDate(DatasetBase, ABC):
-    get_needs_date = True
+    get_needs_date: bool = True
 
     @abstractmethod
     def get(self, date: str):
@@ -96,7 +91,7 @@ class DatasetBaseNeedsDate(DatasetBase, ABC):
 
 def _build_on_conflict_do_nothing_query(
     df: pd.DataFrame, t_home: str, t_temp: str, pk: str, s_home: str = "data"
-):
+) -> str:
     colnames = ", ".join(list(df))
     cols = "(" + colnames + ")"
     if not pk.startswith("("):
@@ -138,7 +133,7 @@ class InsertWithTempTable(DatasetBase, ABC):
         out = _build_on_conflict_do_nothing_query(df, table_name, temp_name, pk)
         return out
 
-    def _put(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str):
+    def _put(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str) -> None:
         temp_name = "__" + table_name + str(random.randint(1000, 9999))
 
         with sa.create_engine(connstr).connect() as conn:
@@ -149,7 +144,7 @@ class InsertWithTempTable(DatasetBase, ABC):
                 res = conn.execute(sql)
                 print(f"Inserted {res.rowcount} rows into {table_name}")
 
-    def put(self, connstr: str, df=None):
+    def put(self, connstr: str, df=None) -> None:
         if df is None:
             if hasattr(self, "df"):
                 df = self.df

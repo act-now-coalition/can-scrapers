@@ -1,5 +1,6 @@
 import io
 import textwrap
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -7,9 +8,15 @@ import sqlalchemy as sa
 
 
 def fast_to_sql(
-        df, conn, name, index=False, if_exists="append",
-        cols=None, schema=None, temp=False
-    ):
+    df: pd.DataFrame,
+    conn,
+    name: str,
+    index: bool = False,
+    if_exists: str = "append",
+    cols: Optional[List[str]] = None,
+    schema: Optional[str] = None,
+    temp: bool = False,
+) -> None:
     """
     Function used to do fast inserts into SQL.
     """
@@ -55,7 +62,9 @@ def fast_to_sql(
 
 
 class TempTable:
-    def __init__(self, df, table_name, conn, destroy=False, **kw):
+    def __init__(
+        self, df: pd.DataFrame, table_name: str, conn, destroy: bool = False, **kw
+    ):
         "all kwargs passed to fast_to_sql"
         self.df = df
         self.table_name = table_name
@@ -91,7 +100,7 @@ _dtype_map = {
 }
 
 
-def draft_sql_ddl_statement(df, table_name=None):
+def draft_sql_ddl_statement(df: pd.DataFrame, table_name: Optional[str] = None) -> str:
     if table_name is None:
         table_name = "REPLACE_NAME"
 

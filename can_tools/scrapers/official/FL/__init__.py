@@ -4,7 +4,7 @@ import us
 
 from ...base import CMU, DatasetBaseNoDate
 from ...puppet import TableauNeedsClick
-from ..base import ArcGIS, CountyData
+from ..base import ArcGIS, StateDashboard
 
 
 class FloridaHospitalUsage(TableauNeedsClick):
@@ -181,7 +181,7 @@ class FloridaHospitalCovid(TableauNeedsClick):
         return df
 
 
-class FloridaHospital(DatasetBaseNoDate, CountyData):
+class FloridaHospital(DatasetBaseNoDate, StateDashboard):
 
     source = "https://bi.ahca.myflorida.com/t/ABICC/views/Public/HospitalBedsCounty"
     has_location = False

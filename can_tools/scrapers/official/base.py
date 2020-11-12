@@ -1,15 +1,14 @@
 import textwrap
+from abc import ABC
+from typing import Any, Optional, Union
 
 import pandas as pd
 import requests
 
-from abc import ABC
-from collections import namedtuple
-
 from .. import CMU, InsertWithTempTable
 
 
-class CountyData(InsertWithTempTable, ABC):
+class StateDashboard(InsertWithTempTable, ABC):
     table_name: str = "covid_official"
     pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
     provider = "state"
@@ -57,7 +56,11 @@ class CountyData(InsertWithTempTable, ABC):
         return textwrap.dedent(out)
 
 
-class ArcGIS(CountyData, ABC):
+class CountyDashboard(StateDashboard):
+    provider: str = "county"
+
+
+class ArcGIS(StateDashboard, ABC):
     """
     Must define class variables:
 
@@ -66,9 +69,10 @@ class ArcGIS(CountyData, ABC):
 
     in order to use this class
     """
+
     ARCGIS_ID: str
 
-    def __init__(self, params=None):
+    def __init__(self, params: Optional[dict[str, Any]] = None):
         super(ArcGIS, self).__init__()
 
         # Default parameter values
@@ -82,28 +86,32 @@ class ArcGIS(CountyData, ABC):
 
         self.params = params
 
-    def _esri_ts_to_dt(self, ts):
+    def _esri_ts_to_dt(self, ts: int) -> pd.Timestamp:
         return pd.Timestamp.fromtimestamp(ts / 1000).normalize()
 
-    def arcgis_query_url(self, service, sheet, srvid):
+    def arcgis_query_url(self, service: str, sheet: Union[str, int], srvid: str) -> str:
         out = f"https://services{srvid}.arcgis.com/{self.ARCGIS_ID}/"
         out += f"ArcGIS/rest/services/{service}/FeatureServer/{sheet}/query"
 
         return out
 
-    def get_res_json(self, service, sheet, srvid, params):
+    def get_res_json(
+        self, service: str, sheet: Union[str, int], srvid: str, params: dict[str, Any]
+    ) -> dict:
         # Perform actual request
         url = self.arcgis_query_url(service=service, sheet=sheet, srvid=srvid)
         res = requests.get(url, params=params)
 
         return res.json()
 
-    def arcgis_json_to_df(self, res_json):
+    def arcgis_json_to_df(self, res_json: dict) -> pd.DataFrame:
         df = pd.DataFrame.from_records([x["attributes"] for x in res_json["features"]])
 
         return df
 
-    def get_single_sheet_to_df(self, service, sheet, srvid, params):
+    def get_single_sheet_to_df(
+        self, service: str, sheet: Union[str, int], srvid: str, params: dict
+    ) -> pd.DataFrame:
 
         # Perform actual request
         res_json = self.get_res_json(service, sheet, srvid, params)
@@ -113,7 +121,9 @@ class ArcGIS(CountyData, ABC):
 
         return df
 
-    def get_all_sheet_to_df(self, service, sheet, srvid):
+    def get_all_sheet_to_df(
+        self, service: str, sheet: Union[str, int], srvid: str
+    ) -> pd.DataFrame:
         # Get a copy so that we don't screw up main parameters
         curr_params = self.params.copy()
 
@@ -143,7 +153,7 @@ class ArcGIS(CountyData, ABC):
         return df
 
 
-class SODA(CountyData, ABC):
+class SODA(StateDashboard, ABC):
     """
     Must define class variables:
 
@@ -151,17 +161,22 @@ class SODA(CountyData, ABC):
 
     in order to use this class
     """
+
     baseurl: str
 
-    def __init__(self, params=None):
+    def __init__(self, params: Optional[dict[str, Any]] = None):
         super(SODA, self).__init__()
 
-    def soda_query_url(self, data_id, resource="resource", ftype="json"):
+    def soda_query_url(
+        self, data_id: str, resource: str = "resource", ftype: str = "json"
+    ) -> str:
         out = self.baseurl + f"/{resource}/{data_id}.{ftype}"
 
         return out
 
-    def get_dataset(self, data_id, resource="resource", ftype="json"):
+    def get_dataset(
+        self, data_id: str, resource: str = "resource", ftype: str = "json"
+    ) -> pd.DataFrame:
         url = self.soda_query_url(data_id, resource, ftype)
         res = requests.get(url)
 

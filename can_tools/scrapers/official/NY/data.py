@@ -3,10 +3,10 @@ import requests
 import us
 
 from ...base import CMU, DatasetBaseNoDate
-from ..base import CountyData
+from ..base import StateDashboard
 
 
-class NYCounty(DatasetBaseNoDate, CountyData):
+class NYCounty(DatasetBaseNoDate, StateDashboard):
     """
     Change log
     ----------
