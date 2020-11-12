@@ -59,7 +59,7 @@ class TXCounty(DatasetBaseNoDate, ArcGIS):
         out["value"] = out["value"].astype(int)
 
         # Extract category information and add other variable context
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
             "dt", "county", "category", "measurement", "unit",
@@ -97,7 +97,7 @@ class TXCounty(DatasetBaseNoDate, ArcGIS):
         out["value"] = pd.to_numeric(out["value"])
 
         # Extract category information and add other variable context
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
             "dt", "county", "category", "measurement", "unit",

@@ -24,7 +24,12 @@ class DatasetBase(ABC):
     def __init__(self):
         pass
 
-    def extract_cat_measurement_unit(self, df, cmu):
+
+    def extract_CMU(
+                self, df, cmu,
+                columns=["category", "measurement", "unit", "age", "race", "sex"],
+                var_name="variable"
+        ):
         """
         Adds columns "category", "measurement", and "unit" to df
 
@@ -44,13 +49,12 @@ class DatasetBase(ABC):
             A copy of the DataFrame passed in that has new columns
             "category", "measurement", and "unit"
         """
+        foo = df[var_name]
         return df.assign(
-            category=df["variable"].map(lambda x: cmu[x].category),
-            measurement=df["variable"].map(lambda x: cmu[x].measurement),
-            unit=df["variable"].map(lambda x: cmu[x].unit),
-            age=df["variable"].map(lambda x: cmu[x].age),
-            race=df["variable"].map(lambda x: cmu[x].race),
-            sex=df["variable"].map(lambda x: cmu[x].sex),
+            **{
+                c: foo.map(lambda x: cmu[x].__getattribute__(c))
+                for c in columns
+            }
         )
 
     @abstractmethod

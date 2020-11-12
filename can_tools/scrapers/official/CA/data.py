@@ -77,7 +77,7 @@ class CACounty(DatasetBaseNoDate, OpenDataCali):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_cat_measurement_unit(df, crename)
+        df = self.extract_CMU(df, crename)
 
         cols_to_keep = [
             "dt", "county", "category", "measurement", "unit",
@@ -126,7 +126,7 @@ class CACounty(DatasetBaseNoDate, OpenDataCali):
         ).dropna()
 
         # Determine the category and demographics of each observation
-        out = self.extract_cat_measurement_unit(out, crename)
+        out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
             "dt", "county", "category", "measurement", "unit",
