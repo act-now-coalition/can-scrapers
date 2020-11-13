@@ -1,8 +1,10 @@
+"""
+Utilities for getting geographical information from US census Bureau
+"""
 import geopandas as gpd
 import pandas as pd
 
-from ..base import DatasetBaseNoDate, InsertWithTempTable
-from .census import STATE_FIPS
+from can_tools.scrapers.base import DatasetBaseNoDate, InsertWithTempTableMixin
 
 BASE_GEO_URL = "https://www2.census.gov/geo/tiger/"
 
@@ -34,7 +36,25 @@ def _create_location(geo: str, df: pd.DataFrame):
     return df
 
 
-def _download_shape_file(apiurl: str, filename: str):
+def _download_shape_file(apiurl: str, filename: str) -> gpd.GeoDataFrame:
+    """
+    Download the shapefile at {apiurl}{filename}.zip, open it up, and read
+    into geopandas DataFrame
+
+    Parameters
+    ----------
+    apiurl : str
+        The URL of the api used to request the file
+    filename : str
+        The filename at the end of the apiurl to be downloaded
+
+    Returns
+    -------
+    gdp: geopandas.GeoDataFrame
+        The geopandas GeoDataFrame with the data from the
+        shapefile at {apiurl}{filename}
+
+    """
     # Create the url string geopandas needs to know that
     # it is a zip file
     rq_str = f"{apiurl}{filename}.zip"
@@ -101,7 +121,20 @@ def download_shape_files(geo: str, year: int):
     return gdf
 
 
-class USGeoBaseAPI(InsertWithTempTable, DatasetBaseNoDate):
+class USGeoBaseAPI(InsertWithTempTableMixin, DatasetBaseNoDate):
+    """
+    Class for downloading
+
+    Attributes
+    ----------
+    table_name: str
+        The name of the table where this data should be inserted in the
+        PostgreSQL database
+
+    pk: str
+        A string representing the PostgresQL primary key
+    """
+
     table_name = "locations"
     pk = '("id")'
     autodag = False
@@ -111,6 +144,31 @@ class USGeoBaseAPI(InsertWithTempTable, DatasetBaseNoDate):
         self.year = year
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
+        """
+        Construct query for inserting DataFrame into the table via a temp table
+
+        The DataFrame `df` will be inserted into `temp_table`, then the query
+        returned by this function will be executed.
+
+        This allows the contents of `df` to be joined with other tables in the database
+        before data ends up in `table_name`
+
+        When there is a conflict on the primary key (or unique index) `pk`, nothing is done
+        Parameters
+        ----------
+        df : pd.DataFrame
+            A pandas DataFrame to be inserted into teh db
+        table_name : str
+            The name of the table where data should be uploaded
+        temp_name : str
+            The name of a temporary table where `df` will be uploaded before insert
+        pk : str
+            A primary key for the table
+
+        Returns
+        -------
+
+        """
         _sql_geo_insert = f"""
         INSERT INTO meta.{table_name} (location, location_type, state, name, area, latitude, longitude, fullname)
         SELECT tt.location, loct.id, tt.state, tt.name,
@@ -122,5 +180,14 @@ class USGeoBaseAPI(InsertWithTempTable, DatasetBaseNoDate):
 
         return _sql_geo_insert
 
-    def get(self):
+    def get(self) -> pd.DataFrame:
+        """
+        Fetch the data from the us census
+
+        Returns
+        -------
+        df: geopandas GeoDataFrame
+            A geopandas GeoDataFrame containing information
+
+        """
         return download_shape_files(self.geo, self.year)

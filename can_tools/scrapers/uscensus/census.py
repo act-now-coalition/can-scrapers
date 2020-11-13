@@ -5,6 +5,7 @@ from typing import List, Union
 import pandas as pd
 import requests
 
+# list of all valid state fips codes
 STATE_FIPS = [
     "01",
     "02",
@@ -60,14 +61,36 @@ STATE_FIPS = [
 ]
 
 
-def _download_data_file():
+def _download_data_file() -> dict:
+    """
+
+    Returns
+    -------
+    datasets: dict
+
+    TODO: fill this in
+
+    """
     url = "https://api.census.gov/data.json"
     available_data = requests.get(url)
 
     return available_data.json()
 
 
-def _update_data_file(filename: str):
+def _update_data_file(filename: str) -> None:
+    """
+
+    Parameters
+    ----------
+    filename : str
+
+    Returns
+    -------
+    None
+
+    TODO: fill this in
+
+    """
     "Saves the available datasets into a file called `filename`"
     data = _download_data_file()
 
@@ -75,7 +98,19 @@ def _update_data_file(filename: str):
         json.dump(data, f)
 
 
-def _load_metadata(filename: str):
+def _load_metadata(filename: str) -> dict:
+    """
+
+    Parameters
+    ----------
+    filename : str
+
+    Returns
+    -------
+
+    TODO fill this in
+
+    """
     "Loads the available datasets from a file called `filename`"
     if not os.path.isfile(filename):
         _update_data_file(filename)
@@ -86,7 +121,20 @@ def _load_metadata(filename: str):
     return available_data["dataset"]
 
 
-def determine_valid_geographies(geo_url: str):
+def determine_valid_geographies(geo_url: str) -> dict:
+    """
+
+    Parameters
+    ----------
+    geo_url : str
+
+    Returns
+    -------
+    XXX: dict
+
+    TODO Fill this in
+
+    """
     # TODO: This is a method so that in the future, we can pull the
     #       list of valid geographies from `dataset["c_geographyLink"]`
     #       rather than impose this small subset of geographies
@@ -105,7 +153,10 @@ def determine_valid_geographies(geo_url: str):
     return VALID_GEOGRAPHIES
 
 
-def process_geography_args(geography, geo_url: str = ""):
+# TODO: specify return type
+def process_geography_args(
+    geography: Union[dict[str, str], str, tuple], geo_url: str = ""
+) -> str:
     """
     Takes the geography arguments and turns them into a string
     that can be an input to a request
@@ -125,6 +176,13 @@ def process_geography_args(geography, geo_url: str = ""):
         be tuples with a geography as the first element and a
         collection of values as the second element as described
         above.
+
+    geo_url: str
+
+    Returns
+    -------
+
+    TODO: fill this in
     """
     valid_geographies = determine_valid_geographies(geo_url)
     out = ""
@@ -160,7 +218,7 @@ def process_geography_args(geography, geo_url: str = ""):
     return out
 
 
-def process_column_args(columns: List[str]):
+def process_column_args(columns: List[str]) -> str:
     """
     Takes the column arguments and turns them into a string that
     can be an input to a request
@@ -169,6 +227,11 @@ def process_column_args(columns: List[str]):
     ----------
     columns : list(str)
         The variables that should be retrieved from Census
+
+    Returns
+    -------
+    param: str
+        An http url query parameter for specifying columns
     """
     # TODO: Validate the variable arguments
     if isinstance(columns, str):
@@ -177,7 +240,7 @@ def process_column_args(columns: List[str]):
     return "&get=" + ",".join(columns)
 
 
-def _process_get_json(columns: list, req_json: dict):
+def _process_get_json(columns: list, req_json: dict) -> pd.DataFrame:
     """
     Converts a particular request into a DataFrame
 
@@ -217,7 +280,9 @@ class USCensusBaseAPI:
         self.dataset = dataset
         self.key = key
 
-    def _get(self, columns: List[str], geography: Union[dict, tuple, str]):
+    def _get(
+        self, columns: List[str], geography: Union[dict, tuple, str]
+    ) -> requests.Response:
         """
         This is the hidden get method that actually fetches the data
         from the US Census API.
@@ -228,6 +293,11 @@ class USCensusBaseAPI:
             The data columns that you would like
         geography : str, dict, or tuple
             See documentation for `self.process_geography_args`
+
+        Returns
+        -------
+        res: requests.Response
+            The requests.Response instance obtained after making http request
         """
         # Build up the request url
         req_url = self.api_url + f"?key={self.key}"
@@ -244,7 +314,9 @@ class USCensusBaseAPI:
 
         return req
 
-    def get(self, columns: List[str], geography: Union[list, str, dict]):
+    def get(
+        self, columns: List[str], geography: Union[list, str, dict]
+    ) -> pd.DataFrame:
         """
         Retrieves the data from a particular US Census data source
 

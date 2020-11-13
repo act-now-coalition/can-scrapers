@@ -19,6 +19,8 @@ def fast_to_sql(
 ) -> None:
     """
     Function used to do fast inserts into SQL.
+
+    Uses the underlying psycopg2 connection sqlalchemy creates for us
     """
     # Get columns and name of table to insert
     if cols is None:
@@ -27,7 +29,14 @@ def fast_to_sql(
     full_name = name if schema is None else f"{schema}.{name}"
 
     # This function is used to upload dataframe to the connection
-    def upload_via_conn(con):
+    def upload_via_conn(con: sa.engine.base.Engine):
+        """
+
+        Parameters
+        ----------
+        con : sqlalchemy.engine.base.Engine
+            A sqlalchemy engine using the pscopgy-binary package
+        """
         with io.StringIO() as csv:
             df.to_csv(csv, sep="\t", columns=cols, index=index, header=False)
             csv.seek(0)
@@ -62,10 +71,34 @@ def fast_to_sql(
 
 
 class TempTable:
+    """
+    Context manager for uploading a pandas DataFrame to a temporary postgresql
+    table
+    """
+
     def __init__(
-        self, df: pd.DataFrame, table_name: str, conn, destroy: bool = False, **kw
+        self,
+        df: pd.DataFrame,
+        table_name: str,
+        conn: sa.engine.base.Engine,
+        destroy: bool = False,
+        **kw,
     ):
-        "all kwargs passed to fast_to_sql"
+        """
+        Parameters
+
+        ----------
+        df: pd.DataFrame
+            A pandas DataFrame to be uploaded to sql
+        table_name: str
+            The name of the table in sql
+        conn: sa.engine.base.Engine
+            SQLAlchemy connection (via psycopg2-binary package) to postgresql
+        destroy: bool
+            Whether or not to destroy the table after the context manager closes
+        **kw
+            All keyword arguments passed to the fast_to_sql method
+        """
         self.df = df
         self.table_name = table_name
         self.conn = conn
@@ -89,6 +122,7 @@ class TempTable:
             self.conn.execute("DROP TABLE IF EXISTS {};".format(self.table_name))
 
 
+# map from pandas/numpy type to the corresponding postgresql type
 _dtype_map = {
     np.dtype("float64"): "numeric(12, 6)",
     np.dtype("float32"): "numeric(10, 4)",
@@ -101,6 +135,22 @@ _dtype_map = {
 
 
 def draft_sql_ddl_statement(df: pd.DataFrame, table_name: Optional[str] = None) -> str:
+    """
+    Create a query for replicating the structure of `df` inside a Postgres database table
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A pandas DataFrame for which to generate the "CREATE TABLE" query
+    table_name : str
+        The name of the table in the database
+
+    Returns
+    -------
+    query: str
+        A Query for construct a table matching the shape of `df`
+
+    """
     if table_name is None:
         table_name = "REPLACE_NAME"
 

@@ -5,9 +5,8 @@ from typing import List, Union
 import pandas as pd
 import requests
 
-from .. import DatasetBaseNoDate, InsertWithTempTable
-from .census import ACSAPI
-from .geo import _create_location
+from can_tools.scrapers.base import DatasetBaseNoDate, InsertWithTempTableMixin
+from can_tools.scrapers.uscensus.census import ACSAPI
 
 _VARIABLES_ACS = {
     "DP05_0001E": "Total population",
@@ -44,7 +43,7 @@ _VARIABLES_ACS = {
 }
 
 
-class ACS(ACSAPI, InsertWithTempTable, DatasetBaseNoDate):
+class ACS(ACSAPI, InsertWithTempTableMixin, DatasetBaseNoDate):
     """
     Used to insert data and variable names into the database specified
     by schema.sql

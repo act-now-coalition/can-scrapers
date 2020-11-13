@@ -5,20 +5,39 @@ import pandas as pd
 import requests
 import us
 
-from ... import DatasetBaseNoDate
-from ..base import CMU, StateDashboard
+from can_tools.scrapers.base import DatasetBaseNoDate, CMU
+from can_tools.scrapers.official.base import StateDashboard
 
 
 class OpenDataCali(StateDashboard, ABC):
+    """
+    Fetch data from OpenDataCali service
+    """
+
     state_fips = int(us.states.lookup("California").fips)
     query_url = "https://data.ca.gov/api/3/action/datastore_search"
 
     def data_from_api(
         self, resource_id: str, limit: int = 1000, **kwargs
     ) -> pd.DataFrame:
+        """
+
+        Parameters
+        ----------
+        resource_id :
+        limit :
+        kwargs :
+
+        Returns
+        -------
+        df: pd.DataFrame
+            DataFrame with requested data
+
+        TODO fill this in
+
+        """
         # Create values needed for iterating
         offset = 0
-        nrecords = 0
         params = dict(resource_id=resource_id, limit=limit, offset=offset, **kwargs)
 
         dfs = []
@@ -40,11 +59,24 @@ class OpenDataCali(StateDashboard, ABC):
         return out
 
 
-class CACounty(DatasetBaseNoDate, OpenDataCali):
+class California(DatasetBaseNoDate, OpenDataCali):
+    """
+    Fetch county level covid data from California state dashbaord
+    """
+
     source = "https://covid19.ca.gov/state-dashboard"
     has_location = False
 
     def get_county_cases_deaths(self) -> pd.DataFrame:
+        """
+        Get cases and deaths from the OpenDataCali api
+
+        Returns
+        -------
+        df: pd.DataFrame
+            A pandas DataFrame containing cases and deaths for each county
+
+        """
         # Set resource id and association dict
         resource_id = "926fd08f-cc91-4828-af38-bd45de97f8c3"
         crename = {
@@ -84,6 +116,15 @@ class CACounty(DatasetBaseNoDate, OpenDataCali):
         return df.loc[:, cols_to_keep]
 
     def get_hospital(self) -> pd.DataFrame:
+        """
+        Get icu and hospital usage by covid patients from the OpenDataCali api
+
+        Returns
+        -------
+        df: pd.DataFrame
+            A pandas DataFrame containing icu+hospital usage for each county
+
+        """
         # Get url for download
         resource_id = "42d33765-20fd-44b8-a978-b083b7542225"
         df = self.data_from_api(resource_id=resource_id)
@@ -134,6 +175,15 @@ class CACounty(DatasetBaseNoDate, OpenDataCali):
         return out.loc[:, cols_to_keep]
 
     def get(self) -> pd.DataFrame:
+        """
+        Get all available CA COVID data from OpenDataCali services
+
+        Returns
+        -------
+        df: pd.DataFrame
+            A DataFrame with cases, deaths, icu COVID, hospital COVID for
+            each county in CA
+        """
 
         cases = self.get_county_cases_deaths()
         hospital = self.get_hospital()

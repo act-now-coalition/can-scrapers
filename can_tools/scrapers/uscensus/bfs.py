@@ -1,12 +1,12 @@
 import pandas as pd
 
-from .. import DatasetBaseNoDate, InsertWithTempTable
+from can_tools.scrapers.base import DatasetBaseNoDate, InsertWithTempTableMixin
 
 BASEURL = "https://www.census.gov"
 DATEURL = "https://www.census.gov/econ/bfs/csv/date_table.csv"
 
 
-class CensusBFS(InsertWithTempTable, DatasetBaseNoDate):
+class CensusBFS(InsertWithTempTableMixin, DatasetBaseNoDate):
     """
     The Business Formation Statistics (BFS) are an experimental data
     product of the U.S. Census Bureau developed in research collaboration

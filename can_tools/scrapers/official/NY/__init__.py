@@ -1,1 +1,1 @@
-from .data import NYCounty
+from can_tools.scrapers.official.NY.ny_state import NewYork
