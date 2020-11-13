@@ -1,9 +1,9 @@
 import os
 
-from can_tools import scrapers
-import pytest
 import pandas as pd
+import pytest
 
+from can_tools import scrapers
 
 nodates = scrapers.DatasetBaseNoDate.__subclasses__()
 yesdates = scrapers.DatasetBaseNeedsDate.__subclasses__()
@@ -57,7 +57,7 @@ def test_no_date_datasets(cls):
 @pytest.mark.parametrize("cls", yesdates)
 def test_need_date_datasets(cls):
     d = cls()
-    out = d.get("2020-05-25")
+    out = d.get("2020-11-10")
     assert isinstance(out, pd.DataFrame)
     assert out.shape[0] > 0
     _test_data_structure(d, out)

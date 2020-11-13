@@ -13,10 +13,18 @@
 
 ## Writing a new scraper
 
-Behind the scenes of every scraper written in `can-tools` are two abstract base classes (ABC). These two ABCs define abstract methods `get` and `put` which must be implemented in order to create a scraper.
+Behind the scenes of every scraper written in `can-tools` are two abstract base
+classes (ABC). These two ABCs define abstract methods `get` and `put` which must
+be implemented in order to create a scraper.
 
-* The `get` method should fetch the scraped data and return a DataFrame with columns `(vintage, dt, location, category, measurement, unit, age, race, sex, value, provider)`.
-* The `put` method takes a SQL connection and a DataFrame and then puts the DataFrame into the SQL database.
+* The `get` method should fetch the scraped data and return a DataFrame with
+  columns `(vintage, dt, location, category, measurement, unit, age, race, sex,
+  value, provider)`.
+* The `put` method takes a SQL connection and a DataFrame and then puts the
+  DataFrame into the SQL database.
 
-The two core ABCs are `DatasetBaseDate` and `DatasetBaseNoDate`. The key difference between these two ABCs is that the `get` method for `DatasetBaseDate` expects to receive an argument `date` to it's `get` method whereas `DatasetBaseNoDate` does not expect any arguments to the `get` method.
+The two core ABCs are `DatasetBaseDate` and `DatasetBaseNoDate`. The key
+difference between these two ABCs is that the `get` method for `DatasetBaseDate`
+expects to receive an argument `date` to it's `get` method whereas
+`DatasetBaseNoDate` does not expect any arguments to the `get` method.
 

@@ -1,10 +1,17 @@
-from .base import CMU, DatasetBaseNeedsDate, DatasetBaseNoDate, InsertWithTempTable
-
-from .db_util import TempTable, fast_to_sql
-from .official import (
-    CACounty,
-    FLCounty,
+from can_tools.scrapers.base import (
+    CMU,
+    DatasetBaseNeedsDate,
+    DatasetBaseNoDate,
+    InsertWithTempTableMixin,
+)
+from can_tools.scrapers.db_util import TempTable, fast_to_sql
+from can_tools.scrapers.official import (
+    California,
+    Florida,
     FloridaHospital,
-    NYCounty,
-    TXCounty
+    IllinoisDemographics,
+    IllinoisHistorical,
+    Massachusetts,
+    NewYork,
+    Texas,
 )
