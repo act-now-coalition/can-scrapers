@@ -198,7 +198,7 @@ def build_on_conflict_do_nothing_query(
     dest_schema: str = "data",
 ) -> str:
     """
-    Construct sql query to insert data originally from `df` into `s_home.t_home` via the
+    Construct sql query to insert data originally from `df` into `dest_schema.dest_table` via the
     temporary database table `temp_table`.
 
     If there are any conflicts on the unique index `pk`, do nothing
