@@ -1,4 +1,4 @@
-name: build pg docker
+name: build microservices
 
 on:
   push:
