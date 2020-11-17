@@ -39,6 +39,9 @@ jobs:
     services:
       postgres:
         image: docker.pkg.github.com/covid-projections/can-scrapers/pg:${{ needs.prep_pg_docker.outputs.docker_tag }}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
