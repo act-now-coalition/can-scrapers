@@ -7,8 +7,9 @@
 2. Create conda environment for this project `conda create -n can-tools python=3.8`
 3. Activate the environment `conda activate can-tools`
 4. Move your command line or terminal into the `can-tools` directory
-5. Install required packages `pip install -r requirements.txt`
-6. Install development version of package `pip install -e .`
+5. If you are on Windows `conda install gdal` and `conda install fiona`
+6. Install required packages `pip install -r requirements.txt`
+7. Install development version of package `pip install -e .`
 
 
 ## Writing a new scraper
