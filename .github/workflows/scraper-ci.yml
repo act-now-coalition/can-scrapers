@@ -63,6 +63,6 @@ jobs:
           pip install -e .
       - run: black --check ./can_tools
       - name: run tests
-        run: pytest .
+        run: pytest -v .
         env:
           PG_CONN_STR: "postgresql://postgres:postgres@localhost:5432"
