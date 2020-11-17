@@ -36,4 +36,4 @@ jobs:
     - name: Earth version
       run: earth --version
     - name: Run build
-      run: cd services && earth -P --push --build-arg GCP_PROJECT="{{secrets.GCP_PROJECT}}" +all
+      run: cd services && earth -P --push --build-arg GCP_PROJECT="${{secrets.GCP_PROJECT}}" +all
