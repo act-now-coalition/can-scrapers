@@ -10,9 +10,6 @@ jobs:
   build-microservices:
     runs-on: ubuntu-latest
     env:
-      DOCKER_USERNAME: ${{ github.actor }}
-      DOCKER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GIT_URL_INSTEAD_OF: "https://github.com/=git@github.com:"
       FORCE_COLOR: 1
     steps:
     - uses: actions/checkout@v2
@@ -39,4 +36,4 @@ jobs:
     - name: Earth version
       run: earth --version
     - name: Run build
-      run: cd services && earth -P --push --build-arg GCP_PROJECT={{ secrets.GCP_PROJECT }} +all
+      run: cd services && earth -P --push --build-arg GCP_PROJECT="{{secrets.GCP_PROJECT}}" +all
