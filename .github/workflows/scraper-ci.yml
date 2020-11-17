@@ -61,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-      - run: black --check ./src
+      - run: black --check ./can_tools
       - name: run tests
         run: pytest .
         env:

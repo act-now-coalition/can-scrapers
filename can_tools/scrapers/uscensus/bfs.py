@@ -49,7 +49,12 @@ class CensusBFS(InsertWithTempTableMixin, DatasetBaseNoDate):
 
         # Merge the data and dates and rename columns
         out = df.merge(dates, on=["Year", "Week"], how="left")
-        out = out.rename(columns={"Start date": "week_start", "End date": "week_end",})
+        out = out.rename(
+            columns={
+                "Start date": "week_start",
+                "End date": "week_end",
+            }
+        )
         out.columns = [c.lower() for c in out.columns]
 
         return out

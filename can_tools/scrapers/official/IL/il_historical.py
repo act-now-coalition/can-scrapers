@@ -26,7 +26,11 @@ class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
             "confirmed_cases": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "deaths": CMU(category="deaths", measurement="cumulative", unit="people",),
+            "deaths": CMU(
+                category="deaths",
+                measurement="cumulative",
+                unit="people",
+            ),
             "total_tested": CMU(
                 category="antigen_pcr_tests_total",
                 measurement="cumulative",

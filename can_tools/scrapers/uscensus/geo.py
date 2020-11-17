@@ -115,7 +115,11 @@ def download_shape_files(geo: str, year: int):
     # it allows us to differentiate between places like St. Louis county
     # and St. Louis City county...
     gdf = gdf.rename(
-        columns={"aland": "area", "intptlat": "latitude", "intptlon": "longitude",}
+        columns={
+            "aland": "area",
+            "intptlat": "latitude",
+            "intptlon": "longitude",
+        }
     )
 
     return gdf

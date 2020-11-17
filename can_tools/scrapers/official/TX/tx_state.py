@@ -113,7 +113,8 @@ class Texas(DatasetBaseNoDate, ArcGIS):
             ),
         }
         out = df.melt(
-            id_vars=["county", "dt"], value_vars=list(crename.keys()),
+            id_vars=["county", "dt"],
+            value_vars=list(crename.keys()),
         ).dropna()
         out["value"] = pd.to_numeric(out["value"])
 

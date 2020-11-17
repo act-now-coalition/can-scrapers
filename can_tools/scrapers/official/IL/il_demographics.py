@@ -11,7 +11,11 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
         "orig is demographic colname in df, final is what we want it to be"
 
         cats = {
-            "count": CMU(category="cases", measurement="cumulative", unit="people",),
+            "count": CMU(
+                category="cases",
+                measurement="cumulative",
+                unit="people",
+            ),
             "tested": CMU(
                 category="antigen_pcr_tests_total",
                 measurement="cumulative",
@@ -41,7 +45,9 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
 
             parts.append(
                 self._handle_demo_subset(
-                    pd.DataFrame(county["demographics"]["age"]), "age_group", "age",
+                    pd.DataFrame(county["demographics"]["age"]),
+                    "age_group",
+                    "age",
                 ).assign(county=name)
             )
             parts.append(
@@ -53,7 +59,9 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
             )
             parts.append(
                 self._handle_demo_subset(
-                    pd.DataFrame(county["demographics"]["race"]), "description", "race",
+                    pd.DataFrame(county["demographics"]["race"]),
+                    "description",
+                    "race",
                 ).assign(county=name)
             )
 
