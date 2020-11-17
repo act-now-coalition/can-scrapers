@@ -3,10 +3,10 @@ name: Test
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 env:
   BEA_KEY: ${{ secrets.BEA_KEY }}
@@ -24,7 +24,7 @@ jobs:
         with:
           cond: ${{ github.event_name == 'pull_request' }}
           if_true: ${{ github.head_ref }}
-          if_false: master
+          if_false: main
       - uses: docker/build-push-action@v1.1.0
         with:
           username: ${{ github.actor }}
