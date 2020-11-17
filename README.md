@@ -4,7 +4,7 @@
 ## Creating a development environment for scraping
 
 1. Install `conda` (either anaconda or miniconda)
-2. Create conda environment for this project `conda create can-tools python=3.8`
+2. Create conda environment for this project `conda create -n can-tools python=3.8`
 3. Activate the environment `conda activate can-tools`
 4. Move your command line or terminal into the `can-tools` directory
 5. Install required packages `pip install -r requirements.txt`
