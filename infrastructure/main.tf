@@ -394,8 +394,20 @@ resource "google_sql_database_instance" "db_instance" {
         name  = "spencer-home"
         value = var.home_ip
       }
+      authorized_networks {
+        name = "open"
+        value = "0.0.0.0/0"
+      }
     }
   }
+}
+
+output "cloud_sql_ip" {
+  value = google_sql_database_instance.db_instance.ip_address.0.ip_address
+}
+
+output "cloud_sql_sqlalchemy" {
+  value = "postgresql://${var.db_user_name}:${random_password.db_user_password.result}@${google_sql_database_instance.db_instance.ip_address.0.ip_address}/${var.db_name}"
 }
 
 resource "google_sql_database" "db" {
@@ -403,10 +415,6 @@ resource "google_sql_database" "db" {
   instance = google_sql_database_instance.db_instance.name
 }
 
-resource "google_sql_database" "airflow_db" {
-  name     = var.airflow_db_name
-  instance = google_sql_database_instance.db_instance.name
-}
 
 resource "random_password" "db_user_password" {
   length           = 16
@@ -443,7 +451,7 @@ data "archive_file" "nha_data_ingest_trigger" {
 resource "google_storage_bucket_object" "nha_data_ingest_trigger_func_zip" {
   name   = "services/nha_data_ingest_trigger.zip"
   bucket = google_storage_bucket.functions_bucket.name
-  source = "${path.root}/services/nha_data_ingest_trigger.zip"
+  source = "${path.root}/../services/nha_data_ingest_trigger.zip"
 }
 
 resource "google_cloudfunctions_function" "nha_data_ingest_trigger_storage_func" {
@@ -478,7 +486,7 @@ resource "google_compute_instance" "kong_vm" {
   name = "kong"
   machine_type="e2-medium"
   zone = "${var.gcp_region}-b"
-  tags = ["sglyon", "kong"]
+  tags = ["sglyon", "kong", "http-server", "https-server"]
   boot_disk {
     initialize_params {
       image = "cos-cloud/cos-stable"

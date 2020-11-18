@@ -14,7 +14,7 @@ variable "gcp_zone" {
 
 variable "api_url" {
   type = string
-  default = "https://api.covidcountydata.org"
+  default = "https://v2.api.covidcountydata.org"
 }
 
 variable "db_instance_name" {

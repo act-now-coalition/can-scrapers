@@ -765,6 +765,8 @@ services:
     tags:
     - microservice
 consumers:
+- username: anonymous
+  id: 9ea277b3-c661-4429-8f0f-b457eac4c602
 - username: ' me@test.com'
   keyauth_credentials:
   - key: nfycuT8Vf5KKlmrBFyxMspyGciLQW6VB
@@ -798,9 +800,6 @@ consumers:
 - username: amm5ve@virginia.edu
   keyauth_credentials:
   - key: j3KzGBHVQOo8iEbuJNJsQc5SXOPYp6w4
-- username: anonymous
-  keyauth_credentials:
-  - key: 9ea277b3-c661-4429-8f0f-b457eac4c602
 - username: aric68@goodpostman.com
   keyauth_credentials:
   - key: E5zKGRuF4Q4Qudh7MiK1oTprUKcsYFB4
