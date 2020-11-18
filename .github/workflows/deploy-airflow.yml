@@ -7,7 +7,7 @@ on:
       - '*'
 
 jobs:
-  build-microservices:
+  rsync_resources:
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 1
