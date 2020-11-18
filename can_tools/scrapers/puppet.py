@@ -7,7 +7,6 @@ import io
 import os
 import tempfile
 from abc import ABC
-from contextlib import asynccontextmanager
 
 import pandas as pd
 
@@ -39,25 +38,19 @@ def xpath_class_check(cls: str) -> str:
     return f"contains(concat(' ',normalize-space(@class),' '),' {cls} ')"
 
 
-@asynccontextmanager
-async def with_page(headless: bool = True) -> pyppeteer.page.Page:
-    """
+class with_page:
+    def __init__(self, headless: bool = True):
+        self.headless = headless
 
-    Parameters
-    ----------
-    headless : bool
-        Whether pyppeteer should launch the browswer in headless mode
-        (required when running on a remote machine or other context without
-        a DISPLAY)
-    """
-    browser = await pyppeteer.launch(headless=headless)
-    try:
-        page = await browser.newPage()
+    async def __aenter__(self):
+        self.browser = await pyppeteer.launch(headless=self.headless)
+        page = await self.browser.newPage()
         await page.setUserAgent(CHROME_AGENT)
         await page.setViewport(DEFAULT_VIEWPORT)
-        yield page
-    finally:
-        await browser.close()
+        return page
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.browser.close()
 
 
 class TableauNeedsClick(DatasetBase, ABC):
@@ -202,4 +195,4 @@ class TableauNeedsClick(DatasetBase, ABC):
             The DataFrame in the crosstab table on the tableau dashboard
 
         """
-        return self._clean_df(asyncio.run(self._get()))
+        return self._clean_df(asyncio.get_event_loop().run_until_complete((self._get())))

@@ -1,6 +1,5 @@
 import random
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from typing import List, Dict
 
 import pandas as pd
@@ -8,11 +7,23 @@ import sqlalchemy as sa
 
 from can_tools.scrapers.db_util import TempTable
 
-CMU = namedtuple(
-    "CMU",
-    ["category", "measurement", "unit", "age", "race", "sex"],
-    defaults=["cases", "cumulative", "people", "all", "all", "all"],
-)
+
+class CMU:
+    def __init__(
+        self,
+        category="cases",
+        measurement="cumulative",
+        unit="people",
+        age="all",
+        race="all",
+        sex="all",
+    ):
+        self.category = category
+        self.measurement = measurement
+        self.unit = unit
+        self.age = age
+        self.race = race
+        self.sex = sex
 
 
 class DatasetBase(ABC):
