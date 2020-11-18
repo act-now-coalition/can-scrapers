@@ -8,7 +8,7 @@ from can_tools.scrapers import InsertWithTempTableMixin
 from can_tools.scrapers.base import DatasetBase
 
 
-class StateDashboard(DatasetBase, InsertWithTempTableMixin):
+class StateDashboard(InsertWithTempTableMixin, DatasetBase):
     """
     Definition of common parameters and values for scraping a State Dashbaord
 

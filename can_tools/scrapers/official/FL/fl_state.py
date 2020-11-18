@@ -5,7 +5,7 @@ from can_tools.scrapers import DatasetBaseNoDate, CMU
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class Florida(DatasetBaseNoDate, ArcGIS):
+class Florida(ArcGIS, DatasetBaseNoDate):
     """
     Fetch county level covid data from Florida's ARCGIS dashboard
     """
