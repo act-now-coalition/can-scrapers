@@ -2,9 +2,13 @@ name: Test
 
 on:
   push:
+    paths:
+      - 'can_tools/**'
     branches:
       - main
   pull_request:
+    paths:
+      - 'can_tools/**'
     branches:
       - main
 
@@ -16,7 +20,7 @@ jobs:
   prep_pg_docker:
     runs-on: ubuntu-latest
     outputs:
-      docker_tag: ${{ steps.docker_tag.outputs.value }}      
+      docker_tag: ${{ steps.docker_tag.outputs.value }}
     steps:
       - uses: actions/checkout@v2
       - uses: haya14busa/action-cond@v1

@@ -1,8 +1,14 @@
 name: deploy airflow
 
+# TODO: maybe use on: schedule to sync dags every N hours?
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'can_tools/**'
+      - 'services/airflow/**'
+    branches:
+      - main
     tags:
       - '*'
 
