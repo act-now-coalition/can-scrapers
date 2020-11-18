@@ -5,380 +5,156 @@ provider "google" {
   zone = var.gcp_zone
 }
 
-resource "google_cloud_run_service" "apiclient" {
-  name     = "apiclient"
-  location = var.gcp_region
-
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/apiclient:latest"
-        ports {
-          container_port = 8080
-        }
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256Mi"
-          }
-        }
-      }
-    }
-  }
+module "cloud_run_apiclient" {
+  source = "./public_cloud_run"
+  name = "apiclient"
+  image = "gcr.io/${var.gcp_project}/apiclient:latest"
 }
-
 output "cloudrun_apiclient_url" {
-  value = google_cloud_run_service.apiclient.status[0].url
+  value = module.cloud_run_apiclient.url
 }
 
-resource "google_cloud_run_service" "clean_swagger" {
-  name     = "clean-swagger"
-  location = var.gcp_region
-
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/clean_swagger:latest"
-        ports {
-          container_port = 8080
-        }
-        env {
-          name = "API_URL"
-          value = "https://api.covidcountydata.org"
-        }
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256M"
-          }
-        }
-      }
-    }
-  }
+module "cloud_run_clean_swagger" {
+  source = "./public_cloud_run"
+  name = "clean-swagger"
+  image = "gcr.io/${var.gcp_project}/clean_swagger:latest"
+  env =[{
+    name = "API_URL"
+    value = var.api_url
+  }]
 }
-
 output "cloudrun_clean_swagger_url" {
-  value = google_cloud_run_service.clean_swagger.status[0].url
+  value = module.cloud_run_clean_swagger.url
 }
 
-resource "google_cloud_run_service" "postgraphile" {
-  name     = "postgraphile"
-  location = var.gcp_region
-
-  template {
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/maxScale" = "1000"
-        "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-      }
-    }
-
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/postgraphile:latest"
-
-        env {
-          name  = "POSTGRAPHILE_DATABASE_URL"
-          value = "socket://postgrest:iyeFVFxdFxdTtsJlMmY0@/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}?db=${var.db_name}"
-        }
-        env {
-          name  = "ADMIN_DATABASE_URL"
-          value = "socket://${var.db_user_name}:${random_password.db_user_password.result}@/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}?db=${var.db_name}"
-        }
-        env {
-          name  = "POSTGRAPHILE_DB_SCHEMA"
-          value = "api"
-        }
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "1Gi"
-          }
-          requests = {}
-        }
-      }
-    }
-  }
+module "cloud_run_postgraphile" {
+  source = "./public_cloud_run"
+  name = "postgraphile"
+  image = "gcr.io/${var.gcp_project}/postgraphile:latest"
+  env =[{
+    name  = "POSTGRAPHILE_DATABASE_URL"
+    value = "socket://postgrest:iyeFVFxdFxdTtsJlMmY0@/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}?db=${var.db_name}"
+  },
+  {
+    name  = "ADMIN_DATABASE_URL"
+    value = "socket://${var.db_user_name}:${random_password.db_user_password.result}@/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}?db=${var.db_name}"
+  },
+  {
+    name  = "POSTGRAPHILE_DB_SCHEMA"
+    value = "api"
+  }]
 }
-
 output "cloudrun_postgraphile_url" {
-  value = google_cloud_run_service.postgraphile.status[0].url
+  value = module.cloud_run_postgraphile.url
 }
 
-resource "google_cloud_run_service" "postgrest" {
-  name     = "postgrest"
-  location = var.gcp_region
-
-  template {
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/maxScale" = "1000"
-        "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-      }
-    }
-
-    spec {
-
-      containers {
-        image = "gcr.io/${var.gcp_project}/postgrest:latest"
-        ports {
-          container_port = 3000
-        }
-        env {
-          name = "PGRST_SERVER_PROXY_URL"
-          value = var.api_url
-        }
-        env {
-          name = "PGRST_DB_SCHEMA"
-          value = "api, meta"
-        }
-        env {
-          name = "PGRST_DB_ANON_ROLE"
-          value = "covid_anon"
-        }
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "512Mi"
-          }
-        }
-      }
-    }
+module "cloud_run_postgrest" {
+  source = "./public_cloud_run"
+  name = "postgrest"
+  image = "gcr.io/${var.gcp_project}/postgrest:latest"
+  annotations = {
+    "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
   }
+  env =[{
+    name = "PGRST_SERVER_PROXY_URL"
+    value = var.api_url
+  },
+  {
+    name = "PGRST_DB_SCHEMA"
+    value = "api, meta"
+  },
+  {
+    name = "PGRST_DB_ANON_ROLE"
+    value = "covid_anon"
+  },
+    {
+      name = "PGRST_DB_URI"
+      value = "postgres:///${var.db_name}?host=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}&user=${var.db_user_name}&password=${random_password.db_user_password.result}"
+    }]
+  memory = "512Mi"
+  ports = [3000]
 }
-
 output "cloudrun_postgrest_url" {
-  value = google_cloud_run_service.postgrest.status[0].url
+  value = module.cloud_run_postgrest.url
 }
 
-# resource "google_cloud_run_service" "audits" {
-#   name     = "audits"
-#   location = var.gcp_region
-
-
-#   template {
-#     metadata {
-#       annotations = {
-#         "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-#       }
-#     }
-
-#     spec {
-#       containers {
-#         image = "gcr.io/${var.gcp_project}/audits:latest"
-
-#         env {
-#           name  = "SQL_CONN_STR"
-#           value = "postgres+pg8000://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?unix_sock=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}/.s.PGSQL.5432"
-#         }
-
-#         ports {
-#           container_port = 8080
-#         }
-
-#         resources {
-#           limits = {
-#             "cpu"    = "1000m"
-#             "memory" = "256Mi"
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
-
-resource "google_cloud_run_service" "can_nha_reports" {
-  name     = "can-nha-reports"
-  location = var.gcp_region
-
-  template {
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/maxScale" = "1000"
-        "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-      }
-    }
-
-    spec {
-
-      containers {
-        image = "gcr.io/${var.gcp_project}/can-nha-reports:latest"
-
-        env {
-          name  = "SQL_CONN_STR"
-          value = "postgres://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?host=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-        }
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "2Gi"
-          }
-        }
-      }
-    }
+module "cloud_run_can_nha_reports" {
+  source = "./public_cloud_run"
+  name = "can-nha-reports"
+  image = "gcr.io/${var.gcp_project}/can-nha-reports:latest"
+  annotations = {
+    "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
   }
+  env = [{
+    name  = "SQL_CONN_STR"
+    value = "postgres://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?host=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
+  }]
+  memory = "2Gi"
 }
-
 output "cloudrun_can_nha_reports_url" {
-  value = google_cloud_run_service.can_nha_reports.status[0].url
+  value = module.cloud_run_can_nha_reports.url
 }
 
-resource "google_cloud_run_service" "latest_download" {
-  name     = "latest-download"
-  location = var.gcp_region
-
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/latest_download:latest"
-
-        env {
-          name = "GCP_BUCKET"
-          value = google_storage_bucket.downloadables_bucket.name
-        }
-
-        ports {
-          container_port = 8080
-        }
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256Mi"
-          }
-        }
-      }
-    }
-  }
+module "cloud_run_latest_download" {
+  source = "./public_cloud_run"
+  name = "latest-download"
+  image = "gcr.io/${var.gcp_project}/latest_download:latest"
+  env = [{
+    name = "GCP_BUCKET"
+    value = google_storage_bucket.downloadables_bucket.name
+  }]
 }
-
 output "cloudrun_latest_download_url" {
-  value = google_cloud_run_service.latest_download.status[0].url
+  value = module.cloud_run_latest_download.url
 }
 
-resource "google_cloud_run_service" "metrics" {
-  name     = "metrics"
-  location = var.gcp_region
-
-  template {
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/maxScale" = "1000"
-        "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-      }
-    }
-
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/metrics:latest"
-
-        env {
-          name  = "SQL_CONN_STR"
-          value = "postgres+pg8000://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?unix_sock=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}/.s.PGSQL.5432"
-        }
-        env {
-          name  = "MIXPANEL_TOKEN"
-          value = var.mixpanel_token
-        }
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256M"
-          }
-        }
-      }
-    }
+module "cloud_run_metrics" {
+  source = "./public_cloud_run"
+  name = "metrics"
+  image = "gcr.io/${var.gcp_project}/metrics:latest"
+  annotations = {
+    "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
   }
+  env=[{
+    name  = "SQL_CONN_STR"
+    value = "postgres+pg8000://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?unix_sock=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}/.s.PGSQL.5432"
+  },
+    {
+    name  = "MIXPANEL_TOKEN"
+    value = var.mixpanel_token
+    }]
 }
-
 output "cloudrun_metrics_url" {
-  value = google_cloud_run_service.metrics.status[0].url
+  value = module.cloud_run_metrics.url
 }
 
-resource "google_cloud_run_service" "reports" {
-  name     = "reports"
-  location = var.gcp_region
-
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/reports:latest"
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256Mi"
-          }
-        }
-      }
-    }
-  }
+module "cloud_run_reports" {
+  source = "./public_cloud_run"
+  name = "reports"
+  image = "gcr.io/${var.gcp_project}/reports:latest"
 }
-
 output "cloudrun_reports_url" {
-  value = google_cloud_run_service.reports.status[0].url
+  value = module.cloud_run_reports.url
 }
 
-resource "google_cloud_run_service" "variable_names" {
-  name     = "variable-names"
-  location = var.gcp_region
-
-  template {
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/maxScale" = "1000"
-        "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
-      }
-    }
-
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/variable-names:latest"
-
-        env {
-          name  = "SQL_CONN_STR"
-          value = "postgres+pg8000://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?unix_sock=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}/.s.PGSQL.5432"
-        }
-        env {
-          name = "CLEAN_SWAGGER_URL"
-          value = google_cloud_run_service.clean_swagger.status[0].url
-        }
-
-        ports {
-          container_port = 8080
-        }
-
-        resources {
-          limits = {
-            "cpu"    = "1000m"
-            "memory" = "256Mi"
-          }
-        }
-      }
-    }
+module "cloud_run_variable_names" {
+  source = "./public_cloud_run"
+  name = "variable-names"
+  image = "gcr.io/${var.gcp_project}/variable-names:latest"
+  annotations = {
+    "run.googleapis.com/cloudsql-instances" = "${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}"
   }
+  env = [{
+    name  = "SQL_CONN_STR"
+    value = "postgres+pg8000://${var.db_user_name}:${random_password.db_user_password.result}@/${var.db_name}?unix_sock=/cloudsql/${var.gcp_project}:${var.gcp_region}:${google_sql_database_instance.db_instance.name}/.s.PGSQL.5432"
+  },
+  {
+    name = "CLEAN_SWAGGER_URL"
+    value = module.cloud_run_clean_swagger.url
+  }]
 }
-
 output "cloudrun_variable_names_url" {
-  value = google_cloud_run_service.variable_names.status[0].url
+  value = module.cloud_run_variable_names.url
 }
 
 resource "google_sql_database_instance" "db_instance" {
@@ -414,7 +190,6 @@ resource "google_sql_database" "db" {
   name     = var.db_name
   instance = google_sql_database_instance.db_instance.name
 }
-
 
 resource "random_password" "db_user_password" {
   length           = 16
@@ -467,7 +242,7 @@ resource "google_cloudfunctions_function" "nha_data_ingest_trigger_storage_func"
     resource   = google_storage_bucket.nha_bucket.name
   }
   environment_variables = {
-    NHA_SERVICE_URL = google_cloud_run_service.can_nha_reports.status[0].url
+    NHA_SERVICE_URL = module.cloud_run_can_nha_reports.url
   }
   runtime = "python37"
 }

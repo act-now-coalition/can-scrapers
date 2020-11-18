@@ -25,3 +25,22 @@ CREATE ROLE covid_anon WITH
   NOCREATEDB
   NOCREATEROLE
   NOREPLICATION;
+
+
+DO
+  $do$
+  BEGIN
+    IF NOT EXISTS (
+      SELECT FROM pg_catalog.pg_roles  -- SELECT list can be empty for this
+       WHERE  rolname = 'pguser') THEN
+
+      CREATE ROLE pguser LOGIN PASSWORD 'password';
+   END IF;
+END
+$do$;
+
+grant covid_anon to pguser;
+GRANT usage on schema api to covid_anon;
+grant usage on schema meta to covid_anon;
+ALTER default PRIVILEGES in schema api grant select on tables to covid_anon;
+ALTER default PRIVILEGES in schema meta grant select on tables to covid_anon;
