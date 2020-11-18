@@ -59,7 +59,7 @@ def getput_needs_date(cls, task_id="getput") -> PythonOperator:
 
         c.put(db, df)
         print("Uploaded to db")
-        _maybe_log_source(c, db, df)
+        # _maybe_log_source(c, db, df)
 
     op = PythonOperator(python_callable=inner, task_id=task_id, provide_context=True)
 
