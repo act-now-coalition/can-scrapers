@@ -43,7 +43,16 @@ class with_page:
         self.headless = headless
 
     async def __aenter__(self):
-        self.browser = await pyppeteer.launch(headless=self.headless)
+        self.browser = await pyppeteer.launch(
+            headless=self.headless,
+            args=[
+                "--no-sandbox",
+                "--single-process",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--no-zygote",
+            ],
+        )
         page = await self.browser.newPage()
         await page.setUserAgent(CHROME_AGENT)
         await page.setViewport(DEFAULT_VIEWPORT)
@@ -195,4 +204,6 @@ class TableauNeedsClick(DatasetBase, ABC):
             The DataFrame in the crosstab table on the tableau dashboard
 
         """
-        return self._clean_df(asyncio.get_event_loop().run_until_complete((self._get())))
+        return self._clean_df(
+            asyncio.get_event_loop().run_until_complete((self._get()))
+        )
