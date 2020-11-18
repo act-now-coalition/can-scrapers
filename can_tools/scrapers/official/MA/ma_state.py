@@ -53,7 +53,10 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
             print("The file HospCensusBedAvailable.xlsx could not be found, skipping")
             return None
         with zf.open(fn, "r") as f:
-            df = pd.read_excel(f, sheet_name="Hospital COVID Census")
+            # NOTE: needed b/c python 3.6 doesn't have `.seek` method on
+            # zipfile objects and pandas expects it
+            content = io.BytesIO(f.read())
+            df = pd.read_excel(content, sheet_name="Hospital COVID Census")
 
         hosp_col = [x for x in list(df) if "Including ICU" in x]
         if len(hosp_col) != 1:
