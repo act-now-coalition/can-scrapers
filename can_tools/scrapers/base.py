@@ -4,9 +4,9 @@ import os
 import random
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Dict, Optional, List
 
-import libcloud
 import pandas as pd
 import sqlalchemy as sa
 
@@ -45,7 +45,6 @@ class DatasetBase(ABC):
     table_name: str
         The name of the database table where this data should be inserted
     """
-
     autodag: bool = True
     data_type: str = "general"
     table_name: str
@@ -54,14 +53,15 @@ class DatasetBase(ABC):
         # Set execution date information
         self.execution_dt = execution_dt
 
-        if "GCS_TOKEN" in os.environ.keys():
-            driver = libcloud.storage.providers.get_driver("google_storage")
-            storage = driver()
+        # Set storage path
+        if "DATAPATH" in os.environ.keys():
+            self.base_path = Path(os.environ["DATAPATH"])
         else:
-            driver = libcloud.storage.providers.get_driver("local")
-            storage = driver()
-        pass
+            self.base_path = os.path.join(Path.home(), ".can-data")
 
+        # Make sure the storage path exists and create if not
+        if not os.path.exists(self.base_path):
+            os.mkdir(self.base_path)
 
     def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the current datetime in a specific timezone"""
@@ -77,24 +77,28 @@ class DatasetBase(ABC):
         "Returns whether data is clean or raw"
         return "raw" if raw else "clean"
 
-    def _filepath(self, ft: str) -> str:
+    def _filepath(self, ft: str, raw: bool) -> str:
         """
         Method for determining the file path/file name -- Everything is
         stored using the following conventions:
 
+        * `{rc}` is either `"raw"` or `"clean"` based on whether the
+          data being read in is raw or clean data
         * `{classname}` comes from the class name
-        * `{execution dt}` is the execution datetime
+        * `{execution_dt}` is the execution datetime
         * `{ft}` is the file type
 
-        The data will then be stored in the class storage bucket
-        at the path:
+        The data will then be stored  at the path:
 
-        `{classname}/{execution dt}.{ft}``
+        `{rc}/{classname}/{execution_dt}.{ft}``
 
         Parameters
         ----------
         ft : str
             The filetype that the data should be stored as
+        raw : bool
+            Takes the value `True` if we are storing raw
+            data
 
         Returns
         -------
@@ -103,66 +107,86 @@ class DatasetBase(ABC):
             be stored
         """
         # Set file path pieces
+        rc = "raw" if raw else "clean"
         cn = self.__class__.__name__
         ed = self.execution_dt.strftime("%Y-%m-%d_%H")
 
         # Set filepath using its components
-        fp = f"{cn}/{ed}.ft"
+        fp = os.path.join(self.base_path, rc, cn, f"{ed}.{ft}")
 
         return fp
 
-    def _get_storage_container(self, ft: str, raw: bool):
+    def _read_clean(self) -> pd.DataFrame:
         """
-        Using the storage bucket insantiated in the `__init__` method
-        to find (or create if necessary) the container where the data
-        should be stored or read from
+        The `_read_clean` method reads a parquet file from the
+        corresponding filepath
+
+        Returns
+        -------
+        df : pd.DataFrame
+            The data as a DataFrame
         """
-        # Get filename and specify whether it's raw or clean data
-        fp = self._filepath(ft)
-        rc = self._clean_or_raw(raw=True)
+        # Get the file path of the data
+        fp = self._filepath(ft, raw=False)
 
-        # Connect (or create) to the clean/raw container
-        try:
-            container = self.storage.get_container(rc)
-        except libcloud.storage.types.ContainerDoesNotExistError:
-            container = self.storage.create_container(rc)
+        df = pd.read_parquet(fp)
 
-        return container
+        return df
 
-    def _read(self, ft: str, raw: Optional[bool] = True):
+    def _read_raw(self, ft: str, raw: Optional[bool] = True) -> str:
         """
-        The `_read` method reads data from `self.storage` with a
-        filepath that depends on whether we want the raw or cleaned
-        values
+        The `_read_raw` method reads data from a filepath that depends on
+        whether we want the raw or cleaned values
 
         Parameters
         ----------
         ft : str
             The filetype that the data should be stored as
-        raw : str
-            `raw` takes the value `"raw"` if we are working with the
-            raw data and "clean" if we are working with cleaned data
+        raw : bool
+            `raw` takes the value `"raw"` if True and "clean" if False
 
         Returns
         -------
         data : str
             The data file as a string
         """
-        # Try uploading the data (encoded as bytes) to the container
-        container = self._get_storage_container(ft, raw)
-        file_object = self.storage.upload_object_via_stream(
-            datab, container, fp
-        )
+        # Get the file path of the data
+        fp = self._filepath(ft, raw)
 
-        data = "".join([x.decode("utf-8") for x in file_object.as_stream()])
+        if not os.path.exists(fp):
+            msg = "The data that you are trying to read does not exist"
+            raise ValueError(msg)
+
+        # Read the data
+        with open(fp, "r") as f:
+            data = f.read()
 
         return data
 
-    def _store(self, data: str, ft: str, raw: Optional[bool] = True):
+    def _store_clean(self, df: pd.DataFrame):
         """
-        The `_store` method puts the data into the `self.storage` with
-        a filepath that depends on whether we are storing the raw or
-        normalized values
+        The `_store_clean` method saves the data into a parquet file
+        at its corresponding filepath
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The data stored in a DataFrame
+
+        Returns
+        -------
+        success : bool
+        """
+        fp = self._filepath("parquet", raw=False)
+
+        df.to_parquet(fp)
+
+        return True
+
+    def _store_raw(self, data: str, ft: str):
+        """
+        The `_store_raw` method saves the data into its corresponding
+        filepath
 
         Parameters
         ----------
@@ -170,26 +194,19 @@ class DatasetBase(ABC):
             The data in its raw format as a string
         ft : str
             The filetype that the data should be stored as
-        raw : str
-            `raw` takes the value `"raw"` if we are working with the
-            raw data and "clean" if we are working with cleaned data
 
         Returns
         -------
         success : bool
-            Whether the data was successfully stored in the storage
-            bucket
+            Whether the data was successfully stored at the filepath
         """
-        # Put data into a BytesIO object so we can dump it into cloud
-        datab = io.BytesIO(data.encode("utf-8"))
+        # Get filepath
+        fp = self._filepath(ft, raw=True)
 
-        # Try uploading the data (encoded as bytes) to the container
-        container = self._get_storage_container(ft, raw)
-        file_object = self.storage.upload_object_via_stream(
-            datab, container, fp
-        )
+        with open(fp, "w") as f:
+            f.write(data)
 
-        return isinstance(file_object, libcloud.storage.base.Object)
+        return True
 
     @abstractmethod
     def _fetch(self):
