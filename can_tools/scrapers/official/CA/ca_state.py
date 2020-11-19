@@ -5,80 +5,51 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import DatasetBaseNoDate, CMU
-from can_tools.scrapers.official.base import StateDashboard
+from typing import Any, Dict, List, Optional, Union
+
+from can_tools.scrapers.base import DatasetBase, CMU
+from can_tools.scrapers.official.base import StateDashboard, StateQueryAPI
 
 
-class OpenDataCali(StateDashboard, ABC):
-    """
-    Fetch data from OpenDataCali service
-    """
-
-    state_fips = int(us.states.lookup("California").fips)
-    query_url = "https://data.ca.gov/api/3/action/datastore_search"
-
-    def data_from_api(
-        self, resource_id: str, limit: int = 1000, **kwargs
-    ) -> pd.DataFrame:
-        """
-
-        Parameters
-        ----------
-        resource_id :
-        limit :
-        kwargs :
-
-        Returns
-        -------
-        df: pd.DataFrame
-            DataFrame with requested data
-
-        TODO fill this in
-
-        """
-        # Create values needed for iterating
-        offset = 0
-        params = dict(resource_id=resource_id, limit=limit, offset=offset, **kwargs)
-
-        dfs = []
-        keep_requesting = True
-        while keep_requesting:
-            res = requests.get(self.query_url, params=params).json()
-            if not res["success"]:
-                raise ValueError("The request open CA data request failed...")
-
-            records = res["result"]["records"]
-            offset += len(records)
-            keep_requesting = offset < res["result"]["total"]
-
-            dfs.append(pd.DataFrame(records))
-            params.update(dict(offset=offset))
-
-        out = pd.concat(dfs, axis=0, ignore_index=True)
-
-        return out
-
-
-class California(DatasetBaseNoDate, OpenDataCali):
+class California(StateQueryAPI, DatasetBase):
     """
     Fetch county level covid data from California state dashbaord
     """
-
+    apiurl = "https://data.ca.gov/api/3/action/datastore_search"
     source = "https://covid19.ca.gov/state-dashboard"
+    state_fips = int(us.states.lookup("California").fips)
     has_location = False
 
-    def get_county_cases_deaths(self) -> pd.DataFrame:
+    def fetch(self) -> Any:
+        # Dictionary for storing the raw data
+        raw_data = {}
+
+        # case and death data
+        resource_id_cd = "926fd08f-cc91-4828-af38-bd45de97f8c3"
+        raw_data["cases_deaths"] = self.raw_from_api(resource_id_cd, limit=1000)
+
+        # case and death data
+        resource_id_h = "42d33765-20fd-44b8-a978-b083b7542225"
+        raw_data["hospitals"] = self.raw_from_api(resource_id_h, limit=1000)
+
+        return raw_data
+
+    def normalize_cases_deaths(self, data) -> pd.DataFrame:
         """
-        Get cases and deaths from the OpenDataCali api
+        Normalizes the list of json objects that corresponds with case
+        and death data
+
+        Parameters
+        ----------
+        data : List
+            A list of json elements
 
         Returns
         -------
-        df: pd.DataFrame
-            A pandas DataFrame containing cases and deaths for each county
-
+        df : pd.DataFrame
+            A DataFrame with the normalized data
         """
-        # Set resource id and association dict
-        resource_id = "926fd08f-cc91-4828-af38-bd45de97f8c3"
+        # Map current column names to CMU elements
         crename = {
             "newcountconfirmed": CMU(
                 category="cases", measurement="new", unit="people"
@@ -93,9 +64,10 @@ class California(DatasetBaseNoDate, OpenDataCali):
         }
 
         # Read in data and convert to long format
-        df = self.data_from_api(resource_id=resource_id)
+        df = self.data_from_raw(data)
         df["dt"] = pd.to_datetime(df["date"])
 
+        # Move things into long format
         df = df.melt(id_vars=["county", "dt"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
@@ -112,12 +84,16 @@ class California(DatasetBaseNoDate, OpenDataCali):
             "sex",
             "value",
         ]
-
         return df.loc[:, cols_to_keep]
 
-    def get_hospital(self) -> pd.DataFrame:
+    def normalize_hospitals(self, data) -> pd.DataFrame:
         """
         Get icu and hospital usage by covid patients from the OpenDataCali api
+
+        Parameters
+        ----------
+        data : List
+            A list of json elements
 
         Returns
         -------
@@ -125,20 +101,6 @@ class California(DatasetBaseNoDate, OpenDataCali):
             A pandas DataFrame containing icu+hospital usage for each county
 
         """
-        # Get url for download
-        resource_id = "42d33765-20fd-44b8-a978-b083b7542225"
-        df = self.data_from_api(resource_id=resource_id)
-
-        # Convert column to date
-        df = df.replace("None", None)
-        df = df.apply(lambda x: pd.to_numeric(x, errors="ignore"))
-        df["dt"] = pd.to_datetime(df["todays_date"])
-
-        # Create a total number of icu covid patients
-        df["icu_covid_patients"] = df.eval(
-            "icu_covid_confirmed_patients + icu_suspected_covid_patients"
-        )
-
         # Rename columns and subset data
         crename = {
             "hospitalized_covid_patients": CMU(
@@ -154,8 +116,23 @@ class California(DatasetBaseNoDate, OpenDataCali):
             ),
         }
 
+        # Read in data and convert to long format
+        df = self.data_from_raw(data)
+
+        # Convert column to date
+        df = df.replace("None", None)
+        df = df.apply(lambda x: pd.to_numeric(x, errors="ignore"))
+        df["dt"] = pd.to_datetime(df["todays_date"])
+
+        # Create a total number of icu covid patients
+        df["icu_covid_patients"] = df.eval(
+            "icu_covid_confirmed_patients + icu_suspected_covid_patients"
+        )
+
         # Reshape
-        out = df.melt(id_vars=["dt", "county"], value_vars=crename.keys()).dropna()
+        out = df.melt(
+            id_vars=["dt", "county"], value_vars=crename.keys()
+        ).dropna()
 
         # Determine the category and demographics of each observation
         out = self.extract_CMU(out, crename)
@@ -174,21 +151,17 @@ class California(DatasetBaseNoDate, OpenDataCali):
 
         return out.loc[:, cols_to_keep]
 
-    def get(self) -> pd.DataFrame:
-        """
-        Get all available CA COVID data from OpenDataCali services
+    def normalize(self, data) -> pd.DataFrame:
+        # Normalize case/death and hospital data
+        cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
+        hospitals = self.normalize_hospitals(data["hospitals"])
 
-        Returns
-        -------
-        df: pd.DataFrame
-            A DataFrame with cases, deaths, icu COVID, hospital COVID for
-            each county in CA
-        """
-
-        cases = self.get_county_cases_deaths()
-        hospital = self.get_hospital()
-
-        out = pd.concat([cases, hospital], axis=0, ignore_index=True, sort=True)
+        out = pd.concat(
+            [cases_deaths, hospitals], axis=0, ignore_index=True, sort=True
+        )
         out["vintage"] = self._retrieve_vintage()
 
         return out
+
+    def validate(self, df, df_hist) -> bool:
+        return True

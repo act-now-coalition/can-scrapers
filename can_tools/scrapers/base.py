@@ -102,7 +102,7 @@ class DatasetBase(ABC):
         if "DATAPATH" in os.environ.keys():
             self.base_path = Path(os.environ["DATAPATH"])
         else:
-            self.base_path = os.path.join(Path.home(), ".can-data")
+            self.base_path = Path.home()/".can-data"
 
         # Make sure the storage path exists and create if not
         if not self.base_path.exists():
@@ -189,9 +189,12 @@ class DatasetBase(ABC):
         ed = self.execution_dt.strftime("%Y-%m-%d_%H")
 
         # Set filepath using its components
-        fp = os.path.join(self.base_path, rc, cn, f"{ed}.{ft}")
+        fp = self.base_path / rc / cn
+        if not fp.exists():
+            fp.mkdir(parents=True)
+        fn = fp / f"{ed}.{ft}"
 
-        return fp
+        return fn
 
     def _read_clean(self) -> pd.DataFrame:
         """

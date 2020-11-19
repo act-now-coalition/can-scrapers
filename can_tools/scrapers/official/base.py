@@ -1,5 +1,7 @@
 import textwrap
-from typing import Any, Optional, Union, Dict
+
+from abc import ABC
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 import requests
@@ -334,3 +336,110 @@ class SODA(StateDashboard):
         df = pd.DataFrame(res.json())
 
         return df
+
+
+class StateQueryAPI(StateDashboard, ABC):
+    """
+    Fetch data from OpenDataCali service
+    """
+    apiurl: str
+
+    def count_current_records(self, res_json):
+        """
+        Determine the number of records in the single json
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        n : int
+            The number of records in the json
+        """
+        return len(res_json["result"]["records"])
+
+    def count_total_records(self, res_json):
+        """
+        Determine the number of records in the single json
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        n : int
+            The total number of records in the endpoint
+        """
+        return res_json["result"]["total"]
+
+    def extract_data_from_json(self, res_json):
+        """
+        Takes a json file and extracts the data elements
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        _ : list
+            Each element of the list is an observation
+        """
+        return res_json["result"]["records"]
+
+    def raw_from_api(
+            self, resource_id: str, limit: int = 1000, **kwargs
+    ) -> List[Dict]:
+        """
+        Retrieves the raw data from the api. It assumes that data is
+        stored in a json file as it is read in
+        """
+        # Create values needed for iterating
+        offset = 0
+        params = dict(resource_id=resource_id, limit=limit, offset=offset, **kwargs)
+
+        # Store each json in a list
+        the_jsons = []
+        keep_requesting = True
+
+        # Iterate on requests until we have all of the records
+        while keep_requesting:
+            res = requests.get(self.apiurl, params=params).json()
+            if not res["success"]:
+                raise ValueError("The request open CA data request failed...")
+
+            # Append json info to the list
+            the_jsons.append(res)
+
+            # Extract relevant records
+            records = res["result"]["records"]
+            offset += self.count_current_records(res)
+            keep_requesting = offset < self.count_total_records(res)
+
+        return the_jsons
+
+    def data_from_raw(
+        self, data
+    ) -> pd.DataFrame:
+        """
+        Retrieves extracts data from the raw jsons (or other format)
+
+        Parameters
+        ----------
+        data : dict
+            The raw data
+
+        Returns
+        -------
+        df: pd.DataFrame
+            DataFrame with requested data
+        """
+        return pd.concat(
+            [pd.DataFrame(self.extract_data_from_json(x)) for x in data],
+            axis=0, ignore_index=True
+        )
