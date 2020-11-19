@@ -4,11 +4,10 @@ from typing import Any, Optional, Union, Dict
 import pandas as pd
 import requests
 
-from can_tools.scrapers import InsertWithTempTableMixin
 from can_tools.scrapers.base import DatasetBase
 
 
-class StateDashboard(InsertWithTempTableMixin, DatasetBase):
+class StateDashboard(DatasetBase):
     """
     Definition of common parameters and values for scraping a State Dashbaord
 
@@ -29,7 +28,6 @@ class StateDashboard(InsertWithTempTableMixin, DatasetBase):
         Must be set by subclasses. The two digit state fips code (as an int)
 
     """
-
     table_name: str = "covid_official"
     pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
     provider = "state"
@@ -37,12 +35,8 @@ class StateDashboard(InsertWithTempTableMixin, DatasetBase):
     has_location: bool
     state_fips: int
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.putter = InsertWithTempTableMixin()
-    #
-    # def put(self, connstr: str, df: pd.DataFrame) -> None:
-    #     self.putter.put(connstr, df)
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(StateDashboard, self).__init__(execution_dt)
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
         if self.has_location:
@@ -89,8 +83,10 @@ class CountyDashboard(StateDashboard):
 
     See `StateDashbaord` for more information
     """
-
     provider: str = "county"
+
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(CountyDashboard, self).__init__(execution_dt)
 
 
 class ArcGIS(StateDashboard):
@@ -104,17 +100,16 @@ class ArcGIS(StateDashboard):
 
     in order to use this class
     """
-
     ARCGIS_ID: str
 
-    def __init__(self, params: Optional[Dict[str, Union[int, str]]] = None):
-        super(ArcGIS, self).__init__()
+    def __init__(self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Union[int, str]]] = None):
+        super(ArcGIS, self).__init__(execution_dt)
 
         # Default parameter values
         if params is None:
             params: Dict[str, Union[int, str]] = {
                 "f": "json",
-                "where": "1=1",
+                "where": "0=0",
                 "outFields": "*",
                 "returnGeometry": "false",
             }
@@ -288,11 +283,14 @@ class SODA(StateDashboard):
 
     in order to use this class
     """
-
     baseurl: str
 
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
+    def __init__(
+            self, execution_dt: pd.Timestamp,
+            params: Optional[Dict[str, Any]] = None
+    ):
         super(SODA, self).__init__()
+        self.params = params
 
     def soda_query_url(
         self, data_id: str, resource: str = "resource", ftype: str = "json"
