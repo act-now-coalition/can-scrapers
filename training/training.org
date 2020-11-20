@@ -120,7 +120,7 @@ CREATE TABLE meta.covid_categories
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::10][COVID file]]
+[[file:../db/schemas/002_covid_data.sql::10][COVID file]]
 
 **** =meta.covid_measurement=
 
@@ -133,7 +133,7 @@ CREATE TABLE meta.covid_measurement
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::125][COVID file]]
+[[file:../db/schemas/002_covid_data.sql::125][COVID file]]
 
 **** =meta.covid_unit=
 
@@ -146,7 +146,7 @@ CREATE TABLE meta.covid_unit
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::144][COVID file]]
+[[file:../db/schemas/002_covid_data.sql::144][COVID file]]
 
 **** =meta.covid_demographics=
 
@@ -162,7 +162,7 @@ CREATE TABLE meta.covid_demographics
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::345][COVID file]]
+[[file:../db/schemas/002_covid_data.sql::345][COVID file]]
 
 *** =data=
 
@@ -184,7 +184,7 @@ CREATE TABLE data.covid_official
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/003_covid_individual_sources.sql::1][COVID File]]
+[[file:../db/schemas/003_covid_individual_sources.sql::1][COVID File]]
 
 **** =data.covid_observations=
 
@@ -204,7 +204,7 @@ CREATE TABLE data.covid_observations
 );
 #+END_SRC
 
-[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::1][COVID File]]
+[[file:../db/schemas/002_covid_data.sql::1][COVID File]]
 
 ** Cross references
 
@@ -323,5 +323,5 @@ the database
 
 * Example Scrapers
 
-- [[file:~/covid/can-scrapers/can_tools/scrapers/official/CA/ca_state.py][California State Dashboard Scraper (API Query)]]
-- [[file:~/covid/can-scrapers/can_tools/scrapers/official/FL/fl_state.py][Florida State Dashboard Scraper (ArcGIS)]]
+- [[file:../can_tools/scrapers/official/CA/ca_state.py][California State Dashboard Scraper (API Query)]]
+- [[file:../can_tools/scrapers/official/FL/fl_state.py][Florida State Dashboard Scraper (ArcGIS)]]
