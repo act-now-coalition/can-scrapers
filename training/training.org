@@ -241,10 +241,22 @@ In, words, these components are:
 2. Create a conda environment for this project, =conda create can-tools python=3.6=
 3. Activate the environment, =conda activate can-tools=
 4. Move your command line or terminal into the =can-scrapers= directory
-5. Install the required packages, =pip install -r requirements.txt=
+5. Install the required packages, =pip install -r requirements-dev.txt=
 6. Install development version of the =can-tools= package, =pip install -e .=
 
 ** Setting up VS Code
+
+   Steps to set up VS code:
+
+   - Install =python= and =pylance= VS code extensions
+   - Reload vs code window
+   - Open =can-scrapers= directory in VS code
+   - Select the =can-tools= conda environment as the workspace interpreter.
+
+   Please do not push any changes made to the =.vscode= directory. That has some
+   shared settings, but will also be overwritten by the absolute path to the
+   conda environment on your machine. This path is unlikely to match exactly
+   with the path for any other team members
 
 ** Writing a new scraper
 
@@ -255,7 +267,9 @@ As seen in [[Scraper Library]], a scraper requires 4 methods:
 3. =validate=
 4. =put=
 
-Most scrapers will *not* require one to write the =validate= or =put= methods because the generic methods should be able to validate the data and dump it into the database
+Most scrapers will *not* require one to write the =validate= or =put= methods
+because the generic methods should be able to validate the data and dump it into
+the database
 
 * Example Scrapers
 
