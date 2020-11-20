@@ -9,7 +9,7 @@ import requests
 from can_tools.scrapers.base import DatasetBase
 
 
-class StateDashboard(DatasetBase):
+class StateDashboard:
     """
     Definition of common parameters and values for scraping a State Dashbaord
 

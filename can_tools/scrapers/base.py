@@ -2,10 +2,9 @@ import io
 import os
 import pickle
 import random
-
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import sqlalchemy as sa
