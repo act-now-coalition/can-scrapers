@@ -216,6 +216,56 @@ As seen in [[=data.covid_observations=]], an observation is defined by:
 - =variable_id=
 - =demographic_id=
 * Scraper Library
+
+The scrapers are defined by 4 operations:
+
+1. Fetch: Retrieves raw data from dashboard
+2. Normalize: Ingests raw data and spits out normalized data
+3. Validate: Makes sure that the new normalized data is sensible
+4. Put: Puts data into our database
+
+#+CAPTION: Scraper flow chart
+#+NAME: fig:CANSRAPERS
+[[file:static/CAN_scrapers.png]]
+
+** =DatasetBase= and relevant subclasses
+
+*** =DatasetBase=
+
+This is the most important base class and all scrapers will inherit from it (as their last parent).
+
+It is found in =can-scrapers/can_tools/scrapers/base.py=
+
+*Methods that must be defined*:
+
+- =fetch=
+- =normalize=
+
+*Methods that you are likely to use**
+
+- =_retrieve_vintage=
+- =_retrieve_dt=
+- =extract_CMU=
+
+*** =StateDashboard= or =CountyDashboard=
+
+This is another class that you are likely to use and is used when we don't have another subclass that specializes in extracting data from that particular dashboard
+
+It is found in =can-scrapers/can_tools/scrapers/official/base.py=
+
+*** =ArcGIS=
+
+This subclass specializes in extracting information from an ArcGIS dashboard (which are most of the current scrapers).
+
+*Properties that must be defined*
+
+- =ARCGIS_ID=
+
+*Methods that you are likely to use*
+
+- =get_all_jsons=
+- =arcgis_jsons_to_df=
+
 * Scraper Infrastructure
 
 The overall microservice architecture we use is shown in the diagram below:
