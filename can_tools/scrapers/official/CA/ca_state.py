@@ -164,4 +164,5 @@ class California(StateQueryAPI, DatasetBase):
         return out
 
     def validate(self, df, df_hist) -> bool:
+        "Best validation method ever!"
         return True
