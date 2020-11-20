@@ -272,7 +272,7 @@ The overall microservice architecture we use is shown in the diagram below:
 
 #+CAPTION: Infrastructure flow chart
 #+NAME: fig:IFC
-[[https://github.com/covid-projections/can-scrapers/blob/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png]]
+https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png
 
 In, words, these components are:
 
