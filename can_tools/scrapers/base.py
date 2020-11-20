@@ -375,7 +375,6 @@ class DatasetBase(ABC):
 
         return success
 
-    @abstractmethod
     def validate(self, df, df_hist):
         """
         The `validate` method checks what the tentative clean data looks
@@ -395,7 +394,7 @@ class DatasetBase(ABC):
         validated : bool
             Whether we have validated the data
         """
-        pass
+        return True
 
     def _validate(self):
         """
