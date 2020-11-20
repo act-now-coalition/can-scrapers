@@ -1,22 +1,24 @@
 import pandas as pd
-import us
 
-from can_tools.scrapers import DatasetBaseNoDate, CMU
+import us
+from can_tools.scrapers import CMU, DatasetBase
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class Florida(ArcGIS, DatasetBaseNoDate):
+class Florida(ArcGIS, DatasetBase):
     """
     Fetch county level covid data from Florida's ARCGIS dashboard
     """
-
     ARCGIS_ID = "CY1LXxl9zlJeBuRZ"
-    state_fips = int(us.states.lookup("Florida").fips)
     has_location = True
+    state_fips = int(us.states.lookup("Florida").fips)
     source = "https://experience.arcgis.com/experience/96dd742462124fa0b38ddedb9b25e429"
 
-    def get(self) -> pd.DataFrame:
-        df = self.get_all_sheet_to_df("Florida_COVID19_Cases", 0, 1)
+    def fetch(self):
+        return self.get_all_jsons("Florida_COVID19_Cases", 0, 1)
+
+    def normalize(self, data):
+        df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
         df["location"] = (self.state_fips * 1000) + df["county"].astype(int)
 
@@ -70,3 +72,6 @@ class Florida(ArcGIS, DatasetBaseNoDate):
         ]
 
         return out.loc[:, cols_to_keep]
+
+    def validate(self, df, df_hist):
+        return True

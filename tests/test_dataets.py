@@ -5,9 +5,7 @@ import pytest
 
 from can_tools import scrapers
 
-nodates = scrapers.DatasetBaseNoDate.__subclasses__()
-yesdates = scrapers.DatasetBaseNeedsDate.__subclasses__()
-all_ds = nodates + yesdates
+all_ds = scrapers.DatasetBase.__subclasses__()
 
 CONN_STR = os.environ.get("PG_CONN_STR", None)
 
@@ -41,27 +39,20 @@ def _test_data_structure(cls, df):
         _covid_dataset_tests(cls, df)
 
 
-@pytest.mark.parametrize("cls", nodates)
-def test_no_date_datasets(cls):
-    d = cls()
-    out = d.get()
-    assert isinstance(out, pd.DataFrame)
-    assert out.shape[0] > 0
-    _test_data_structure(d, out)
+@pytest.mark.parametrize("cls", all_ds)
+def test_datasets(cls):
+    execution_date = pd.to_datetime("2020-11-10")
+    d = cls(execution_date)
+    raw = d.fetch()
+    assert raw is not None
+    clean = d.normalize(raw)
+    assert isinstance(clean, pd.DataFrame)
+    assert clean.shape[0] > 0
+    _test_data_structure(d, clean)
 
     if CONN_STR is not None:
-        d.put(CONN_STR, out)
+        d.put(CONN_STR, clean)
         assert True
-
-
-@pytest.mark.parametrize("cls", yesdates)
-def test_need_date_datasets(cls):
-    d = cls()
-    out = d.get("2020-11-10")
-    assert isinstance(out, pd.DataFrame)
-    assert out.shape[0] > 0
-    _test_data_structure(d, out)
-
 
 @pytest.mark.parametrize("cls", all_ds)
 def test_all_dataset_has_type(cls):

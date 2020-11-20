@@ -1,14 +1,15 @@
 import textwrap
-from typing import Any, Optional, Union, Dict
+
+from abc import ABC
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 import requests
 
-from can_tools.scrapers import InsertWithTempTableMixin
 from can_tools.scrapers.base import DatasetBase
 
 
-class StateDashboard(InsertWithTempTableMixin, DatasetBase):
+class StateDashboard:
     """
     Definition of common parameters and values for scraping a State Dashbaord
 
@@ -29,7 +30,6 @@ class StateDashboard(InsertWithTempTableMixin, DatasetBase):
         Must be set by subclasses. The two digit state fips code (as an int)
 
     """
-
     table_name: str = "covid_official"
     pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
     provider = "state"
@@ -37,12 +37,8 @@ class StateDashboard(InsertWithTempTableMixin, DatasetBase):
     has_location: bool
     state_fips: int
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.putter = InsertWithTempTableMixin()
-    #
-    # def put(self, connstr: str, df: pd.DataFrame) -> None:
-    #     self.putter.put(connstr, df)
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(StateDashboard, self).__init__(execution_dt)
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
         if self.has_location:
@@ -89,8 +85,10 @@ class CountyDashboard(StateDashboard):
 
     See `StateDashbaord` for more information
     """
-
     provider: str = "county"
+
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(CountyDashboard, self).__init__(execution_dt)
 
 
 class ArcGIS(StateDashboard):
@@ -104,17 +102,16 @@ class ArcGIS(StateDashboard):
 
     in order to use this class
     """
-
     ARCGIS_ID: str
 
-    def __init__(self, params: Optional[Dict[str, Union[int, str]]] = None):
-        super(ArcGIS, self).__init__()
+    def __init__(self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Union[int, str]]] = None):
+        super(ArcGIS, self).__init__(execution_dt)
 
         # Default parameter values
         if params is None:
             params: Dict[str, Union[int, str]] = {
                 "f": "json",
-                "where": "1=1",
+                "where": "0=0",
                 "outFields": "*",
                 "returnGeometry": "false",
             }
@@ -152,8 +149,9 @@ class ArcGIS(StateDashboard):
 
         return out
 
-    def get_res_json(
-        self, service: str, sheet: Union[str, int], srvid: str, params: Dict[str, Any]
+    def get_single_json(
+        self, service: str, sheet: Union[str, int], srvid: str,
+        params: Dict[str, Any]
     ) -> dict:
         """
         Execute request and return response json as dict
@@ -176,9 +174,47 @@ class ArcGIS(StateDashboard):
         url = self.arcgis_query_url(service=service, sheet=sheet, srvid=srvid)
         res = requests.get(url, params=params)
 
-        # TODO: add validation here
-
         return res.json()
+
+    def get_all_jsons(
+            self, service: str, sheet: Union[str, int], srvid: str
+    ) -> List[Dict]:
+        """
+        Repeatedly request jsons until we have full dataset
+
+        Parameters
+        ----------
+        service, sheet, srvid :
+            See `arcgis_query_url` method
+
+        Returns
+        -------
+        the_jsons: list
+            A dict containing the JSON response from the making the HTTP request
+        """
+        # Get a copy so that we don't screw up main parameters
+        curr_params = self.params.copy()
+
+        # Get first request and determine number of requests that come per
+        # response
+        res_json = self.get_single_json(service, sheet, srvid, curr_params)
+        total_offset = len(res_json["features"])
+
+        # Use first response to create first DataFrame
+        the_jsons = [res_json]
+        unbroken_chain = res_json.get("exceededTransferLimit", False)
+        while unbroken_chain:
+            # Update parameters and make request
+            curr_params.update({"resultOffset": total_offset})
+            res_json = self.get_single_json(service, sheet, srvid, curr_params)
+
+            # Convert to DataFrame and store in df list
+            the_jsons.append(res_json)
+
+            total_offset += len(res_json["features"])
+            unbroken_chain = res_json.get("exceededTransferLimit", False)
+
+        return the_jsons
 
     def arcgis_json_to_df(self, res_json: dict) -> pd.DataFrame:
         """
@@ -199,100 +235,47 @@ class ArcGIS(StateDashboard):
 
         return df
 
-    def get_single_sheet_to_df(
-        self, service: str, sheet: Union[str, int], srvid: str, params: dict
-    ) -> pd.DataFrame:
-        """
-        Obtain all data for a single request to an ArcGIS service
-
-        Note: if there is pagination required, the arguments should be specified in
-        `params` and this routine should be called multiple times as in the
-        `get_all_sheet_to_df` method
-
-        Parameters
-        ----------
-        service, sheet, srvid
-            See `arcgis_query_url` method for details
-        params: dict
-            Additional HTTP query parameters to be sent along with http GET request
-            to the ArcGIS resource specified by service, sheet and srvid
-
-        Returns
-        -------
-        df: pd.DataFrame
-            A DataFrame containing full contents of the requested ArcGIS sheet
-
-        """
-
-        # Perform actual request
-        res_json = self.get_res_json(service, sheet, srvid, params)
-
-        # Turn into a DF
-        df = self.arcgis_json_to_df(res_json)
-
-        return df
-
-    def get_all_sheet_to_df(
-        self, service: str, sheet: Union[str, int], srvid: str
+    def arcgis_jsons_to_df(
+        self, data: List[Dict]
     ) -> pd.DataFrame:
         """
         Obtain all data in a particular ArcGIS service sheet as a DataFrame
 
-        Often requires dealing with paginated responses
         Parameters
         ----------
-        service, sheet, srvid
-            See `arcgis_query_url` method for details
+        data : List[Dict]
+            A list of ArcGIS json objects
 
         Returns
         -------
         df: pd.DataFrame
             A DataFrame containing full contents of the requested ArcGIS sheet
-
         """
-        # Get a copy so that we don't screw up main parameters
-        curr_params = self.params.copy()
-
-        # Get first request and detrmine number of requests that come per
-        # response
-        res_json = self.get_res_json(service, sheet, srvid, curr_params)
-        total_offset = len(res_json["features"])
-
-        # Use first response to create first DataFrame
-        _dfs = [self.arcgis_json_to_df(res_json)]
-        unbroken_chain = res_json.get("exceededTransferLimit", False)
-        while unbroken_chain:
-            # Update parameters and make request
-            curr_params.update({"resultOffset": total_offset})
-            res_json = self.get_res_json(service, sheet, srvid, curr_params)
-
-            # Convert to DataFrame and store in df list
-            _df = self.arcgis_json_to_df(res_json)
-            _dfs.append(_df)
-
-            total_offset += len(res_json["features"])
-            unbroken_chain = res_json.get("exceededTransferLimit", False)
-
-        # Stack these up
-        df = pd.concat(_dfs)
-
-        return df
+        # Concat data
+        return pd.concat(
+            [self.arcgis_json_to_df(x) for x in data],
+            axis=0, ignore_index=True
+        )
 
 
 class SODA(StateDashboard):
     """
-    TODO fill this in
+    This is to interact with SODA APIs
+
     Must define class variables:
 
     * `baseurl`
 
     in order to use this class
     """
-
     baseurl: str
 
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
+    def __init__(
+            self, execution_dt: pd.Timestamp,
+            params: Optional[Dict[str, Any]] = None
+    ):
         super(SODA, self).__init__()
+        self.params = params
 
     def soda_query_url(
         self, data_id: str, resource: str = "resource", ftype: str = "json"
@@ -336,3 +319,110 @@ class SODA(StateDashboard):
         df = pd.DataFrame(res.json())
 
         return df
+
+
+class StateQueryAPI(StateDashboard, ABC):
+    """
+    Fetch data from OpenDataCali service
+    """
+    apiurl: str
+
+    def count_current_records(self, res_json):
+        """
+        Determine the number of records in the single json
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        n : int
+            The number of records in the json
+        """
+        return len(res_json["result"]["records"])
+
+    def count_total_records(self, res_json):
+        """
+        Determine the number of records in the single json
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        n : int
+            The total number of records in the endpoint
+        """
+        return res_json["result"]["total"]
+
+    def extract_data_from_json(self, res_json):
+        """
+        Takes a json file and extracts the data elements
+
+        Parameters
+        ----------
+        res_json : dict
+            The json response
+
+        Returns
+        -------
+        _ : list
+            Each element of the list is an observation
+        """
+        return res_json["result"]["records"]
+
+    def raw_from_api(
+            self, resource_id: str, limit: int = 1000, **kwargs
+    ) -> List[Dict]:
+        """
+        Retrieves the raw data from the api. It assumes that data is
+        stored in a json file as it is read in
+        """
+        # Create values needed for iterating
+        offset = 0
+        params = dict(resource_id=resource_id, limit=limit, offset=offset, **kwargs)
+
+        # Store each json in a list
+        the_jsons = []
+        keep_requesting = True
+
+        # Iterate on requests until we have all of the records
+        while keep_requesting:
+            res = requests.get(self.apiurl, params=params).json()
+            if not res["success"]:
+                raise ValueError("The request open CA data request failed...")
+
+            # Append json info to the list
+            the_jsons.append(res)
+
+            # Extract relevant records
+            records = res["result"]["records"]
+            offset += self.count_current_records(res)
+            keep_requesting = offset < self.count_total_records(res)
+
+        return the_jsons
+
+    def data_from_raw(
+        self, data
+    ) -> pd.DataFrame:
+        """
+        Retrieves extracts data from the raw jsons (or other format)
+
+        Parameters
+        ----------
+        data : dict
+            The raw data
+
+        Returns
+        -------
+        df: pd.DataFrame
+            DataFrame with requested data
+        """
+        return pd.concat(
+            [pd.DataFrame(self.extract_data_from_json(x)) for x in data],
+            axis=0, ignore_index=True
+        )

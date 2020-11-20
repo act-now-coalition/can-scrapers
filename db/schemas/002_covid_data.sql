@@ -382,7 +382,7 @@ CREATE TABLE data.covid_observations
 (
     vintage TIMESTAMP,
     dt DATE,
-    location BIGINT REFERENCES meta.locations (location),
+    location_id INT REFERENCES meta.locations (id),
     variable_id SMALLINT REFERENCES meta.covid_variables (id),
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
@@ -394,7 +394,7 @@ COMMENT ON TABLE data.covid_observations IS E'This table contains all of the col
 
 COMMENT ON COLUMN data.covid_observations.vintage IS E'When the data was accessed UTC time (at an hour frequency)';
 COMMENT ON COLUMN data.covid_observations.dt IS E'The date for which the data corresponds';
-COMMENT ON COLUMN data.covid_observations.location IS E'The location code identifying the geography. See `meta.locations` for more information.';
+COMMENT ON COLUMN data.covid_observations.location_id IS E'The location id identifying the geography. See `meta.locations` for more information.';
 COMMENT ON COLUMN data.covid_observations.variable_id IS E'The id of the variable observed. See `meta.covid_variables` for more information.';
 COMMENT ON COLUMN data.covid_observations.demographic_id IS E'The id of the demographic being observed. See `meta.covid_demographics` for more information.';
 COMMENT ON COLUMN data.covid_observations.value IS E'The value of the variable for the given location, on a date, and a vintage';

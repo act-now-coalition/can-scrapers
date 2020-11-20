@@ -1,0 +1,327 @@
+#+TITLE: Data Engineering Training Materials
+
+* Introduction
+
+All of the code and documentation for the Covid Act Now (CAN) scrapers, including this document, is in the [[https://github.com/covid-projections/can-scrapers][can-scrapers]] Github repository. We will refer to various folders within this repository throughout this document.
+
+* Data Engineering Team
+
+The data engineering team currently consists of:
+
+- Chase Coleman
+- Spencer Lyon
+
+* COVID Data
+
+** Cases and deaths
+
+Case data can be split into two categories
+
+1. /Confirmed cases|deaths/: This typically refers to individuals who have tested positive for COVID (typically via a [[PCR test]])
+2. /Suspected (Probable) cases|deaths/: This refers to an individual, one who was typically hospitalized, who had many of the symptoms associated with COVID but that had not been administered a test to confirm the diagnosis. This variable definition was especially relevant early in the pandemic when there was not wide-spread testing.
+
+In our work, we will mostly focus on /total cases|deaths/ which includes the sum of confirmed and suspected cases|deaths -- This is because now that we have wide-spread testing, there are fewer suspected cases because they can easily be confirmed
+
+** Hospitalizations
+** Tests
+
+*** Test types
+
+There are three main kinds of tests antibody, antigen, and molecular. Antigen and molecular are both types of diagnostic tests and we'll group them together for our explanation below:
+
+**** Antibody tests
+
+Antibody tests, also known as serology tests, are described by the [[https://www.fda.gov/consumers/consumer-updates/coronavirus-disease-2019-testing-basics][FDA]] as,
+
+#+BEGIN_QUOTE
+An antibody test looks for antibodies that are made by your immune system in response to a threat, such as a specific virus. Antibodies can help fight infections. Antibodies can take several days or weeks to develop after you have an infection and may stay in your blood for several weeks or more after recovery. Because of this, antibody tests should not be used to diagnose COVID-19. At this time researchers do not know if the presence of antibodies means that you are immune to COVID-19 in the future.
+#+END_QUOTE
+
+**** Diagnostic tests
+
+Diagnostic tests are themselves broken into two sub-categories:
+
+1. Molecular tests (in COVID context, often called a PCR test) <<PCR test>>
+2. Antigen tests
+
+Diagnostic tests are described by the [[https://www.fda.gov/consumers/consumer-updates/coronavirus-disease-2019-testing-basics][FDA]] as,
+
+#+BEGIN_QUOTE
+A diagnostic test can show if you have an active coronavirus infection and should take steps to quarantine or isolate yourself from others. Currently there are two types of diagnostic tests– molecular tests, such as RT-PCR tests, that detect the virus’s genetic material, and antigen tests that detect specific proteins from the virus.
+#+END_QUOTE
+
+*** Measurements
+
+There has been a significant amount of confusion about the units that testing data is being reported in, see [[https://covidtracking.com/blog/test-positivity-in-the-us-is-a-mess][the COVID Tracking Project's blog post]] on the topic. There are three main ways that COVID testing data is measured,
+
+1. Specimens tested: The number of specimens that the labs collected/tested in a given geography
+2. Test encounters: The number of unique people tested in a particular day for a given geography
+3. Unique people: The number of unique people ever tested for a given geography
+
+Lets work through an example so we can be specific about the difference:
+
+Imagine that Alice and Bob both go to get tested on April 1, 2020. Two specimen samples are collected from Alice and two specimen samples are collected from Bob. Alice and Bob then go to a Memorial Day celebration at the end of May and find out that the host tested COVID positive so they both go to get tested again on June 1, 2020. An additional two specimens are collected from both Alice and Bob.
+
+- How many specimens do Alice and Bob contribute to the total? Both Alice and Bob would contribute two specimens from April and two specimens from June for a total of *eight specimens*.
+- How many test encounters do Alice and Bob contribute to the total? Both Alice and Bob would contribute a single test encounter from April and a single test encounter from June for a total of *four test encounters*.
+- How many unique people do Alice and Bob contribute to the total? Although Alice and Bob were each tested twice, they are the same person in April and June, so they would only contribute *two unique people* to the total.
+
+The preferred metric at CAN is (currently) to count PCR test encounters. This will not always be available so its important that we collect whatever is available even if it isn't what we "want".
+
+* Database
+
+All of the data that is collected is stored in a PostgreSQL database hosted on Google Cloud. This database is structured in three schemas:
+
+1. =api= : This is the public facing schema. It does not contain any tables itself but rather contains views and materialized views
+2. =data= : This schema is where data that is collected is stored
+3. =meta= : This schema contains meta information about geographies and variables. It is information that will only be changed/updated infrequently.
+
+We will now discuss a few important tables from these schemas and discuss how they referentially fit together
+
+** Schemas and tables
+
+*** =meta=
+
+**** =meta.locations=
+
+This table contains information on the various types of locations that we can describe
+
+#+BEGIN_SRC sql
+CREATE TABLE meta.locations (
+  id SERIAL PRIMARY KEY,
+  location BIGINT,
+  location_type SMALLINT REFERENCES meta.location_type (id),
+  state text,
+  name text,
+  area real,
+  latitude real,
+  longitude real,
+  fullname text
+);
+#+END_SRC
+
+The most important (non-obvious) columns are discussed below:
+
+- =id= : An internal identifier used to ensure that each geography has a unique identification key
+- =location= : An identifer more used for joining and reference purposes
+- =location_type= : References another table that keeps track of the types of geographies that we can reference -- We need for potential conflicts such as a 5 digit zip code conflicting with a 5 digit FIPS code
+- =name= or =fullname= : These are a text name for the geography and will often have the same value but may differ in cases like "St. Louis" (=name=) `vs "St. Louis City"|"St. Louis County" (=fullname=).
+
+**** =meta.covid_categories=
+
+This table contains information on the different COVID "sub-categories" (variables) and their corresponding category
+
+#+BEGIN_SRC sql
+CREATE TABLE meta.covid_categories
+(
+    category TEXT,
+    subcategory TEXT UNIQUE,
+    PRIMARY KEY (category, subcategory)
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::10][COVID file]]
+
+**** =meta.covid_measurement=
+
+This table contains information on the different types of measurement classification for certain variables, namely: cumulative, current, new
+
+#+BEGIN_SRC sql
+CREATE TABLE meta.covid_measurement
+(
+    name TEXT UNIQUE PRIMARY KEY
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::125][COVID file]]
+
+**** =meta.covid_unit=
+
+This table contains information on the unit that the data is being reported in
+
+#+BEGIN_SRC sql
+CREATE TABLE meta.covid_unit
+(
+    name TEXT UNIQUE PRIMARY KEY
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::144][COVID file]]
+
+**** =meta.covid_demographics=
+
+This contains information on the demographics being reported
+
+#+BEGIN_SRC sql
+CREATE TABLE meta.covid_demographics
+(
+    id SERIAL PRIMARY KEY,
+    age TEXT,
+    race TEXT,
+    sex TEXT
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::345][COVID file]]
+
+*** =data=
+
+**** =data.covid_{source}=
+
+This is where the data will be stored for each individual source (where =source= can take the values =official=, =usafacts=, =nyt=, etc...)
+
+#+BEGIN_SRC sql
+CREATE TABLE data.covid_official
+(
+    vintage TIMESTAMP,
+    dt DATE,
+    location BIGINT REFERENCES meta.locations (location),
+    variable_id SMALLINT REFERENCES meta.covid_variables (id),
+    demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
+    value REAL,
+    provider INT REFERENCES data.covid_providers (id) NOT NULL,
+    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/003_covid_individual_sources.sql::1][COVID File]]
+
+**** =data.covid_observations=
+
+We will combine data from each of the sources into this table
+
+#+BEGIN_SRC sql
+CREATE TABLE data.covid_observations
+(
+    vintage TIMESTAMP,
+    dt DATE,
+    location BIGINT REFERENCES meta.locations (location),
+    variable_id SMALLINT REFERENCES meta.covid_variables (id),
+    demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
+    value REAL,
+    provider INT REFERENCES data.covid_providers (id) NOT NULL,
+    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+);
+#+END_SRC
+
+[[file:~/covid/can-scrapers/db/schemas/002_covid_data.sql::1][COVID File]]
+
+** Cross references
+
+As seen in [[=data.covid_observations=]], an observation is defined by:
+
+- =vintage=
+- =dt=
+- =location=
+- =variable_id=
+- =demographic_id=
+* Scraper Library
+
+The scrapers are defined by 4 operations:
+
+1. Fetch: Retrieves raw data from dashboard
+2. Normalize: Ingests raw data and spits out normalized data
+3. Validate: Makes sure that the new normalized data is sensible
+4. Put: Puts data into our database
+
+#+CAPTION: Scraper flow chart
+#+NAME: fig:CANSRAPERS
+[[file:static/CAN_scrapers.png]]
+
+** =DatasetBase= and relevant subclasses
+
+*** =DatasetBase=
+
+This is the most important base class and all scrapers will inherit from it (as their last parent).
+
+It is found in =can-scrapers/can_tools/scrapers/base.py=
+
+*Methods that must be defined*:
+
+- =fetch=
+- =normalize=
+
+*Methods that you are likely to use**
+
+- =_retrieve_vintage=
+- =_retrieve_dt=
+- =extract_CMU=
+
+*** =StateDashboard= or =CountyDashboard=
+
+This is another class that you are likely to use and is used when we don't have another subclass that specializes in extracting data from that particular dashboard
+
+It is found in =can-scrapers/can_tools/scrapers/official/base.py=
+
+*** =ArcGIS=
+
+This subclass specializes in extracting information from an ArcGIS dashboard (which are most of the current scrapers).
+
+*Properties that must be defined*
+
+- =ARCGIS_ID=
+
+*Methods that you are likely to use*
+
+- =get_all_jsons=
+- =arcgis_jsons_to_df=
+
+* Scraper Infrastructure
+
+The overall microservice architecture we use is shown in the diagram below:
+
+#+CAPTION: Infrastructure flow chart
+#+NAME: fig:IFC
+https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png
+
+In, words, these components are:
+
+1. Scrapers: these are open source scrapers written in Python. The repository is here https://github.com/covid-projections/can-scrapers
+2. Database: we store all data in a postgrestql database
+3. API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
+4. Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
+5. API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
+6. Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
+
+* Getting Started, Development Notes
+
+** Creating a development environment
+
+1. Install =conda= (either anaconda or miniconda)
+2. Create a conda environment for this project, =conda create can-tools python=3.6=
+3. Activate the environment, =conda activate can-tools=
+4. Move your command line or terminal into the =can-scrapers= directory
+5. Install the required packages, =pip install -r requirements-dev.txt=
+6. Install development version of the =can-tools= package, =pip install -e .=
+
+** Setting up VS Code
+
+   Steps to set up VS code:
+
+   - Install =python= and =pylance= VS code extensions
+   - Reload vs code window
+   - Open =can-scrapers= directory in VS code
+   - Select the =can-tools= conda environment as the workspace interpreter.
+
+   Please do not push any changes made to the =.vscode= directory. That has some
+   shared settings, but will also be overwritten by the absolute path to the
+   conda environment on your machine. This path is unlikely to match exactly
+   with the path for any other team members
+
+** Writing a new scraper
+
+As seen in [[Scraper Library]], a scraper requires 4 methods:
+
+1. =fetch=
+2. =normalize=
+3. =validate=
+4. =put=
+
+Most scrapers will *not* require one to write the =validate= or =put= methods
+because the generic methods should be able to validate the data and dump it into
+the database
+
+* Example Scrapers
+
+- [[file:~/covid/can-scrapers/can_tools/scrapers/official/CA/ca_state.py][California State Dashboard Scraper (API Query)]]
+- [[file:~/covid/can-scrapers/can_tools/scrapers/official/FL/fl_state.py][Florida State Dashboard Scraper (ArcGIS)]]
