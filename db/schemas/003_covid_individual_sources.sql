@@ -2,7 +2,7 @@ CREATE TABLE data.covid_official
 (
     vintage TIMESTAMP,
     dt DATE,
-    location BIGINT REFERENCES meta.locations (location),
+    location_id INT REFERENCES meta.locations (id),
     variable_id SMALLINT REFERENCES meta.covid_variables (id),
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
@@ -17,7 +17,7 @@ CREATE TABLE data.covid_usafacts
 (
     vintage TIMESTAMP,
     dt DATE,
-    location BIGINT REFERENCES meta.locations (location),
+    location_id INT REFERENCES meta.locations (location),
     variable_id SMALLINT REFERENCES meta.covid_variables (id),
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
