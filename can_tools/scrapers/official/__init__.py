@@ -5,3 +5,5 @@ from can_tools.scrapers.official.FL import Florida
 # from can_tools.scrapers.official.MA import Massachusetts
 # from can_tools.scrapers.official.NY import NewYork
 # from can_tools.scrapers.official.TX import Texas
+
+from can_tools.scrapers.official.Fed_CDC import CDCCovidDataTracker

@@ -1,0 +1,1 @@
+from can_tools.scrapers.official.Fed_CDC.cdc_coviddatatracker import CDCCovidDataTracker

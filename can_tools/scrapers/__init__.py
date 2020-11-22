@@ -12,4 +12,5 @@ from can_tools.scrapers.official import (
     # Massachusetts,
     # NewYork,
     # Texas,
+    CDCCovidDataTracker,
 )
