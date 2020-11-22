@@ -138,7 +138,11 @@ Change log
 INSERT INTO meta.covid_measurement (name)
 VALUES ('cumulative'),
        ('new'),
-       ('current');
+       ('current'),
+       ('new_7_day'),
+       ('new_14_day'),
+       ('rolling_average_7_day'),
+       ('rolling_average_14_day');
 
 
 CREATE TABLE meta.covid_unit
@@ -169,6 +173,7 @@ Change log
 
 INSERT INTO meta.covid_unit (name)
 VALUES ('people'),
+       ('people_per_100k'),
        ('percentage'),
        ('specimens'),
        ('test_encounters'),
@@ -189,8 +194,10 @@ CREATE TABLE meta.covid_variables
 INSERT INTO meta.covid_variables (category, measurement, unit)
 VALUES ('cases', 'cumulative', 'people'),
        ('cases', 'new', 'people'),
+       ('cases', 'rolling_average_7_day'),
        ('deaths', 'cumulative', 'people'),
        ('deaths', 'new', 'people'),
+       ('deaths', 'rolling_average_7_day'),
 
        ('hospital_beds_in_use_covid', 'cumulative', 'beds'),
        ('hospital_beds_in_use_covid', 'new', 'beds'),
@@ -339,7 +346,10 @@ VALUES ('cases', 'cumulative', 'people'),
        ('pcr_tests_positive', 'new', 'unknown'),
        ('unspecified_tests_total', 'new', 'unknown'),
        ('unspecified_tests_negative', 'new', 'unknown'),
-       ('unspecified_tests_positive', 'new', 'unknown');
+       ('unspecified_tests_positive', 'new', 'unknown')
+
+       ('pcr_tests_positive', 'rolling_average_7_day', 'percent'),
+       ('pcr_tests_total', 'rolling_average_7_day', 'new');
 
 
 CREATE TABLE meta.covid_demographics
