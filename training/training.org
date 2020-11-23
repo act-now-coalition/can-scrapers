@@ -4,13 +4,6 @@
 
 All of the code and documentation for the Covid Act Now (CAN) scrapers, including this document, is in the [[https://github.com/covid-projections/can-scrapers][can-scrapers]] Github repository. We will refer to various folders within this repository throughout this document.
 
-* Data Engineering Team
-
-The data engineering team currently consists of:
-
-- Chase Coleman
-- Spencer Lyon
-
 * COVID Data
 
 ** Cases and deaths
@@ -68,153 +61,218 @@ Imagine that Alice and Bob both go to get tested on April 1, 2020. Two specimen 
 
 The preferred metric at CAN is (currently) to count PCR test encounters. This will not always be available so its important that we collect whatever is available even if it isn't what we "want".
 
+* Scraper Infrastructure
+
+The overall microservice architecture we use is shown in the diagram below:
+
+#+CAPTION: Infrastructure flow chart
+#+NAME: fig:IFC
+https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png
+
+In, words, these components are:
+
+1. Scrapers: these are open source scrapers written in Python. The repository is here https://github.com/covid-projections/can-scrapers
+2. Database: we store all data in a postgrestql database
+3. API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
+4. Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
+5. API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
+6. Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
+
+
 * Database
+All of the data that is collected is stored in a PostgreSQL database hosted on
+Google Cloud. This database is structured in three schemas:
 
-All of the data that is collected is stored in a PostgreSQL database hosted on Google Cloud. This database is structured in three schemas:
-
-1. =api= : This is the public facing schema. It does not contain any tables itself but rather contains views and materialized views
+1. =api= : This is the public facing schema. It does not contain any tables
+   itself but rather contains views and materialized views
 2. =data= : This schema is where data that is collected is stored
-3. =meta= : This schema contains meta information about geographies and variables. It is information that will only be changed/updated infrequently.
+3. =meta= : This schema contains meta information about geographies and
+   variables. It is information that will only be changed/updated infrequently.
 
-We will now discuss a few important tables from these schemas and discuss how they referentially fit together
+** =data.covid_official=
 
-** Schemas and tables
+The web scrapers we write place data in the table =data.covid_official=
 
-*** =meta=
-
-**** =meta.locations=
-
-This table contains information on the various types of locations that we can describe
-
-#+BEGIN_SRC sql
-CREATE TABLE meta.locations (
-  id SERIAL PRIMARY KEY,
-  location BIGINT,
-  location_type SMALLINT REFERENCES meta.location_type (id),
-  state text,
-  name text,
-  area real,
-  latitude real,
-  longitude real,
-  fullname text
-);
-#+END_SRC
-
-The most important (non-obvious) columns are discussed below:
-
-- =id= : An internal identifier used to ensure that each geography has a unique identification key
-- =location= : An identifer more used for joining and reference purposes
-- =location_type= : References another table that keeps track of the types of geographies that we can reference -- We need for potential conflicts such as a 5 digit zip code conflicting with a 5 digit FIPS code
-- =name= or =fullname= : These are a text name for the geography and will often have the same value but may differ in cases like "St. Louis" (=name=) `vs "St. Louis City"|"St. Louis County" (=fullname=).
-
-**** =meta.covid_categories=
-
-This table contains information on the different COVID "sub-categories" (variables) and their corresponding category
-
-#+BEGIN_SRC sql
-CREATE TABLE meta.covid_categories
-(
-    category TEXT,
-    subcategory TEXT UNIQUE,
-    PRIMARY KEY (category, subcategory)
-);
-#+END_SRC
-
-[[file:../db/schemas/002_covid_data.sql::10][COVID file]]
-
-**** =meta.covid_measurement=
-
-This table contains information on the different types of measurement classification for certain variables, namely: cumulative, current, new
-
-#+BEGIN_SRC sql
-CREATE TABLE meta.covid_measurement
-(
-    name TEXT UNIQUE PRIMARY KEY
-);
-#+END_SRC
-
-[[file:../db/schemas/002_covid_data.sql::125][COVID file]]
-
-**** =meta.covid_unit=
-
-This table contains information on the unit that the data is being reported in
-
-#+BEGIN_SRC sql
-CREATE TABLE meta.covid_unit
-(
-    name TEXT UNIQUE PRIMARY KEY
-);
-#+END_SRC
-
-[[file:../db/schemas/002_covid_data.sql::144][COVID file]]
-
-**** =meta.covid_demographics=
-
-This contains information on the demographics being reported
-
-#+BEGIN_SRC sql
-CREATE TABLE meta.covid_demographics
-(
-    id SERIAL PRIMARY KEY,
-    age TEXT,
-    race TEXT,
-    sex TEXT
-);
-#+END_SRC
-
-[[file:../db/schemas/002_covid_data.sql::345][COVID file]]
-
-*** =data=
-
-**** =data.covid_{source}=
-
-This is where the data will be stored for each individual source (where =source= can take the values =official=, =usafacts=, =nyt=, etc...)
+We'll review this table and then fill in the details on the foreign key
+relationships
 
 #+BEGIN_SRC sql
 CREATE TABLE data.covid_official
 (
     vintage TIMESTAMP,
     dt DATE,
-    location BIGINT REFERENCES meta.locations (location),
+    location_id BIGINT REFERENCES meta.locations (id),
     variable_id SMALLINT REFERENCES meta.covid_variables (id),
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
     provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
 );
 #+END_SRC
 
 [[file:../db/schemas/003_covid_individual_sources.sql::1][COVID File]]
 
-**** =data.covid_observations=
+The foreign key relationships are
 
-We will combine data from each of the sources into this table
+- The =meta.locations= table keeps track of all "locations" in our database. For
+  US states and counties this includes the US FIPS code
+- The =meta.covid_variables= table contains information on the variable, its
+  units, and form of measurement. We'll talk through this one in more detail
+- The =meta.covid_demographics= contains information on the age, rage, and sex
+  for individuals represented in the data observations.
+- =data.covid_providers= helps us keep track where this data comes from. We'll
+  look at this one also...
 
-#+BEGIN_SRC sql
-CREATE TABLE data.covid_observations
+** =meta.covid_variables=
+
+#+begin_src sql
+CREATE TABLE meta.covid_variables
 (
-    vintage TIMESTAMP,
-    dt DATE,
-    location BIGINT REFERENCES meta.locations (location),
-    variable_id SMALLINT REFERENCES meta.covid_variables (id),
-    demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
-    value REAL,
-    provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+    id SERIAL PRIMARY KEY,
+    category TEXT REFERENCES meta.covid_categories (subcategory),
+    measurement TEXT REFERENCES meta.covid_measurement (name),
+    unit TEXT REFERENCES meta.covid_unit (name)
 );
-#+END_SRC
 
-[[file:../db/schemas/002_covid_data.sql::1][COVID File]]
+INSERT INTO meta.covid_variables (category, measurement, unit)
+VALUES ('cases', 'cumulative', 'people'),
+       ('cases', 'new', 'people'),
+       ('deaths', 'cumulative', 'people'),
+       ('deaths', 'new', 'people'),
 
-** Cross references
+       ('hospital_beds_in_use_covid', 'cumulative', 'beds'),
+       ('hospital_beds_in_use_covid', 'new', 'beds'),
 
-As seen in [[=data.covid_observations=]], an observation is defined by:
+       ('hospital_beds_in_use_covid', 'current', 'beds'),
+       ('hospital_beds_in_use', 'current', 'beds'),
+       ('hospital_beds_available', 'current', 'beds'),
+       ('hospital_beds_capacity', 'current', 'beds'),
 
-- =vintage=
-- =dt=
-- =location=
-- =variable_id=
-- =demographic_id=
+       ('adult_icu_beds_in_use', 'current', 'beds'),
+       ('adult_icu_beds_in_use_covid', 'current', 'beds'),
+### many more rows!
+#+end_src
+
+Let's look at the [[file:~/valorum/covid/can-scrapers/db/schemas/002_covid_data.sql::CREATE TABLE meta.covid_variables][table]]
+
+** =data.covid_providers=
+
+Finally the =data.covid_providers= table
+
+#+begin_src sql
+  CREATE TABLE data.covid_providers
+  (
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE,
+      priority INT
+  );
+
+
+  INSERT INTO data.covid_providers (name, priority)
+  VALUES ('county', 1000),
+         ('state', 2000),
+         ('ny_times', 2500),
+         ('usafacts', 3000),
+         ('ctp', 4000),
+         ('hhs', 5000),
+         ('cdc', 6000)
+  ;
+#+end_src
+
+* Getting Started, Development Notes
+
+** Creating a development environment
+
+1. Install =conda= (either anaconda or miniconda)
+2. Create a conda environment for this project, =conda create -n can-scrapers python=3.6=
+3. Activate the environment, =conda activate can-scrapers=
+4. Move your command line or terminal into the =can-scrapers= directory
+5. Install the required packages, =pip install -r requirements-dev.txt=
+6. Install development version of the =can_tools= package, =pip install -e .=
+
+** Running tests locally
+*** Types of tests
+
+    We have written automated unit and integration tests using the =DatasetBase=
+    parent class.
+
+    The unit tests do the following:
+
+    - Verify that the =fetch= method runs without any network errors
+    - Verify that the =normalize= method returns a DataFrame that
+      - Is not empty
+      - Has the correct columns
+    - The =validate= method runs without any issues and returns =True=
+
+    The integration tests test that the =put= method can successfully load the
+    data into a test instance of the database (see below).
+
+*** Local database instance using Docker
+
+   We use a docker based workflow for running a local instance of the database.
+
+   In order to utilize this workflow, perform the following steps:
+
+   1. =cd= into the =db/= directory
+   2. Build the docker image with a command similar to =docker build -t can-scrapers/pg:latest=
+   3. Run the docker image, exposing port 5432 on your machine =docker run --rm -p
+      5432:5432 can-scrapers/pg:latest=
+   4. Leave your terminal window open so the database stays alive!
+
+   Note that you only need to repeat the build step if you change any of the
+   files in the =db/schemas= directory. If those are the same, you can skip
+   right to starting the container!
+
+*** Running tests
+
+    To run the full suite of unit tests, execute the following from the root of
+    the =can-scrapers= repository:
+
+    #+begin_src
+pytest -v .
+    #+end_src
+
+    Suppose you were working on a scraper for Wyoming and =Wyoming= was in the
+    name of the scraper class
+
+    To run tests only for =Wyoming= you could do
+
+    #+begin_src
+pytest -v -k Wyoming .
+    #+end_src
+
+    To run integration tests, first follow the steps above to build and start a
+    docker
+
+    Then you need to set the environment variable =PG_CONN_STR=. To do this in a
+    unix environment (Linux or OSX), run the following command
+
+    #+begin_src
+export PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432/covid"
+    #+end_src
+
+    If you are using Windows, set the environment variable by running
+
+    #+begin_src
+set PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432/covid"
+    #+end_src
+
+    With the environment variable set, you can repeat the =pytest= commands from above
+
+** Setting up VS Code
+
+   Steps to set up VS code:
+
+   - Install =python= and =pylance= VS code extensions
+   - Reload vs code window
+   - Open =can-scrapers= directory in VS code
+   - Select the =can-tools= conda environment as the workspace interpreter.
+
+   Please do not push any changes made to the =.vscode= directory. That has some
+   shared settings, but will also be overwritten by the absolute path to the
+   conda environment on your machine. This path is unlikely to match exactly
+   with the path for any other team members
+
 * Scraper Library
 
 The scrapers are defined by 4 operations:
@@ -266,49 +324,7 @@ This subclass specializes in extracting information from an ArcGIS dashboard (wh
 - =get_all_jsons=
 - =arcgis_jsons_to_df=
 
-* Scraper Infrastructure
-
-The overall microservice architecture we use is shown in the diagram below:
-
-#+CAPTION: Infrastructure flow chart
-#+NAME: fig:IFC
-https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png
-
-In, words, these components are:
-
-1. Scrapers: these are open source scrapers written in Python. The repository is here https://github.com/covid-projections/can-scrapers
-2. Database: we store all data in a postgrestql database
-3. API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
-4. Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
-5. API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
-6. Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
-
-* Getting Started, Development Notes
-
-** Creating a development environment
-
-1. Install =conda= (either anaconda or miniconda)
-2. Create a conda environment for this project, =conda create can-tools python=3.6=
-3. Activate the environment, =conda activate can-tools=
-4. Move your command line or terminal into the =can-scrapers= directory
-5. Install the required packages, =pip install -r requirements-dev.txt=
-6. Install development version of the =can-tools= package, =pip install -e .=
-
-** Setting up VS Code
-
-   Steps to set up VS code:
-
-   - Install =python= and =pylance= VS code extensions
-   - Reload vs code window
-   - Open =can-scrapers= directory in VS code
-   - Select the =can-tools= conda environment as the workspace interpreter.
-
-   Please do not push any changes made to the =.vscode= directory. That has some
-   shared settings, but will also be overwritten by the absolute path to the
-   conda environment on your machine. This path is unlikely to match exactly
-   with the path for any other team members
-
-** Writing a new scraper
+* Writing a new scraper
 
 As seen in [[Scraper Library]], a scraper requires 4 methods:
 
