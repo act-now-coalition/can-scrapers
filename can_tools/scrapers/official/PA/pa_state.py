@@ -15,8 +15,8 @@ class Pennsylvania(ArcGIS, DatasetBase):
     state_fips = int(us.states.lookup("Pennsylvania").fips)
     source = "https://experience.arcgis.com/experience/ed2def13f9b045eda9f7d22dbc9b500e"
 
-    # def fetch(self):
-    #     return self.get_all_jsons("Florida_COVID19_Cases", 0, 1)
+    def fetch(self):
+        return self.get_all_jsons("COVID_PA_Counties", 0, 1)
 
     # def normalize(self, data):
     #     df = self.arcgis_jsons_to_df(data)
