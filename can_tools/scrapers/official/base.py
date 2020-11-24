@@ -11,7 +11,7 @@ from can_tools.scrapers.base import DatasetBase
 
 class StateDashboard:
     """
-    Definition of common parameters and values for scraping a State Dashbaord
+    Definition of common parameters and values for scraping a State Dashboard
 
     Attributes
     ----------
@@ -83,7 +83,7 @@ class CountyDashboard(StateDashboard):
     """
     Parent class for scrapers working directly with County dashbaards
 
-    See `StateDashbaord` for more information
+    See `StateDashboard` for more information
     """
 
     provider: str = "county"
@@ -94,9 +94,9 @@ class CountyDashboard(StateDashboard):
 
 class FederalDashboard(StateDashboard):
     """
-    Parent class for scrapers working directly with County dashbaards
+    Parent class for scrapers working directly with federal sources
 
-    See `StateDashbaord` for more information
+    See `StateDashboard` for more information
     """
 
     provider: str = "federal"
