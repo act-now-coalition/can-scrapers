@@ -9,7 +9,7 @@ from can_tools.scrapers.base import CMU, DatasetBase
 
 class CDCCovidDataTracker(CountyDashboard, DatasetBase):
     has_location = True
-    geo_type = "county"
+    location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
     def __init__(self, execution_dt: pd.Timestamp):

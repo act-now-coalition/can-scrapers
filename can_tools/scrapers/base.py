@@ -85,14 +85,26 @@ class DatasetBase(ABC):
         The type of data for this scraper. This is often set to "covid"
         by subclasses
 
+    pk : str
+        The primary key for the table named `table_name` -- For covid
+        data it will be
+        '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
+
     table_name: str
         The name of the database table where this data should be inserted
+
+    location_type: Optional[str]
+        Optional information used when a scraper only retrieves data about a
+        single type of geography. It will set the `"location_type"` column
+        to this value (when performing the `put`) if `"location_type"` is not
+        already set in the df
     """
 
     autodag: bool = True
     data_type: str = "general"
     pk: str
     table_name: str
+    location_type: Optional[str]
 
     def __init__(self, execution_dt: pd.Timestamp):
         # Set execution date information
@@ -431,6 +443,12 @@ class DatasetBase(ABC):
         success : bool
             Did the insert succeed. Always True if function completes
         """
+        # Check to see whether there's information on what geography
+        # type is being collected. If not, add a column using the
+        # `location_type` property of the scraper
+        if not "location_type" in list(df):
+            df["location_type"] = self.location_type
+
         if not hasattr(self, "pk"):
             msg = "field `pk` must be set for insertion"
             raise ValueError(msg)

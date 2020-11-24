@@ -36,13 +36,13 @@ class StateDashboard:
     provider = "state"
     data_type: str = "covid"
     has_location: bool
-    geo_type: str
     state_fips: int
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
         super(StateDashboard, self).__init__(execution_dt)
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
+
         if self.has_location:
             out = f"""
             INSERT INTO data.{table_name} (
@@ -51,15 +51,14 @@ class StateDashboard:
             SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
-            LEFT JOIN meta.locations loc ON tt.location=loc.location
-            LEFT JOIN meta.location_type loct on loc.location_type=loct.id
+            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.locations loc ON (loc.location_type=loct.id) AND (tt.location=loc.location)
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
             LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
-            INNER JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
-            WHERE loct.name='{self.geo_type}'
+            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE set value = excluded.value
             """
-        elif "county" in list(df):
+        elif "location_name" in list(df):
             out = f"""
             INSERT INTO data.{table_name} (
               vintage, dt, location_id, variable_id, demographic_id, value, provider
@@ -67,19 +66,15 @@ class StateDashboard:
             SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
-            LEFT JOIN meta.locations loc on tt.county=loc.name
-            LEFT JOIN meta.location_type loct on loc.location_type=loct.id
+            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.locations loc on (loc.location_type=loct.id) AND
+                                            (tt.location_name=loc.name) AND
+                                            (loc.state=LPAD({self.state_fips}::TEXT, 2, '0'))
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
             LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
-            INNER JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
-            WHERE (loc.state = LPAD({self.state_fips}::TEXT, 2, '0')) AND
-                  (loct.name = 'county')
+            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE SET value = excluded.value
             """
-        else:
-            msg = "None of the expected geographies were included in"
-            msg += " the insert DataFrame"
-            raise ValueError(msg)
 
         return textwrap.dedent(out)
 
@@ -420,8 +415,11 @@ class StateQueryAPI(StateDashboard, ABC):
 
             # Extract relevant records
             records = res["result"]["records"]
-            offset += self.count_current_records(res)
             keep_requesting = offset < self.count_total_records(res)
+
+            # Update offset
+            offset += self.count_current_records(res)
+            params["offset"] = offset
 
         return the_jsons
 
