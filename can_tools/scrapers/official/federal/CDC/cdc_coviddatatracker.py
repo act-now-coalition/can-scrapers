@@ -3,11 +3,13 @@ import requests
 import pandas as pd
 import us
 
+from can_tools.scrapers.official.base import CountyDashboard
 from can_tools.scrapers.base import CMU, DatasetBase
 
 
-class CDCCovidDataTracker(DatasetBase):
+class CDCCovidDataTracker(CountyDashboard, DatasetBase):
     has_location = True
+    geo_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
     def __init__(self, execution_dt: pd.Timestamp):
@@ -21,7 +23,7 @@ class CDCCovidDataTracker(DatasetBase):
 
         # Iterate through the states collecting the time-series data
         data = []
-        for state in us.STATES:
+        for state in us.STATES[:5]:
             # Update url to get the particular state we're working with
             res = requests.get(fetcher_url.format(state.abbr.lower()))
 
@@ -56,12 +58,12 @@ class CDCCovidDataTracker(DatasetBase):
             "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
                 category="pcr_tests_positive",
                 measurement="rolling_average_7_day",
-                unit="percent"
+                unit="percentage"
             ),
             "new_test_results_reported_7_day_rolling_average": CMU(
                 category="pcr_tests_total",
                 measurement="rolling_average_7_day",
-                unit="new"
+                unit="specimens"  # TODO: Need to ensure this is actually specimens!
             )
         }
 
@@ -70,5 +72,18 @@ class CDCCovidDataTracker(DatasetBase):
             id_vars=["dt", "location"], value_vars=crename.keys()
         ).dropna()
         out = self.extract_CMU(out, crename)
+        out["vintage"] = self._retrieve_vintage()
 
-        return out
+        cols_2_keep = [
+            "vintage",
+            "dt",
+            "location",
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "sex",
+            "value"
+        ]
+        return out.loc[:, cols_2_keep]

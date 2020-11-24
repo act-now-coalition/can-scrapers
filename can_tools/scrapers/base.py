@@ -251,7 +251,7 @@ class DatasetBase(ABC):
         -------
         success : bool
         """
-        fp = self._filepath("parquet", raw=False)
+        fp = self._filepath(raw=False)
 
         df.to_parquet(fp)
 
@@ -336,7 +336,7 @@ class DatasetBase(ABC):
         return success
 
     @abstractmethod
-    def normalize(self, data: str) -> pd.DataFrame:
+    def normalize(self, data: Any) -> pd.DataFrame:
         """
         The `normalize` method should take the data in its raw form
         (as a string) and then clean the data
@@ -369,7 +369,7 @@ class DatasetBase(ABC):
         data = self._read_raw()
 
         # Clean data using `_normalize`
-        df = self._normalize(data)
+        df = self.normalize(data)
         success = self._store_clean(df)
 
         return success

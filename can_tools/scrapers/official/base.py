@@ -31,10 +31,11 @@ class StateDashboard:
 
     """
     table_name: str = "covid_official"
-    pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
+    pk: str = '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
     provider = "state"
     data_type: str = "covid"
     has_location: bool
+    geo_type: str
     state_fips: int
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
@@ -44,22 +45,25 @@ class StateDashboard:
         if self.has_location:
             out = f"""
             INSERT INTO data.{table_name} (
-              vintage, dt, location, variable_id, demographic_id, value, provider
+              vintage, dt, location_id, variable_id, demographic_id, value, provider
             )
-            SELECT tt.vintage, tt.dt, tt.location, cv.id as variable_id,
+            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
+            LEFT JOIN meta.locations loc ON tt.location=loc.location
+            LEFT JOIN meta.location_type loct on loc.location_type=loct.id
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
             LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
             INNER JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
+            WHERE loct.name='{self.geo_type}'
             ON CONFLICT {pk} DO UPDATE set value = excluded.value
             """
         elif "county" in list(df):
             out = f"""
             INSERT INTO data.{table_name} (
-              vintage, dt, location, variable_id, demographic_id, value, provider
+              vintage, dt, location_id, variable_id, demographic_id, value, provider
             )
-            SELECT tt.vintage, tt.dt, loc.location, cv.id as variable_id,
+            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
             LEFT JOIN meta.locations loc on tt.county=loc.name
@@ -89,6 +93,18 @@ class CountyDashboard(StateDashboard):
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
         super(CountyDashboard, self).__init__(execution_dt)
+
+
+class FederalDashboard(StateDashboard):
+    """
+    Parent class for scrapers working directly with County dashbaards
+
+    See `StateDashbaord` for more information
+    """
+    provider: str = "federal"
+
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(FederalDashboard, self).__init__(execution_dt)
 
 
 class ArcGIS(StateDashboard):
