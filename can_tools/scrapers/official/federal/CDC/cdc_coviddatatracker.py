@@ -36,7 +36,8 @@ class CDCCovidDataTracker(CountyDashboard, DatasetBase):
         data_key = "integrated_county_timeseries_external_data"
         df = pd.concat(
             [pd.DataFrame.from_records(x[data_key]) for x in data],
-            axis=0, ignore_index=True
+            axis=0,
+            ignore_index=True,
         ).rename(columns={"fips_code": "location"})
 
         # Set datetime to the end of report window -- We'll be reporting
@@ -46,31 +47,25 @@ class CDCCovidDataTracker(CountyDashboard, DatasetBase):
 
         crename = {
             "new_cases_7_day_rolling_average": CMU(
-                category="cases",
-                measurement="rolling_average_7_day",
-                unit="people"
+                category="cases", measurement="rolling_average_7_day", unit="people"
             ),
             "new_deaths_7_day_rolling_average": CMU(
-                category="deaths",
-                measurement="rolling_average_7_day",
-                unit="people"
+                category="deaths", measurement="rolling_average_7_day", unit="people"
             ),
             "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
                 category="pcr_tests_positive",
                 measurement="rolling_average_7_day",
-                unit="percentage"
+                unit="percentage",
             ),
             "new_test_results_reported_7_day_rolling_average": CMU(
                 category="pcr_tests_total",
                 measurement="rolling_average_7_day",
-                unit="specimens"  # TODO: Need to ensure this is actually specimens!
-            )
+                unit="specimens",  # TODO: Need to ensure this is actually specimens!
+            ),
         }
 
         # Reshape and add variable information
-        out = df.melt(
-            id_vars=["dt", "location"], value_vars=crename.keys()
-        ).dropna()
+        out = df.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
         out = self.extract_CMU(out, crename)
         out["vintage"] = self._retrieve_vintage()
 
@@ -84,6 +79,6 @@ class CDCCovidDataTracker(CountyDashboard, DatasetBase):
             "age",
             "race",
             "sex",
-            "value"
+            "value",
         ]
         return out.loc[:, cols_2_keep]

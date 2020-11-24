@@ -30,6 +30,7 @@ class StateDashboard:
         Must be set by subclasses. The two digit state fips code (as an int)
 
     """
+
     table_name: str = "covid_official"
     pk: str = '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
     provider = "state"
@@ -89,6 +90,7 @@ class CountyDashboard(StateDashboard):
 
     See `StateDashbaord` for more information
     """
+
     provider: str = "county"
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
@@ -101,6 +103,7 @@ class FederalDashboard(StateDashboard):
 
     See `StateDashbaord` for more information
     """
+
     provider: str = "federal"
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
@@ -118,9 +121,14 @@ class ArcGIS(StateDashboard):
 
     in order to use this class
     """
+
     ARCGIS_ID: str
 
-    def __init__(self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Union[int, str]]] = None):
+    def __init__(
+        self,
+        execution_dt: pd.Timestamp,
+        params: Optional[Dict[str, Union[int, str]]] = None,
+    ):
         super(ArcGIS, self).__init__(execution_dt)
 
         # Default parameter values
@@ -166,8 +174,7 @@ class ArcGIS(StateDashboard):
         return out
 
     def get_single_json(
-        self, service: str, sheet: Union[str, int], srvid: str,
-        params: Dict[str, Any]
+        self, service: str, sheet: Union[str, int], srvid: str, params: Dict[str, Any]
     ) -> dict:
         """
         Execute request and return response json as dict
@@ -193,7 +200,7 @@ class ArcGIS(StateDashboard):
         return res.json()
 
     def get_all_jsons(
-            self, service: str, sheet: Union[str, int], srvid: str
+        self, service: str, sheet: Union[str, int], srvid: str
     ) -> List[Dict]:
         """
         Repeatedly request jsons until we have full dataset
@@ -251,9 +258,7 @@ class ArcGIS(StateDashboard):
 
         return df
 
-    def arcgis_jsons_to_df(
-        self, data: List[Dict]
-    ) -> pd.DataFrame:
+    def arcgis_jsons_to_df(self, data: List[Dict]) -> pd.DataFrame:
         """
         Obtain all data in a particular ArcGIS service sheet as a DataFrame
 
@@ -269,8 +274,7 @@ class ArcGIS(StateDashboard):
         """
         # Concat data
         return pd.concat(
-            [self.arcgis_json_to_df(x) for x in data],
-            axis=0, ignore_index=True
+            [self.arcgis_json_to_df(x) for x in data], axis=0, ignore_index=True
         )
 
 
@@ -284,11 +288,11 @@ class SODA(StateDashboard):
 
     in order to use this class
     """
+
     baseurl: str
 
     def __init__(
-            self, execution_dt: pd.Timestamp,
-            params: Optional[Dict[str, Any]] = None
+        self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Any]] = None
     ):
         super(SODA, self).__init__()
         self.params = params
@@ -341,6 +345,7 @@ class StateQueryAPI(StateDashboard, ABC):
     """
     Fetch data from OpenDataCali service
     """
+
     apiurl: str
 
     def count_current_records(self, res_json):
@@ -391,9 +396,7 @@ class StateQueryAPI(StateDashboard, ABC):
         """
         return res_json["result"]["records"]
 
-    def raw_from_api(
-            self, resource_id: str, limit: int = 1000, **kwargs
-    ) -> List[Dict]:
+    def raw_from_api(self, resource_id: str, limit: int = 1000, **kwargs) -> List[Dict]:
         """
         Retrieves the raw data from the api. It assumes that data is
         stored in a json file as it is read in
@@ -422,9 +425,7 @@ class StateQueryAPI(StateDashboard, ABC):
 
         return the_jsons
 
-    def data_from_raw(
-        self, data
-    ) -> pd.DataFrame:
+    def data_from_raw(self, data) -> pd.DataFrame:
         """
         Retrieves extracts data from the raw jsons (or other format)
 
@@ -440,5 +441,6 @@ class StateQueryAPI(StateDashboard, ABC):
         """
         return pd.concat(
             [pd.DataFrame(self.extract_data_from_json(x)) for x in data],
-            axis=0, ignore_index=True
+            axis=0,
+            ignore_index=True,
         )

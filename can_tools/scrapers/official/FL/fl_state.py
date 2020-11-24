@@ -9,6 +9,7 @@ class Florida(ArcGIS, DatasetBase):
     """
     Fetch county level covid data from Florida's ARCGIS dashboard
     """
+
     ARCGIS_ID = "CY1LXxl9zlJeBuRZ"
     has_location = True
     state_fips = int(us.states.lookup("Florida").fips)

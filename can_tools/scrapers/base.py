@@ -88,9 +88,10 @@ class DatasetBase(ABC):
     table_name: str
         The name of the database table where this data should be inserted
     """
+
     autodag: bool = True
     data_type: str = "general"
-    pk : str
+    pk: str
     table_name: str
 
     def __init__(self, execution_dt: pd.Timestamp):
@@ -101,7 +102,7 @@ class DatasetBase(ABC):
         if "DATAPATH" in os.environ.keys():
             self.base_path = Path(os.environ["DATAPATH"])
         else:
-            self.base_path = Path.home()/".can-data"
+            self.base_path = Path.home() / ".can-data"
 
         # Make sure the storage path exists and create if not
         if not self.base_path.exists():

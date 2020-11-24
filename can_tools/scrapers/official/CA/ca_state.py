@@ -15,6 +15,7 @@ class California(StateQueryAPI, DatasetBase):
     """
     Fetch county level covid data from California state dashbaord
     """
+
     apiurl = "https://data.ca.gov/api/3/action/datastore_search"
     source = "https://covid19.ca.gov/state-dashboard"
     state_fips = int(us.states.lookup("California").fips)
@@ -130,9 +131,7 @@ class California(StateQueryAPI, DatasetBase):
         )
 
         # Reshape
-        out = df.melt(
-            id_vars=["dt", "county"], value_vars=crename.keys()
-        ).dropna()
+        out = df.melt(id_vars=["dt", "county"], value_vars=crename.keys()).dropna()
 
         # Determine the category and demographics of each observation
         out = self.extract_CMU(out, crename)
@@ -156,9 +155,7 @@ class California(StateQueryAPI, DatasetBase):
         cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
         hospitals = self.normalize_hospitals(data["hospitals"])
 
-        out = pd.concat(
-            [cases_deaths, hospitals], axis=0, ignore_index=True, sort=True
-        )
+        out = pd.concat([cases_deaths, hospitals], axis=0, ignore_index=True, sort=True)
         out["vintage"] = self._retrieve_vintage()
 
         return out
