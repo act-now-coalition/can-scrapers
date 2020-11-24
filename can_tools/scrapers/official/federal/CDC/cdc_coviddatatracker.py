@@ -3,11 +3,11 @@ import requests
 import pandas as pd
 import us
 
-from can_tools.scrapers.official.base import CountyDashboard
+from can_tools.scrapers.official.base import FederalDashboard
 from can_tools.scrapers.base import CMU, DatasetBase
 
 
-class CDCCovidDataTracker(CountyDashboard, DatasetBase):
+class CDCCovidDataTracker(FederalDashboard, DatasetBase):
     has_location = True
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
