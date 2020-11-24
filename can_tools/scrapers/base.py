@@ -435,7 +435,7 @@ class DatasetBase(ABC):
             msg = "field `pk` must be set for insertion"
             raise ValueError(msg)
 
-        return self._put_exec(connstr, df, self.tablename, self.pk)
+        return self._put_exec(connstr, df, self.table_name, self.pk)
 
     def _put(self, connstr: str) -> None:
         """
