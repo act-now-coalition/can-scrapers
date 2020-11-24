@@ -94,7 +94,7 @@ class CountyDashboard(StateDashboard):
 
 class FederalDashboard(StateDashboard):
     """
-    Parent class for scrapers working directly with County dashbaards
+    Parent class for scrapers working directly with federal sources
 
     See `StateDashbaord` for more information
     """
