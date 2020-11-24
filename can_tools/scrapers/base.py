@@ -460,7 +460,9 @@ class DatasetBase(ABC):
 
         return success
 
-    def _put_exec(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str) -> None:
+    def _put_exec(
+        self, connstr: str, df: pd.DataFrame, table_name: str, pk: str
+    ) -> None:
         "Internal _put method for dumping data using TempTable class"
         temp_name = "__" + table_name + str(random.randint(1000, 9999))
 
@@ -471,6 +473,5 @@ class DatasetBase(ABC):
                 sql = self._insert_query(df, table_name, temp_name, pk)
                 res = conn.execute(sql)
                 print(f"Inserted {res.rowcount} rows into {table_name}")
-
 
         return True
