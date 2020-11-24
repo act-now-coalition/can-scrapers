@@ -416,7 +416,7 @@ class DatasetBase(ABC):
 
         return validated
 
-    def put(self, connstr: str) -> None:
+    def put(self, connstr: str, df: pd.DataFrame) -> bool:
         """
         Read DataFrame `df` from storage and put into corresponding
         PostgreSQL database
@@ -428,19 +428,39 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        None
-
+        success : bool
+            Did the insert succeed. Always True if function completes
         """
-        # Load cleaned data
-        df = self._read_clean()
-
         if not hasattr(self, "pk"):
             msg = "field `pk` must be set for insertion"
             raise ValueError(msg)
 
-        self._put(connstr, df, self.table_name, self.pk)
+        return self._put_exec(connstr, df, self.tablename, self.pk)
 
-    def _put(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str) -> None:
+    def _put(self, connstr: str) -> None:
+        """
+        Read DataFrame `df` from storage and put into corresponding
+        PostgreSQL database
+
+        Parameters
+        ----------
+        connstr : str
+            String containing connection URI for connecting to postgres database
+
+        Returns
+        -------
+        success : bool
+            Did the insert succeed. Always True if function completes
+        """
+        # Load cleaned data
+        df = self._read_clean()
+
+        # Execute the put
+        success = self.put(connstr, df)
+
+        return success
+
+    def _put_exec(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str) -> None:
         "Internal _put method for dumping data using TempTable class"
         temp_name = "__" + table_name + str(random.randint(1000, 9999))
 
@@ -451,3 +471,6 @@ class DatasetBase(ABC):
                 sql = self._insert_query(df, table_name, temp_name, pk)
                 res = conn.execute(sql)
                 print(f"Inserted {res.rowcount} rows into {table_name}")
+
+
+        return True

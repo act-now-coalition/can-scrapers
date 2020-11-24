@@ -23,7 +23,7 @@ class CDCCovidDataTracker(CountyDashboard, DatasetBase):
 
         # Iterate through the states collecting the time-series data
         data = []
-        for state in us.STATES[:5]:
+        for state in us.STATES:
             # Update url to get the particular state we're working with
             res = requests.get(fetcher_url.format(state.abbr.lower()))
 
