@@ -4,7 +4,7 @@ import pandas as pd
 import pyppeteer
 import us
 
-from can_tools.scrapers.base import DatasetBaseNoDate, CMU
+from can_tools.scrapers.base import DatasetBase, CMU
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.puppet import TableauNeedsClick
 

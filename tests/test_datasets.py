@@ -31,7 +31,7 @@ def _covid_dataset_tests(cls, df):
     if has_location:
         assert "location" in cols
     else:
-        assert "county" in cols
+        assert "location_name" in cols
 
 
 def _test_data_structure(cls, df):

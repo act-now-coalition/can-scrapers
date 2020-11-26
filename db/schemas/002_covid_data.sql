@@ -133,12 +133,17 @@ Change log
 ----------
 * 2020-10-27: Created `meta.covid_measurement` and added the "cumulative" and "new" values
 * 2020-11-05: Created the "current" value
+* 2020-11-23: Created new value for "rolling_average_7_day"
 ';
 
 INSERT INTO meta.covid_measurement (name)
 VALUES ('cumulative'),
        ('new'),
-       ('current');
+       ('current'),
+       ('new_7_day'),
+       ('new_14_day'),
+       ('rolling_average_7_day'),
+       ('rolling_average_14_day');
 
 
 CREATE TABLE meta.covid_unit
@@ -169,6 +174,7 @@ Change log
 
 INSERT INTO meta.covid_unit (name)
 VALUES ('people'),
+       ('people_per_100k'),
        ('percentage'),
        ('specimens'),
        ('test_encounters'),
@@ -189,8 +195,10 @@ CREATE TABLE meta.covid_variables
 INSERT INTO meta.covid_variables (category, measurement, unit)
 VALUES ('cases', 'cumulative', 'people'),
        ('cases', 'new', 'people'),
+       ('cases', 'rolling_average_7_day', 'people'),
        ('deaths', 'cumulative', 'people'),
        ('deaths', 'new', 'people'),
+       ('deaths', 'rolling_average_7_day', 'people'),
 
        ('hospital_beds_in_use_covid', 'cumulative', 'beds'),
        ('hospital_beds_in_use_covid', 'new', 'beds'),
@@ -339,7 +347,10 @@ VALUES ('cases', 'cumulative', 'people'),
        ('pcr_tests_positive', 'new', 'unknown'),
        ('unspecified_tests_total', 'new', 'unknown'),
        ('unspecified_tests_negative', 'new', 'unknown'),
-       ('unspecified_tests_positive', 'new', 'unknown');
+       ('unspecified_tests_positive', 'new', 'unknown'),
+
+       ('pcr_tests_positive', 'rolling_average_7_day', 'percentage'),
+       ('pcr_tests_total', 'rolling_average_7_day', 'specimens');
 
 
 CREATE TABLE meta.covid_demographics
@@ -372,6 +383,7 @@ CREATE TABLE data.covid_providers
 INSERT INTO data.covid_providers (name, priority)
 VALUES ('county', 1000),
        ('state', 2000),
+       ('federal', 2500),
        ('usafacts', 3000),
        ('ctp', 4000),
        ('hhs', 5000)
@@ -387,7 +399,7 @@ CREATE TABLE data.covid_observations
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
     provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
 );
 
 COMMENT ON TABLE data.covid_observations IS E'This table contains all of the collected data from various COVID sources.';
