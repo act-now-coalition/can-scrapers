@@ -13,4 +13,5 @@ from can_tools.scrapers.official import (
     # NewYork,
     # Texas,
     CDCCovidDataTracker,
+    HHSTimeSeries,
 )
