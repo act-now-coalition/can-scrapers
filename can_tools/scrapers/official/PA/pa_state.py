@@ -24,8 +24,8 @@ class Pennsylvania(ArcGIS, DatasetBase):
         # Data for cases, deaths, and testing
         raw_data["cases_deaths"] = self.get_all_jsons("COVID_PA_Counties", 0, 1)
 
-        # Data for hospital beds/ICU for a single day only
-        raw_data["hospitals"] = self.get_all_jsons("covid_hosp_single_day", 0, 1)
+        # Data for hospital beds/ICU
+        raw_data["hospitals"] = self.get_all_jsons("covid_hosp", 0, 1)
         return raw_data
 
     def normalize(self, data) -> pd.DataFrame:
