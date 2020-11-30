@@ -16,9 +16,20 @@ class Pennsylvania(ArcGIS, DatasetBase):
     source = "https://experience.arcgis.com/experience/ed2def13f9b045eda9f7d22dbc9b500e"
 
     def fetch(self):
-        return self.get_all_jsons("COVID_PA_Counties", 0, 1)
+        raw_data = {}
+        raw_data["cases_deaths"] = self.get_all_jsons("COVID_PA_Counties", 0, 1)
+        raw_data["hospitals"] = self.get_all_jsons("covid_hosp", 0, 1)
+        return raw_data
 
-    def normalize(self, data):
+    def normalize(self, data) -> pd.DataFrame:
+        cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
+        hospitals = self.normalize_hospitals(data["hospitals"])
+
+        out = pd.concat([cases_deaths, hospitals], axis=0, ignore_index=True, sort=True)
+        out["vintage"] = self._retrieve_vintage()
+        return out
+
+    def normalize_cases_deaths(self, data) -> pd.DataFrame:
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
 
@@ -31,14 +42,14 @@ class Pennsylvania(ArcGIS, DatasetBase):
                 unit="people",
             ),
             "negative": CMU(
-                category="unspecified_tests_negative",
+                category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="unique_people",
             ),
             "confirmed": CMU(
-                category="unspecified_tests_positive",
+                category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="unique_people",
             ),
         }
         out = (
@@ -67,6 +78,9 @@ class Pennsylvania(ArcGIS, DatasetBase):
         ]
 
         return out.loc[:, cols_to_keep]
+
+    def normalize_hospitals(self, data) -> pd.DataFrame:
+        return 1
 
     def validate(self, df, df_hist):
         return True
