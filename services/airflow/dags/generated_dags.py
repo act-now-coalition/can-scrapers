@@ -1,6 +1,7 @@
 from airflow import DAG
-from can_tools.scrapers.base import DatasetBaseNoDate, DatasetBaseNeedsDate
-from common import default_dag_kw, getput_no_date, getput_needs_date
+from can_tools.scrapers.base import DatasetBase
+from common import (default_dag_kw, make_fetch_op, make_normalize_op,
+                    make_put_op, make_validate_op)
 
 
 def _prep_kw(ix, cls, suffix):
@@ -18,29 +19,23 @@ def _prep_kw(ix, cls, suffix):
     sched = "{min} {hr} * * *".format(min=minute, hr=hour)
 
     return default_dag_kw(
-        dag_id="{}_{}".format(cls.__name__, suffix), schedule_interval=sched,
+        dag_id="{}_{}".format(cls.__name__, suffix),
+        schedule_interval=sched,
     )
-
-
-def make_nodate_dag(ix, cls):
-    with DAG(**_prep_kw(ix, cls, "nodate")) as dag:
-        op = getput_no_date(cls, task_id="getput")
-    return dag
-
-
-for ix, cls in enumerate(DatasetBaseNoDate.__subclasses__()):
-    if not cls.autodag:
-        continue
-    globals()["dag_{}".format(cls.__name__)] = make_nodate_dag(ix, cls)
 
 
 def make_needsdate_dag(ix, cls):
     with DAG(**_prep_kw(ix, cls, "needs_date")) as dag:
-        op = getput_needs_date(cls, task_id="getput")
+        fetch = make_fetch_op(cls)
+        normalize = make_normalize_op(cls)
+        validate = make_validate_op(cls)
+        put = make_put_op(cls)
+
+        fetch >> normalize >> validate >> put
     return dag
 
 
-for ix, cls in enumerate(DatasetBaseNeedsDate.__subclasses__()):
+for ix, cls in enumerate(DatasetBase.__subclasses__()):
     if not cls.autodag:
         continue
     globals()["dag_{}".format(cls.__name__)] = make_needsdate_dag(ix, cls)

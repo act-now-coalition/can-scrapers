@@ -105,6 +105,7 @@ class DatasetBase(ABC):
     pk: str
     table_name: str
     location_type: Optional[str]
+    base_path: Path
 
     def __init__(self, execution_dt: pd.Timestamp):
         # Set execution date information
@@ -119,6 +120,15 @@ class DatasetBase(ABC):
         # Make sure the storage path exists and create if not
         if not self.base_path.exists():
             self.base_path.mkdir(parents=True)
+
+    def quit_early(self) -> bool:
+        """
+        Whether or not to bail on this scraper before starting
+
+        Hook to allow subclasses to quit early based on self.execution_dt
+        """
+
+        return False
 
     def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the current datetime in a specific timezone"""
