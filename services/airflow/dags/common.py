@@ -37,14 +37,14 @@ def getput_no_date(cls, task_id="getput") -> PythonOperator:
 
 
 def make_fetch_op(cls, task_id="fetch") -> PythonOperator:
-    def inner(ds, **kw):
-        dt = pd.to_datetime(ds)
+    def inner(ts, **kw):
+        dt = pd.to_datetime(ts)
         c: DatasetBase = cls(execution_dt=dt)
         if c.quit_early():
             print("Requested to quit early -- bailing")
             return
 
-        print(f"dt: {dt} and ds: {ds}")
+        print(f"dt: {dt} and ts: {ts}")
         print("About to fetch...")
         try:
             print("Running with base path:", c.base_path)
@@ -62,10 +62,10 @@ def make_fetch_op(cls, task_id="fetch") -> PythonOperator:
 
 
 def make_normalize_op(cls, task_id="normalize") -> PythonOperator:
-    def inner(ds, **kw):
-        dt = pd.to_datetime(ds)
+    def inner(ts, **kw):
+        dt = pd.to_datetime(ts)
         c: DatasetBase = cls(execution_dt=dt)
-        print(f"dt: {dt} and ds: {ds}")
+        print(f"dt: {dt} and ts: {ts}")
         print("About to normalize...")
         try:
             stored = c._normalize()
@@ -81,10 +81,10 @@ def make_normalize_op(cls, task_id="normalize") -> PythonOperator:
 
 
 def make_validate_op(cls, task_id="validate") -> PythonOperator:
-    def inner(ds, **kw):
-        dt = pd.to_datetime(ds)
+    def inner(ts, **kw):
+        dt = pd.to_datetime(ts)
         c: DatasetBase = cls(execution_dt=dt)
-        print(f"dt: {dt} and ds: {ds}")
+        print(f"dt: {dt} and ts: {ts}")
         print("About to validate...")
         try:
             is_valid = c._validate()
@@ -100,11 +100,11 @@ def make_validate_op(cls, task_id="validate") -> PythonOperator:
 
 
 def make_put_op(cls, task_id="put") -> PythonOperator:
-    def inner(ds, **kw):
-        dt = pd.to_datetime(ds)
+    def inner(ts, **kw):
+        dt = pd.to_datetime(ts)
         c: DatasetBase = cls(execution_dt=dt)
         connstr = PostgresHook(postgres_conn_id="postgres_covid").get_uri()
-        print(f"dt: {dt} and ds: {ds}")
+        print(f"dt: {dt} and ts: {ts}")
         print("About to put...")
         try:
             is_valid = c._put(connstr)
