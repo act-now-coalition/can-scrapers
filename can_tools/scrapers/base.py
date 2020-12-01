@@ -85,13 +85,27 @@ class DatasetBase(ABC):
         The type of data for this scraper. This is often set to "covid"
         by subclasses
 
+    pk : str
+        The primary key for the table named `table_name` -- For covid
+        data it will be
+        '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
+
     table_name: str
         The name of the database table where this data should be inserted
+
+    location_type: Optional[str]
+        Optional information used when a scraper only retrieves data about a
+        single type of geography. It will set the `"location_type"` column
+        to this value (when performing the `put`) if `"location_type"` is not
+        already set in the df
     """
+
     autodag: bool = True
     data_type: str = "general"
-    pk : str
+    pk: str
     table_name: str
+    location_type: Optional[str]
+    base_path: Path
 
     def __init__(self, execution_dt: pd.Timestamp):
         # Set execution date information
@@ -101,11 +115,20 @@ class DatasetBase(ABC):
         if "DATAPATH" in os.environ.keys():
             self.base_path = Path(os.environ["DATAPATH"])
         else:
-            self.base_path = Path.home()/".can-data"
+            self.base_path = Path.home() / ".can-data"
 
         # Make sure the storage path exists and create if not
         if not self.base_path.exists():
             self.base_path.mkdir(parents=True)
+
+    def quit_early(self) -> bool:
+        """
+        Whether or not to bail on this scraper before starting
+
+        Hook to allow subclasses to quit early based on self.execution_dt
+        """
+
+        return False
 
     def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the current datetime in a specific timezone"""
@@ -251,7 +274,7 @@ class DatasetBase(ABC):
         -------
         success : bool
         """
-        fp = self._filepath("parquet", raw=False)
+        fp = self._filepath(raw=False)
 
         df.to_parquet(fp)
 
@@ -336,7 +359,7 @@ class DatasetBase(ABC):
         return success
 
     @abstractmethod
-    def normalize(self, data: str) -> pd.DataFrame:
+    def normalize(self, data: Any) -> pd.DataFrame:
         """
         The `normalize` method should take the data in its raw form
         (as a string) and then clean the data
@@ -369,7 +392,7 @@ class DatasetBase(ABC):
         data = self._read_raw()
 
         # Clean data using `_normalize`
-        df = self._normalize(data)
+        df = self.normalize(data)
         success = self._store_clean(df)
 
         return success
@@ -415,7 +438,7 @@ class DatasetBase(ABC):
 
         return validated
 
-    def put(self, connstr: str) -> None:
+    def put(self, connstr: str, df: pd.DataFrame) -> bool:
         """
         Read DataFrame `df` from storage and put into corresponding
         PostgreSQL database
@@ -427,19 +450,47 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        None
-
+        success : bool
+            Did the insert succeed. Always True if function completes
         """
-        # Load cleaned data
-        df = self._read_clean()
+        # Check to see whether there's information on what geography
+        # type is being collected. If not, add a column using the
+        # `location_type` property of the scraper
+        if not "location_type" in list(df):
+            df["location_type"] = self.location_type
 
         if not hasattr(self, "pk"):
             msg = "field `pk` must be set for insertion"
             raise ValueError(msg)
 
-        self._put(connstr, df, self.table_name, self.pk)
+        return self._put_exec(connstr, df, self.table_name, self.pk)
 
-    def _put(self, connstr: str, df: pd.DataFrame, table_name: str, pk: str) -> None:
+    def _put(self, connstr: str) -> None:
+        """
+        Read DataFrame `df` from storage and put into corresponding
+        PostgreSQL database
+
+        Parameters
+        ----------
+        connstr : str
+            String containing connection URI for connecting to postgres database
+
+        Returns
+        -------
+        success : bool
+            Did the insert succeed. Always True if function completes
+        """
+        # Load cleaned data
+        df = self._read_clean()
+
+        # Execute the put
+        success = self.put(connstr, df)
+
+        return success
+
+    def _put_exec(
+        self, connstr: str, df: pd.DataFrame, table_name: str, pk: str
+    ) -> None:
         "Internal _put method for dumping data using TempTable class"
         temp_name = "__" + table_name + str(random.randint(1000, 9999))
 
@@ -450,3 +501,5 @@ class DatasetBase(ABC):
                 sql = self._insert_query(df, table_name, temp_name, pk)
                 res = conn.execute(sql)
                 print(f"Inserted {res.rowcount} rows into {table_name}")
+
+        return True

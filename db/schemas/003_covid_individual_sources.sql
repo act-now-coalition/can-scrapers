@@ -7,7 +7,7 @@ CREATE TABLE data.covid_official
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
     provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
 );
 
 COMMENT ON TABLE data.covid_official IS E'This table contains all of the collected data from official COVID sources.';
@@ -22,7 +22,7 @@ CREATE TABLE data.covid_usafacts
     demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
     value REAL,
     provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location, variable_id, demographic_id)
+    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
 );
 
 COMMENT ON TABLE data.covid_usafacts IS E'This table contains all of the collected COVID data from USAFacts.';

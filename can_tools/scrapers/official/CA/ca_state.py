@@ -15,10 +15,12 @@ class California(StateQueryAPI, DatasetBase):
     """
     Fetch county level covid data from California state dashbaord
     """
+
     apiurl = "https://data.ca.gov/api/3/action/datastore_search"
     source = "https://covid19.ca.gov/state-dashboard"
     state_fips = int(us.states.lookup("California").fips)
     has_location = False
+    location_type = "county"
 
     def fetch(self) -> Any:
         # Dictionary for storing the raw data
@@ -64,18 +66,20 @@ class California(StateQueryAPI, DatasetBase):
         }
 
         # Read in data and convert to long format
-        df = self.data_from_raw(data)
+        df = self.data_from_raw(data).rename(columns={"county": "location_name"})
         df["dt"] = pd.to_datetime(df["date"])
 
         # Move things into long format
-        df = df.melt(id_vars=["county", "dt"], value_vars=crename.keys()).dropna()
+        df = df.melt(
+            id_vars=["location_name", "dt"], value_vars=crename.keys()
+        ).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(df, crename)
 
         cols_to_keep = [
             "dt",
-            "county",
+            "location_name",
             "category",
             "measurement",
             "unit",
@@ -117,7 +121,7 @@ class California(StateQueryAPI, DatasetBase):
         }
 
         # Read in data and convert to long format
-        df = self.data_from_raw(data)
+        df = self.data_from_raw(data).rename(columns={"county": "location_name"})
 
         # Convert column to date
         df = df.replace("None", None)
@@ -131,7 +135,7 @@ class California(StateQueryAPI, DatasetBase):
 
         # Reshape
         out = df.melt(
-            id_vars=["dt", "county"], value_vars=crename.keys()
+            id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
 
         # Determine the category and demographics of each observation
@@ -139,7 +143,7 @@ class California(StateQueryAPI, DatasetBase):
 
         cols_to_keep = [
             "dt",
-            "county",
+            "location_name",
             "category",
             "measurement",
             "unit",
@@ -156,10 +160,12 @@ class California(StateQueryAPI, DatasetBase):
         cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
         hospitals = self.normalize_hospitals(data["hospitals"])
 
-        out = pd.concat(
-            [cases_deaths, hospitals], axis=0, ignore_index=True, sort=True
-        )
+        out = pd.concat([cases_deaths, hospitals], axis=0, ignore_index=True, sort=True)
         out["vintage"] = self._retrieve_vintage()
+
+        # Drop the information that we won't be keeping track of
+        loc_not_keep = ["Out Of Country", "Unassigned"]
+        out = out.loc[~out["location_name"].isin(loc_not_keep), :]
 
         return out
 

@@ -11,7 +11,7 @@ from can_tools.scrapers.base import DatasetBase
 
 class StateDashboard:
     """
-    Definition of common parameters and values for scraping a State Dashbaord
+    Definition of common parameters and values for scraping a State Dashboard
 
     Attributes
     ----------
@@ -30,8 +30,9 @@ class StateDashboard:
         Must be set by subclasses. The two digit state fips code (as an int)
 
     """
+
     table_name: str = "covid_official"
-    pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
+    pk: str = '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
     provider = "state"
     data_type: str = "covid"
     has_location: bool
@@ -41,40 +42,39 @@ class StateDashboard:
         super(StateDashboard, self).__init__(execution_dt)
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
+
         if self.has_location:
             out = f"""
             INSERT INTO data.{table_name} (
-              vintage, dt, location, variable_id, demographic_id, value, provider
+              vintage, dt, location_id, variable_id, demographic_id, value, provider
             )
-            SELECT tt.vintage, tt.dt, tt.location, cv.id as variable_id,
+            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
+            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.locations loc ON (loc.location_type=loct.id) AND (tt.location=loc.location)
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
             LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
-            INNER JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
+            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE set value = excluded.value
             """
-        elif "county" in list(df):
+        elif "location_name" in list(df):
             out = f"""
             INSERT INTO data.{table_name} (
-              vintage, dt, location, variable_id, demographic_id, value, provider
+              vintage, dt, location_id, variable_id, demographic_id, value, provider
             )
-            SELECT tt.vintage, tt.dt, loc.location, cv.id as variable_id,
+            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
-            LEFT JOIN meta.locations loc on tt.county=loc.name
-            LEFT JOIN meta.location_type loct on loc.location_type=loct.id
+            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.locations loc on (loc.location_type=loct.id) AND
+                                            (tt.location_name=loc.name) AND
+                                            (loc.state=LPAD({self.state_fips}::TEXT, 2, '0'))
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
             LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
-            INNER JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
-            WHERE (loc.state = LPAD({self.state_fips}::TEXT, 2, '0')) AND
-                  (loct.name = 'county')
+            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE SET value = excluded.value
             """
-        else:
-            msg = "None of the expected geographies were included in"
-            msg += " the insert DataFrame"
-            raise ValueError(msg)
 
         return textwrap.dedent(out)
 
@@ -83,12 +83,26 @@ class CountyDashboard(StateDashboard):
     """
     Parent class for scrapers working directly with County dashbaards
 
-    See `StateDashbaord` for more information
+    See `StateDashboard` for more information
     """
+
     provider: str = "county"
 
     def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
         super(CountyDashboard, self).__init__(execution_dt)
+
+
+class FederalDashboard(StateDashboard):
+    """
+    Parent class for scrapers working directly with federal sources
+
+    See `StateDashboard` for more information
+    """
+
+    provider: str = "federal"
+
+    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
+        super(FederalDashboard, self).__init__(execution_dt)
 
 
 class ArcGIS(StateDashboard):
@@ -102,9 +116,14 @@ class ArcGIS(StateDashboard):
 
     in order to use this class
     """
+
     ARCGIS_ID: str
 
-    def __init__(self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Union[int, str]]] = None):
+    def __init__(
+        self,
+        execution_dt: pd.Timestamp,
+        params: Optional[Dict[str, Union[int, str]]] = None,
+    ):
         super(ArcGIS, self).__init__(execution_dt)
 
         # Default parameter values
@@ -150,8 +169,7 @@ class ArcGIS(StateDashboard):
         return out
 
     def get_single_json(
-        self, service: str, sheet: Union[str, int], srvid: str,
-        params: Dict[str, Any]
+        self, service: str, sheet: Union[str, int], srvid: str, params: Dict[str, Any]
     ) -> dict:
         """
         Execute request and return response json as dict
@@ -177,7 +195,7 @@ class ArcGIS(StateDashboard):
         return res.json()
 
     def get_all_jsons(
-            self, service: str, sheet: Union[str, int], srvid: str
+        self, service: str, sheet: Union[str, int], srvid: str
     ) -> List[Dict]:
         """
         Repeatedly request jsons until we have full dataset
@@ -235,9 +253,7 @@ class ArcGIS(StateDashboard):
 
         return df
 
-    def arcgis_jsons_to_df(
-        self, data: List[Dict]
-    ) -> pd.DataFrame:
+    def arcgis_jsons_to_df(self, data: List[Dict]) -> pd.DataFrame:
         """
         Obtain all data in a particular ArcGIS service sheet as a DataFrame
 
@@ -253,8 +269,7 @@ class ArcGIS(StateDashboard):
         """
         # Concat data
         return pd.concat(
-            [self.arcgis_json_to_df(x) for x in data],
-            axis=0, ignore_index=True
+            [self.arcgis_json_to_df(x) for x in data], axis=0, ignore_index=True
         )
 
 
@@ -268,11 +283,11 @@ class SODA(StateDashboard):
 
     in order to use this class
     """
+
     baseurl: str
 
     def __init__(
-            self, execution_dt: pd.Timestamp,
-            params: Optional[Dict[str, Any]] = None
+        self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Any]] = None
     ):
         super(SODA, self).__init__()
         self.params = params
@@ -325,6 +340,7 @@ class StateQueryAPI(StateDashboard, ABC):
     """
     Fetch data from OpenDataCali service
     """
+
     apiurl: str
 
     def count_current_records(self, res_json):
@@ -375,9 +391,7 @@ class StateQueryAPI(StateDashboard, ABC):
         """
         return res_json["result"]["records"]
 
-    def raw_from_api(
-            self, resource_id: str, limit: int = 1000, **kwargs
-    ) -> List[Dict]:
+    def raw_from_api(self, resource_id: str, limit: int = 1000, **kwargs) -> List[Dict]:
         """
         Retrieves the raw data from the api. It assumes that data is
         stored in a json file as it is read in
@@ -401,14 +415,15 @@ class StateQueryAPI(StateDashboard, ABC):
 
             # Extract relevant records
             records = res["result"]["records"]
-            offset += self.count_current_records(res)
             keep_requesting = offset < self.count_total_records(res)
+
+            # Update offset
+            offset += self.count_current_records(res)
+            params["offset"] = offset
 
         return the_jsons
 
-    def data_from_raw(
-        self, data
-    ) -> pd.DataFrame:
+    def data_from_raw(self, data) -> pd.DataFrame:
         """
         Retrieves extracts data from the raw jsons (or other format)
 
@@ -424,5 +439,6 @@ class StateQueryAPI(StateDashboard, ABC):
         """
         return pd.concat(
             [pd.DataFrame(self.extract_data_from_json(x)) for x in data],
-            axis=0, ignore_index=True
+            axis=0,
+            ignore_index=True,
         )
