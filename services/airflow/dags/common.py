@@ -40,7 +40,7 @@ def make_fetch_op(cls, task_id="fetch") -> PythonOperator:
     def inner(ds, **kw):
         dt = pd.to_datetime(ds)
         c: DatasetBase = cls(execution_dt=dt)
-        if c.quit_early(dt):
+        if c.quit_early():
             print("Requested to quit early -- bailing")
             return
 
