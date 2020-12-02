@@ -1,11 +1,11 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import DatasetBaseNoDate, CMU
+from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class NewYork(DatasetBaseNoDate, StateDashboard):
+class NewYork(StateDashboard):
     """
     Change log
     ----------
@@ -18,13 +18,14 @@ class NewYork(DatasetBaseNoDate, StateDashboard):
     """
 
     has_location = False
+    location_type = "county"
     state_fips = int(us.states.lookup("New York").fips)
     source = (
         "https://covid19tracker.health.ny.gov/views/NYS-COVID19-Tracker"
         "/NYSDOHCOVID-19Tracker-Map"
     )
 
-    def get(self) -> pd.DataFrame:
+    def fetch(self) -> pd.DataFrame:
         """
         Get all county level covid data from NY State dashboard
 
@@ -33,19 +34,12 @@ class NewYork(DatasetBaseNoDate, StateDashboard):
         df: pd.DataFrame
             A pandas DataFrame containing testing data for all counties in NY
         """
-        tests = self._get_tests_data()
-
-        out = pd.concat([tests], axis=0, ignore_index=True)
-        out["vintage"] = self._retrieve_vintage()
-
-        return out
-
-    def _get_tests_data(self):
         tests_url = "https://health.data.ny.gov/api/views/xdss-u53e/rows.csv?accessType=DOWNLOAD"
 
-        df = pd.read_csv(tests_url, parse_dates=["Test Date"]).rename(
-            columns={"Test Date": "dt", "County": "county"}
-        )
+        return pd.read_csv(tests_url, parse_dates=["Test Date"])
+
+    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        df = data.rename(columns={"Test Date": "dt", "County": "location_name"})
 
         crename = {
             "New Positives": CMU(
@@ -69,15 +63,19 @@ class NewYork(DatasetBaseNoDate, StateDashboard):
                 unit="test_encounters",
             ),
         }
-        out = df.melt(id_vars=["dt", "county"], value_vars=crename.keys()).dropna()
+        out = df.melt(
+            id_vars=["dt", "location_name"], value_vars=crename.keys()
+        ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         # Determine the category and demographics of each observation
         out = self.extract_CMU(out, crename)
+        out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
+            "vintage",
             "dt",
-            "county",
+            "location_name",
             "category",
             "measurement",
             "unit",
