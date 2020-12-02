@@ -12,6 +12,7 @@ from can_tools.scrapers.puppet import TableauNeedsClick
 class FloridaHospitalBase(TableauNeedsClick, ABC):
     source = "https://bi.ahca.myflorida.com/t/ABICC/views/Public/HospitalBedsCounty"
     has_location = False
+    location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
 
 
