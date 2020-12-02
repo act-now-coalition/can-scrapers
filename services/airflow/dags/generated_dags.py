@@ -8,7 +8,7 @@ def _prep_kw(ix, cls, suffix):
     # randomize start time to not all dags run at exactly the same time
     letters = list("abcdefghijklmnopqrstuvwxyz")
     name_lower = cls.__name__.lower()
-    hour = "1-23/2" if name_lower[0] < "m" else "0-22/2"
+    hour = "1-23/4" if name_lower[0] < "m" else "0-22/4"
     minute = (ix * 2) % 59
     # if cls == DC:
     #     hour = "15-23/2"
