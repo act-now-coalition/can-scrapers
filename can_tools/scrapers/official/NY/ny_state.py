@@ -5,7 +5,7 @@ from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class NewYork(StateDashboard):
+class NewYorkTests(StateDashboard):
     """
     Change log
     ----------

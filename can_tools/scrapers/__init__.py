@@ -13,7 +13,8 @@ from can_tools.scrapers.official import (
     # IllinoisDemographics,
     # IllinoisHistorical,
     # Massachusetts,
-    NewYork,
-    # Texas,
+    NewYorkTests,
+    TexasCasesDeaths,
+    TexasTests,
     CDCCovidDataTracker,
 )
