@@ -9,7 +9,11 @@ from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.puppet import TableauNeedsClick
 
 
-class FloridaHospitalBase(TableauNeedsClick, ABC):
+class FloridaHospitalBase(
+    StateDashboard,
+    TableauNeedsClick,
+    ABC,
+):
     source = "https://bi.ahca.myflorida.com/t/ABICC/views/Public/HospitalBedsCounty"
     has_location = False
     location_type = "county"
@@ -39,7 +43,7 @@ class FloridaHospitalUsage(FloridaHospitalBase):
         bads = [r",", r"%", "nan"]
         str_cols = ["County", "FileNumber", "ProviderName"]
         df = self._clean_cols(df, bads, str_cols)
-        df["county"] = df["County"].str.title()
+        df["location_name"] = df["County"].str.title()
 
         # Rename appropriate columns
         crename = {
@@ -56,12 +60,12 @@ class FloridaHospitalUsage(FloridaHospitalBase):
 
         # Drop grand total and melt
         out = (
-            df.query("county != 'Grand Total'")
-            .melt(id_vars=["county"], value_vars=crename.keys())
+            df.query("location_name != 'Grand Total'")
+            .melt(id_vars=["location_name"], value_vars=crename.keys())
             .dropna()
         )
         out["value"] = pd.to_numeric(out["value"])
-        out = out.groupby(["county", "variable"]).sum().reset_index()
+        out = out.groupby(["location_name", "variable"]).sum().reset_index()
 
         # Extract category information and add other context
         out = self.extract_CMU(out, crename)
@@ -71,7 +75,7 @@ class FloridaHospitalUsage(FloridaHospitalBase):
         out_cols = [
             "dt",
             "vintage",
-            "county",
+            "location_name",
             "category",
             "measurement",
             "unit",
@@ -95,7 +99,7 @@ class FloridaICUUsage(FloridaHospitalUsage):
         bads = [r",", r"%", "nan"]
         str_cols = ["County", "FileNumber", "ProviderName"]
         df = self._clean_cols(df, bads, str_cols)
-        df["county"] = df["County"].str.title()
+        df["location_name"] = df["County"].str.title()
 
         # Create new columns
         df["ICU Census"] = df["Adult ICU Census"] + df["Pediatric ICU Census"]
@@ -141,12 +145,13 @@ class FloridaICUUsage(FloridaHospitalUsage):
 
         # Drop grand total and melt
         out = (
-            df.query("county != 'Grand Total'")
-            .melt(id_vars=["county"], value_vars=crename.keys())
+            df.query("location_name != 'Grand Total'")
+            .melt(id_vars=["location_name"], value_vars=crename.keys())
             .dropna()
         )
         out["value"] = pd.to_numeric(out["value"])
-        out = out.groupby(["county", "variable"]).sum().reset_index()
+        out = out.groupby(["location_name", "variable"]).sum().reset_index()
+        out.loc[out["location_name"] == "Desoto", "location_name"] = "DeSoto"
 
         # Extract category information and add other context
         out = self.extract_CMU(out, crename)
@@ -156,7 +161,7 @@ class FloridaICUUsage(FloridaHospitalUsage):
         out_cols = [
             "dt",
             "vintage",
-            "county",
+            "location_name",
             "category",
             "measurement",
             "unit",
@@ -178,12 +183,13 @@ class FloridaHospitalCovid(FloridaHospitalBase):
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         # Clean up column names
-        df.columns = ["county", "value"]
-        df["county"] = df["county"].str.title()
-        df = df.query("county != 'Grand Total'")
+        df.columns = ["location_name", "value"]
+        df["location_name"] = df["location_name"].str.title()
+        df = df.query("location_name != 'Grand Total'")
 
         # Covnert to numeric
         df["value"] = pd.to_numeric(df["value"].astype(str).str.replace(",", ""))
+        df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
 
         # Set category/measurment/unit/age/sex/race
         df["category"] = "hospital_beds_in_use_covid"
