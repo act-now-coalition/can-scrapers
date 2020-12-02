@@ -11,7 +11,7 @@ class CDCCovidDataTracker(FederalDashboard):
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
-    def __init__(self, , *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.exceptions = []
 
