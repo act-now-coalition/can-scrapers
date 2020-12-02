@@ -1,17 +1,13 @@
-import textwrap
-from abc import ABC
-
 import pandas as pd
-import requests
 import us
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
-from can_tools.scrapers.base import DatasetBase, CMU
-from can_tools.scrapers.official.base import StateDashboard, StateQueryAPI
+from can_tools.scrapers.base import CMU
+from can_tools.scrapers.official.base import StateQueryAPI
 
 
-class California(StateQueryAPI, DatasetBase):
+class CaliforniaCasesDeaths(StateQueryAPI):
     """
     Fetch county level covid data from California state dashbaord
     """
@@ -21,22 +17,12 @@ class California(StateQueryAPI, DatasetBase):
     state_fips = int(us.states.lookup("California").fips)
     has_location = False
     location_type = "county"
+    resource_id = "926fd08f-cc91-4828-af38-bd45de97f8c3"
 
     def fetch(self) -> Any:
-        # Dictionary for storing the raw data
-        raw_data = {}
+        return self.raw_from_api(self.resource_id, limit=1000)
 
-        # case and death data
-        resource_id_cd = "926fd08f-cc91-4828-af38-bd45de97f8c3"
-        raw_data["cases_deaths"] = self.raw_from_api(resource_id_cd, limit=1000)
-
-        # case and death data
-        resource_id_h = "42d33765-20fd-44b8-a978-b083b7542225"
-        raw_data["hospitals"] = self.raw_from_api(resource_id_h, limit=1000)
-
-        return raw_data
-
-    def normalize_cases_deaths(self, data) -> pd.DataFrame:
+    def pre_normalize(self, data) -> pd.DataFrame:
         """
         Normalizes the list of json objects that corresponds with case
         and death data
@@ -90,7 +76,22 @@ class California(StateQueryAPI, DatasetBase):
         ]
         return df.loc[:, cols_to_keep]
 
-    def normalize_hospitals(self, data) -> pd.DataFrame:
+    def normalize(self, data) -> pd.DataFrame:
+        # Normalize case/death and hospital data
+        out = self.pre_normalize(data)
+        out["vintage"] = self._retrieve_vintage()
+
+        # Drop the information that we won't be keeping track of
+        loc_not_keep = ["Out Of Country", "Unassigned"]
+        out = out.loc[~out["location_name"].isin(loc_not_keep), :]
+
+        return out
+
+
+class CaliforniaHospitals(CaliforniaCasesDeaths):
+    resource_id = "42d33765-20fd-44b8-a978-b083b7542225"
+
+    def pre_normalize(self, data) -> pd.DataFrame:
         """
         Get icu and hospital usage by covid patients from the OpenDataCali api
 
@@ -154,21 +155,3 @@ class California(StateQueryAPI, DatasetBase):
         ]
 
         return out.loc[:, cols_to_keep]
-
-    def normalize(self, data) -> pd.DataFrame:
-        # Normalize case/death and hospital data
-        cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
-        hospitals = self.normalize_hospitals(data["hospitals"])
-
-        out = pd.concat([cases_deaths, hospitals], axis=0, ignore_index=True, sort=True)
-        out["vintage"] = self._retrieve_vintage()
-
-        # Drop the information that we won't be keeping track of
-        loc_not_keep = ["Out Of Country", "Unassigned"]
-        out = out.loc[~out["location_name"].isin(loc_not_keep), :]
-
-        return out
-
-    def validate(self, df, df_hist) -> bool:
-        "Best validation method ever!"
-        return True

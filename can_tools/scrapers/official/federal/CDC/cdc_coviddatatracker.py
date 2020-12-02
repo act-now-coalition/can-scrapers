@@ -1,35 +1,42 @@
-import requests
-
+import grequests
 import pandas as pd
 import us
 
 from can_tools.scrapers.official.base import FederalDashboard
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import CMU
 
 
-class CDCCovidDataTracker(FederalDashboard, DatasetBase):
+class CDCCovidDataTracker(FederalDashboard):
     has_location = True
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
-    def __init__(self, execution_dt: pd.Timestamp):
-        super().__init__(execution_dt)
+    def __init__(self, , *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.exceptions = []
+
+    def exception(self, request, exception):
+        print("Problem: {}: {}".format(request.url, exception))
+        self.exceptions.append((request.url, exception))
 
     def fetch(self):
+        # reset exceptions
+        self.exceptions = []
         fetcher_url = (
             "https://covid.cdc.gov/covid-data-tracker/COVIDData/"
             "getAjaxData?id=integrated_county_timeseries_state_{}_external"
         )
 
         # Iterate through the states collecting the time-series data
-        data = []
-        for state in us.STATES:
-            # Update url to get the particular state we're working with
-            res = requests.get(fetcher_url.format(state.abbr.lower()))
+        urls = [fetcher_url.format(state.abbr.lower()) for state in us.STATES]
+        responses = grequests.map(
+            (grequests.get(u) for u in urls), size=5, exception_handler=self.exception
+        )
+        out = [x.json() for x in responses if x is not None]
+        if len(self.exceptions):
+            raise ValueError("Got some exceptions: {}".format(self.exceptions))
 
-            data.append(res.json())
-
-        return data
+        return out
 
     def normalize(self, data):
         # Read data in

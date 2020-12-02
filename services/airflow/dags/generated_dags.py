@@ -1,7 +1,13 @@
+from typing import Type
 from airflow import DAG
-from can_tools.scrapers.base import DatasetBase
-from common import (default_dag_kw, make_fetch_op, make_normalize_op,
-                    make_put_op, make_validate_op)
+from can_tools.scrapers.base import DatasetBase, ALL_SCRAPERS
+from common import (
+    default_dag_kw,
+    make_fetch_op,
+    make_normalize_op,
+    make_put_op,
+    make_validate_op,
+)
 
 
 def _prep_kw(ix, cls, suffix):
@@ -24,7 +30,7 @@ def _prep_kw(ix, cls, suffix):
     )
 
 
-def make_needsdate_dag(ix, cls):
+def make_needsdate_dag(ix, cls: Type[DatasetBase]):
     with DAG(**_prep_kw(ix, cls, "needs_date")) as dag:
         fetch = make_fetch_op(cls)
         normalize = make_normalize_op(cls)
@@ -35,7 +41,7 @@ def make_needsdate_dag(ix, cls):
     return dag
 
 
-for ix, cls in enumerate(DatasetBase.__subclasses__()):
+for ix, cls in enumerate(ALL_SCRAPERS):
     if not cls.autodag:
         continue
     globals()["dag_{}".format(cls.__name__)] = make_needsdate_dag(ix, cls)
