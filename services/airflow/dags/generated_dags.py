@@ -1,13 +1,10 @@
 from typing import Type
+
 from airflow import DAG
-from can_tools.scrapers.base import DatasetBase, ALL_SCRAPERS
-from common import (
-    default_dag_kw,
-    make_fetch_op,
-    make_normalize_op,
-    make_put_op,
-    make_validate_op,
-)
+from can_tools import ALL_SCRAPERS
+from can_tools.scrapers.base import DatasetBase
+from common import (default_dag_kw, make_fetch_op, make_normalize_op,
+                    make_put_op, make_validate_op)
 
 
 def _prep_kw(ix, cls, suffix):
