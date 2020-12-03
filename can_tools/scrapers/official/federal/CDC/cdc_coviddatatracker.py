@@ -1,4 +1,4 @@
-import grequests
+import requests
 import pandas as pd
 import us
 
@@ -11,14 +11,6 @@ class CDCCovidDataTracker(FederalDashboard):
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.exceptions = []
-
-    def exception(self, request, exception):
-        print("Problem: {}: {}".format(request.url, exception))
-        self.exceptions.append((request.url, exception))
-
     def fetch(self):
         # reset exceptions
         self.exceptions = []
@@ -29,14 +21,13 @@ class CDCCovidDataTracker(FederalDashboard):
 
         # Iterate through the states collecting the time-series data
         urls = [fetcher_url.format(state.abbr.lower()) for state in us.STATES]
-        responses = grequests.map(
-            (grequests.get(u) for u in urls), size=5, exception_handler=self.exception
-        )
-        out = [x.json() for x in responses if x is not None]
-        if len(self.exceptions):
-            raise ValueError("Got some exceptions: {}".format(self.exceptions))
+        responses = [requests.get(u) for u in urls]
+        bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
+        if len(bad_idx):
+            bad_urls = "\n".join([urls[i] for i in bad_idx])
+            raise ValueError("Failed for these urls:\n{}".format(bad_urls))
 
-        return out
+        return [r.json() for r in responses]
 
     def normalize(self, data):
         # Read data in

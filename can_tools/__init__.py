@@ -26,11 +26,6 @@ __version__ = "0.0.1"
 import inspect
 from typing import List, Type
 
-# Need to do this to avoid recursion error:
-# https://stackoverflow.com/questions/43183367/grequests-with-requests-has-collision
-import grequests  # noqa
-import requests  # noqa
-
 from can_tools import scrapers
 
 

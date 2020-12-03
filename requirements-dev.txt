@@ -73,7 +73,6 @@ google-resumable-media==1.1.0
 googleapis-common-protos==1.52.0
 graphviz==0.15
 greenlet==0.4.17
-grequests==0.6.0
 gunicorn==20.0.4
 idna==2.10
 imagesize==1.2.0
@@ -247,3 +246,5 @@ zipp==3.4.0
 zope.deprecation==4.4.0
 zope.event==4.5.0
 zope.interface==5.2.0
+uvicorn==0.12.3
+pyarrow==2.0.0
