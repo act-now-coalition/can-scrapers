@@ -19,7 +19,7 @@ DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}.parquet"
 
 
-def export_to_csv(ts, **kw):
+def export_to_csv():
     db = PostgresHook(postgres_conn_id="postgres_covid")
     db.bulk.dump("api.covid_us", CSV_FN)
 
