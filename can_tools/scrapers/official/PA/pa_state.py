@@ -4,54 +4,41 @@ import us
 from can_tools.scrapers import CMU, DatasetBase
 from can_tools.scrapers.official.base import ArcGIS
 
-from typing import Dict
+from typing import Any
 
 
-class Pennsylvania(ArcGIS, DatasetBase):
+class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
     """
     Fetch county level covid data from Pennsylvania's ARCGIS dashboard
     """
 
     ARCGIS_ID = "Nifc7wlHaBPig3Q3"
-    has_location = True
+    has_location = False
+    location_type = "county"
     state_fips = int(us.states.lookup("Pennsylvania").fips)
     source = "https://experience.arcgis.com/experience/ed2def13f9b045eda9f7d22dbc9b500e"
+    service: str = "COVID_PA_Counties"
 
-    def fetch(self) -> Dict:
-        # Dictionary for storing the raw data
-        raw_data = {}
+    def fetch(self) -> Any:
+        return self.get_all_jsons(self.service, 0, 1)
 
-        # Data for cases, deaths, and testing
-        raw_data["cases_deaths"] = self.get_all_jsons("COVID_PA_Counties", 0, 1)
-
-        # Data for hospital beds/ICU
-        raw_data["hospitals"] = self.get_all_jsons("covid_hosp", 0, 1)
-        return raw_data
-
-    def normalize(self, data) -> pd.DataFrame:
-        # Normalize cases, deaths, and testing data
-        cases_deaths = self.normalize_cases_deaths(data["cases_deaths"])
-
-        # Normalize hospital beds and ICU data
-        hospitals = self.normalize_hospitals(data["hospitals"])
-
-        # Concatenate these two datasets for validation and later pipelining
-        out = pd.concat([cases_deaths, hospitals], axis=0, ignore_index=True, sort=True)
-        return out
-
-    def normalize_cases_deaths(self, data) -> pd.DataFrame:
+    def pre_normalize(self, data) -> pd.DataFrame:
         df = self.arcgis_jsons_to_df(data)
 
         # Make columns names all-lowercase
         df.columns = [x.lower() for x in list(df)]
 
         crename = {
-            "cases": CMU(category="cases", measurement="cumulative", unit="people"),
-            "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
+            "cases": CMU(
+                category="cases", measurement="cumulative", unit="unique_people"
+            ),
+            "deaths": CMU(
+                category="deaths", measurement="cumulative", unit="unique_people"
+            ),
             "probable": CMU(
                 category="cases_probable",
                 measurement="cumulative",
-                unit="people",
+                unit="unique_people",
             ),
             "negative": CMU(
                 category="pcr_tests_negative",
@@ -66,9 +53,7 @@ class Pennsylvania(ArcGIS, DatasetBase):
         }
         out = (
             df.melt(id_vars=["county"], value_vars=crename.keys())
-            .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            )
+            .assign(dt=self._retrieve_dt("US/Eastern"))
             .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
@@ -77,7 +62,6 @@ class Pennsylvania(ArcGIS, DatasetBase):
         out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
-            "vintage",
             "dt",
             "county",
             "category",
@@ -91,7 +75,19 @@ class Pennsylvania(ArcGIS, DatasetBase):
 
         return out.loc[:, cols_to_keep]
 
-    def normalize_hospitals(self, data) -> pd.DataFrame:
+    def normalize(self, data) -> pd.DataFrame:
+        # Normalize data, which is dependent on the current class
+        out = self.pre_normalize(data)
+
+        out["vintage"] = self._retrieve_vintage()
+        return out
+
+
+class PennsylvaniaHospitals(PennsylvaniaCasesDeaths):
+
+    service: str = "covid_hosp"
+
+    def pre_normalize(self, data) -> pd.DataFrame:
         df = self.arcgis_jsons_to_df(data)
 
         # Make columns names all-lowercase
@@ -114,19 +110,14 @@ class Pennsylvania(ArcGIS, DatasetBase):
             ),
         }
 
-        out = (
-            df.melt(id_vars=["county"], value_vars=crename.keys())
-            .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            )
-            .dropna()
-        )
+        df["dt"] = df["date"].map(self._esri_ts_to_dt)
+
+        out = df.melt(id_vars=["county", "dt"], value_vars=crename.keys()).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         out = self.extract_CMU(out, crename)
 
         cols_to_keep = [
-            "vintage",
             "dt",
             "county",
             "category",
@@ -138,6 +129,3 @@ class Pennsylvania(ArcGIS, DatasetBase):
             "value",
         ]
         return out.loc[:, cols_to_keep]
-
-    def validate(self, df, df_hist):
-        return True
