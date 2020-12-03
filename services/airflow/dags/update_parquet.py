@@ -54,6 +54,7 @@ with DAG(
         task_id="update_covid_us_matview",
         sql="REFRESH MATERIALIZED VIEW api.covid_us;",
         dag=dag,
+        postgres_conn_id="postgres_covid",
     )
 
     public_first_vintage_fn = BashOperator(
