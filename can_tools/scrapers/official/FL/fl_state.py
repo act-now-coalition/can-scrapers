@@ -1,11 +1,11 @@
 import pandas as pd
 
 import us
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class Florida(ArcGIS, DatasetBase):
+class Florida(ArcGIS):
     """
     Fetch county level covid data from Florida's ARCGIS dashboard
     """
@@ -74,6 +74,3 @@ class Florida(ArcGIS, DatasetBase):
         ]
 
         return out.loc[:, cols_to_keep]
-
-    def validate(self, df, df_hist):
-        return True

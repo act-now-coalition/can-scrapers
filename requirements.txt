@@ -9,3 +9,4 @@ requests==2.24.0
 sqlalchemy==1.3.20
 us==2.0.2
 xlrd==1.2.0
+grequests==0.6.0
