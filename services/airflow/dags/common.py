@@ -106,7 +106,7 @@ def _make_default_args(**kw):
         "depends_on_past": False,
         "start_date": datetime(2020, 5, 18, 9, 30),
         "end_date": datetime(2022, 5, 5, 9, 30),
-        "email": ["spencer.lyon@valorumdata.com"],
+        "email": ["spencer@covidactnow.org"],
         "email_on_failure": True,
         "email_on_retry": False,
         "retries": 2,
