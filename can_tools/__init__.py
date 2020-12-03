@@ -23,4 +23,22 @@
 """
 
 __version__ = "0.0.1"
+import inspect
+from typing import List, Type
+
 from can_tools import scrapers
+
+
+def all_subclasses(cls):
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
+    )
+
+
+def non_abc_subclasses(cls):
+    return list(x for x in all_subclasses(cls) if not inspect.isabstract(x))
+
+
+ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = non_abc_subclasses(
+    scrapers.DatasetBase
+)
