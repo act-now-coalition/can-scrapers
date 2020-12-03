@@ -1,9 +1,9 @@
 from abc import ABC
 
 import pandas as pd
+
 import pyppeteer
 import us
-
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.puppet import TableauNeedsClick
@@ -18,6 +18,22 @@ class FloridaHospitalBase(
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
+
+    out_cols = [
+        "dt",
+        "vintage",
+        "location_name",
+        "category",
+        "measurement",
+        "unit",
+        "age",
+        "race",
+        "sex",
+        "value",
+    ]
+
+    def clean_desoto(self, df: pd.DataFrame):
+        df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
 
 
 class FloridaHospitalUsage(FloridaHospitalBase):
@@ -71,21 +87,8 @@ class FloridaHospitalUsage(FloridaHospitalBase):
         out = self.extract_CMU(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
-
-        out_cols = [
-            "dt",
-            "vintage",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, out_cols]
+        self.clean_desoto(out)
+        return out.loc[:, self.out_cols]
 
 
 class FloridaICUUsage(FloridaHospitalUsage):
@@ -157,21 +160,8 @@ class FloridaICUUsage(FloridaHospitalUsage):
         out = self.extract_CMU(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
-
-        out_cols = [
-            "dt",
-            "vintage",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, out_cols]
+        self.clean_desoto(out)
+        return out.loc[:, self.out_cols]
 
 
 class FloridaHospitalCovid(FloridaHospitalBase):
@@ -189,7 +179,6 @@ class FloridaHospitalCovid(FloridaHospitalBase):
 
         # Covnert to numeric
         df["value"] = pd.to_numeric(df["value"].astype(str).str.replace(",", ""))
-        df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
 
         # Set category/measurment/unit/age/sex/race
         df["category"] = "hospital_beds_in_use_covid"
@@ -200,5 +189,7 @@ class FloridaHospitalCovid(FloridaHospitalBase):
         df["race"] = "all"
         df["dt"] = self._retrieve_dt("US/Eastern")
         df["vintage"] = self._retrieve_vintage()
+
+        self.clean_desoto(df)
 
         return df
