@@ -1,4 +1,4 @@
-import io
+from contextlib import closing
 import os
 import pathlib
 
@@ -21,7 +21,12 @@ FN_STR = "can_scrape_api_covid_us{}.parquet"
 
 def export_to_csv():
     db = PostgresHook(postgres_conn_id="postgres_covid")
-    db.bulk_dump("(SELECT * FROM api.covid_us)", CSV_FN)
+    with open(CSV_FN, "w") as f:
+        with closing(db.get_conn()) as conn:
+            with closing(conn.cursor()) as cur:
+                cur.copy_expert(
+                    "COPY (SELECT * From api.covid_us) TO STDOUT CSV HEADER;", f
+                )
 
 
 def create_parquet(ts, **kw):
