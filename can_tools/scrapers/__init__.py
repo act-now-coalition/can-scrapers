@@ -4,9 +4,12 @@ from can_tools.scrapers.base import (
 )
 from can_tools.scrapers.db_util import TempTable, fast_to_sql
 from can_tools.scrapers.official import (
-    California,
+    CaliforniaCasesDeaths,
+    CaliforniaHospitals,
     Florida,
-    # FloridaHospital,
+    FloridaHospitalCovid,
+    FloridaICUUsage,
+    FloridaHospitalUsage,
     # IllinoisDemographics,
     # IllinoisHistorical,
     # Massachusetts,
@@ -14,5 +17,8 @@ from can_tools.scrapers.official import (
     # Texas,
     PennsylvaniaHospitals,
     PennsylvaniaCasesDeaths,
+    NewYorkTests,
+    TexasCasesDeaths,
+    TexasTests,
     CDCCovidDataTracker,
 )

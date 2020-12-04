@@ -9,7 +9,7 @@ import requests
 from can_tools.scrapers.base import DatasetBase
 
 
-class StateDashboard:
+class StateDashboard(DatasetBase, ABC):
     """
     Definition of common parameters and values for scraping a State Dashboard
 
@@ -43,6 +43,7 @@ class StateDashboard:
 
     def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
 
+        out = ""
         if self.has_location:
             out = f"""
             INSERT INTO data.{table_name} (
@@ -79,7 +80,7 @@ class StateDashboard:
         return textwrap.dedent(out)
 
 
-class CountyDashboard(StateDashboard):
+class CountyDashboard(StateDashboard, ABC):
     """
     Parent class for scrapers working directly with County dashbaards
 
@@ -92,7 +93,7 @@ class CountyDashboard(StateDashboard):
         super(CountyDashboard, self).__init__(execution_dt)
 
 
-class FederalDashboard(StateDashboard):
+class FederalDashboard(StateDashboard, ABC):
     """
     Parent class for scrapers working directly with federal sources
 
@@ -105,7 +106,7 @@ class FederalDashboard(StateDashboard):
         super(FederalDashboard, self).__init__(execution_dt)
 
 
-class ArcGIS(StateDashboard):
+class ArcGIS(StateDashboard, ABC):
     """
     Parent class for extracting data from an ArcGIS dashbaord
 
@@ -273,7 +274,7 @@ class ArcGIS(StateDashboard):
         )
 
 
-class SODA(StateDashboard):
+class SODA(StateDashboard, ABC):
     """
     This is to interact with SODA APIs
 

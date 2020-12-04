@@ -1,1 +1,1 @@
-from can_tools.scrapers.official.TX.tx_state import Texas
+from can_tools.scrapers.official.TX.tx_state import TexasCasesDeaths, TexasTests

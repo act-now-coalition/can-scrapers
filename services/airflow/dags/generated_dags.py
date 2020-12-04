@@ -1,4 +1,7 @@
+from typing import Type
+
 from airflow import DAG
+from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 from common import (default_dag_kw, make_fetch_op, make_normalize_op,
                     make_put_op, make_validate_op)
@@ -8,7 +11,7 @@ def _prep_kw(ix, cls, suffix):
     # randomize start time to not all dags run at exactly the same time
     letters = list("abcdefghijklmnopqrstuvwxyz")
     name_lower = cls.__name__.lower()
-    hour = "1-23/2" if name_lower[0] < "m" else "0-22/2"
+    hour = "1-23/4" if name_lower[0] < "m" else "0-22/4"
     minute = (ix * 2) % 59
     # if cls == DC:
     #     hour = "15-23/2"
@@ -24,7 +27,7 @@ def _prep_kw(ix, cls, suffix):
     )
 
 
-def make_needsdate_dag(ix, cls):
+def make_needsdate_dag(ix, cls: Type[DatasetBase]):
     with DAG(**_prep_kw(ix, cls, "needs_date")) as dag:
         fetch = make_fetch_op(cls)
         normalize = make_normalize_op(cls)
@@ -35,7 +38,7 @@ def make_needsdate_dag(ix, cls):
     return dag
 
 
-for ix, cls in enumerate(DatasetBase.__subclasses__()):
+for ix, cls in enumerate(ALL_SCRAPERS):
     if not cls.autodag:
         continue
     globals()["dag_{}".format(cls.__name__)] = make_needsdate_dag(ix, cls)

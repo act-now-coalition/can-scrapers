@@ -1,4 +1,3 @@
-import pathlib
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
 
@@ -16,24 +15,6 @@ def _maybe_log_source(c, connstr, df):
         if src is not None:
             c.log_covid_source(connstr, df, src, state_fips)
             print("logged source to db")
-
-
-def getput_no_date(cls, task_id="getput") -> PythonOperator:
-    def inner(**kw):
-        db = PostgresHook(postgres_conn_id="postgres_covid").get_uri()
-        c = cls()
-        print("About to fetch...")
-        df = c.get()
-        if isinstance(df, pd.DataFrame):
-            print(f"Fetch df with shape {df.shape}")
-
-        c.put(db, df)
-        print("Uploaded to db")
-        # _maybe_log_source(c, db, df)
-
-    op = PythonOperator(python_callable=inner, task_id=task_id)
-
-    return op
 
 
 def make_fetch_op(cls, task_id="fetch") -> PythonOperator:
@@ -125,7 +106,7 @@ def _make_default_args(**kw):
         "depends_on_past": False,
         "start_date": datetime(2020, 5, 18, 9, 30),
         "end_date": datetime(2022, 5, 5, 9, 30),
-        "email": ["spencer.lyon@valorumdata.com"],
+        "email": ["spencer@covidactnow.org"],
         "email_on_failure": True,
         "email_on_retry": False,
         "retries": 2,

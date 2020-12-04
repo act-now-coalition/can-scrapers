@@ -49,6 +49,7 @@ class with_page:
                 "--no-sandbox",
                 "--single-process",
                 "--disable-dev-shm-usage",
+                "--disable-setuid-sandbox",
                 "--disable-gpu",
                 "--no-zygote",
             ],
@@ -149,10 +150,6 @@ class TableauNeedsClick(DatasetBase, ABC):
 
         return df
 
-    def _clean_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        """No cleaning needed by default -- here for subclasses to override"""
-        return df
-
     async def _get(self) -> pd.DataFrame:
         """
         Async function to actually fetch the data from tableau
@@ -192,7 +189,7 @@ class TableauNeedsClick(DatasetBase, ABC):
 
         return df
 
-    def get(self) -> pd.DataFrame:
+    def fetch(self) -> pd.DataFrame:
         """
         Open tableau dashboard at url, fetch click around at a specified a few times,
         find and click download button, read downloaded csv into pandas DataFrame
@@ -204,6 +201,4 @@ class TableauNeedsClick(DatasetBase, ABC):
             The DataFrame in the crosstab table on the tableau dashboard
 
         """
-        return self._clean_df(
-            asyncio.get_event_loop().run_until_complete((self._get()))
-        )
+        return asyncio.get_event_loop().run_until_complete((self._get()))
