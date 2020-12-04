@@ -250,8 +250,7 @@ class ArcGIS(StateDashboard, ABC):
             `res_json["features"]` dict
 
         """
-        df = pd.DataFrame.from_records(
-            [x["attributes"] for x in res_json["features"]])
+        df = pd.DataFrame.from_records([x["attributes"] for x in res_json["features"]])
 
         return df
 
@@ -400,8 +399,7 @@ class StateQueryAPI(StateDashboard, ABC):
         """
         # Create values needed for iterating
         offset = 0
-        params = dict(resource_id=resource_id,
-                      limit=limit, offset=offset, **kwargs)
+        params = dict(resource_id=resource_id, limit=limit, offset=offset, **kwargs)
 
         # Store each json in a list
         the_jsons = []
