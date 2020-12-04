@@ -1,6 +1,11 @@
 from can_tools.scrapers.official.CA import California
 from can_tools.scrapers.official.FL import Florida
 
+from can_tools.scrapers.official.PA import (
+    PennsylvaniaCasesDeaths,
+    PennsylvaniaHospitals,
+)
+
 # from can_tools.scrapers.official.FL import Florida, FloridaHospital
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 # from can_tools.scrapers.official.MA import Massachusetts
