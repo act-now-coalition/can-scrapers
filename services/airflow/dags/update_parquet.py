@@ -16,7 +16,7 @@ DATA_PATH = pathlib.Path(os.environ["DATAPATH"]) / "final"
 CSV_FN = DATA_PATH / "can_scrape_api_covid_us.csv"
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 
-FN_STR = "can_scrape_api_covid_us{}.parquet"
+FN_STR = "can_scrape_api_covid_us{}"
 
 
 def export_to_csv():
@@ -33,8 +33,8 @@ def create_parquet(ts, **kw):
     dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
     print("dt and ts:", dt_str, ts)
 
-    vintage_fn = DATA_PATH / FN_STR.format(dt_str)
-    fn = DATA_PATH / FN_STR.format("")
+    vintage_fn = DATA_PATH / (FN_STR.format(dt_str) + ".parquet")
+    fn = DATA_PATH / (FN_STR.format("") + ".parquet")
 
     df = pd.read_csv(CSV_FN, parse_dates=["dt"])
     df.to_parquet(vintage_fn, index=False)
