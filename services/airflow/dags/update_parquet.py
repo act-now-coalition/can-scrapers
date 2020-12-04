@@ -21,7 +21,7 @@ FN_STR = "can_scrape_api_covid_us{}.parquet"
 
 def export_to_csv():
     db = PostgresHook(postgres_conn_id="postgres_covid")
-    db.bulk_dump("api.covid_us", CSV_FN)
+    db.bulk_dump("(SELECT * FROM api.covid_us)", CSV_FN)
 
 
 def create_parquet(ts, **kw):
