@@ -64,15 +64,15 @@ with DAG(
 
     public_first_vintage_fn = BashOperator(
         task_id="vintage_file_public",
-        bash_command="gsutil acl ch -u AllUsers:R gs://us-east4-data-eng-scrapers-a02dc940-bucket/data/final/$(FN_BASE){{ execution_date.strftime('%Y-%m-%dT%H') }}.parquet",
-        env={"FN_BASE": FN_STR.format("")},
+        bash_command="gsutil acl ch -u AllUsers:R gs://us-east4-data-eng-scrapers-a02dc940-bucket/data/final/{{ params.FN_BASE }}{{ execution_date.strftime('%Y-%m-%dT%H') }}.parquet",
+        params={"FN_BASE": FN_STR.format("")},
         dag=dag,
     )
 
     public_latest_file = BashOperator(
         task_id="latest_file_public",
-        bash_command="gsutil acl ch -u AllUsers:R gs://us-east4-data-eng-scrapers-a02dc940-bucket/data/final/$(FN_BASE).parquet",
-        env={"FN_BASE": FN_STR.format("")},
+        bash_command="gsutil acl ch -u AllUsers:R gs://us-east4-data-eng-scrapers-a02dc940-bucket/data/final/{{ params.FN_BASE }}.parquet",
+        params={"FN_BASE": FN_STR.format("")},
         dag=dag,
     )
 
