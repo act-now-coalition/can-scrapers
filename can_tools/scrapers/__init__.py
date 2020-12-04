@@ -16,5 +16,6 @@ from can_tools.scrapers.official import (
     NewYorkTests,
     TexasCasesDeaths,
     TexasTests,
+    Wisconsin,
     CDCCovidDataTracker,
 )
