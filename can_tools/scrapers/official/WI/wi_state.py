@@ -13,7 +13,6 @@ class Wisconsin(ArcGIS, DatasetBase):
     ARCGIS_ID = ""  # not applicable on this server
     has_location = True
     location_type = "county"
-    # state_fips = int(us.states.lookup("Wisconsin").fips)
     source = "https://www.dhs.wisconsin.gov/covid-19/data.htm"
 
     # # override query URL since Wisconsin has a self-hosted ArcGIS server with a different URL pattern
@@ -83,7 +82,5 @@ class Wisconsin(ArcGIS, DatasetBase):
             "sex",
             "value",
         ]
-
-        print(out.loc[:, cols_to_keep])
 
         return out.loc[:, cols_to_keep]
