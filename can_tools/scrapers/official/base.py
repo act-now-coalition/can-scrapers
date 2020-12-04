@@ -52,10 +52,10 @@ class StateDashboard(DatasetBase, ABC):
             SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
-            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.location_type loct on LOWER(tt.location_type)=LOWER(loct.name)
             LEFT JOIN meta.locations loc ON (loc.location_type=loct.id) AND (tt.location=loc.location)
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
-            LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
+            LEFT JOIN data.covid_providers cp ON LOWER('{self.provider}')=LOWER(cp.name)
             LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE set value = excluded.value
             """
@@ -67,12 +67,12 @@ class StateDashboard(DatasetBase, ABC):
             SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
                    cd.id as demographic_id, tt.value, cp.id
             FROM {temp_name} tt
-            LEFT JOIN meta.location_type loct on tt.location_type=loct.name
+            LEFT JOIN meta.location_type loct on LOWER(tt.location_type)=LOWER(loct.name)
             LEFT JOIN meta.locations loc on (loc.location_type=loct.id) AND
-                                            (tt.location_name=loc.name) AND
+                                            (LOWER(tt.location_name)=LOWER(loc.name)) AND
                                             (loc.state=LPAD({self.state_fips}::TEXT, 2, '0'))
             LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
-            LEFT JOIN data.covid_providers cp ON '{self.provider}'=cp.name
+            LEFT JOIN data.covid_providers cp ON LOWER('{self.provider}')=LOWER(cp.name)
             LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
             ON CONFLICT {pk} DO UPDATE SET value = excluded.value
             """

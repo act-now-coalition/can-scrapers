@@ -1,13 +1,13 @@
 import pandas as pd
 
 import us
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import ArcGIS
 
 from typing import Any
 
 
-class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
+class PennsylvaniaCasesDeaths(ArcGIS):
     """
     Fetch county level covid data from Pennsylvania's ARCGIS dashboard
     """
@@ -19,6 +19,18 @@ class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
     source = "https://experience.arcgis.com/experience/ed2def13f9b045eda9f7d22dbc9b500e"
     service: str = "COVID_PA_Counties"
 
+    cols_to_keep = [
+        "dt",
+        "location_name",
+        "category",
+        "measurement",
+        "unit",
+        "age",
+        "race",
+        "sex",
+        "value",
+    ]
+
     def fetch(self) -> Any:
         return self.get_all_jsons(self.service, 0, 1)
 
@@ -27,19 +39,16 @@ class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
 
         # Make columns names all-lowercase
         df.columns = [x.lower() for x in list(df)]
+        df = df.rename(columns={"county": "location_name"})
 
         crename = {
-            "cases": CMU(
-                category="cases", measurement="cumulative", unit="unique_people"
-            ),
-            "deaths": CMU(
-                category="deaths", measurement="cumulative", unit="unique_people"
-            ),
-            "probable": CMU(
-                category="cases_probable",
-                measurement="cumulative",
-                unit="unique_people",
-            ),
+            "cases": CMU(category="cases", measurement="cumulative", unit="people"),
+            "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
+            # "probable": CMU(
+            #     category="cases_probable",
+            #     measurement="cumulative",
+            #     unit="people",
+            # ),
             "negative": CMU(
                 category="pcr_tests_negative",
                 measurement="cumulative",
@@ -52,7 +61,7 @@ class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
             ),
         }
         out = (
-            df.melt(id_vars=["county"], value_vars=crename.keys())
+            df.melt(id_vars=["location_name"], value_vars=crename.keys())
             .assign(dt=self._retrieve_dt("US/Eastern"))
             .dropna()
         )
@@ -61,19 +70,7 @@ class PennsylvaniaCasesDeaths(ArcGIS, DatasetBase):
         # Extract category information and add other variable context
         out = self.extract_CMU(out, crename)
 
-        cols_to_keep = [
-            "dt",
-            "county",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, cols_to_keep]
+        return out.loc[:, self.cols_to_keep].query("location_name != 'Pennsylvania'")
 
     def normalize(self, data) -> pd.DataFrame:
         # Normalize data, which is dependent on the current class
@@ -92,6 +89,7 @@ class PennsylvaniaHospitals(PennsylvaniaCasesDeaths):
 
         # Make columns names all-lowercase
         df.columns = [x.lower() for x in list(df)]
+        df = df.rename(columns={"county": "location_name"})
 
         crename = {
             "med_total": CMU(
@@ -112,20 +110,11 @@ class PennsylvaniaHospitals(PennsylvaniaCasesDeaths):
 
         df["dt"] = df["date"].map(self._esri_ts_to_dt)
 
-        out = df.melt(id_vars=["county", "dt"], value_vars=crename.keys()).dropna()
+        out = df.melt(
+            id_vars=["location_name", "dt"], value_vars=crename.keys()
+        ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         out = self.extract_CMU(out, crename)
 
-        cols_to_keep = [
-            "dt",
-            "county",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-        return out.loc[:, cols_to_keep]
+        return out.loc[:, self.cols_to_keep].query("location_name != 'Pennsylvania'")
