@@ -70,6 +70,3 @@ class Maryland(ArcGIS, DatasetBase):
             "value",
         ]
         return out.loc[:, cols_to_keep]
-
-    def validate(self, df, df_hist):
-        return True
