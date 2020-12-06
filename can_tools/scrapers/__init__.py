@@ -6,6 +6,7 @@ from can_tools.scrapers.db_util import TempTable, fast_to_sql
 from can_tools.scrapers.official import (
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
+    Maryland,
     Florida,
     FloridaHospitalCovid,
     FloridaICUUsage,
