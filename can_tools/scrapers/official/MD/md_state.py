@@ -24,14 +24,13 @@ class Maryland(ArcGIS, DatasetBase):
         df.columns = [x.lower() for x in list(df)]
         df["location"] = (self.state_fips * 1000) + df["county_fip"].astype(int)
 
-
         crename = {
             "totalcasecount": CMU(category="cases", measurement="cumulative", unit="people"),
             "totaldeathcount": CMU(category="deaths", measurement="cumulative", unit="people"),
             "total_pop_tested": CMU(
                 category="unspecified_tests_total",
                 measurement="cumulative",
-                unit="people",
+                unit="unique_people",
             ),
             "total_testing_vol": CMU(
                 category="unspecified_tests_total",
