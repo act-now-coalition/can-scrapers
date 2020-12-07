@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pytest
 
-from can_tools import scrapers, ALL_SCRAPERS
+from can_tools import ALL_SCRAPERS
 
 CONN_STR = os.environ.get("PG_CONN_STR", None)
 if CONN_STR is not None:
