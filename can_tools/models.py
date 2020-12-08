@@ -117,9 +117,8 @@ class Location(Base, MetaSchemaMixin):
         nullable=False,
         unique=True,
         primary_key=True,
-        sqlite_on_conflict_primary_key="IGNORE",
     )
-    location_type = Column(String, nullable=False)
+    location_type = Column(String, primary_key=True, nullable=False)
     state_fips = Column(Integer)
     state = Column(String)
     name = Column(String, nullable=False)
@@ -128,7 +127,10 @@ class Location(Base, MetaSchemaMixin):
     longitude = Column(Numeric)
     fullname = Column(String, nullable=False)
 
-    __table_args__ = (UniqueConstraint(location_type, state_fips, name, name="uix_1"),)
+    __table_args__ = (
+        UniqueConstraint(location, location_type, sqlite_on_conflict="IGNORE"),
+        UniqueConstraint(location_type, state_fips, name, name="uix_1"),
+    )
 
     # location_type = relationship(
     #     LocationType, backref=backref("locations", uselist=True, cascade="delete,all")
@@ -208,10 +210,8 @@ class CovidProvider(Base, MetaSchemaMixin):
 
 class _ObservationBase(DataSchemaMixin):
     dt = Column(Date)
-
-    @declared_attr
-    def location(cls):
-        return Column(Integer, FKCascade(Location.location))
+    location = Column(Integer)
+    location_type = Column(String)
 
     @declared_attr
     def variable_id(cls):
@@ -238,6 +238,10 @@ class _ObservationBase(DataSchemaMixin):
                 "variable_id",
                 "demographic_id",
                 sqlite_on_conflict="REPLACE",
+            ),
+            ForeignKeyConstraint(
+                [cls.location, cls.location_type],
+                [Location.location, Location.location_type],
             ),
         )
 
@@ -290,6 +294,7 @@ class CovidUS(Base, APISchemaMixin):
 
 class _TempOfficial:
     id = Column(Integer, primary_key=True, sqlite_on_conflict_primary_key="IGNORE")
+    location_type = Column(String)
     dt = Column(Date, nullable=False)
     age = Column(String, nullable=False)
     race = Column(String, nullable=False)
@@ -320,7 +325,6 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
     __tablename__ = "temp_official_has_location"
     location = Column(
         BigInteger,
-        FKCascade(Location.location),
         nullable=False,
     )
 
@@ -329,12 +333,14 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
             ["age", "race", "sex"],
             [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
         ),
+        ForeignKeyConstraint(
+            ["location", "location_type"], [Location.location, Location.location_type]
+        ),
     )
 
 
 class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
     __tablename__ = "temp_official_no_location"
-    location_type = Column(String)
     state_fips = Column(Integer)
     location_name = Column(String)
 
@@ -344,7 +350,7 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
             [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
         ),
         ForeignKeyConstraint(
-            [location_type, state_fips, location_name],
+            ["location_type", state_fips, location_name],
             [Location.location_type, Location.state_fips, Location.name],
         ),
     )
@@ -358,6 +364,7 @@ def build_insert_from_temp(
     columns = [
         cls.dt,
         Location.location,
+        Location.location_type,
         CovidVariable.id.label("variable_id"),
         CovidDemographic.id.label("demographic_id"),
         cls.value,
@@ -369,18 +376,15 @@ def build_insert_from_temp(
         .where(cls.insert_op == insert_op)
         .select_from(
             (
-                cls.__table__.join(CovidCategory, isouter=True)
-                .join(Location, isouter=True)
-                .join(CovidMeasurement, isouter=True)
-                .join(CovidUnit, isouter=True)
+                cls.__table__.join(Location, isouter=True)
                 .join(CovidProvider, isouter=True)
                 .join(CovidDemographic, isouter=True)
                 .join(
                     CovidVariable,
                     and_(
-                        CovidCategory.category == CovidVariable.category,
-                        CovidMeasurement.name == CovidVariable.measurement,
-                        CovidUnit.name == CovidVariable.unit,
+                        cls.category == CovidVariable.category,
+                        cls.measurement == CovidVariable.measurement,
+                        cls.unit == CovidVariable.unit,
                     ),
                     isouter=True,
                 )

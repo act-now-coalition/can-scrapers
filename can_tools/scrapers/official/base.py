@@ -1,4 +1,3 @@
-import textwrap
 import uuid
 from abc import ABC
 from contextlib import closing
@@ -64,6 +63,7 @@ class StateDashboard(DatasetBase, ABC):
     def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:
         "Internal _put method for dumping data using TempTable class"
         to_ins, insert_op = self._prep_df(df)
+        print("Dataframe has {} rows to start".format(df.shape[0]))
 
         table = (
             TemptableOfficialHasLocation
