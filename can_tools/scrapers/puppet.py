@@ -9,7 +9,6 @@ import tempfile
 from abc import ABC
 
 import pandas as pd
-
 import pyppeteer
 
 from can_tools.scrapers.base import DatasetBase

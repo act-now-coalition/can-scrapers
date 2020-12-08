@@ -1,7 +1,7 @@
+from typing import Any
+
 import pandas as pd
 import us
-
-from typing import Any
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateQueryAPI
