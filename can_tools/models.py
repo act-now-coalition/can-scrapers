@@ -1,5 +1,9 @@
+from contextlib import closing
 from pathlib import Path
-from typing import Dict, List, Tuple, Type
+from typing import Dict, List, Tuple, Type, Union
+
+# from sqlalchemy_utils import create_view
+import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy import (
     BigInteger,
@@ -13,22 +17,84 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.ext import compiler
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.schema import CreateSchema
-from sqlalchemy.sql.expression import null, select
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.sql.ddl import DDL, DDLElement
+from sqlalchemy.sql.expression import and_, select
 from sqlalchemy.sql.functions import func
-from sqlalchemy.orm import backref, relationship, sessionmaker
-from sqlalchemy_utils import create_view
-import pandas as pd
+from sqlalchemy.sql.schema import (
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+)
+from sqlalchemy_utils.view import DropView, create_table_from_selectable
 
 Base = declarative_base()
+
+
+def FKCascade(*args, **kwargs) -> ForeignKey:
+    return ForeignKey(*args, **kwargs, ondelete="CASCADE")
+
+
+class CreateView(DDLElement):
+    def __init__(self, name, selectable, or_replace=False, materialized=False):
+        self.name = name
+        self.selectable = selectable
+        self.materialized = materialized
+        self.or_replace = or_replace
+
+
+@compiler.compiles(CreateView, "sqlite")
+def compile_create_materialized_view(element, compiler, **kw):
+    return "CREATE {m}VIEW {r} {n} AS {s}".format(
+        m="MATERIALIZED " if element.materialized else "",
+        r="IF NOT EXISTS " if element.or_replace else "",
+        n=element.name,
+        s=compiler.sql_compiler.process(element.selectable, literal_binds=True),
+    )
+
+
+@compiler.compiles(CreateView)
+def compile_create_materialized_view(element, compiler, **kw):
+    return "CREATE {r} {m}VIEW {n} AS {s}".format(
+        r="OR REPLACE " if element.or_replace else "",
+        m="MATERIALIZED " if element.materialized else "",
+        n=element.name,
+        s=compiler.sql_compiler.process(element.selectable, literal_binds=True),
+    )
+
+
+def create_view(
+    name,
+    selectable,
+    metadata,
+    or_replace=False,
+    materialized=False,
+    cascade_on_drop=True,
+):
+    table = create_table_from_selectable(
+        name=name, selectable=selectable, metadata=None
+    )
+    CV = CreateView(name, selectable, or_replace, materialized)
+    sa.event.listen(metadata, "after_create", CV)
+
+    @sa.event.listens_for(metadata, "after_create")
+    def create_indexes(target, connection, **kw):
+        for idx in table.indexes:
+            idx.create(connection)
+
+    sa.event.listen(metadata, "before_drop", DropView(name, cascade=cascade_on_drop))
+    return table
 
 
 for schema in ["meta", "data"]:
     event.listen(
         Base.metadata,
         "before_create",
-        CreateSchema(schema).execute_if(dialect="postgresql"),
+        DDL("CREATE SCHEMA IF NOT EXISTS {}".format(schema)).execute_if(
+            dialect="postgresql"
+        ),
     )
 
 
@@ -44,23 +110,25 @@ class APISchemaMixin:
     __table_args__ = {"schema": "api"}
 
 
-class LocationType(Base, MetaSchemaMixin):
-    __tablename__ = "location_types"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-
-
 class Location(Base, MetaSchemaMixin):
     __tablename__ = "locations"
-    id = Column(Integer, primary_key=True)
-    location = Column(BigInteger, nullable=False, unique=True)
-    location_type_id = Column(Integer, ForeignKey(LocationType.id), nullable=False)
+    location = Column(
+        BigInteger,
+        nullable=False,
+        unique=True,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
+    location_type = Column(String, nullable=False)
+    state_fips = Column(Integer)
     state = Column(String)
     name = Column(String, nullable=False)
     area = Column(Numeric)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
     fullname = Column(String, nullable=False)
+
+    __table_args__ = (UniqueConstraint(location_type, state_fips, name, name="uix_1"),)
 
     # location_type = relationship(
     #     LocationType, backref=backref("locations", uselist=True, cascade="delete,all")
@@ -70,68 +138,108 @@ class Location(Base, MetaSchemaMixin):
 class CovidCategory(Base, MetaSchemaMixin):
     __tablename__ = "covid_categories"
     group = Column(String, nullable=False)
-    category = Column(String, unique=True, primary_key=True, index=True)
+    category = Column(
+        String,
+        unique=True,
+        primary_key=True,
+        index=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
 
 
 class CovidMeasurement(Base, MetaSchemaMixin):
     __tablename__ = "covid_measurements"
-    name = Column(String, primary_key=True)
+    name = Column(
+        String,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
 
 
 class CovidUnit(Base, MetaSchemaMixin):
     __tablename__ = "covid_units"
-    name = Column(String, primary_key=True)
+    name = Column(
+        String,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
 
 
 class CovidVariable(Base, MetaSchemaMixin):
     __tablename__ = "covid_variables"
-    id = Column(Integer, primary_key=True)
-    category = Column(String, ForeignKey(CovidCategory.category))
-    measurement = Column(String, ForeignKey(CovidMeasurement.name))
-    unit = Column(String, ForeignKey(CovidUnit.name))
+    id = Column(
+        Integer,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
+    category = Column(String, FKCascade(CovidCategory.category))
+    measurement = Column(String, FKCascade(CovidMeasurement.name))
+    unit = Column(String, FKCascade(CovidUnit.name))
 
     official_obs = relationship("CovidOfficial", backref="variable")
 
 
 class CovidDemographic(Base, MetaSchemaMixin):
     __tablename__ = "covid_demographics"
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
     age = Column(String)
     race = Column(String)
     sex = Column(String)
     official_obs = relationship("CovidOfficial", backref="demographic")
 
+    __table_args__ = (UniqueConstraint(age, race, sex, name="uix_demo"),)
+
 
 class CovidProvider(Base, MetaSchemaMixin):
     __tablename__ = "covid_providers"
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        sqlite_on_conflict_primary_key="IGNORE",
+    )
     name = Column(String, unique=True, nullable=False)
     priority = Column(Integer, nullable=False)
     official_obs = relationship("CovidOfficial", backref="provider")
 
 
 class _ObservationBase(DataSchemaMixin):
-    dt = Column(Date, primary_key=True)
+    dt = Column(Date)
 
     @declared_attr
-    def location_id(cls):
-        return Column(Integer, ForeignKey(Location.location), primary_key=True)
+    def location(cls):
+        return Column(Integer, FKCascade(Location.location))
 
     @declared_attr
     def variable_id(cls):
-        return Column(Integer, ForeignKey(CovidVariable.id), primary_key=True)
+        return Column(Integer, FKCascade(CovidVariable.id))
 
     @declared_attr
     def demographic_id(cls):
-        return Column(Integer, ForeignKey(CovidDemographic.id), primary_key=True)
+        return Column(Integer, FKCascade(CovidDemographic.id))
 
     @declared_attr
     def provider_id(cls):
-        return Column(Integer, ForeignKey(CovidProvider.id))
+        return Column(Integer, FKCascade(CovidProvider.id))
 
     @declared_attr
     def last_updated(cls):
         return Column(DateTime, nullable=False, default=func.now())
+
+    @declared_attr
+    def __table_args__(cls):
+        return (
+            PrimaryKeyConstraint(
+                "dt",
+                "location",
+                "variable_id",
+                "demographic_id",
+                sqlite_on_conflict="REPLACE",
+            ),
+        )
 
     value = Column(Numeric)
 
@@ -142,9 +250,6 @@ class CovidObservation(Base, _ObservationBase):
 
 class CovidOfficial(Base, _ObservationBase):
     __tablename__ = "covid_official"
-    # variable = relationship(CovidVariable)
-    # demographic = relationship(CovidVariable)
-    # provider = relationship(CovidVariable)
 
 
 class CovidUSAFacts(Base, _ObservationBase):
@@ -174,11 +279,132 @@ api_covid_us_statement = select(
     )
 )
 
-api_covid_us = create_view("covid_us", api_covid_us_statement, Base.metadata)
+api_covid_us = create_view(
+    "covid_us", api_covid_us_statement, Base.metadata, or_replace=True
+)
 
 
 class CovidUS(Base, APISchemaMixin):
     __table__ = api_covid_us
+
+
+class _TempOfficial:
+    id = Column(Integer, primary_key=True, sqlite_on_conflict_primary_key="IGNORE")
+    dt = Column(Date, nullable=False)
+    age = Column(String, nullable=False)
+    race = Column(String, nullable=False)
+    sex = Column(String, nullable=False)
+    last_updated = Column(DateTime, nullable=False, default=func.now())
+
+    @declared_attr
+    def provider(cls):
+        return Column(String, FKCascade(CovidProvider.name), nullable=False)
+
+    @declared_attr
+    def category(cls):
+        return Column(String, FKCascade(CovidCategory.category), nullable=False)
+
+    @declared_attr
+    def measurement(cls):
+        return Column(String, FKCascade(CovidMeasurement.name), nullable=False)
+
+    @declared_attr
+    def unit(cls):
+        return Column(String, FKCascade(CovidUnit.name), nullable=False)
+
+    insert_op = Column(String, nullable=False)
+    value = Column(Numeric, nullable=False)
+
+
+class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
+    __tablename__ = "temp_official_has_location"
+    location = Column(
+        BigInteger,
+        FKCascade(Location.location),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["age", "race", "sex"],
+            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+        ),
+    )
+
+
+class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
+    __tablename__ = "temp_official_no_location"
+    location_type = Column(String)
+    state_fips = Column(Integer)
+    location_name = Column(String)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["age", "race", "sex"],
+            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+        ),
+        ForeignKeyConstraint(
+            [location_type, state_fips, location_name],
+            [Location.location_type, Location.state_fips, Location.name],
+        ),
+    )
+
+
+def build_insert_from_temp(
+    insert_op: str,
+    cls: Union[Type[TemptableOfficialNoLocation], Type[TemptableOfficialHasLocation]],
+    engine: Engine,
+):
+    columns = [
+        cls.dt,
+        Location.location,
+        CovidVariable.id.label("variable_id"),
+        CovidDemographic.id.label("demographic_id"),
+        cls.value,
+        CovidProvider.id.label("provider_id"),
+        cls.last_updated,
+    ]
+    selector = (
+        select(columns)
+        .where(cls.insert_op == insert_op)
+        .select_from(
+            (
+                cls.__table__.join(CovidCategory, isouter=True)
+                .join(Location, isouter=True)
+                .join(CovidMeasurement, isouter=True)
+                .join(CovidUnit, isouter=True)
+                .join(CovidProvider, isouter=True)
+                .join(CovidDemographic, isouter=True)
+                .join(
+                    CovidVariable,
+                    and_(
+                        CovidCategory.category == CovidVariable.category,
+                        CovidMeasurement.name == CovidVariable.measurement,
+                        CovidUnit.name == CovidVariable.unit,
+                    ),
+                    isouter=True,
+                )
+            )
+        )
+    )
+    covid_official = CovidOfficial.__table__
+    if "postgres" in engine.dialect.name:
+        from sqlalchemy.dialects.postgresql import insert
+
+        ins = insert(covid_official)
+        statement = ins.from_select([x.name for x in columns], selector)
+
+        return statement.on_conflict_do_update(
+            index_elements=[x.name for x in covid_official.primary_key.columns],
+            set_=dict(
+                value=statement.excluded.value,
+                last_updated=statement.excluded.last_updated,
+                provider_id=statement.excluded.provider_id,
+            ),
+        )
+
+    ins = covid_official.insert()
+    return ins.from_select([x.name for x in columns], selector)
 
 
 def _bootstrap_csv_to_orm(cls: Type[Base]):
@@ -189,49 +415,44 @@ def _bootstrap_csv_to_orm(cls: Type[Base]):
 
 
 def bootstrap(sess) -> Dict[str, List[Base]]:
-    components = dict(
-        location_types=_bootstrap_csv_to_orm(LocationType),
-        categories=_bootstrap_csv_to_orm(CovidCategory),
-        measurements=_bootstrap_csv_to_orm(CovidMeasurement),
-        units=_bootstrap_csv_to_orm(CovidUnit),
-        demographics=_bootstrap_csv_to_orm(CovidDemographic),
-        providers=_bootstrap_csv_to_orm(CovidProvider),
-    )
+    tables: List[Type[Base]] = [
+        CovidCategory,
+        CovidMeasurement,
+        CovidUnit,
+        CovidDemographic,
+        CovidProvider,
+        Location,
+        CovidVariable,
+    ]
 
-    sess.add_all([row for table in components.values() for row in table])
-    sess.commit()
+    # drop in reverse order to avoid constraint issues
+    for t in tables[::-1]:
+        # first delete from table
+        sess.execute(t.__table__.delete())
+        sess.commit()
 
-    # now that we have categories, measurements, units we can populate
-    # variables
-    components["variables"] = _bootstrap_csv_to_orm(CovidVariable)
-    sess.add_all(components["variables"])
-    sess.commit()
-
-    # need to handle locations separately b/c foreign key
-    fn = Location.__tablename__ + ".csv"
-    path = Path(__file__).parent / "bootstrap_data" / fn
-    records = pd.read_csv(path).to_dict(orient="records")
-    location_types = {v.name: v for v in components["location_types"]}
-    locations = []
-    for row in records:
-        location_type_id = location_types[row.pop("location_type")].id
-        locations.append(Location(location_type_id=location_type_id, **row))
-    components["locations"] = locations
-
-    sess.add_all(locations)
-    sess.commit()
+    components = {}
+    for t in tables:
+        rows = _bootstrap_csv_to_orm(t)
+        components[t.__tablename__] = rows
+        sess.add_all(rows)
+        sess.commit()
 
     return components
 
 
-def create_dev_engine() -> Tuple[Engine, sessionmaker]:
+def create_dev_engine(verbose: bool = True) -> Tuple[Engine, sessionmaker]:
     engine = sa.create_engine(
+        # "sqlite:///testdb.sqlite3",
         "sqlite:///:memory:",
-        echo=True,
+        echo=verbose,
         execution_options={
             "schema_translate_map": {"meta": None, "data": None, "api": None}
         },
     )
     Session = sessionmaker(bind=engine)
+    Base.metadata.create_all(engine)
+    with closing(Session()) as sess:
+        bootstrap(sess)
 
     return engine, Session

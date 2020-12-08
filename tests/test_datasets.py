@@ -2,28 +2,19 @@ import os
 
 import pandas as pd
 import pytest
+import sqlalchemy as sa
 
 from can_tools import ALL_SCRAPERS
+from can_tools.models import Base, create_dev_engine
 
-CONN_STR = os.environ.get("PG_CONN_STR", None)
+CONN_STR = os.environ.get("CAN_PG_CONN_STR", None)
+VERBOSE = bool(os.environ.get("CAN_TESTS_VERBOSE", False))
 if CONN_STR is not None:
-
-    def clear_fkeys():
-        import sqlalchemy as sa
-
-        conn = sa.create_engine(CONN_STR)
-        q = "alter table data.covid_official drop constraint if exists {};"
-        cons = [
-            "covid_official_provider_fkey",
-            "covid_official_variable_id_fkey",
-            "covid_official_demographic_id_fkey",
-            "covid_official_location_id_fkey",
-            # "covid_official_pkey",
-        ]
-        for c in cons:
-            conn.execute(q.format(c))
-
-    clear_fkeys()
+    engine = sa.create_engine(CONN_STR, echo=VERBOSE)
+    Base.metadata.reflect(bind=engine)
+    Base.metadata.create_all(bind=engine)
+else:
+    engine, sess = create_dev_engine(verbose=VERBOSE)
 
 
 def _covid_dataset_tests(cls, df):
@@ -66,9 +57,7 @@ def test_datasets(cls):
     assert clean.shape[0] > 0
     _test_data_structure(d, clean)
 
-    if CONN_STR is not None:
-        d.put(CONN_STR, clean)
-        assert True
+    d.put(engine, clean)
 
 
 @pytest.mark.parametrize("cls", ALL_SCRAPERS)
