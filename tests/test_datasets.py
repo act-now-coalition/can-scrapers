@@ -51,12 +51,17 @@ def _test_data_structure(cls, df):
 
 @pytest.mark.parametrize("cls", ALL_SCRAPERS)
 def test_datasets(cls):
-    if cls == CDCCovidDataTracker:
-        pytest.skip("CDC takes too long and causes CI failures")
-        return
     execution_date = pd.to_datetime("2020-11-10")
     d = cls(execution_date)
-    raw = d.fetch()
+
+    slow_scrapers = [CDCCovidDataTracker]
+    if cls in slow_scrapers:
+        # Certain scrapers take too long so we added a "test" argument
+        # that allows `fetch` to only return a subset of data to speed
+        # up the fetch process
+        raw = d.fetch(test=True)
+    else:
+        raw = d.fetch()
     assert raw is not None
     clean = d.normalize(raw)
     assert isinstance(clean, pd.DataFrame)
