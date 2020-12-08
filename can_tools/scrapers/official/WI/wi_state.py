@@ -33,27 +33,27 @@ class Wisconsin(ArcGIS, DatasetBase):
 
         crename = {
             "positive": CMU(
-                category="cases_confirmed",
+                category="cases",
                 measurement="cumulative",
                 unit="people"
             ),
             "deaths": CMU(
-                category="deaths_confirmed",
+                category="deaths",
                 measurement="cumulative",
                 unit="people"
             ),
             "neg_new": CMU(
-                category="unspecified_tests_negative",
+                category="pcr_tests_negative",
                 measurement="new",
                 unit="unique_people",
             ),
             "pos_new": CMU(
-                category="unspecified_tests_positive",
+                category="pcr_tests_positive",
                 measurement="new",
                 unit="unique_people",
             ),
             "test_new": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="new",
                 unit="unique_people",
             ),
@@ -61,7 +61,7 @@ class Wisconsin(ArcGIS, DatasetBase):
         out = (
             df.melt(id_vars=["location"], value_vars=crename.keys())
             .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
+                dt=self._retrieve_dt("US/Central"), vintage=self._retrieve_vintage()
             )
             .dropna()
         )
