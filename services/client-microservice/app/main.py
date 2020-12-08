@@ -3,8 +3,8 @@ from typing import Optional
 
 import covidcountydata as ccd
 from fastapi import FastAPI
-from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -31,7 +31,9 @@ def get_data(request: ClientRequest):
     return data
 
 
-@app.post("/client-request",)
+@app.post(
+    "/client-request",
+)
 async def reports(request: ClientRequest) -> Response:
     df = get_data(request)
     print("This is the df:", type(df))
