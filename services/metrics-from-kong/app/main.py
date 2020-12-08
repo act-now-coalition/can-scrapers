@@ -1,10 +1,10 @@
 import datetime
 import os
 
-from fastapi import FastAPI
-from pydantic import BaseModel
 import sqlalchemy as sa
+from fastapi import FastAPI
 from mixpanel import Mixpanel
+from pydantic import BaseModel
 
 CONN_STR = os.environ.get("SQL_CONN_STR", "postgresql://localhost:5432/covid")
 engine = sa.create_engine(CONN_STR)

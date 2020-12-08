@@ -1,6 +1,6 @@
 import pandas as pd
 
-from can_tools.scrapers.base import DatasetBaseNoDate, CMU
+from can_tools.scrapers.base import CMU, DatasetBaseNoDate
 from can_tools.scrapers.official.IL.il_historical import IllinoisHistorical
 
 

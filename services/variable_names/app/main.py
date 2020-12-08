@@ -2,15 +2,16 @@ import asyncio
 import os
 from typing import List
 
+import requests
+import sqlalchemy as sa
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
-import sqlalchemy as sa
 
 # set up sqlalchemy
 CONN_STR = os.environ.get(
-    "SQL_CONN_STR", "postgresql://localhost:5432/covid",
+    "SQL_CONN_STR",
+    "postgresql://localhost:5432/covid",
 )
 CLEAN_SWAGGER_URL = os.environ.get("CLEAN_SWAGGER_URL", None)
 if CLEAN_SWAGGER_URL is None:
