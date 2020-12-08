@@ -26,7 +26,7 @@ class CDCCovidDataTracker(FederalDashboard):
             # When testing, choos random 3 states
             urls = map(
                 lambda x: fetcher_url.format(x.abbr.lower()),
-                random.sample(us.STATES, 3)
+                random.sample(us.STATES, 3),
             )
         else:
             urls = map(lambda x: fetcher_url.format(x.abbr.lower()), us.STATES)
