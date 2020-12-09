@@ -10,4 +10,5 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     NewYorkTests,
     TexasCasesDeaths,
     TexasTests,
+    Wisconsin,
 )
