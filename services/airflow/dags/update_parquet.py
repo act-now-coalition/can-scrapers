@@ -6,7 +6,6 @@ import pandas as pd
 from airflow import DAG
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.bash_operator import BashOperator
-from airflow.operators.postgres_operator import PostgresOperator
 from airflow.operators.python_operator import PythonOperator
 from common import default_dag_kw
 
@@ -23,7 +22,7 @@ def export_to_csv():
         with closing(db.get_conn()) as conn:
             with closing(conn.cursor()) as cur:
                 cur.copy_expert(
-                    "COPY (SELECT * From api.covid_us) TO STDOUT CSV HEADER;", f
+                    "COPY (SELECT * From covid_us) TO STDOUT CSV HEADER;", f
                 )
 
 
@@ -53,13 +52,6 @@ with DAG(
         dag=dag,
     )
 
-    update_table = PostgresOperator(
-        task_id="update_covid_us_matview",
-        sql="REFRESH MATERIALIZED VIEW api.covid_us;",
-        dag=dag,
-        postgres_conn_id="postgres_covid",
-    )
-
     public_first_vintage_fn = BashOperator(
         task_id="vintage_file_public",
         bash_command="gsutil acl ch -u AllUsers:R gs://us-east4-data-eng-scrapers-a02dc940-bucket/data/final/{{ params.FN_BASE }}{{ execution_date.strftime('%Y-%m-%dT%H') }}.parquet",
@@ -74,7 +66,7 @@ with DAG(
         dag=dag,
     )
 
-    update_table >> csv_export >> to_parquet >> [
+    csv_export >> to_parquet >> [
         public_first_vintage_fn,
         public_latest_file,
     ]
