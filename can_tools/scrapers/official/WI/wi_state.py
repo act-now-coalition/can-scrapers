@@ -32,16 +32,8 @@ class Wisconsin(ArcGIS, DatasetBase):
         df["location"] = df["geoid"].astype(int)
 
         crename = {
-            "positive": CMU(
-                category="cases",
-                measurement="cumulative",
-                unit="people"
-            ),
-            "deaths": CMU(
-                category="deaths",
-                measurement="cumulative",
-                unit="people"
-            ),
+            "positive": CMU(category="cases", measurement="cumulative", unit="people"),
+            "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
             "neg_new": CMU(
                 category="pcr_tests_negative",
                 measurement="new",
