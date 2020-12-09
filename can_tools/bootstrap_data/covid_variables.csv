@@ -145,3 +145,6 @@ unspecified_tests_negative,new,unknown
 unspecified_tests_positive,new,unknown
 pcr_tests_positive,rolling_average_7_day,percentage
 pcr_tests_total,rolling_average_7_day,specimens
+hospital_beds_in_use,current,percentage
+hospital_beds_in_use_covid,current,percentage
+adult_icu_beds_in_use,current,percentage
