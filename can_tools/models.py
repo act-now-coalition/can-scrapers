@@ -208,7 +208,7 @@ class CovidProvider(Base, MetaSchemaMixin):
     official_obs = relationship("CovidOfficial", backref="provider")
 
 
-class _ObservationBase(DataSchemaMixin):
+class _ObservationBase:
     dt = Column(Date)
     location = Column(Integer)
     location_type = Column(String)
@@ -243,20 +243,21 @@ class _ObservationBase(DataSchemaMixin):
                 [cls.location, cls.location_type],
                 [Location.location, Location.location_type],
             ),
+            {"schema": "data"},
         )
 
     value = Column(Numeric)
 
 
-class CovidObservation(Base, _ObservationBase):
+class CovidObservation(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_observations"
 
 
-class CovidOfficial(Base, _ObservationBase):
+class CovidOfficial(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_official"
 
 
-class CovidUSAFacts(Base, _ObservationBase):
+class CovidUSAFacts(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_usafacts"
 
 
@@ -445,10 +446,11 @@ def bootstrap(sess) -> Dict[str, List[Base]]:
     return components
 
 
-def create_dev_engine(verbose: bool = True) -> Tuple[Engine, sessionmaker]:
+def create_dev_engine(
+    verbose: bool = True, path: str = "/:memory:"
+) -> Tuple[Engine, sessionmaker]:
     engine = sa.create_engine(
-        # "sqlite:///testdb.sqlite3",
-        "sqlite:///:memory:",
+        f"sqlite://{path}",
         echo=verbose,
         execution_options={
             "schema_translate_map": {"meta": None, "data": None, "api": None}
