@@ -114,8 +114,28 @@ class PennsylvaniaHospitals(PennsylvaniaCasesDeaths):
         out = df.melt(
             id_vars=["location_name", "dt"], value_vars=crename.keys()
         ).dropna()
+
+        non_county_regions = [
+            "Pennsylvania",
+            "East Central HCC",
+            "HCC of Southwest PA",
+            "Keystone HCC",
+            "North Central HCC",
+            "Northeast",
+            "Northcentral",
+            "Northeast HCC",
+            "Northern Tier HCC",
+            "Northwest",
+            "Southcentral",
+            "Southeast HCC",
+            "Southeast",
+            "Southwest",
+        ]
+
+        out = out[~out["location_name"].isin(non_county_regions)]
+
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         out = self.extract_CMU(out, crename)
 
-        return out.loc[:, self.cols_to_keep].query("location_name != 'Pennsylvania'")
+        return out.loc[:, self.cols_to_keep]
