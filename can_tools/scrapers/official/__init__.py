@@ -1,10 +1,9 @@
 from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHospitals
-
 from can_tools.scrapers.official.FL import (
     Florida,
     FloridaHospitalCovid,
-    FloridaICUUsage,
     FloridaHospitalUsage,
+    FloridaICUUsage,
 )
 
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical

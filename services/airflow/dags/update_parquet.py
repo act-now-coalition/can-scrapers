@@ -1,15 +1,13 @@
-from contextlib import closing
 import os
 import pathlib
+from contextlib import closing
 
 import pandas as pd
-
 from airflow import DAG
 from airflow.hooks.postgres_hook import PostgresHook
-from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.postgres_operator import PostgresOperator
-
+from airflow.operators.python_operator import PythonOperator
 from common import default_dag_kw
 
 DATA_PATH = pathlib.Path(os.environ["DATAPATH"]) / "final"

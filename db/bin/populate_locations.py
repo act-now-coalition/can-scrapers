@@ -1,4 +1,5 @@
 import pandas as pd
+
 from can_tools.scrapers.uscensus.geo import USGeoBaseAPI
 
 d = USGeoBaseAPI("state")

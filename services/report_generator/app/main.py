@@ -1,10 +1,10 @@
 import datetime
 import os
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
+import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
 from pydantic import BaseModel
 
 API_URL = os.environ.get("API_URL", None)
@@ -19,7 +19,6 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
-
 
 
 class CountyReport(BaseModel):
@@ -77,7 +76,6 @@ def aggregate_week_updates(week_state):
 
 def flatten_by_date(x):
     return x.drop(["start_date", "state"], axis=1).to_dict(orient="records")
-
 
 
 def get_reports():
