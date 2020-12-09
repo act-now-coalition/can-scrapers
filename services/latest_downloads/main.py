@@ -1,9 +1,10 @@
+import datetime
 import logging
 import os
+
+import requests
 from flask import Flask, abort, make_response
 from flask_cors import CORS
-import datetime
-import requests
 
 # Change the format of messages logged to Stackdriver
 logging.basicConfig(format="%(message)s", level=logging.INFO)

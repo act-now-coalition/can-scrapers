@@ -131,5 +131,14 @@ dmypy.json
 .terraform/
 account.json
 node_modules
-__pycache__/
+
+
+# Visual Studio
 .vscode/
+/*.pyproj
+/*.user
+/*.sln
+/.vs
+/TestResults
+
+

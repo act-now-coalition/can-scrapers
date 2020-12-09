@@ -1,9 +1,11 @@
+import random
 import requests
+
 import pandas as pd
 import us
 
-from can_tools.scrapers.official.base import FederalDashboard
 from can_tools.scrapers.base import CMU
+from can_tools.scrapers.official.base import FederalDashboard
 
 
 class CDCCovidDataTracker(FederalDashboard):
@@ -11,7 +13,7 @@ class CDCCovidDataTracker(FederalDashboard):
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
 
-    def fetch(self):
+    def fetch(self, test=False):
         # reset exceptions
         self.exceptions = []
         fetcher_url = (
@@ -20,8 +22,15 @@ class CDCCovidDataTracker(FederalDashboard):
         )
 
         # Iterate through the states collecting the time-series data
-        urls = [fetcher_url.format(state.abbr.lower()) for state in us.STATES]
-        responses = [requests.get(u) for u in urls]
+        if test:
+            # When testing, choos random 3 states
+            urls = map(
+                lambda x: fetcher_url.format(x.abbr.lower()),
+                random.sample(us.STATES, 3),
+            )
+        else:
+            urls = map(lambda x: fetcher_url.format(x.abbr.lower()), us.STATES)
+        responses = list(map(requests.get, urls))
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
             bad_urls = "\n".join([urls[i] for i in bad_idx])

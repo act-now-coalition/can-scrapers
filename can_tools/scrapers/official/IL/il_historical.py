@@ -2,8 +2,7 @@ import pandas as pd
 import requests
 import us
 
-
-from can_tools.scrapers.base import DatasetBaseNoDate, CMU
+from can_tools.scrapers.base import CMU, DatasetBaseNoDate
 from can_tools.scrapers.official.base import StateDashboard
 
 
