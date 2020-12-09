@@ -51,7 +51,7 @@ def _test_data_structure(cls, df):
 
 @pytest.mark.parametrize("cls", ALL_SCRAPERS)
 def test_datasets(cls):
-    execution_date = pd.to_datetime("2020-11-10")
+    execution_date = (pd.Timestamp.today() - pd.Timedelta('1 days')).strftime('%Y-%m-%d')
     d = cls(execution_date)
 
     slow_scrapers = [CDCCovidDataTracker]
