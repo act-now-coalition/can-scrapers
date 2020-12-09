@@ -34,8 +34,9 @@ class MissouriBase(
         "value",
     ]
 
-    #def clean_desoto(self, df: pd.DataFrame):
+    # def clean_desoto(self, df: pd.DataFrame):
     #    df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
+
 
 async def _special_tableau_handler(page, tmpdirname):
     # Get a reference to the page that was just opened
@@ -44,37 +45,42 @@ async def _special_tableau_handler(page, tmpdirname):
 
     import requests
     import os
-    await popup.waitForSelector('.csvLink_summary')
-    url = await popup.querySelectorEval('.csvLink_summary', 'node => node.href')
+
+    await popup.waitForSelector(".csvLink_summary")
+    url = await popup.querySelectorEval(".csvLink_summary", "node => node.href")
     data = requests.get(url)
-    open(os.path.join(tmpdirname, 'Metrics_by_Test_Date_by_County_data.csv'), 'wb').write(data.content)
+    open(
+        os.path.join(tmpdirname, "Metrics_by_Test_Date_by_County_data.csv"), "wb"
+    ).write(data.content)
 
 
 class MissouriState(MissouriBase):
     """
     Fetch details about overall Missouri state testing by county
     """
+
     headless = True
     url = MissouriBase.source.format(tab="MetricsbyTestDatebyCounty")
 
-# TODO0: ZW: The Data tab below is better... I think. Remove this once confirmed which data to use
-#    # Download Crosstab from Tableau
-#    tableau_click_selector_list: List[str] = [
-#        "@data-tb-test-id = 'DownloadCrosstab-Button'",
-#        "@data-tb-test-id = 'crosstab-options-dialog-radio-csv-Label'",
-#        "@data-tb-test-id = 'export-crosstab-export-Button'"
-#    ]
+    # TODO0: ZW: The Data tab below is better... I think. Remove this once confirmed which data to use
+    #    # Download Crosstab from Tableau
+    #    tableau_click_selector_list: List[str] = [
+    #        "@data-tb-test-id = 'DownloadCrosstab-Button'",
+    #        "@data-tb-test-id = 'crosstab-options-dialog-radio-csv-Label'",
+    #        "@data-tb-test-id = 'export-crosstab-export-Button'"
+    #    ]
 
     # Download Data from Tableau
     tableau_click_selector_list: List[str] = [
         "@data-tb-test-id = 'DownloadData-Button'",
-        _special_tableau_handler
+        _special_tableau_handler,
     ]
 
     async def _pre_click(self, page: pyppeteer.page.Page):
-        # TODO0: ZW: This page is slow to load. Adding wait. 
+        # TODO0: ZW: This page is slow to load. Adding wait.
         #  Should probably find a better selector to use to determine that the page has loaded
         import asyncio
+
         await asyncio.sleep(5)
         await page.waitForSelector("#main-content")
 
@@ -119,11 +125,11 @@ class MissouriState(MissouriBase):
         out = self.extract_CMU(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
-        #self.clean_desoto(out)
+        # self.clean_desoto(out)
         return out.loc[:, self.out_cols]
 
 
-#class MissouriICUUsage(MissouriHospitalUsage):
+# class MissouriICUUsage(MissouriHospitalUsage):
 #    """
 #    Fetch ICU usage details from Tableau dashboard
 #    """
@@ -196,7 +202,7 @@ class MissouriState(MissouriBase):
 #        return out.loc[:, self.out_cols]
 
 
-#class MissouriHospitalCovid(MissouriHospitalBase):
+# class MissouriHospitalCovid(MissouriHospitalBase):
 #    """
 #    Fetch count of all hospital beds in use by covid patients
 #    """

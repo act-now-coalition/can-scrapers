@@ -46,17 +46,17 @@ class with_page:
 
     async def __aenter__(self):
         args = [
-                "--disable-dev-shm-usage",
-                "--disable-setuid-sandbox",
-                "--disable-gpu",
-                "--no-zygote",
-            ]
+            "--disable-dev-shm-usage",
+            "--disable-setuid-sandbox",
+            "--disable-gpu",
+            "--no-zygote",
+        ]
 
-        if os.name != 'nt':
+        if os.name != "nt":
             # Windows does not work with these arguments
             args.append("--single-process")
             args.append("--no-sandbox")
-                
+
         self.browser = await pyppeteer.launch(
             headless=self.headless,
             args=args,
@@ -67,9 +67,9 @@ class with_page:
         await page.setUserAgent(CHROME_AGENT)
         await page.setViewport(DEFAULT_VIEWPORT)
 
-        # Required if site is using F5 Big-IP ASM. 
+        # Required if site is using F5 Big-IP ASM.
         # You can tell by looking at the cookies and if you see one called
-        # TSxxxxxxxxxx and/or BIGipServerSDC_xxxxxxx, 
+        # TSxxxxxxxxxx and/or BIGipServerSDC_xxxxxxx,
         # https://stackoverflow.com/questions/52330611/anyone-know-what-a-ts-cookie-is-and-what-kind-of-data-its-for
         await page.setBypassCSP(True)
 
@@ -107,7 +107,7 @@ class TableauNeedsClick(DatasetBase, ABC):
     headless: bool = True
     download_button_id: str = "#download-ToolbarButton"
     tableau_click_selector_list: List[str] = [
-    	# Default is just clicking the Crosstab button
+        # Default is just clicking the Crosstab button
         "@data-tb-test-id = 'DownloadCrosstab-Button'"
     ]
 
@@ -204,13 +204,11 @@ class TableauNeedsClick(DatasetBase, ABC):
                 await button.click()
 
                 for click_selector in self.tableau_click_selector_list:
-                    if hasattr(click_selector, '__call__'):
+                    if hasattr(click_selector, "__call__"):
                         # Use for special handling in an instance specific function
                         await click_selector(page, tmpdirname)
                     else:
-                        selector = await page.waitForXPath(
-                            f"//*[{click_selector}]"
-                        )
+                        selector = await page.waitForXPath(f"//*[{click_selector}]")
                         await selector.click()
                         await asyncio.sleep(2)
 
@@ -222,8 +220,6 @@ class TableauNeedsClick(DatasetBase, ABC):
                 else:
                     # TODO0: ZW: Throw / report error?
                     pass
-
-
 
                 # call the post_download method to process download
                 df = await self._post_download(tmpdirname)
