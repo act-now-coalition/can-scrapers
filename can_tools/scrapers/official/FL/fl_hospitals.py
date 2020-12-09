@@ -175,9 +175,9 @@ class FloridaHospitalCovid(FloridaHospitalBase):
         # Clean up column names
         df.columns = ["location_name", "value"]
         df["location_name"] = df["location_name"].str.title()
-        df = df.query("location_name != 'Grand Total'")
+        df = df.query("location_name != 'Grand Total'").copy()
 
-        # Covnert to numeric
+        # Convert to numeric
         df["value"] = pd.to_numeric(df["value"].astype(str).str.replace(",", ""))
 
         # Set category/measurment/unit/age/sex/race

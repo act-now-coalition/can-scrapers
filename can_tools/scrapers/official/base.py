@@ -8,6 +8,7 @@ import requests
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 
+from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
     TemptableOfficialHasLocation,
     TemptableOfficialNoLocation,
@@ -52,7 +53,7 @@ class StateDashboard(DatasetBase, ABC):
         and the insert_op string
         """
         insert_op = str(uuid.uuid4())
-        to_ins = df.rename(columns={"vintage": "last_update"}).assign(
+        to_ins = df.rename(columns={"vintage": "last_updated"}).assign(
             insert_op=insert_op, provider=self.provider, state_fips=self.state_fips
         )
         if "location_type" not in list(to_ins):
@@ -70,27 +71,31 @@ class StateDashboard(DatasetBase, ABC):
             if self.has_location
             else TemptableOfficialNoLocation
         )
+
+        worked = False
         with closing(sessionmaker(engine)()) as sess:
             try:
-                # upload to temp table
-                sess.bulk_insert_mappings(table, to_ins.to_dict(orient="records"))
-                sess.commit()
+                fast_append_to_sql(to_ins, engine, table)
+                print("Inserted all rows to temp table")
 
                 # then insert from temp table
                 ins = build_insert_from_temp(insert_op, table, engine)
                 res = sess.execute(ins)
                 sess.commit()
                 print("Inserted {} rows".format(res.rowcount))
+                worked = True
             finally:
                 deleter = table.__table__.delete().where(table.insert_op == insert_op)
                 res_delete = sess.execute(deleter)
                 sess.commit()
                 print("Removed the {} rows from temp table".format(res_delete.rowcount))
 
+        return worked
+
 
 class CountyDashboard(StateDashboard, ABC):
     """
-    Parent class for scrapers working directly with County dashbaards
+    Parent class for scrapers working directly with County dashboards
 
     See `StateDashboard` for more information
     """
@@ -113,7 +118,7 @@ class FederalDashboard(StateDashboard, ABC):
         and the insert_op string
         """
         insert_op = str(uuid.uuid4())
-        to_ins = df.rename(columns={"vintage": "last_update"}).assign(
+        to_ins = df.rename(columns={"vintage": "last_updated"}).assign(
             insert_op=insert_op, provider=self.provider
         )
         if "location_type" not in list(to_ins):
