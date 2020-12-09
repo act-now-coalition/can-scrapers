@@ -29,11 +29,16 @@ def fast_append_to_sql(
     with closing(engine.connect()) as con:
 
         if engine.dialect.name == "postgresql":
+            dest = (
+                "{}.{}".format(table.schema, table.name)
+                if table.schema is not None
+                else table.name
+            )
             with io.StringIO() as csv:
                 temp_df.to_csv(csv, sep="\t", columns=cols, index=False, header=False)
                 csv.seek(0)
                 with closing(con.connection.cursor()) as cur:
-                    cur.copy_from(csv, table.name, columns=colnames, null="")
+                    cur.copy_from(csv, dest, columns=colnames, null="")
                     cur.connection.commit()
         elif engine.dialect.name == "sqlite":
             # pandas is ok for sqlite

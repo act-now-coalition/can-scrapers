@@ -130,6 +130,7 @@ class Location(Base, MetaSchemaMixin):
     __table_args__ = (
         UniqueConstraint(location, location_type, sqlite_on_conflict="IGNORE"),
         UniqueConstraint(location_type, state_fips, name, name="uix_1"),
+        {"schema": "meta"},
     )
 
     # location_type = relationship(
@@ -181,7 +182,7 @@ class CovidVariable(Base, MetaSchemaMixin):
     official_obs = relationship("CovidOfficial", backref="variable")
 
 
-class CovidDemographic(Base, MetaSchemaMixin):
+class CovidDemographic(Base):
     __tablename__ = "covid_demographics"
     id = Column(
         Integer,
@@ -193,7 +194,10 @@ class CovidDemographic(Base, MetaSchemaMixin):
     sex = Column(String)
     official_obs = relationship("CovidOfficial", backref="demographic")
 
-    __table_args__ = (UniqueConstraint(age, race, sex, name="uix_demo"),)
+    __table_args__ = (
+        UniqueConstraint(age, race, sex, name="uix_demo"),
+        {"schema": "meta"},
+    )
 
 
 class CovidProvider(Base, MetaSchemaMixin):
@@ -337,6 +341,7 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
         ForeignKeyConstraint(
             ["location", "location_type"], [Location.location, Location.location_type]
         ),
+        {"schema": "data"},
     )
 
 
@@ -354,6 +359,7 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
             ["location_type", state_fips, location_name],
             [Location.location_type, Location.state_fips, Location.name],
         ),
+        {"schema": "data"},
     )
 
 
