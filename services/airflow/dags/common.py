@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from urllib.error import HTTPError
 
 import pandas as pd
-
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.python_operator import PythonOperator
+
 from can_tools.scrapers.base import DatasetBase
 
 
@@ -84,15 +84,15 @@ def make_put_op(cls, task_id="put") -> PythonOperator:
     def inner(ts, **kw):
         dt = pd.to_datetime(ts)
         c: DatasetBase = cls(execution_dt=dt)
-        connstr = PostgresHook(postgres_conn_id="postgres_covid").get_uri()
+        engine = PostgresHook(postgres_conn_id="postgres_covid").get_sqlalchemy_engine()
         print(f"dt: {dt} and ts: {ts}")
         print("About to put...")
         try:
-            is_valid = c._put(connstr)
-            if is_valid:
-                print("Successfully validated!")
+            worked = c._put(engine)
+            if worked:
+                print("Successfully put!")
             else:
-                raise ValueError("Unknown error normalizing")
+                raise ValueError("Unknown error putting data")
         except Exception as e:
             raise e
 
@@ -106,7 +106,7 @@ def _make_default_args(**kw):
         "depends_on_past": False,
         "start_date": datetime(2020, 5, 18, 9, 30),
         "end_date": datetime(2022, 5, 5, 9, 30),
-        "email": ["spencer.lyon@valorumdata.com"],
+        "email": ["spencer@covidactnow.org"],
         "email_on_failure": True,
         "email_on_retry": False,
         "retries": 2,

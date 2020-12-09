@@ -7,5 +7,6 @@ pyppeteer==0.2.2
 pytest==6.1.2
 requests==2.24.0
 sqlalchemy==1.3.20
+sqlalchemy_utils==0.36.8
 us==2.0.2
 xlrd==1.2.0
