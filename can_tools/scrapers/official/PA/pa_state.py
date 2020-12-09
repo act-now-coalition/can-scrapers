@@ -64,6 +64,7 @@ class PennsylvaniaCasesDeaths(ArcGIS):
             df.melt(id_vars=["location_name"], value_vars=crename.keys())
             .assign(dt=self._retrieve_dt("US/Eastern"))
             .dropna()
+            .replace(dict(location_name=dict(Mckean="McKean")))
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
