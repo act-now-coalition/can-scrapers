@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 
@@ -21,7 +22,9 @@ def nha_data_ingest_trigger(event, context):
         None
     """
     # URL to place post to
-    url = os.environ.get("NHA_SERVICE_URL", "https://can-nha-reports-inunbrtacq-uk.a.run.app/nha")
+    url = os.environ.get(
+        "NHA_SERVICE_URL", "https://can-nha-reports-inunbrtacq-uk.a.run.app/nha"
+    )
     bucket, name = event["bucket"], event["name"]
     print(f"Posting {bucket}:{name}")
 

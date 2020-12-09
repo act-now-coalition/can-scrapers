@@ -1,11 +1,18 @@
-import textwrap
-
+import uuid
 from abc import ABC
-from typing import Any, Dict, List, Optional, Union
+from contextlib import closing
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import requests
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.orm.session import sessionmaker
 
+from can_tools.models import (
+    TemptableOfficialHasLocation,
+    TemptableOfficialNoLocation,
+    build_insert_from_temp,
+)
 from can_tools.scrapers.base import DatasetBase
 
 
@@ -37,47 +44,48 @@ class StateDashboard(DatasetBase, ABC):
     data_type: str = "covid"
     has_location: bool
     state_fips: int
+    location_type: str
 
-    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
-        super(StateDashboard, self).__init__(execution_dt)
+    def _prep_df(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
+        """
+        prepare dataframe for `put` operation. Returns a modified DataFrame
+        and the insert_op string
+        """
+        insert_op = str(uuid.uuid4())
+        to_ins = df.rename(columns={"vintage": "last_update"}).assign(
+            insert_op=insert_op, provider=self.provider, state_fips=self.state_fips
+        )
+        if "location_type" not in list(to_ins):
+            to_ins["location_type"] = self.location_type
 
-    def _insert_query(self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str):
+        return to_ins, insert_op
 
-        out = ""
-        if self.has_location:
-            out = f"""
-            INSERT INTO data.{table_name} (
-              vintage, dt, location_id, variable_id, demographic_id, value, provider
-            )
-            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
-                   cd.id as demographic_id, tt.value, cp.id
-            FROM {temp_name} tt
-            LEFT JOIN meta.location_type loct on LOWER(tt.location_type)=LOWER(loct.name)
-            LEFT JOIN meta.locations loc ON (loc.location_type=loct.id) AND (tt.location=loc.location)
-            LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
-            LEFT JOIN data.covid_providers cp ON LOWER('{self.provider}')=LOWER(cp.name)
-            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
-            ON CONFLICT {pk} DO UPDATE set value = excluded.value
-            """
-        elif "location_name" in list(df):
-            out = f"""
-            INSERT INTO data.{table_name} (
-              vintage, dt, location_id, variable_id, demographic_id, value, provider
-            )
-            SELECT tt.vintage, tt.dt, loc.id as location_id, cv.id as variable_id,
-                   cd.id as demographic_id, tt.value, cp.id
-            FROM {temp_name} tt
-            LEFT JOIN meta.location_type loct on LOWER(tt.location_type)=LOWER(loct.name)
-            LEFT JOIN meta.locations loc on (loc.location_type=loct.id) AND
-                                            (LOWER(tt.location_name)=LOWER(loc.name)) AND
-                                            (loc.state=LPAD({self.state_fips}::TEXT, 2, '0'))
-            LEFT JOIN meta.covid_variables cv ON tt.category=cv.category AND tt.measurement=cv.measurement AND tt.unit=cv.unit
-            LEFT JOIN data.covid_providers cp ON LOWER('{self.provider}')=LOWER(cp.name)
-            LEFT JOIN meta.covid_demographics cd ON tt.age=cd.age AND tt.race=cd.race AND tt.sex=cd.sex
-            ON CONFLICT {pk} DO UPDATE SET value = excluded.value
-            """
+    def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:
+        "Internal _put method for dumping data using TempTable class"
+        to_ins, insert_op = self._prep_df(df)
+        print("Dataframe has {} rows to start".format(df.shape[0]))
 
-        return textwrap.dedent(out)
+        table = (
+            TemptableOfficialHasLocation
+            if self.has_location
+            else TemptableOfficialNoLocation
+        )
+        with closing(sessionmaker(engine)()) as sess:
+            try:
+                # upload to temp table
+                sess.bulk_insert_mappings(table, to_ins.to_dict(orient="records"))
+                sess.commit()
+
+                # then insert from temp table
+                ins = build_insert_from_temp(insert_op, table, engine)
+                res = sess.execute(ins)
+                sess.commit()
+                print("Inserted {} rows".format(res.rowcount))
+            finally:
+                deleter = table.__table__.delete().where(table.insert_op == insert_op)
+                res_delete = sess.execute(deleter)
+                sess.commit()
+                print("Removed the {} rows from temp table".format(res_delete.rowcount))
 
 
 class CountyDashboard(StateDashboard, ABC):
@@ -89,9 +97,6 @@ class CountyDashboard(StateDashboard, ABC):
 
     provider: str = "county"
 
-    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
-        super(CountyDashboard, self).__init__(execution_dt)
-
 
 class FederalDashboard(StateDashboard, ABC):
     """
@@ -102,8 +107,19 @@ class FederalDashboard(StateDashboard, ABC):
 
     provider: str = "federal"
 
-    def __init__(self, execution_dt: pd.Timestamp, *args, **kwargs):
-        super(FederalDashboard, self).__init__(execution_dt)
+    def _prep_df(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
+        """
+        prepare dataframe for `put` operation. Returns a modified DataFrame
+        and the insert_op string
+        """
+        insert_op = str(uuid.uuid4())
+        to_ins = df.rename(columns={"vintage": "last_update"}).assign(
+            insert_op=insert_op, provider=self.provider
+        )
+        if "location_type" not in list(to_ins):
+            to_ins["location_type"] = self.location_type
+
+        return to_ins, insert_op
 
 
 class ArcGIS(StateDashboard, ABC):
@@ -122,10 +138,10 @@ class ArcGIS(StateDashboard, ABC):
 
     def __init__(
         self,
-        execution_dt: pd.Timestamp,
+        execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
         params: Optional[Dict[str, Union[int, str]]] = None,
     ):
-        super(ArcGIS, self).__init__(execution_dt)
+        super().__init__(execution_dt)
 
         # Default parameter values
         if params is None:

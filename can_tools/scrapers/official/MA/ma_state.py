@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import DatasetBaseNeedsDate, CMU
+from can_tools.scrapers.base import CMU, DatasetBaseNeedsDate
 from can_tools.scrapers.official.base import StateDashboard
 
 

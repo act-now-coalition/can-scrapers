@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+
 import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -215,9 +216,7 @@ def clean_swagger():
     js["info"]["version"] = ""
     js["schemes"] = ["https"]
     js["securityDefinitions"] = {
-        "APIKeyHeader": {
-            "type": "apiKey", "in": "header", "name": "apikey"
-        },
+        "APIKeyHeader": {"type": "apiKey", "in": "header", "name": "apikey"},
     }
     # js["security"] = [
     #     "APIKeyHeader",

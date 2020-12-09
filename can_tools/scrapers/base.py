@@ -1,15 +1,11 @@
-import io
 import os
 import pickle
-import random
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-import sqlalchemy as sa
-
-from can_tools.scrapers.db_util import TempTable
+from sqlalchemy.engine.base import Engine
 
 
 class CMU:
@@ -28,50 +24,6 @@ class CMU:
         self.age = age
         self.race = race
         self.sex = sex
-
-
-def build_on_conflict_do_nothing_query(
-    columns: List[str],
-    dest_table: str,
-    temp_table: str,
-    unique_constraint: str,
-    dest_schema: str = "data",
-) -> str:
-    """
-    Construct sql query to insert data originally from `df` into `dest_schema.dest_table` via the
-    temporary database table `temp_table`.
-
-    If there are any conflicts on the unique index `pk`, do nothing
-
-    Parameters
-    ----------
-    columns: List[str]
-        A list of column names found in the temporary table that should be inserted into the final table
-    dest_table : str
-        The destination table
-    temp_table : str
-        The temporary table name (in public schema)
-    unique_constraint : str
-        A string referencing the unique key for the destination table
-    dest_schema : str
-        The name of the postgres schema for the destination
-
-    Returns
-    -------
-    query: str
-        The SQL query for copying data from the tempmorary table to the destination one
-
-    """
-    colnames = ", ".join(columns)
-    cols = "(" + colnames + ")"
-    if not unique_constraint.startswith("("):
-        unique_constraint = f"({unique_constraint})"
-
-    return f"""
-    INSERT INTO {dest_schema}.{dest_table} {cols}
-    SELECT {colnames} from {temp_table}
-    ON CONFLICT {unique_constraint} DO NOTHING;
-    """
 
 
 class DatasetBase(ABC):
@@ -171,10 +123,11 @@ class DatasetBase(ABC):
             A copy of the DataFrame passed in that has new columns
             "category", "measurement", and "unit"
         """
-        foo = df[var_name]
-        return df.assign(
-            **{c: foo.map(lambda x: cmu[x].__getattribute__(c)) for c in columns}
-        )
+        variable_column = df[var_name]
+        out = df.copy()
+        for col in columns:
+            out[col] = variable_column.map(lambda x: cmu[x].__getattribute__(col))
+        return out
 
     def _filepath(self, raw: bool) -> str:
         """
@@ -228,13 +181,11 @@ class DatasetBase(ABC):
         df : pd.DataFrame
             The data as a DataFrame
         """
-        # Get the file path of the data
         fp = self._filepath(raw=False)
         if not os.path.exists(fp):
             msg = "The data that you are trying to read does not exist"
             raise ValueError(msg)
 
-        # Read data
         df = pd.read_parquet(fp)
 
         return df
@@ -248,13 +199,11 @@ class DatasetBase(ABC):
         data :
             The data file as a string
         """
-        # Get the file path of the data
         fp = self._filepath(raw=True)
         if not os.path.exists(fp):
             msg = "The data that you are trying to read does not exist"
             raise ValueError(msg)
 
-        # Read the data
         with open(fp, "rb") as f:
             data = pickle.load(f)
 
@@ -274,10 +223,7 @@ class DatasetBase(ABC):
         -------
         success : bool
         """
-        fp = self._filepath(raw=False)
-
-        df.to_parquet(fp)
-
+        df.to_parquet(self._filepath(raw=False))
         return True
 
     def _store_raw(self, data: Any) -> bool:
@@ -295,36 +241,10 @@ class DatasetBase(ABC):
         success : bool
             Whether the data was successfully stored at the filepath
         """
-        # Get filepath
-        fp = self._filepath(raw=True)
-
-        with open(fp, "wb") as f:
+        with open(self._filepath(raw=True), "wb") as f:
             pickle.dump(data, f)
 
         return True
-
-    def _insert_query(
-        self, df: pd.DataFrame, table_name: str, temp_name: str, pk: str
-    ) -> None:
-        """
-        Construct query for copying data from temporary table into the table
-
-        By default it is build_conflict_do_nothing_query, but can be overridden by
-        classes using this Mixin
-
-        Parameters
-        ----------
-        df, table_name, temp_name, pk
-            See build_on_conflict_do_nothing_query
-
-        Returns
-        -------
-        _ : str
-            The SQL query to be executed for insert
-
-        """
-
-        return build_on_conflict_do_nothing_query(df, table_name, temp_name, pk)
 
     @abstractmethod
     def fetch(self) -> Any:
@@ -438,68 +358,43 @@ class DatasetBase(ABC):
 
         return validated
 
-    def put(self, connstr: str, df: pd.DataFrame) -> bool:
+    def put(self, engine: Engine, df: pd.DataFrame) -> bool:
         """
         Read DataFrame `df` from storage and put into corresponding
         PostgreSQL database
 
         Parameters
         ----------
-        connstr : str
-            String containing connection URI for connecting to postgres database
+        engine : sqlalchemy.engine.base.Engine
+            A sqlalchemy engine
 
         Returns
         -------
         success : bool
             Did the insert succeed. Always True if function completes
         """
-        # Check to see whether there's information on what geography
-        # type is being collected. If not, add a column using the
-        # `location_type` property of the scraper
-        if not "location_type" in list(df):
-            df["location_type"] = self.location_type
+        return self._put_exec(engine, df)
 
-        if not hasattr(self, "pk"):
-            msg = "field `pk` must be set for insertion"
-            raise ValueError(msg)
-
-        return self._put_exec(connstr, df, self.table_name, self.pk)
-
-    def _put(self, connstr: str) -> None:
+    def _put(self, engine: Engine) -> None:
         """
         Read DataFrame `df` from storage and put into corresponding
         PostgreSQL database
 
         Parameters
         ----------
-        connstr : str
-            String containing connection URI for connecting to postgres database
+        engine : sqlalchemy.engine.base.Engine
+            A sqlalchemy engine
 
         Returns
         -------
         success : bool
             Did the insert succeed. Always True if function completes
         """
-        # Load cleaned data
         df = self._read_clean()
-
-        # Execute the put
-        success = self.put(connstr, df)
-
+        success = self.put(engine, df)
         return success
 
-    def _put_exec(
-        self, connstr: str, df: pd.DataFrame, table_name: str, pk: str
-    ) -> None:
+    @abstractmethod
+    def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:
         "Internal _put method for dumping data using TempTable class"
-        temp_name = "__" + table_name + str(random.randint(1000, 9999))
-
-        with sa.create_engine(connstr).connect() as conn:
-            kw = dict(temp=False, if_exists="replace", destroy=True)
-
-            with TempTable(df, temp_name, conn, **kw):
-                sql = self._insert_query(df, table_name, temp_name, pk)
-                res = conn.execute(sql)
-                print(f"Inserted {res.rowcount} rows into {table_name}")
-
-        return True
+        pass
