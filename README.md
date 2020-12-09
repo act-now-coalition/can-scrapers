@@ -55,9 +55,9 @@ this is helpful while debugging and developing. This can be disabled by passing
 
 ## Setting up VS Code
 
-Steps to set up VS code:
+Steps to set up VS Code:
 
-1. Install `python` and `pylance` Visual Studio Code extensions
+1. Install `python`, `pylance`, and `Python Test Explorer for Visual Studio` Visual Studio Code extensions
 2. Reload Visual Studio Code
 3. Open can-scrapers directory in Visual Studio Code
 4. Select the `can-tools` conda environment as the workspace interpreter.

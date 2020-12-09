@@ -5,10 +5,13 @@ import asyncio
 import glob
 import io
 import os
+import logging
 import tempfile
 from abc import ABC
+from typing import List
 
 import pandas as pd
+
 import pyppeteer
 
 from can_tools.scrapers.base import DatasetBase
@@ -42,20 +45,34 @@ class with_page:
         self.headless = headless
 
     async def __aenter__(self):
-        self.browser = await pyppeteer.launch(
-            headless=self.headless,
-            args=[
-                "--no-sandbox",
-                "--single-process",
+        args = [
                 "--disable-dev-shm-usage",
                 "--disable-setuid-sandbox",
                 "--disable-gpu",
                 "--no-zygote",
-            ],
+            ]
+
+        if os.name != 'nt':
+            # Windows does not work with these arguments
+            args.append("--single-process")
+            args.append("--no-sandbox")
+                
+        self.browser = await pyppeteer.launch(
+            headless=self.headless,
+            args=args,
+            # Enable for debugging
+            # logLevel=logging.DEBUG
         )
         page = await self.browser.newPage()
         await page.setUserAgent(CHROME_AGENT)
         await page.setViewport(DEFAULT_VIEWPORT)
+
+        # Required if site is using F5 Big-IP ASM. 
+        # You can tell by looking at the cookies and if you see one called
+        # TSxxxxxxxxxx and/or BIGipServerSDC_xxxxxxx, 
+        # https://stackoverflow.com/questions/52330611/anyone-know-what-a-ts-cookie-is-and-what-kind-of-data-its-for
+        await page.setBypassCSP(True)
+
         return page
 
     async def __aexit__(self, exc_type, exc_value, traceback):
@@ -64,7 +81,7 @@ class with_page:
 
 class TableauNeedsClick(DatasetBase, ABC):
     """
-    Extract data from a tablequ dashboard when the download button only
+    Extract data from a tableau dashboard when the download button only
     appears after some user/mouse interactions with the dashboard
 
     Attributes
@@ -81,16 +98,18 @@ class TableauNeedsClick(DatasetBase, ABC):
         The html #id for the download button. Has a default value that
         seems consistent for the dashbaords we've worked with
 
-    crosstab_button_selector: str
-        The css selector to be used in order to find the button to download
-        the crosstab table. Again, has a default value that seems consistent,
-        but may need to be overriden by a subclass
+    tableau_click_selector_list: List[str]
+        The css selector(s) to be used in order to find the button to download
+        the data and choose the desired formatting options.
     """
 
     url: str
     headless: bool = True
     download_button_id: str = "#download-ToolbarButton"
-    crosstab_button_selector: str = "@data-tb-test-id = 'DownloadCrosstab-Button'"
+    tableau_click_selector_list: List[str] = [
+    	# Default is just clicking the Crosstab button
+        "@data-tb-test-id = 'DownloadCrosstab-Button'"
+    ]
 
     async def _pre_click(self, page: pyppeteer.page.Page):
         pass
@@ -100,7 +119,7 @@ class TableauNeedsClick(DatasetBase, ABC):
         page: pyppeteer.page.Page,
         x: int = 281,
         y: int = 350,
-        repeats: int = 3,
+        repeats: int = 2,
         delay: int = 2,
     ):
         """
@@ -116,11 +135,14 @@ class TableauNeedsClick(DatasetBase, ABC):
         y : int
             The y coordinate for where to click on the page
         repeats : int
-            The number of times to repeat the click action
+            The number of times to repeat the click action.
+            Should keep this an even int in case data is selected,
+            clicking it an additional time wil unselect it.
+            Selected cells may affect what data is downloaded.
         delay : int
             The delay between clicks
         """
-        for i in range(repeats):
+        for _ in range(repeats):
             await asyncio.sleep(delay)
             await page.mouse.click(x, y, options={"delay": 100})
 
@@ -144,9 +166,16 @@ class TableauNeedsClick(DatasetBase, ABC):
         fns = glob.glob(os.path.join(tmpdirname, "*.csv"))
         assert len(fns) == 1
         with open(fns[0], "rb") as f:
-            tsv = io.BytesIO(f.read().decode("UTF-16").encode("UTF-8"))
+            try:
+                # Downloaded data from Crosstab needs this
+                tsv = io.BytesIO(f.read().decode("UTF-16").encode("UTF-8"))
+            except Exception as e:
+                # Downloaded data from Data doesn't
+                f.seek(0)
+                tsv = io.BytesIO(f.read())
             df = pd.read_csv(tsv, sep="\t")
 
+        # TODO0: ZW: Should we be deleting the tempfile once we are done loading it?
         return df
 
     async def _get(self) -> pd.DataFrame:
@@ -174,14 +203,27 @@ class TableauNeedsClick(DatasetBase, ABC):
                 button = await page.waitForSelector(self.download_button_id)
                 await button.click()
 
-                # find and click crosstab option to initiate download
-                crosstab = await page.waitForXPath(
-                    f"//button[{self.crosstab_button_selector}]"
-                )
-                await crosstab.click()
+                for click_selector in self.tableau_click_selector_list:
+                    if hasattr(click_selector, '__call__'):
+                        # Use for special handling in an instance specific function
+                        await click_selector(page, tmpdirname)
+                    else:
+                        selector = await page.waitForXPath(
+                            f"//*[{click_selector}]"
+                        )
+                        await selector.click()
+                        await asyncio.sleep(2)
 
-                # TODO: better way to wait for download?
-                await asyncio.sleep(5)
+                # Wait for download to finish. 10 cycles of 2 seconds is arbitrary
+                for _ in range(10):
+                    if len(os.listdir(tmpdirname)) > 0:
+                        break
+                    await asyncio.sleep(2)
+                else:
+                    # TODO0: ZW: Throw / report error?
+                    pass
+
+
 
                 # call the post_download method to process download
                 df = await self._post_download(tmpdirname)
