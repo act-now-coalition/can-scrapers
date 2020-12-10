@@ -10,9 +10,6 @@ import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
 from can_tools.models import Base, create_dev_engine
 
-pd.set_option("display.max_rows", None)
-pd.set_option("display.max_columns", None)
-
 CONN_STR = os.environ.get("CAN_PG_CONN_STR", None)
 VERBOSE = bool(os.environ.get("CAN_TESTS_VERBOSE", False))
 if CONN_STR is not None:
