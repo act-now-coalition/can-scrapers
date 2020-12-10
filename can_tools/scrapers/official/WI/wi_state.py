@@ -119,7 +119,7 @@ class WisconsinState(ArcGIS, DatasetBase):
 
         crename = {
             # #
-            # # statewide totals
+            # # totals across all sexes/ages/races/ethnicities
             # #
             "positive": CMU(
                 category="pcr_tests_positive", measurement="cumulative", unit="people"
