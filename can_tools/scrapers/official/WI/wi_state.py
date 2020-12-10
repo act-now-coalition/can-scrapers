@@ -112,7 +112,9 @@ class WisconsinState(ArcGIS, DatasetBase):
             # # totals across all sexes/ages/races/ethnicities
             # #
             "positive": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="people"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
             ),
             "pos_new": CMU(
                 category="pcr_tests_positive",
