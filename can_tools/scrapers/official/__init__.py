@@ -1,7 +1,7 @@
 from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHospitals
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
-    HHSReportedPatientImpactHospitalCapacity,
+    HHSReportedPatientImpactHospitalCapacityState,
 )
 from can_tools.scrapers.official.FL import (
     Florida,

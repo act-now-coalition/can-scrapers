@@ -7,7 +7,7 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.federal.HHS.common import HHSDataset
 
 
-class HHSReportedPatientImpactHospitalCapacity(HHSDataset):
+class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
     has_location = True
     location_type = "state"
     source = (
@@ -17,7 +17,7 @@ class HHSReportedPatientImpactHospitalCapacity(HHSDataset):
     dsid = "83b4a668-9321-4d8c-bc4f-2bef66c49050"
 
     def fetch(self):
-        return self.search_homepage_for_download("reported_hospital_utilization")
+        return self.dataset_details()
 
     def normalize(self, data: str) -> pd.DataFrame:
 

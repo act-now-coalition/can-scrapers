@@ -11,7 +11,7 @@ class HHSDataset(FederalDashboard):
     source: str
     dsid: str
 
-    def search_homepage_for_download(self, ds_name, decoder="utf-8-sig"):
+    def dataset_details(self, decoder="utf-8-sig"):
         # Download page html and turn into soup
         dsid = self.dsid
         url = f"https://healthdata.gov/api/3/action/package_show?id={dsid}"
