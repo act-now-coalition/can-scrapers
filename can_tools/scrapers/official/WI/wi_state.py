@@ -37,10 +37,20 @@ class WisconsinCounties(ArcGIS, DatasetBase):
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            "hosp_yes": CMU(
-                category="hospital_beds_in_use_covid",
+            "negative": CMU(
+                category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="people",
+                unit="unique_people",
+            ),
+            "pos_new": CMU(
+                category="pcr_tests_positive",
+                measurement="new",
+                unit="unique_people",
+            ),
+            "neg_new": CMU(
+                category="pcr_tests_negative",
+                measurement="new",
+                unit="unique_people",
             ),
             "test_new": CMU(
                 category="pcr_tests_total",
@@ -49,6 +59,11 @@ class WisconsinCounties(ArcGIS, DatasetBase):
             ),
             "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
             "dth_new": CMU(category="deaths", measurement="new", unit="people"),
+            "hosp_yes": CMU(
+                category="hospital_beds_in_use_covid",
+                measurement="cumulative",
+                unit="people",
+            ),
         }
         out = (
             df.melt(id_vars=["location"], value_vars=crename.keys())
