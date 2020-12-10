@@ -8,6 +8,7 @@ deaths,rolling_average_7_day,people
 hospital_beds_in_use_covid,cumulative,beds
 hospital_beds_in_use_covid,new,beds
 hospital_beds_in_use_covid,current,beds
+hospital_beds_in_use_covid,cumulative,people
 hospital_beds_in_use,current,beds
 hospital_beds_available,current,beds
 hospital_beds_capacity,current,beds
@@ -20,6 +21,7 @@ pediatric_icu_beds_in_use_covid,current,beds
 pediatric_icu_beds_available,current,beds
 pediatric_icu_beds_capacity,current,beds
 icu_beds_in_use_covid,current,beds
+icu_beds_in_use_covid,cumulative,people
 icu_beds_in_use,current,beds
 icu_beds_available,current,beds
 icu_beds_capacity,current,beds

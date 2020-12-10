@@ -191,11 +191,12 @@ class CovidDemographic(Base):
     )
     age = Column(String)
     race = Column(String)
+    ethnicity = Column(String)
     sex = Column(String)
     official_obs = relationship("CovidOfficial", backref="demographic")
 
     __table_args__ = (
-        UniqueConstraint(age, race, sex, name="uix_demo"),
+        UniqueConstraint(age, race, ethnicity, sex, name="uix_demo"),
         {"schema": "meta"},
     )
 
@@ -275,6 +276,7 @@ api_covid_us_statement = select(
         CovidVariable.unit,
         CovidDemographic.age,
         CovidDemographic.race,
+        CovidDemographic.ethnicity,
         CovidDemographic.sex,
         CovidOfficial.last_updated,
         CovidOfficial.value,
@@ -303,6 +305,7 @@ class _TempOfficial:
     dt = Column(Date, nullable=False)
     age = Column(String, nullable=False)
     race = Column(String, nullable=False)
+    ethnicity = Column(String, nullable=False)
     sex = Column(String, nullable=False)
     last_updated = Column(DateTime, nullable=False, default=func.now())
 
@@ -335,8 +338,8 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["age", "race", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+            ["age", "race", "ethnicity", "sex"],
+            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.ethnicity, CovidDemographic.sex],
         ),
         ForeignKeyConstraint(
             ["location", "location_type"], [Location.location, Location.location_type]
@@ -352,8 +355,8 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["age", "race", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+            ["age", "race", "ethnicity", "sex"],
+            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.ethnicity, CovidDemographic.sex],
         ),
         ForeignKeyConstraint(
             ["location_type", state_fips, location_name],

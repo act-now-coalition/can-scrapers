@@ -10,6 +10,7 @@ class WisconsinCounties(ArcGIS, DatasetBase):
     Fetch county-level covid data from Wisconsin's ARCGIS dashboard
     """
 
+    ARCGIS_ID = ""  # not applicable on this server
     has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Wisconsin").fips)
@@ -97,7 +98,7 @@ class WisconsinState(ArcGIS, DatasetBase):
 
     ARCGIS_ID = ""  # not applicable on this server
     has_location = True
-    location_type = "State"
+    location_type = "state"
     state_fips = int(us.states.lookup("Wisconsin").fips)
     source = "https://www.dhs.wisconsin.gov/covid-19/data.htm"
 
@@ -122,15 +123,12 @@ class WisconsinState(ArcGIS, DatasetBase):
             # # totals across all sexes/ages/races/ethnicities
             # #
             "positive": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="people"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
             ),
             "pos_new": CMU(
                 category="pcr_tests_positive",
-                measurement="new",
-                unit="unique_people",
-            ),
-            "test_new": CMU(
-                category="pcr_tests_total",
                 measurement="new",
                 unit="unique_people",
             ),
@@ -156,13 +154,13 @@ class WisconsinState(ArcGIS, DatasetBase):
                 unit="unique_people",
                 sex="male",
             ),
-            "pos_female": CMU(
+            "pos_fem": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="unqiue_people",
                 sex="female",
             ),
-            "pos_other": CMU(
+            "pos_oth": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="unique_people",
@@ -172,10 +170,10 @@ class WisconsinState(ArcGIS, DatasetBase):
             "dths_male": CMU(
                 category="deaths", measurement="cumulative", unit="people", sex="male"
             ),
-            "dths_female": CMU(
+            "dths_fem": CMU(
                 category="deaths", measurement="cumulative", unit="people", sex="female"
             ),
-            "dths_other": CMU(
+            "dths_oth": CMU(
                 category="deaths", measurement="cumulative", unit="people", sex="other"
             ),
             # #
@@ -183,34 +181,64 @@ class WisconsinState(ArcGIS, DatasetBase):
             # #
             # # positive cases
             "pos_0_9": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="0-9"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="0-9",
             ),
             "pos_10_19": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="10-19"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="10-19",
             ),
             "pos_20_29": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="20-29"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="20-29",
             ),
             "pos_30_39": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="30-39"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="30-39",
             ),
             "pos_40_49": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="40-49"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="40-49",
             ),
             "pos_50_59": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="50-59"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="50-59",
             ),
             "pos_60_69": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="60-69"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="60-69",
             ),
             "pos_70_79": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="70-79"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="70-79",
             ),
             "pos_80_89": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="80-89"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="80-89",
             ),
             "pos_90": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", age="90+"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                age="90_plus",
             ),
             # # deaths
             "dths_0_9": CMU(
@@ -241,68 +269,71 @@ class WisconsinState(ArcGIS, DatasetBase):
                 category="deaths", measurement="cumulative", unit="people", age="80-89"
             ),
             "dths_90": CMU(
-                category="deaths", measurement="cumulative", unit="people", age="90+"
+                category="deaths",
+                measurement="cumulative",
+                unit="people",
+                age="90_plus",
             ),
             # # hospitalizations
             "ip_y_0_9": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="0-9",
             ),
             "ip_y_10_19": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="10-19",
             ),
             "ip_y_20_29": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="20-29",
             ),
             "ip_y_30_39": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="30-39",
             ),
             "ip_y_40_49": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="40-49",
             ),
             "ip_y_50_59": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="50-59",
             ),
             "ip_y_60_69": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="60-69",
             ),
             "ip_y_70_79": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="70-79",
             ),
             "ip_y_80_89": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
                 age="80-89",
             ),
             "ip_y_90": CMU(
-                category="icu_beds_in_use_covid",
+                category="hospital_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
-                age="90+",
+                age="90_plus",
             ),
             # # icu admissions
             "ic_y_0_9": CMU(
@@ -363,23 +394,35 @@ class WisconsinState(ArcGIS, DatasetBase):
                 category="icu_beds_in_use_covid",
                 measurement="cumulative",
                 unit="people",
-                age="90+",
+                age="90_plus",
             ),
             # #
             # # race breakdowns
             # #
             # # positive cases
             "pos_aian": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", race="ai_an"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                race="ai_an",
             ),
             "pos_asn": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", race="asian"
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                race="asian",
             ),
-            "pos_black": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", race="black"
+            "pos_blk": CMU(
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                race="black",
             ),
-            "pos_white": CMU(
-                category="pcr_tests_positive", measurement="cumulative", unit="unique_people", race="white"
+            "pos_wht": CMU(
+                category="pcr_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
+                race="white",
             ),
             "pos_mltoth": CMU(
                 category="pcr_tests_positive",
@@ -400,10 +443,10 @@ class WisconsinState(ArcGIS, DatasetBase):
             "dth_asn": CMU(
                 category="deaths", measurement="cumulative", unit="people", race="asian"
             ),
-            "dth_black": CMU(
+            "dth_blk": CMU(
                 category="deaths", measurement="cumulative", unit="people", race="black"
             ),
-            "dth_white": CMU(
+            "dth_wht": CMU(
                 category="deaths", measurement="cumulative", unit="people", race="white"
             ),
             "dth_mltoth": CMU(
@@ -434,7 +477,7 @@ class WisconsinState(ArcGIS, DatasetBase):
                 unit="unique_people",
                 ethnicity="non-hispanic",
             ),
-            "pos_e_unknown": CMU(
+            "pos_e_unk": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="unique_people",
@@ -453,7 +496,7 @@ class WisconsinState(ArcGIS, DatasetBase):
                 unit="people",
                 ethnicity="non-hispanic",
             ),
-            "dth_e_unknown": CMU(
+            "dth_e_unk": CMU(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
@@ -485,5 +528,7 @@ class WisconsinState(ArcGIS, DatasetBase):
             "sex",
             "value",
         ]
+
+        print(out.loc[:, cols_to_keep])
 
         return out.loc[:, cols_to_keep]

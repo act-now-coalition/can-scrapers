@@ -85,6 +85,7 @@ class CDCCovidDataTracker(FederalDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]

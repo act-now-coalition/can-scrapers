@@ -28,6 +28,7 @@ class FloridaHospitalBase(
         "unit",
         "age",
         "race",
+        "ethnicity",
         "sex",
         "value",
     ]
@@ -187,6 +188,7 @@ class FloridaHospitalCovid(FloridaHospitalBase):
         df["age"] = "all"
         df["sex"] = "all"
         df["race"] = "all"
+        df["ethnicity"] = "all"
         df["dt"] = self._retrieve_dt("US/Eastern")
         df["vintage"] = self._retrieve_vintage()
 

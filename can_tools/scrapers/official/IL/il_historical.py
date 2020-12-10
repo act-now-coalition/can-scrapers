@@ -58,6 +58,7 @@ class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
             "measurement",
             "age",
             "race",
+            "ethnicity",
             "sex",
         ]
 

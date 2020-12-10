@@ -64,9 +64,17 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
                     "race",
                 ).assign(county=name)
             )
+            parts.append(
+                self._handle_demo_subset(
+                    pd.DataFrame(county["demographics"]["ethnicity"]),
+                    "description",
+                    "ethnicity",
+                ).assign(county=name)
+            )
 
         out = pd.concat(parts, ignore_index=True)
         out["race"] = out["race"].str.lower()
+        out["ethnicity"] = out["ethnicity"].str.lower()
         out["sex"] = out["sex"].str.lower()
         out["age"] = out["age"].str.lower()
         return out
