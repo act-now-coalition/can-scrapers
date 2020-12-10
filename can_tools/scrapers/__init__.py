@@ -7,6 +7,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     FloridaHospitalCovid,
     FloridaHospitalUsage,
     FloridaICUUsage,
+    HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
     NewYorkTests,
     TexasCasesDeaths,
