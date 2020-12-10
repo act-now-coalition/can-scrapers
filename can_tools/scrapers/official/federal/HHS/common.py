@@ -24,4 +24,3 @@ class HHSDataset(FederalDashboard):
         dl_res = requests.get(data_url)
 
         return dl_res.content.decode(decoder)
-

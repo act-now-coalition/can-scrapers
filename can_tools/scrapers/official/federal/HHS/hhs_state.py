@@ -31,22 +31,34 @@ class HHSReportedPatientImpactHospitalCapacity(HHSDataset):
 
         crename = {
             "critical_staffing_shortage_today_yes": CMU(
-                category="critical_staff_shortage_yes", measurement="current", unit="hospitals"
+                category="critical_staff_shortage_yes",
+                measurement="current",
+                unit="hospitals",
             ),
             "critical_staffing_shortage_today_no": CMU(
-                category="critical_staff_shortage_no", measurement="current", unit="hospitals"
+                category="critical_staff_shortage_no",
+                measurement="current",
+                unit="hospitals",
             ),
             "critical_staffing_shortage_today_yes": CMU(
-                category="critical_staff_shortage_noreport", measurement="current", unit="hospitals"
+                category="critical_staff_shortage_noreport",
+                measurement="current",
+                unit="hospitals",
             ),
             "critical_staffing_shortage_anticipated_within_week_yes": CMU(
-                category="critical_staff_shortage_yes", measurement="anticipated_within_7_day", unit="hospitals"
+                category="critical_staff_shortage_yes",
+                measurement="anticipated_within_7_day",
+                unit="hospitals",
             ),
             "critical_staffing_shortage_anticipated_within_week_no": CMU(
-                category="critical_staff_shortage_no", measurement="anticipated_within_7_day", unit="hospitals"
+                category="critical_staff_shortage_no",
+                measurement="anticipated_within_7_day",
+                unit="hospitals",
             ),
             "critical_staffing_shortage_anticipated_within_week_yes": CMU(
-                category="critical_staff_shortage_noreport", measurement="anticipated_within_7_day", unit="hospitals"
+                category="critical_staff_shortage_noreport",
+                measurement="anticipated_within_7_day",
+                unit="hospitals",
             ),
             "inpatient_beds": CMU(
                 category="hospital_beds_capacity", measurement="current", unit="beds"
@@ -55,10 +67,14 @@ class HHSReportedPatientImpactHospitalCapacity(HHSDataset):
                 category="hospital_beds_in_use", measurement="current", unit="beds"
             ),
             "inpatient_beds_used_covid": CMU(
-                category="hospital_beds_in_use_covid", measurement="current", unit="beds"
+                category="hospital_beds_in_use_covid",
+                measurement="current",
+                unit="beds",
             ),
             "inpatient_beds_utilization": CMU(
-                category="hospital_beds_in_use", measurement="current", unit="percentage"
+                category="hospital_beds_in_use",
+                measurement="current",
+                unit="percentage",
             ),
             "total_staffed_adult_icu_beds": CMU(
                 category="adult_icu_beds_capacity", measurement="current", unit="beds"
@@ -67,11 +83,15 @@ class HHSReportedPatientImpactHospitalCapacity(HHSDataset):
                 category="adult_icu_beds_in_use", measurement="current", unit="beds"
             ),
             "staffed_icu_adult_patients_confirmed_covid": CMU(
-                category="adult_icu_beds_in_use_covid", measurement="current", unit="beds"
+                category="adult_icu_beds_in_use_covid",
+                measurement="current",
+                unit="beds",
             ),
             "adult_icu_bed_covid_utilization": CMU(
-                category="adult_icu_beds_in_use", measurement="current", unit="percentage"
-            )
+                category="adult_icu_beds_in_use",
+                measurement="current",
+                unit="percentage",
+            ),
         }
 
         # Put into long form
