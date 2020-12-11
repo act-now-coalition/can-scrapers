@@ -11,6 +11,7 @@ from can_tools.scrapers.official.base import FederalDashboard
 class HHSDataset(FederalDashboard, ABC):
     source: str
     dsid: str
+    provider = "hhs"
 
     def dataset_details(self, decoder="utf-8-sig"):
         # Download page html and turn into soup
