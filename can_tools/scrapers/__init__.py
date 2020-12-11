@@ -10,6 +10,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
     NewYorkTests,
+    PennsylvaniaCasesDeaths,
+    PennsylvaniaHospitals,
     TexasCasesDeaths,
     TexasTests,
     Wisconsin,
