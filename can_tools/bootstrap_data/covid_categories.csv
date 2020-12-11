@@ -49,3 +49,6 @@ test,unspecified_tests_negative
 test,unspecified_tests_positive
 test,unspecified_tests_total
 test,reported_positivity
+hospital,critical_staff_shortage_yes
+hospital,critical_staff_shortage_no
+hospital,critical_staff_shortage_noreport
