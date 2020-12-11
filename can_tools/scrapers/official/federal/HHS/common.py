@@ -1,3 +1,4 @@
+from abc import ABC
 import requests
 
 from typing import Dict
@@ -7,7 +8,7 @@ import pandas as pd
 from can_tools.scrapers.official.base import FederalDashboard
 
 
-class HHSDataset(FederalDashboard):
+class HHSDataset(FederalDashboard, ABC):
     source: str
     dsid: str
 
