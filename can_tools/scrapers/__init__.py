@@ -8,6 +8,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     FloridaHospitalUsage,
     FloridaICUUsage,
     NewYorkTests,
+    TennesseeCasesDeathsTests,
     TexasCasesDeaths,
     TexasTests,
 )
