@@ -207,21 +207,32 @@ Finally the =data.covid_providers= table
     The integration tests test that the =put= method can successfully load the
     data into a test instance of the database (see below).
 
+    Our production environment uses PostgreSQL as the database engine.
+
+    All SQL interactions happen via sqlalchemy, which is (mostly) database
+    backend agnostic.
+
+    We can run integration tests either via an in-memory SQLite that is created
+    on each run of the tests, or against a running postgres instance.
+
+    Using SQLite while developing is encouraged as it is easier to get up and
+    running.
+
+    If you do choose to use PostgreSQL, please follow the instructions below for
+    using Docker to set up the instance of postgres.
+
 *** Local database instance using Docker
 
    We use a docker based workflow for running a local instance of the database.
 
-   In order to utilize this workflow, perform the following steps:
+   In order to utilize this workflow please start a postgresql container and
+   leave it running
 
-   1. =cd= into the =db/= directory
-   2. Build the docker image with a command similar to =docker build -t can-scrapers/pg:latest=
-   3. Run the docker image, exposing port 5432 on your machine =docker run --rm -p
-      5432:5432 can-scrapers/pg:latest=
-   4. Leave your terminal window open so the database stays alive!
+   Here's a sample =docker run= command that should do the trick
 
-   Note that you only need to repeat the build step if you change any of the
-   files in the =db/schemas= directory. If those are the same, you can skip
-   right to starting the container!
+   #+begin_src shell
+docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres_test postgres:12
+   #+end_src
 
 *** Running tests
 
@@ -241,20 +252,23 @@ pytest -v .
 pytest -v -k Wyoming .
     #+end_src
 
-    To run integration tests, first follow the steps above to build and start a
-    docker
+**** Extra: Using PostgreSQL
 
-    Then you need to set the environment variable =PG_CONN_STR=. To do this in a
-    unix environment (Linux or OSX), run the following command
+     If you would like to run the integration tests against postgres, first
+     follow the instructions above to get an instance of postgres up and running
+     via docker
+
+     Then you need to set the environment variable =CAN_PG_CONN_STR=. To do this in a
+     unix environment (Linux or OSX), run the following command
 
     #+begin_src
-export PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432/covid"
+export CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
     #+end_src
 
     If you are using Windows, set the environment variable by running
 
     #+begin_src
-set PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432/covid"
+set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
     #+end_src
 
     With the environment variable set, you can repeat the =pytest= commands from above

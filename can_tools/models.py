@@ -130,6 +130,7 @@ class Location(Base, MetaSchemaMixin):
     __table_args__ = (
         UniqueConstraint(location, location_type, sqlite_on_conflict="IGNORE"),
         UniqueConstraint(location_type, state_fips, name, name="uix_1"),
+        {"schema": "meta"},
     )
 
     # location_type = relationship(
@@ -181,7 +182,7 @@ class CovidVariable(Base, MetaSchemaMixin):
     official_obs = relationship("CovidOfficial", backref="variable")
 
 
-class CovidDemographic(Base, MetaSchemaMixin):
+class CovidDemographic(Base):
     __tablename__ = "covid_demographics"
     id = Column(
         Integer,
@@ -193,7 +194,10 @@ class CovidDemographic(Base, MetaSchemaMixin):
     sex = Column(String)
     official_obs = relationship("CovidOfficial", backref="demographic")
 
-    __table_args__ = (UniqueConstraint(age, race, sex, name="uix_demo"),)
+    __table_args__ = (
+        UniqueConstraint(age, race, sex, name="uix_demo"),
+        {"schema": "meta"},
+    )
 
 
 class CovidProvider(Base, MetaSchemaMixin):
@@ -208,7 +212,7 @@ class CovidProvider(Base, MetaSchemaMixin):
     official_obs = relationship("CovidOfficial", backref="provider")
 
 
-class _ObservationBase(DataSchemaMixin):
+class _ObservationBase:
     dt = Column(Date)
     location = Column(Integer)
     location_type = Column(String)
@@ -243,20 +247,21 @@ class _ObservationBase(DataSchemaMixin):
                 [cls.location, cls.location_type],
                 [Location.location, Location.location_type],
             ),
+            {"schema": "data"},
         )
 
     value = Column(Numeric)
 
 
-class CovidObservation(Base, _ObservationBase):
+class CovidObservation(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_observations"
 
 
-class CovidOfficial(Base, _ObservationBase):
+class CovidOfficial(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_official"
 
 
-class CovidUSAFacts(Base, _ObservationBase):
+class CovidUSAFacts(Base, _ObservationBase, DataSchemaMixin):
     __tablename__ = "covid_usafacts"
 
 
@@ -336,6 +341,7 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
         ForeignKeyConstraint(
             ["location", "location_type"], [Location.location, Location.location_type]
         ),
+        {"schema": "data"},
     )
 
 
@@ -353,6 +359,7 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
             ["location_type", state_fips, location_name],
             [Location.location_type, Location.state_fips, Location.name],
         ),
+        {"schema": "data"},
     )
 
 
@@ -445,10 +452,11 @@ def bootstrap(sess) -> Dict[str, List[Base]]:
     return components
 
 
-def create_dev_engine(verbose: bool = True) -> Tuple[Engine, sessionmaker]:
+def create_dev_engine(
+    verbose: bool = True, path: str = "/:memory:"
+) -> Tuple[Engine, sessionmaker]:
     engine = sa.create_engine(
-        # "sqlite:///testdb.sqlite3",
-        "sqlite:///:memory:",
+        f"sqlite://{path}",
         echo=verbose,
         execution_options={
             "schema_translate_map": {"meta": None, "data": None, "api": None}

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <title>Data Engineering Training Materials</title>
-<!-- 2020-11-20 Fri 15:20 -->
+<!-- 2020-12-09 Wed 10:39 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="generator" content="Org-mode">
@@ -195,33 +195,34 @@ $(function() {
 <div id="text-table-of-contents" class="bs-docs-sidebar">
 <ul class="nav">
 <li><a href="#sec-1">1. Introduction</a></li>
-<li><a href="#sec-2">2. Data Engineering Team</a></li>
-<li><a href="#sec-3">3. COVID Data</a>
+<li><a href="#sec-2">2. COVID Data</a>
 <ul class="nav">
-<li><a href="#sec-3-1">3.1. Cases and deaths</a></li>
-<li><a href="#sec-3-2">3.2. Hospitalizations</a></li>
-<li><a href="#sec-3-3">3.3. Tests</a></li>
+<li><a href="#sec-2-1">2.1. Cases and deaths</a></li>
+<li><a href="#sec-2-2">2.2. Hospitalizations</a></li>
+<li><a href="#sec-2-3">2.3. Tests</a></li>
 </ul>
 </li>
+<li><a href="#sec-3">3. Scraper Infrastructure</a></li>
 <li><a href="#sec-4">4. Database</a>
 <ul class="nav">
-<li><a href="#sec-4-1">4.1. Schemas and tables</a></li>
-<li><a href="#sec-4-2">4.2. Cross references</a></li>
+<li><a href="#sec-4-1">4.1. <code>data.covid_official</code></a></li>
+<li><a href="#sec-4-2">4.2. <code>meta.covid_variables</code></a></li>
+<li><a href="#sec-4-3">4.3. <code>data.covid_providers</code></a></li>
 </ul>
 </li>
-<li><a href="#sec-5">5. Scraper Library</a>
+<li><a href="#sec-5">5. Getting Started, Development Notes</a>
 <ul class="nav">
-<li><a href="#sec-5-1">5.1. <code>DatasetBase</code> and relevant subclasses</a></li>
+<li><a href="#sec-5-1">5.1. Creating a development environment</a></li>
+<li><a href="#sec-5-2">5.2. Running tests locally</a></li>
+<li><a href="#sec-5-3">5.3. Setting up VS Code</a></li>
 </ul>
 </li>
-<li><a href="#sec-6">6. Scraper Infrastructure</a></li>
-<li><a href="#sec-7">7. Getting Started, Development Notes</a>
+<li><a href="#sec-6">6. Scraper Library</a>
 <ul class="nav">
-<li><a href="#sec-7-1">7.1. Creating a development environment</a></li>
-<li><a href="#sec-7-2">7.2. Setting up VS Code</a></li>
-<li><a href="#sec-7-3">7.3. Writing a new scraper</a></li>
+<li><a href="#sec-6-1">6.1. <code>DatasetBase</code> and relevant subclasses</a></li>
 </ul>
 </li>
+<li><a href="#sec-7">7. Writing a new scraper</a></li>
 <li><a href="#sec-8">8. Example Scrapers</a></li>
 </ul>
 </div>
@@ -238,27 +239,11 @@ All of the code and documentation for the Covid Act Now (CAN) scrapers, includin
 </div>
 
 <div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Data Engineering Team</h2>
+<h2 id="sec-2"><span class="section-number-2">2</span> COVID Data</h2>
 <div class="outline-text-2" id="text-2">
-<p>
-The data engineering team currently consists of:
-</p>
-
-<ul class="org-ul">
-<li>Chase Coleman
-</li>
-<li>Spencer Lyon
-</li>
-</ul>
-</div>
-</div>
-
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> COVID Data</h2>
-<div class="outline-text-2" id="text-3">
-</div><div id="outline-container-sec-3-1" class="outline-3">
-<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Cases and deaths</h3>
-<div class="outline-text-3" id="text-3-1">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Cases and deaths</h3>
+<div class="outline-text-3" id="text-2-1">
 <p>
 Case data can be split into two categories
 </p>
@@ -276,21 +261,21 @@ In our work, we will mostly focus on <i>total cases|deaths</i> which includes th
 </div>
 </div>
 
-<div id="outline-container-sec-3-2" class="outline-3">
-<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Hospitalizations</h3>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Hospitalizations</h3>
 </div>
-<div id="outline-container-sec-3-3" class="outline-3">
-<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Tests</h3>
-<div class="outline-text-3" id="text-3-3">
-</div><div id="outline-container-sec-3-3-1" class="outline-4">
-<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> Test types</h4>
-<div class="outline-text-4" id="text-3-3-1">
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Tests</h3>
+<div class="outline-text-3" id="text-2-3">
+</div><div id="outline-container-sec-2-3-1" class="outline-4">
+<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Test types</h4>
+<div class="outline-text-4" id="text-2-3-1">
 <p>
 There are three main kinds of tests antibody, antigen, and molecular. Antigen and molecular are both types of diagnostic tests and we'll group them together for our explanation below:
 </p>
 </div>
 
-<ol class="org-ol"><li><a id="sec-3-3-1-1" name="sec-3-3-1-1"></a>Antibody tests<br ><div class="outline-text-5" id="text-3-3-1-1">
+<ol class="org-ol"><li><a id="sec-2-3-1-1" name="sec-2-3-1-1"></a>Antibody tests<br ><div class="outline-text-5" id="text-2-3-1-1">
 <p>
 Antibody tests, also known as serology tests, are described by the <a href="https://www.fda.gov/consumers/consumer-updates/coronavirus-disease-2019-testing-basics">FDA</a> as,
 </p>
@@ -303,7 +288,7 @@ An antibody test looks for antibodies that are made by your immune system in res
 </div>
 </li>
 
-<li><a id="sec-3-3-1-2" name="sec-3-3-1-2"></a>Diagnostic tests<br ><div class="outline-text-5" id="text-3-3-1-2">
+<li><a id="sec-2-3-1-2" name="sec-2-3-1-2"></a>Diagnostic tests<br ><div class="outline-text-5" id="text-2-3-1-2">
 <p>
 Diagnostic tests are themselves broken into two sub-categories:
 </p>
@@ -328,9 +313,9 @@ A diagnostic test can show if you have an active coronavirus infection and shoul
 </li></ol>
 </div>
 
-<div id="outline-container-sec-3-3-2" class="outline-4">
-<h4 id="sec-3-3-2"><span class="section-number-4">3.3.2</span> Measurements</h4>
-<div class="outline-text-4" id="text-3-3-2">
+<div id="outline-container-sec-2-3-2" class="outline-4">
+<h4 id="sec-2-3-2"><span class="section-number-4">2.3.2</span> Measurements</h4>
+<div class="outline-text-4" id="text-2-3-2">
 <p>
 There has been a significant amount of confusion about the units that testing data is being reported in, see <a href="https://covidtracking.com/blog/test-positivity-in-the-us-is-a-mess">the COVID Tracking Project's blog post</a> on the topic. There are three main ways that COVID testing data is measured,
 </p>
@@ -369,163 +354,72 @@ The preferred metric at CAN is (currently) to count PCR test encounters. This wi
 </div>
 </div>
 
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Scraper Infrastructure</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The overall microservice architecture we use is shown in the diagram below:
+</p>
+
+
+<figure id="fig:IFC">
+<p><img src="https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png" class="img-responsive" alt="can_scrapers_overview.png">
+</p>
+<figcaption><span class="figure-number">Figure 1:</span> Infrastructure flow chart</figcaption>
+</figure>
+
+<p>
+In, words, these components are:
+</p>
+
+<ol class="org-ol">
+<li>Scrapers: these are open source scrapers written in Python. The repository is here <a href="https://github.com/covid-projections/can-scrapers">https://github.com/covid-projections/can-scrapers</a>
+</li>
+<li>Database: we store all data in a postgrestql database
+</li>
+<li>API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
+</li>
+<li>Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
+</li>
+<li>API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
+</li>
+<li>Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
+</li>
+</ol>
+</div>
+</div>
+
+
 <div id="outline-container-sec-4" class="outline-2">
 <h2 id="sec-4"><span class="section-number-2">4</span> Database</h2>
 <div class="outline-text-2" id="text-4">
 <p>
-All of the data that is collected is stored in a PostgreSQL database hosted on Google Cloud. This database is structured in three schemas:
+All of the data that is collected is stored in a PostgreSQL database hosted on
+Google Cloud. This database is structured in three schemas:
 </p>
 
 <ol class="org-ol">
-<li><code>api</code> : This is the public facing schema. It does not contain any tables itself but rather contains views and materialized views
+<li><code>api</code> : This is the public facing schema. It does not contain any tables
+itself but rather contains views and materialized views
 </li>
 <li><code>data</code> : This schema is where data that is collected is stored
 </li>
-<li><code>meta</code> : This schema contains meta information about geographies and variables. It is information that will only be changed/updated infrequently.
+<li><code>meta</code> : This schema contains meta information about geographies and
+variables. It is information that will only be changed/updated infrequently.
 </li>
 </ol>
-
-<p>
-We will now discuss a few important tables from these schemas and discuss how they referentially fit together
-</p>
 </div>
 
 <div id="outline-container-sec-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Schemas and tables</h3>
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> <code>data.covid_official</code></h3>
 <div class="outline-text-3" id="text-4-1">
-</div><div id="outline-container-sec-4-1-1" class="outline-4">
-<h4 id="sec-4-1-1"><span class="section-number-4">4.1.1</span> <code>meta</code></h4>
-<div class="outline-text-4" id="text-4-1-1">
-</div><ol class="org-ol"><li><a id="sec-4-1-1-1" name="sec-4-1-1-1"></a><code>meta.locations</code><br ><div class="outline-text-5" id="text-4-1-1-1">
 <p>
-This table contains information on the various types of locations that we can describe
+The web scrapers we write place data in the table <code>data.covid_official</code>
 </p>
 
-<div class="org-src-container">
-
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.locations</span> <span style="color: #f8f8f2;">(</span>
-  id SERIAL <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>,
-  location BIGINT,
-  location_type <span style="color: #9580FF;">SMALLINT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.location_type <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
-  <span style="color: #FF80BF; font-weight: bold;">state</span> text,
-  <span style="color: #FF80BF; font-weight: bold;">name</span> text,
-  area <span style="color: #9580FF;">real</span>,
-  latitude <span style="color: #9580FF;">real</span>,
-  longitude <span style="color: #9580FF;">real</span>,
-  fullname text
-<span style="color: #f8f8f2;">)</span>;
-</pre>
-</div>
-
 <p>
-The most important (non-obvious) columns are discussed below:
-</p>
-
-<ul class="org-ul">
-<li><code>id</code> : An internal identifier used to ensure that each geography has a unique identification key
-</li>
-<li><code>location</code> : An identifer more used for joining and reference purposes
-</li>
-<li><code>location_type</code> : References another table that keeps track of the types of geographies that we can reference &#x2013; We need for potential conflicts such as a 5 digit zip code conflicting with a 5 digit FIPS code
-</li>
-<li><code>name</code> or <code>fullname</code> : These are a text name for the geography and will often have the same value but may differ in cases like "St. Louis" (<code>name</code>) `vs "St. Louis City"|"St. Louis County" (<code>fullname</code>).
-</li>
-</ul>
-</div>
-</li>
-
-<li><a id="sec-4-1-1-2" name="sec-4-1-1-2"></a><code>meta.covid_categories</code><br ><div class="outline-text-5" id="text-4-1-1-2">
-<p>
-This table contains information on the different COVID "sub-categories" (variables) and their corresponding category
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.covid_categories</span>
-<span style="color: #f8f8f2;">(</span>
-    category TEXT,
-    subcategory TEXT <span style="color: #FF80BF; font-weight: bold;">UNIQUE</span>,
-    <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span> <span style="color: #80FFEA;">(</span>category, subcategory<span style="color: #80FFEA;">)</span>
-<span style="color: #f8f8f2;">)</span>;
-</pre>
-</div>
-
-<p>
-<a href="../db/schemas/002_covid_data.sql#MissingReference">COVID file</a>
-</p>
-</div>
-</li>
-
-<li><a id="sec-4-1-1-3" name="sec-4-1-1-3"></a><code>meta.covid_measurement</code><br ><div class="outline-text-5" id="text-4-1-1-3">
-<p>
-This table contains information on the different types of measurement classification for certain variables, namely: cumulative, current, new
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.covid_measurement</span>
-<span style="color: #f8f8f2;">(</span>
-    <span style="color: #FF80BF; font-weight: bold;">name</span> TEXT <span style="color: #FF80BF; font-weight: bold;">UNIQUE</span> <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>
-<span style="color: #f8f8f2;">)</span>;
-</pre>
-</div>
-
-<p>
-<a href="../db/schemas/002_covid_data.sql#MissingReference">COVID file</a>
-</p>
-</div>
-</li>
-
-<li><a id="sec-4-1-1-4" name="sec-4-1-1-4"></a><code>meta.covid_unit</code><br ><div class="outline-text-5" id="text-4-1-1-4">
-<p>
-This table contains information on the unit that the data is being reported in
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.covid_unit</span>
-<span style="color: #f8f8f2;">(</span>
-    <span style="color: #FF80BF; font-weight: bold;">name</span> TEXT <span style="color: #FF80BF; font-weight: bold;">UNIQUE</span> <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>
-<span style="color: #f8f8f2;">)</span>;
-</pre>
-</div>
-
-<p>
-<a href="../db/schemas/002_covid_data.sql#MissingReference">COVID file</a>
-</p>
-</div>
-</li>
-
-<li><a id="sec-4-1-1-5" name="sec-4-1-1-5"></a><code>meta.covid_demographics</code><br ><div class="outline-text-5" id="text-4-1-1-5">
-<p>
-This contains information on the demographics being reported
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.covid_demographics</span>
-<span style="color: #f8f8f2;">(</span>
-    id SERIAL <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>,
-    age TEXT,
-    race TEXT,
-    sex TEXT
-<span style="color: #f8f8f2;">)</span>;
-</pre>
-</div>
-
-<p>
-<a href="../db/schemas/002_covid_data.sql#MissingReference">COVID file</a>
-</p>
-</div>
-</li></ol>
-</div>
-
-<div id="outline-container-sec-4-1-2" class="outline-4">
-<h4 id="sec-4-1-2"><span class="section-number-4">4.1.2</span> <code>data</code></h4>
-<div class="outline-text-4" id="text-4-1-2">
-</div><ol class="org-ol"><li><a id="sec-4-1-2-1" name="sec-4-1-2-1"></a><code>data.covid_{source}</code><br ><div class="outline-text-5" id="text-4-1-2-1">
-<p>
-This is where the data will be stored for each individual source (where <code>source</code> can take the values <code>official</code>, <code>usafacts</code>, <code>nyt</code>, etc&#x2026;)
+We'll review this table and then fill in the details on the foreign key
+relationships
 </p>
 
 <div class="org-src-container">
@@ -534,12 +428,12 @@ This is where the data will be stored for each individual source (where <code>so
 <span style="color: #f8f8f2;">(</span>
     vintage <span style="color: #9580FF;">TIMESTAMP</span>,
     dt <span style="color: #9580FF;">DATE</span>,
-    location BIGINT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.locations <span style="color: #80FFEA;">(</span>location<span style="color: #80FFEA;">)</span>,
+    location_id BIGINT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.locations <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
     variable_id <span style="color: #9580FF;">SMALLINT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_variables <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
     demographic_id <span style="color: #9580FF;">SMALLINT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_demographics <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
     <span style="color: #FF80BF; font-weight: bold;">value</span> <span style="color: #9580FF;">REAL</span>,
     provider <span style="color: #9580FF;">INT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> <span style="color: #FF80BF; font-weight: bold;">data</span>.covid_providers <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span> <span style="color: #FF80BF; font-weight: bold;">NOT</span> <span style="color: #FF80BF; font-weight: bold;">NULL</span>,
-    <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span> <span style="color: #80FFEA;">(</span>vintage, dt, location, variable_id, demographic_id<span style="color: #80FFEA;">)</span>
+    <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span> <span style="color: #80FFEA;">(</span>vintage, dt, location_id, variable_id, demographic_id<span style="color: #80FFEA;">)</span>
 <span style="color: #f8f8f2;">)</span>;
 </pre>
 </div>
@@ -547,63 +441,296 @@ This is where the data will be stored for each individual source (where <code>so
 <p>
 <a href="../db/schemas/003_covid_individual_sources.sql#MissingReference">COVID File</a>
 </p>
-</div>
-</li>
 
-<li><a id="sec-4-1-2-2" name="sec-4-1-2-2"></a><code>data.covid_observations</code><br ><div class="outline-text-5" id="text-4-1-2-2">
 <p>
-We will combine data from each of the sources into this table
+The foreign key relationships are
 </p>
 
+<ul class="org-ul">
+<li>The <code>meta.locations</code> table keeps track of all "locations" in our database. For
+US states and counties this includes the US FIPS code
+</li>
+<li>The <code>meta.covid_variables</code> table contains information on the variable, its
+units, and form of measurement. We'll talk through this one in more detail
+</li>
+<li>The <code>meta.covid_demographics</code> contains information on the age, rage, and sex
+for individuals represented in the data observations.
+</li>
+<li><code>data.covid_providers</code> helps us keep track where this data comes from. We'll
+look at this one also&#x2026;
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> <code>meta.covid_variables</code></h3>
+<div class="outline-text-3" id="text-4-2">
 <div class="org-src-container">
 
-<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #FF80BF; font-weight: bold;">data</span>.covid_observations
+<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #8aFF80; font-weight: bold;">meta.covid_variables</span>
 <span style="color: #f8f8f2;">(</span>
-    vintage <span style="color: #9580FF;">TIMESTAMP</span>,
-    dt <span style="color: #9580FF;">DATE</span>,
-    location BIGINT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.locations <span style="color: #80FFEA;">(</span>location<span style="color: #80FFEA;">)</span>,
-    variable_id <span style="color: #9580FF;">SMALLINT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_variables <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
-    demographic_id <span style="color: #9580FF;">SMALLINT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_demographics <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span>,
-    <span style="color: #FF80BF; font-weight: bold;">value</span> <span style="color: #9580FF;">REAL</span>,
-    provider <span style="color: #9580FF;">INT</span> <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> <span style="color: #FF80BF; font-weight: bold;">data</span>.covid_providers <span style="color: #80FFEA;">(</span>id<span style="color: #80FFEA;">)</span> <span style="color: #FF80BF; font-weight: bold;">NOT</span> <span style="color: #FF80BF; font-weight: bold;">NULL</span>,
-    <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span> <span style="color: #80FFEA;">(</span>vintage, dt, location, variable_id, demographic_id<span style="color: #80FFEA;">)</span>
+    id SERIAL <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>,
+    category TEXT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_categories <span style="color: #80FFEA;">(</span>subcategory<span style="color: #80FFEA;">)</span>,
+    measurement TEXT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_measurement <span style="color: #80FFEA;">(</span><span style="color: #FF80BF; font-weight: bold;">name</span><span style="color: #80FFEA;">)</span>,
+    unit TEXT <span style="color: #FF80BF; font-weight: bold;">REFERENCES</span> meta.covid_unit <span style="color: #80FFEA;">(</span><span style="color: #FF80BF; font-weight: bold;">name</span><span style="color: #80FFEA;">)</span>
 <span style="color: #f8f8f2;">)</span>;
+
+<span style="color: #FF80BF; font-weight: bold;">INSERT</span> <span style="color: #FF80BF; font-weight: bold;">INTO</span> meta.covid_variables <span style="color: #f8f8f2;">(</span>category, measurement, unit<span style="color: #f8f8f2;">)</span>
+<span style="color: #FF80BF; font-weight: bold;">VALUES</span> <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'cases'</span>, <span style="color: #FFFF80;">'cumulative'</span>, <span style="color: #FFFF80;">'people'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'cases'</span>, <span style="color: #FFFF80;">'new'</span>, <span style="color: #FFFF80;">'people'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'deaths'</span>, <span style="color: #FFFF80;">'cumulative'</span>, <span style="color: #FFFF80;">'people'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'deaths'</span>, <span style="color: #FFFF80;">'new'</span>, <span style="color: #FFFF80;">'people'</span><span style="color: #f8f8f2;">)</span>,
+
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_in_use_covid'</span>, <span style="color: #FFFF80;">'cumulative'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_in_use_covid'</span>, <span style="color: #FFFF80;">'new'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_in_use_covid'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_in_use'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_available'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hospital_beds_capacity'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'adult_icu_beds_in_use'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'adult_icu_beds_in_use_covid'</span>, <span style="color: #FFFF80;">'current'</span>, <span style="color: #FFFF80;">'beds'</span><span style="color: #f8f8f2;">)</span>,
+### many <span style="color: #FF80BF; font-weight: bold;">more</span> <span style="color: #FF80BF; font-weight: bold;">rows</span>!
 </pre>
 </div>
 
 <p>
-<a href="../db/schemas/002_covid_data.sql#MissingReference">COVID File</a>
+Let's look at the <a href="file:///home/sglyon/valorum/covid/can-scrapers/db/schemas/002_covid_data.sql#MissingReference">table</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> <code>data.covid_providers</code></h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Finally the <code>data.covid_providers</code> table
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span style="color: #FF80BF; font-weight: bold;">CREATE</span> <span style="color: #FF80BF; font-weight: bold;">TABLE</span> <span style="color: #FF80BF; font-weight: bold;">data</span>.covid_providers
+<span style="color: #f8f8f2;">(</span>
+    id SERIAL <span style="color: #FF80BF; font-weight: bold;">PRIMARY</span> <span style="color: #FF80BF; font-weight: bold;">KEY</span>,
+    <span style="color: #FF80BF; font-weight: bold;">name</span> TEXT <span style="color: #FF80BF; font-weight: bold;">UNIQUE</span>,
+    priority <span style="color: #9580FF;">INT</span>
+<span style="color: #f8f8f2;">)</span>;
+
+
+<span style="color: #FF80BF; font-weight: bold;">INSERT</span> <span style="color: #FF80BF; font-weight: bold;">INTO</span> <span style="color: #FF80BF; font-weight: bold;">data</span>.covid_providers <span style="color: #f8f8f2;">(</span><span style="color: #FF80BF; font-weight: bold;">name</span>, priority<span style="color: #f8f8f2;">)</span>
+<span style="color: #FF80BF; font-weight: bold;">VALUES</span> <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'county'</span>, <span style="color: #80FFEA;">1000</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'state'</span>, <span style="color: #80FFEA;">2000</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'ny_times'</span>, <span style="color: #80FFEA;">2500</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'usafacts'</span>, <span style="color: #80FFEA;">3000</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'ctp'</span>, <span style="color: #80FFEA;">4000</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'hhs'</span>, <span style="color: #80FFEA;">5000</span><span style="color: #f8f8f2;">)</span>,
+       <span style="color: #f8f8f2;">(</span><span style="color: #FFFF80;">'cdc'</span>, <span style="color: #80FFEA;">6000</span><span style="color: #f8f8f2;">)</span>
+;
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Getting Started, Development Notes</h2>
+<div class="outline-text-2" id="text-5">
+</div><div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> Creating a development environment</h3>
+<div class="outline-text-3" id="text-5-1">
+<ol class="org-ol">
+<li>Install <code>conda</code> (either anaconda or miniconda)
+</li>
+<li>Create a conda environment for this project, <code>conda create -n can-scrapers python=3.6</code>
+</li>
+<li>Activate the environment, <code>conda activate can-scrapers</code>
+</li>
+<li>Move your command line or terminal into the <code>can-scrapers</code> directory
+</li>
+<li>Install the required packages, <code>pip install -r requirements-dev.txt</code>
+</li>
+<li>Install development version of the <code>can_tools</code> package, <code>pip install -e .</code>
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> Running tests locally</h3>
+<div class="outline-text-3" id="text-5-2">
+</div><div id="outline-container-sec-5-2-1" class="outline-4">
+<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> Types of tests</h4>
+<div class="outline-text-4" id="text-5-2-1">
+<p>
+We have written automated unit and integration tests using the <code>DatasetBase</code>
+parent class.
+</p>
+
+<p>
+The unit tests do the following:
+</p>
+
+<ul class="org-ul">
+<li>Verify that the <code>fetch</code> method runs without any network errors
+</li>
+<li>Verify that the <code>normalize</code> method returns a DataFrame that
+<ul class="org-ul">
+<li>Is not empty
+</li>
+<li>Has the correct columns
+</li>
+</ul>
+</li>
+<li>The <code>validate</code> method runs without any issues and returns <code>True</code>
+</li>
+</ul>
+
+<p>
+The integration tests test that the <code>put</code> method can successfully load the
+data into a test instance of the database (see below).
+</p>
+
+<p>
+Our production environment uses PostgreSQL as the database engine.
+</p>
+
+<p>
+All SQL interactions happen via sqlalchemy, which is (mostly) database
+backend agnostic.
+</p>
+
+<p>
+We can run integration tests either via an in-memory SQLite that is created
+on each run of the tests, or against a running postgres instance.
+</p>
+
+<p>
+Using SQLite while developing is encouraged as it is easier to get up and
+running.
+</p>
+
+<p>
+If you do choose to use PostgreSQL, please follow the instructions below for
+using Docker to set up the instance of postgres.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-2-2" class="outline-4">
+<h4 id="sec-5-2-2"><span class="section-number-4">5.2.2</span> Local database instance using Docker</h4>
+<div class="outline-text-4" id="text-5-2-2">
+<p>
+We use a docker based workflow for running a local instance of the database.
+</p>
+
+<p>
+In order to utilize this workflow please start a postgresql container and
+leave it running
+</p>
+
+<p>
+Here's a sample <code>docker run</code> command that should do the trick
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-shell">docker run --rm -d -p <span style="color: #80FFEA;">5432:5432</span> -e <span style="color: #f8f8f2; font-weight: bold;">POSTGRES_PASSWORD</span>=postgres_test postgres:12
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5-2-3" class="outline-4">
+<h4 id="sec-5-2-3"><span class="section-number-4">5.2.3</span> Running tests</h4>
+<div class="outline-text-4" id="text-5-2-3">
+<p>
+To run the full suite of unit tests, execute the following from the root of
+the <code>can-scrapers</code> repository:
+</p>
+
+<pre class="example">
+pytest -v .
+</pre>
+
+<p>
+Suppose you were working on a scraper for Wyoming and <code>Wyoming</code> was in the
+name of the scraper class
+</p>
+
+<p>
+To run tests only for <code>Wyoming</code> you could do
+</p>
+
+<pre class="example">
+pytest -v -k Wyoming .
+</pre>
+</div>
+
+<ol class="org-ol"><li><a id="sec-5-2-3-1" name="sec-5-2-3-1"></a>Extra: Using PostgreSQL<br ><div class="outline-text-5" id="text-5-2-3-1">
+<p>
+If you would like to run the integration tests against postgres, first
+follow the instructions above to get an instance of postgres up and running
+via docker
+</p>
+
+<p>
+Then you need to set the environment variable <code>CAN_PG_CONN_STR</code>. To do this in a
+unix environment (Linux or OSX), run the following command
+</p>
+
+<pre class="example">
+export CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
+</pre>
+
+<p>
+If you are using Windows, set the environment variable by running
+</p>
+
+<pre class="example">
+set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
+</pre>
+
+<p>
+With the environment variable set, you can repeat the <code>pytest</code> commands from above
 </p>
 </div>
 </li></ol>
 </div>
 </div>
 
-<div id="outline-container-sec-4-2" class="outline-3">
-<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Cross references</h3>
-<div class="outline-text-3" id="text-4-2">
+<div id="outline-container-sec-5-3" class="outline-3">
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> Setting up VS Code</h3>
+<div class="outline-text-3" id="text-5-3">
 <p>
-As seen in <a href="#sec-4-1-2-2"><code>data.covid_observations</code></a>, an observation is defined by:
+Steps to set up VS code:
 </p>
 
 <ul class="org-ul">
-<li><code>vintage</code>
+<li>Install <code>python</code> and <code>pylance</code> VS code extensions
 </li>
-<li><code>dt</code>
+<li>Reload vs code window
 </li>
-<li><code>location</code>
+<li>Open <code>can-scrapers</code> directory in VS code
 </li>
-<li><code>variable_id</code>
-</li>
-<li><code>demographic_id</code>
+<li>Select the <code>can-tools</code> conda environment as the workspace interpreter.
 </li>
 </ul>
+
+<p>
+Please do not push any changes made to the <code>.vscode</code> directory. That has some
+shared settings, but will also be overwritten by the absolute path to the
+conda environment on your machine. This path is unlikely to match exactly
+with the path for any other team members
+</p>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Scraper Library</h2>
-<div class="outline-text-2" id="text-5">
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Scraper Library</h2>
+<div class="outline-text-2" id="text-6">
 <p>
 The scrapers are defined by 4 operations:
 </p>
@@ -623,16 +750,16 @@ The scrapers are defined by 4 operations:
 <figure id="fig:CANSRAPERS">
 <p><img src="static/CAN_scrapers.png" class="img-responsive" alt="CAN_scrapers.png">
 </p>
-<figcaption><span class="figure-number">Figure 1:</span> Scraper flow chart</figcaption>
+<figcaption><span class="figure-number">Figure 2:</span> Scraper flow chart</figcaption>
 </figure>
 </div>
 
-<div id="outline-container-sec-5-1" class="outline-3">
-<h3 id="sec-5-1"><span class="section-number-3">5.1</span> <code>DatasetBase</code> and relevant subclasses</h3>
-<div class="outline-text-3" id="text-5-1">
-</div><div id="outline-container-sec-5-1-1" class="outline-4">
-<h4 id="sec-5-1-1"><span class="section-number-4">5.1.1</span> <code>DatasetBase</code></h4>
-<div class="outline-text-4" id="text-5-1-1">
+<div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> <code>DatasetBase</code> and relevant subclasses</h3>
+<div class="outline-text-3" id="text-6-1">
+</div><div id="outline-container-sec-6-1-1" class="outline-4">
+<h4 id="sec-6-1-1"><span class="section-number-4">6.1.1</span> <code>DatasetBase</code></h4>
+<div class="outline-text-4" id="text-6-1-1">
 <p>
 This is the most important base class and all scrapers will inherit from it (as their last parent).
 </p>
@@ -667,9 +794,9 @@ It is found in <code>can-scrapers/can_tools/scrapers/base.py</code>
 </div>
 </div>
 
-<div id="outline-container-sec-5-1-2" class="outline-4">
-<h4 id="sec-5-1-2"><span class="section-number-4">5.1.2</span> <code>StateDashboard</code> or <code>CountyDashboard</code></h4>
-<div class="outline-text-4" id="text-5-1-2">
+<div id="outline-container-sec-6-1-2" class="outline-4">
+<h4 id="sec-6-1-2"><span class="section-number-4">6.1.2</span> <code>StateDashboard</code> or <code>CountyDashboard</code></h4>
+<div class="outline-text-4" id="text-6-1-2">
 <p>
 This is another class that you are likely to use and is used when we don't have another subclass that specializes in extracting data from that particular dashboard
 </p>
@@ -680,9 +807,9 @@ It is found in <code>can-scrapers/can_tools/scrapers/official/base.py</code>
 </div>
 </div>
 
-<div id="outline-container-sec-5-1-3" class="outline-4">
-<h4 id="sec-5-1-3"><span class="section-number-4">5.1.3</span> <code>ArcGIS</code></h4>
-<div class="outline-text-4" id="text-5-1-3">
+<div id="outline-container-sec-6-1-3" class="outline-4">
+<h4 id="sec-6-1-3"><span class="section-number-4">6.1.3</span> <code>ArcGIS</code></h4>
+<div class="outline-text-4" id="text-6-1-3">
 <p>
 This subclass specializes in extracting information from an ArcGIS dashboard (which are most of the current scrapers).
 </p>
@@ -711,96 +838,11 @@ This subclass specializes in extracting information from an ArcGIS dashboard (wh
 </div>
 </div>
 
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> Scraper Infrastructure</h2>
-<div class="outline-text-2" id="text-6">
-<p>
-The overall microservice architecture we use is shown in the diagram below:
-</p>
-
-
-<figure id="fig:IFC">
-<p><img src="https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b62d927ffa63d3d844a92b0efeb/docs/infrastructure/can_scrapers_overview.png" class="img-responsive" alt="can_scrapers_overview.png">
-</p>
-<figcaption><span class="figure-number">Figure 2:</span> Infrastructure flow chart</figcaption>
-</figure>
-
-<p>
-In, words, these components are:
-</p>
-
-<ol class="org-ol">
-<li>Scrapers: these are open source scrapers written in Python. The repository is here <a href="https://github.com/covid-projections/can-scrapers">https://github.com/covid-projections/can-scrapers</a>
-</li>
-<li>Database: we store all data in a postgrestql database
-</li>
-<li>API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
-</li>
-<li>Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
-</li>
-<li>API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
-</li>
-<li>Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
-</li>
-</ol>
-</div>
-</div>
-
 <div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> Getting Started, Development Notes</h2>
+<h2 id="sec-7"><span class="section-number-2">7</span> Writing a new scraper</h2>
 <div class="outline-text-2" id="text-7">
-</div><div id="outline-container-sec-7-1" class="outline-3">
-<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Creating a development environment</h3>
-<div class="outline-text-3" id="text-7-1">
-<ol class="org-ol">
-<li>Install <code>conda</code> (either anaconda or miniconda)
-</li>
-<li>Create a conda environment for this project, <code>conda create can-tools python=3.6</code>
-</li>
-<li>Activate the environment, <code>conda activate can-tools</code>
-</li>
-<li>Move your command line or terminal into the <code>can-scrapers</code> directory
-</li>
-<li>Install the required packages, <code>pip install -r requirements-dev.txt</code>
-</li>
-<li>Install development version of the <code>can-tools</code> package, <code>pip install -e .</code>
-</li>
-</ol>
-</div>
-</div>
-
-<div id="outline-container-sec-7-2" class="outline-3">
-<h3 id="sec-7-2"><span class="section-number-3">7.2</span> Setting up VS Code</h3>
-<div class="outline-text-3" id="text-7-2">
 <p>
-Steps to set up VS code:
-</p>
-
-<ul class="org-ul">
-<li>Install <code>python</code> and <code>pylance</code> VS code extensions
-</li>
-<li>Reload vs code window
-</li>
-<li>Open <code>can-scrapers</code> directory in VS code
-</li>
-<li>Select the <code>can-tools</code> conda environment as the workspace interpreter.
-</li>
-</ul>
-
-<p>
-Please do not push any changes made to the <code>.vscode</code> directory. That has some
-shared settings, but will also be overwritten by the absolute path to the
-conda environment on your machine. This path is unlikely to match exactly
-with the path for any other team members
-</p>
-</div>
-</div>
-
-<div id="outline-container-sec-7-3" class="outline-3">
-<h3 id="sec-7-3"><span class="section-number-3">7.3</span> Writing a new scraper</h3>
-<div class="outline-text-3" id="text-7-3">
-<p>
-As seen in <a href="#sec-5">Scraper Library</a>, a scraper requires 4 methods:
+As seen in <a href="#sec-6">Scraper Library</a>, a scraper requires 4 methods:
 </p>
 
 <ol class="org-ol">
@@ -821,7 +863,6 @@ the database
 </p>
 </div>
 </div>
-</div>
 
 <div id="outline-container-sec-8" class="outline-2">
 <h2 id="sec-8"><span class="section-number-2">8</span> Example Scrapers</h2>
@@ -836,7 +877,7 @@ the database
 </div>
 </div></div></div>
 <footer id="postamble" class="">
-<div><p class="date">Created: 2020-11-20 Fri 15:20</p>
+<div><p class="date">Created: 2020-12-09 Wed 10:39</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.1 (<a href="http://orgmode.org">Org-mode</a> 9.4)</p>
 </div>
 </footer>
