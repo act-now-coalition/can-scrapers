@@ -6,10 +6,12 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import CountyDashboard
 from can_tools.scrapers.official.base import StateDashboard
 
+
 class TennesseeCasesDeathsTests(CMU, StateDashboard):
     """
     Fetch state level covid data from official state of Tennessee spreadsheet
     """
+
     source = (
         "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
         "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
@@ -36,19 +38,33 @@ class TennesseeCasesDeathsTests(CMU, StateDashboard):
 
         # Create dictionary for columns to map
         crename = {
-            "TOTAL_CONFIRMED": CMU(category="cases", measurement="cumulative", unit="people"),
+            "TOTAL_CONFIRMED": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
             "TOTAL_PROBABLE": CMU(category="cases", measurement="new", unit="people"),
-            "TOTAL_DEATHS": CMU(category="deaths", measurement="cumulative", unit="people"),
+            "TOTAL_DEATHS": CMU(
+                category="deaths", measurement="cumulative", unit="people"
+            ),
             "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
-            "POS_TESTS": CMU(category="unspecified_tests_positive", measurement="cumulative", unit="test_encounters"),
-            "NEG_TESTS": CMU(category="unspecified_tests_negative", measurement="cumulative", unit="test_encounters"),
-            "TOTAL_TESTS": CMU(category="unspecified_tests_total", measurement="cumulative", unit="test_encounters"),
+            "POS_TESTS": CMU(
+                category="unspecified_tests_positive",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
+            "NEG_TESTS": CMU(
+                category="unspecified_tests_negative",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
+            "TOTAL_TESTS": CMU(
+                category="unspecified_tests_total",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
         }
 
         # Move things into long format
-        df = df.melt(
-            id_vars=["dt"], value_vars=crename.keys()
-        ).dropna()
+        df = df.melt(id_vars=["dt"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(df, crename)
@@ -80,13 +96,15 @@ class TennesseeCasesDeathsTests(CMU, StateDashboard):
     def validate(self, df, df_hist) -> bool:
         "The best developers write test cases first..."
         # TODO: Create a calculated column and sanity check this against unspecified_tests_total
-        #df["unspecified_tests_total_calculated"] = df.eval("unspecified_tests_positive + unspecified_tests_negative")
+        # df["unspecified_tests_total_calculated"] = df.eval("unspecified_tests_positive + unspecified_tests_negative")
         return True
+
 
 class TennesseeCountyCasesDeathsTests(CMU, CountyDashboard):
     """
     Fetch county level covid data from official state of Tennessee spreadsheet
     """
+
     source = (
         "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
         "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
@@ -113,15 +131,37 @@ class TennesseeCountyCasesDeathsTests(CMU, CountyDashboard):
 
         # Create dictionary for columns to map
         crename = {
-            "TOTAL_CONFIRMED": CMU(category="cases", measurement="cumulative", unit="people"),
+            "TOTAL_CONFIRMED": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
             "TOTAL_PROBABLE": CMU(category="cases", measurement="new", unit="people"),
-            "POS_TESTS": CMU(category="unspecified_tests_positive", measurement="cumulative", unit="test_encounters"),
-            "NEG_TESTS": CMU(category="unspecified_tests_negative", measurement="cumulative", unit="test_encounters"),
-            "TOTAL_TESTS": CMU(category="unspecified_tests_total", measurement="cumulative", unit="test_encounters"),
+            "POS_TESTS": CMU(
+                category="unspecified_tests_positive",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
+            "NEG_TESTS": CMU(
+                category="unspecified_tests_negative",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
+            "TOTAL_TESTS": CMU(
+                category="unspecified_tests_total",
+                measurement="cumulative",
+                unit="test_encounters",
+            ),
             "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
-            "TOTAL_DEATHS": CMU(category="deaths", measurement="cumulative", unit="people"),
-            "NEW_HOSPITALIZED": CMU(category="hospital_beds_in_use_covid", measurement="new", unit="beds"),
-            "TOTAL_HOSPITALIZED": CMU(category="hospital_beds_in_use_covid", measurement="cumulative", unit="beds"),
+            "TOTAL_DEATHS": CMU(
+                category="deaths", measurement="cumulative", unit="people"
+            ),
+            "NEW_HOSPITALIZED": CMU(
+                category="hospital_beds_in_use_covid", measurement="new", unit="beds"
+            ),
+            "TOTAL_HOSPITALIZED": CMU(
+                category="hospital_beds_in_use_covid",
+                measurement="cumulative",
+                unit="beds",
+            ),
         }
 
         # Move things into long format
@@ -166,4 +206,3 @@ class TennesseeCountyCasesDeathsTests(CMU, CountyDashboard):
     def validate(self, df, df_hist) -> bool:
         "The best developers write test cases first..."
         return True
-
