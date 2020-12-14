@@ -17,7 +17,9 @@ class Maryland(ArcGIS, DatasetBase):
     source = "https://coronavirus.maryland.gov/"
 
     def fetch(self):
-        return self.get_all_jsons("MDH_COVID_19_Dashboard_Feature_Layer_Counties_MEMA", 0, '')
+        return self.get_all_jsons(
+            "MDH_COVID_19_Dashboard_Feature_Layer_Counties_MEMA", 0, ""
+        )
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
@@ -25,8 +27,12 @@ class Maryland(ArcGIS, DatasetBase):
         df["location"] = (self.state_fips * 1000) + df["county_fip"].astype(int)
 
         crename = {
-            "totalcasecount": CMU(category="cases", measurement="cumulative", unit="people"),
-            "totaldeathcount": CMU(category="deaths", measurement="cumulative", unit="people"),
+            "totalcasecount": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
+            "totaldeathcount": CMU(
+                category="deaths", measurement="cumulative", unit="people"
+            ),
             "total_pop_tested": CMU(
                 category="unspecified_tests_total",
                 measurement="cumulative",
