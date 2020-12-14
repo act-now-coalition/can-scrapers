@@ -140,12 +140,19 @@ We'll review this table and then fill in the details on the foreign key
 relationships
 
 #+BEGIN_SRC sql
-CREATE TABLE data.covid_official ( vintage TIMESTAMP, dt DATE, location_id
-BIGINT REFERENCES meta.locations (id), variable_id SMALLINT REFERENCES
-meta.covid_variables (id), demographic_id SMALLINT REFERENCES
-meta.covid_demographics (id), value REAL, provider INT REFERENCES
-data.covid_providers (id) NOT NULL, PRIMARY KEY (vintage, dt, location_id,
-variable_id, demographic_id) ); #+END_SRC
+
+  CREATE TABLE data.covid_official (
+    vintage TIMESTAMP, dt DATE,
+    location_id BIGINT REFERENCES meta.locations (id),
+    variable_id SMALLINT REFERENCES meta.covid_variables (id),
+    demographic_id SMALLINT REFERENCES
+    meta.covid_demographics (id),
+    value REAL,
+    provider INT REFERENCES data.covid_providers (id) NOT NULL,
+    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
+  );
+
+#+END_SRC
 
 [[file:../db/schemas/003_covid_individual_sources.sql::1][COVID File]]
 
@@ -163,9 +170,13 @@ The foreign key relationships are
 ** =meta.covid_variables=
 
 #+begin_src sql
-CREATE TABLE meta.covid_variables ( id SERIAL PRIMARY KEY, category TEXT
-REFERENCES meta.covid_categories (subcategory), measurement TEXT REFERENCES
-meta.covid_measurement (name), unit TEXT REFERENCES meta.covid_unit (name) );
+CREATE TABLE meta.covid_variables
+(
+    id SERIAL PRIMARY KEY,
+    category TEXT REFERENCES meta.covid_categories (subcategory),
+    measurement TEXT REFERENCES meta.covid_measurement (name),
+    unit TEXT REFERENCES meta.covid_unit (name)
+);
 #+end_src
 
 Let's look at the [[file:~/valorum/covid/can-scrapers/db/schemas/002_covid_data.sql::CREATE TABLE meta.covid_variables][table]]
@@ -175,13 +186,15 @@ Let's look at the [[file:~/valorum/covid/can-scrapers/db/schemas/002_covid_data.
 Finally the =data.covid_providers= table
 
 #+begin_src sql
-  CREATE TABLE data.covid_providers ( id SERIAL PRIMARY KEY, name TEXT UNIQUE,
+  CREATE TABLE data.covid_providers
+  (
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE,
+      priority INT
+  );
   priority INT );
 
-
-  INSERT INTO data.covid_providers (name, priority) VALUES ('county', 1000),
-  ('state', 2000), ('ny_times', 2500), ('usafacts', 3000), ('ctp', 4000),
-  ('hhs', 5000), ('cdc', 6000) ; #+end_src
+#+end_src
 
 * Getting Started, Development Notes
 
@@ -218,7 +231,8 @@ Finally the =data.covid_providers= table
     the =can-scrapers= repository:
 
     #+begin_src
-pytest -v . #+end_src
+pytest -v .
+    #+end_src
 
     Suppose you were working on a scraper for Wyoming and =Wyoming= was in the
     name of the scraper class
@@ -226,7 +240,8 @@ pytest -v . #+end_src
     To run tests only for =Wyoming= you could do
 
     #+begin_src
-pytest -v -k Wyoming . #+end_src
+pytest -v -k Wyoming .
+    #+end_src
 
 **** Extra: Using PostgreSQL
 
@@ -249,13 +264,13 @@ pytest -v -k Wyoming . #+end_src
 
     #+begin_src
 export CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
-#+end_src
+    #+end_src
 
     If you are using Windows, set the environment variable by running
 
     #+begin_src
 set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
-#+end_src
+    #+end_src
 
     With the environment variable set, you can repeat the =pytest= commands from
     above
@@ -271,8 +286,8 @@ set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
      Here's a sample =docker run= command that should do the trick
 
      #+begin_src shell
-       docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres_test
-     postgres:12 #+end_src
+     docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres_test postgres:12
+     #+end_src
 
 ** Setting up VS Code
 
