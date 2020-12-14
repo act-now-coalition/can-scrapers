@@ -2,7 +2,9 @@
 
 * Introduction
 
-All of the code and documentation for the Covid Act Now (CAN) scrapers, including this document, is in the [[https://github.com/covid-projections/can-scrapers][can-scrapers]] Github repository. We will refer to various folders within this repository throughout this document.
+All of the code and documentation for the Covid Act Now (CAN) scrapers,
+including this document, is in the [[https://github.com/covid-projections/can-scrapers][can-scrapers]] Github repository. We will refer
+to various folders within this repository throughout this document.
 
 * COVID Data
 
@@ -10,25 +12,40 @@ All of the code and documentation for the Covid Act Now (CAN) scrapers, includin
 
 Case data can be split into two categories
 
-1. /Confirmed cases|deaths/: This typically refers to individuals who have tested positive for COVID (typically via a [[PCR test]])
-2. /Suspected (Probable) cases|deaths/: This refers to an individual, one who was typically hospitalized, who had many of the symptoms associated with COVID but that had not been administered a test to confirm the diagnosis. This variable definition was especially relevant early in the pandemic when there was not wide-spread testing.
+1. /Confirmed cases|deaths/: This typically refers to individuals who have
+   tested positive for COVID (typically via a [[PCR test]])
+2. /Suspected (Probable) cases|deaths/: This refers to an individual, one who
+   was typically hospitalized, who had many of the symptoms associated with
+   COVID but that had not been administered a test to confirm the diagnosis.
+   This variable definition was especially relevant early in the pandemic when
+   there was not wide-spread testing.
 
-In our work, we will mostly focus on /total cases|deaths/ which includes the sum of confirmed and suspected cases|deaths -- This is because now that we have wide-spread testing, there are fewer suspected cases because they can easily be confirmed
+In our work, we will mostly focus on /total cases|deaths/ which includes the sum
+of confirmed and suspected cases|deaths -- This is because now that we have
+wide-spread testing, there are fewer suspected cases because they can easily be
+confirmed
 
 ** Hospitalizations
 ** Tests
 
 *** Test types
 
-There are three main kinds of tests antibody, antigen, and molecular. Antigen and molecular are both types of diagnostic tests and we'll group them together for our explanation below:
+There are three main kinds of tests antibody, antigen, and molecular. Antigen
+and molecular are both types of diagnostic tests and we'll group them together
+for our explanation below:
 
 **** Antibody tests
 
 Antibody tests, also known as serology tests, are described by the [[https://www.fda.gov/consumers/consumer-updates/coronavirus-disease-2019-testing-basics][FDA]] as,
 
 #+BEGIN_QUOTE
-An antibody test looks for antibodies that are made by your immune system in response to a threat, such as a specific virus. Antibodies can help fight infections. Antibodies can take several days or weeks to develop after you have an infection and may stay in your blood for several weeks or more after recovery. Because of this, antibody tests should not be used to diagnose COVID-19. At this time researchers do not know if the presence of antibodies means that you are immune to COVID-19 in the future.
-#+END_QUOTE
+An antibody test looks for antibodies that are made by your immune system in
+response to a threat, such as a specific virus. Antibodies can help fight
+infections. Antibodies can take several days or weeks to develop after you have
+an infection and may stay in your blood for several weeks or more after
+recovery. Because of this, antibody tests should not be used to diagnose
+COVID-19. At this time researchers do not know if the presence of antibodies
+means that you are immune to COVID-19 in the future. #+END_QUOTE
 
 **** Diagnostic tests
 
@@ -40,26 +57,46 @@ Diagnostic tests are themselves broken into two sub-categories:
 Diagnostic tests are described by the [[https://www.fda.gov/consumers/consumer-updates/coronavirus-disease-2019-testing-basics][FDA]] as,
 
 #+BEGIN_QUOTE
-A diagnostic test can show if you have an active coronavirus infection and should take steps to quarantine or isolate yourself from others. Currently there are two types of diagnostic tests– molecular tests, such as RT-PCR tests, that detect the virus’s genetic material, and antigen tests that detect specific proteins from the virus.
-#+END_QUOTE
+A diagnostic test can show if you have an active coronavirus infection and
+should take steps to quarantine or isolate yourself from others. Currently there
+are two types of diagnostic tests– molecular tests, such as RT-PCR tests, that
+detect the virus’s genetic material, and antigen tests that detect specific
+proteins from the virus. #+END_QUOTE
 
 *** Measurements
 
-There has been a significant amount of confusion about the units that testing data is being reported in, see [[https://covidtracking.com/blog/test-positivity-in-the-us-is-a-mess][the COVID Tracking Project's blog post]] on the topic. There are three main ways that COVID testing data is measured,
+There has been a significant amount of confusion about the units that testing
+data is being reported in, see [[https://covidtracking.com/blog/test-positivity-in-the-us-is-a-mess][the COVID Tracking Project's blog post]] on the
+topic. There are three main ways that COVID testing data is measured,
 
-1. Specimens tested: The number of specimens that the labs collected/tested in a given geography
-2. Test encounters: The number of unique people tested in a particular day for a given geography
+1. Specimens tested: The number of specimens that the labs collected/tested in a
+   given geography
+2. Test encounters: The number of unique people tested in a particular day for a
+   given geography
 3. Unique people: The number of unique people ever tested for a given geography
 
 Lets work through an example so we can be specific about the difference:
 
-Imagine that Alice and Bob both go to get tested on April 1, 2020. Two specimen samples are collected from Alice and two specimen samples are collected from Bob. Alice and Bob then go to a Memorial Day celebration at the end of May and find out that the host tested COVID positive so they both go to get tested again on June 1, 2020. An additional two specimens are collected from both Alice and Bob.
+Imagine that Alice and Bob both go to get tested on April 1, 2020. Two specimen
+samples are collected from Alice and two specimen samples are collected from
+Bob. Alice and Bob then go to a Memorial Day celebration at the end of May and
+find out that the host tested COVID positive so they both go to get tested again
+on June 1, 2020. An additional two specimens are collected from both Alice and
+Bob.
 
-- How many specimens do Alice and Bob contribute to the total? Both Alice and Bob would contribute two specimens from April and two specimens from June for a total of *eight specimens*.
-- How many test encounters do Alice and Bob contribute to the total? Both Alice and Bob would contribute a single test encounter from April and a single test encounter from June for a total of *four test encounters*.
-- How many unique people do Alice and Bob contribute to the total? Although Alice and Bob were each tested twice, they are the same person in April and June, so they would only contribute *two unique people* to the total.
+- How many specimens do Alice and Bob contribute to the total? Both Alice and
+  Bob would contribute two specimens from April and two specimens from June for
+  a total of *eight specimens*.
+- How many test encounters do Alice and Bob contribute to the total? Both Alice
+  and Bob would contribute a single test encounter from April and a single test
+  encounter from June for a total of *four test encounters*.
+- How many unique people do Alice and Bob contribute to the total? Although
+  Alice and Bob were each tested twice, they are the same person in April and
+  June, so they would only contribute *two unique people* to the total.
 
-The preferred metric at CAN is (currently) to count PCR test encounters. This will not always be available so its important that we collect whatever is available even if it isn't what we "want".
+The preferred metric at CAN is (currently) to count PCR test encounters. This
+will not always be available so its important that we collect whatever is
+available even if it isn't what we "want".
 
 * Scraper Infrastructure
 
@@ -71,14 +108,21 @@ https://raw.githubusercontent.com/covid-projections/can-scrapers/33268d564f9d8b6
 
 In, words, these components are:
 
-1. Scrapers: these are open source scrapers written in Python. The repository is here https://github.com/covid-projections/can-scrapers
+1. Scrapers: these are open source scrapers written in Python. The repository is
+   here https://github.com/covid-projections/can-scrapers
 2. Database: we store all data in a postgrestql database
-3. API: We have REST and GraphQL APIs. They are automatically generated using the PostgREST and postgraphile libraries
-4. Client Libraries: We have client libraries in Python, R, and Julia that integrate with the REST API
-5. API Gateway: we have a Kong API gateway that sits in front of all user requests and handles things like caching, routing, and authentication
-6. Other services: we have a handful of other microservices that perform specific functions. These are contained in docker containers that communicate over HTTP and are managed by Google Cloud run
+3. API: We have REST and GraphQL APIs. They are automatically generated using
+   the PostgREST and postgraphile libraries
+4. Client Libraries: We have client libraries in Python, R, and Julia that
+   integrate with the REST API
+5. API Gateway: we have a Kong API gateway that sits in front of all user
+   requests and handles things like caching, routing, and authentication
+6. Other services: we have a handful of other microservices that perform
+   specific functions. These are contained in docker containers that communicate
+   over HTTP and are managed by Google Cloud run
 
 * Database
+
 All of the data that is collected is stored in a PostgreSQL database hosted on
 Google Cloud. This database is structured in three schemas:
 
@@ -96,18 +140,12 @@ We'll review this table and then fill in the details on the foreign key
 relationships
 
 #+BEGIN_SRC sql
-CREATE TABLE data.covid_official
-(
-    vintage TIMESTAMP,
-    dt DATE,
-    location_id BIGINT REFERENCES meta.locations (id),
-    variable_id SMALLINT REFERENCES meta.covid_variables (id),
-    demographic_id SMALLINT REFERENCES meta.covid_demographics (id),
-    value REAL,
-    provider INT REFERENCES data.covid_providers (id) NOT NULL,
-    PRIMARY KEY (vintage, dt, location_id, variable_id, demographic_id)
-);
-#+END_SRC
+CREATE TABLE data.covid_official ( vintage TIMESTAMP, dt DATE, location_id
+BIGINT REFERENCES meta.locations (id), variable_id SMALLINT REFERENCES
+meta.covid_variables (id), demographic_id SMALLINT REFERENCES
+meta.covid_demographics (id), value REAL, provider INT REFERENCES
+data.covid_providers (id) NOT NULL, PRIMARY KEY (vintage, dt, location_id,
+variable_id, demographic_id) ); #+END_SRC
 
 [[file:../db/schemas/003_covid_individual_sources.sql::1][COVID File]]
 
@@ -125,31 +163,9 @@ The foreign key relationships are
 ** =meta.covid_variables=
 
 #+begin_src sql
-CREATE TABLE meta.covid_variables
-(
-    id SERIAL PRIMARY KEY,
-    category TEXT REFERENCES meta.covid_categories (subcategory),
-    measurement TEXT REFERENCES meta.covid_measurement (name),
-    unit TEXT REFERENCES meta.covid_unit (name)
-);
-
-INSERT INTO meta.covid_variables (category, measurement, unit)
-VALUES ('cases', 'cumulative', 'people'),
-       ('cases', 'new', 'people'),
-       ('deaths', 'cumulative', 'people'),
-       ('deaths', 'new', 'people'),
-
-       ('hospital_beds_in_use_covid', 'cumulative', 'beds'),
-       ('hospital_beds_in_use_covid', 'new', 'beds'),
-
-       ('hospital_beds_in_use_covid', 'current', 'beds'),
-       ('hospital_beds_in_use', 'current', 'beds'),
-       ('hospital_beds_available', 'current', 'beds'),
-       ('hospital_beds_capacity', 'current', 'beds'),
-
-       ('adult_icu_beds_in_use', 'current', 'beds'),
-       ('adult_icu_beds_in_use_covid', 'current', 'beds'),
-### many more rows!
+CREATE TABLE meta.covid_variables ( id SERIAL PRIMARY KEY, category TEXT
+REFERENCES meta.covid_categories (subcategory), measurement TEXT REFERENCES
+meta.covid_measurement (name), unit TEXT REFERENCES meta.covid_unit (name) );
 #+end_src
 
 Let's look at the [[file:~/valorum/covid/can-scrapers/db/schemas/002_covid_data.sql::CREATE TABLE meta.covid_variables][table]]
@@ -159,31 +175,21 @@ Let's look at the [[file:~/valorum/covid/can-scrapers/db/schemas/002_covid_data.
 Finally the =data.covid_providers= table
 
 #+begin_src sql
-  CREATE TABLE data.covid_providers
-  (
-      id SERIAL PRIMARY KEY,
-      name TEXT UNIQUE,
-      priority INT
-  );
+  CREATE TABLE data.covid_providers ( id SERIAL PRIMARY KEY, name TEXT UNIQUE,
+  priority INT );
 
 
-  INSERT INTO data.covid_providers (name, priority)
-  VALUES ('county', 1000),
-         ('state', 2000),
-         ('ny_times', 2500),
-         ('usafacts', 3000),
-         ('ctp', 4000),
-         ('hhs', 5000),
-         ('cdc', 6000)
-  ;
-#+end_src
+  INSERT INTO data.covid_providers (name, priority) VALUES ('county', 1000),
+  ('state', 2000), ('ny_times', 2500), ('usafacts', 3000), ('ctp', 4000),
+  ('hhs', 5000), ('cdc', 6000) ; #+end_src
 
 * Getting Started, Development Notes
 
 ** Creating a development environment
 
 1. Install =conda= (either anaconda or miniconda)
-2. Create a conda environment for this project, =conda create -n can-scrapers python=3.6=
+2. Create a conda environment for this project, =conda create -n can-scrapers
+   python=3.6=
 3. Activate the environment, =conda activate can-scrapers=
 4. Move your command line or terminal into the =can-scrapers= directory
 5. Install the required packages, =pip install -r requirements-dev.txt=
@@ -212,8 +218,7 @@ Finally the =data.covid_providers= table
     the =can-scrapers= repository:
 
     #+begin_src
-pytest -v .
-    #+end_src
+pytest -v . #+end_src
 
     Suppose you were working on a scraper for Wyoming and =Wyoming= was in the
     name of the scraper class
@@ -221,8 +226,7 @@ pytest -v .
     To run tests only for =Wyoming= you could do
 
     #+begin_src
-pytest -v -k Wyoming .
-    #+end_src
+pytest -v -k Wyoming . #+end_src
 
 **** Extra: Using PostgreSQL
 
@@ -237,27 +241,29 @@ pytest -v -k Wyoming .
      Using SQLite while developing is encouraged as it is easier to get up and
      running.
 
-     If you do choose to use PostgreSQL, please follow the instructions below for
-     using Docker to set up the instance of postgres.
+     If you do choose to use PostgreSQL, please follow the instructions below
+     for using Docker to set up the instance of postgres.
 
-     Then you need to set the environment variable =CAN_PG_CONN_STR=. To do this in a
-     unix environment (Linux or OSX), run the following command
+     Then you need to set the environment variable =CAN_PG_CONN_STR=. To do this
+     in a unix environment (Linux or OSX), run the following command
 
     #+begin_src
 export CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
-    #+end_src
+#+end_src
 
     If you are using Windows, set the environment variable by running
 
     #+begin_src
 set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
-    #+end_src
+#+end_src
 
-    With the environment variable set, you can repeat the =pytest= commands from above
+    With the environment variable set, you can repeat the =pytest= commands from
+    above
 
 ***** Local database instance using Docker
 
-     We use a docker based workflow for running a local instance of the database.
+     We use a docker based workflow for running a local instance of the
+     database.
 
      In order to utilize this workflow please start a postgresql container and
      leave it running
@@ -265,8 +271,8 @@ set CAN_PG_CONN_STR="postgresql://postgres:postgres_test@localhost:5432"
      Here's a sample =docker run= command that should do the trick
 
      #+begin_src shell
-  docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres_test postgres:12
-     #+end_src
+       docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres_test
+     postgres:12 #+end_src
 
 ** Setting up VS Code
 
@@ -358,4 +364,5 @@ the database
 * Example Scrapers
 
 - [[file:../can_tools/scrapers/official/CA/ca_state.py][California State Dashboard Scraper (API Query)]]
-- [[file:../can_tools/scrapers/official/FL/fl_state.py][Florida State Dashboard Scraper (ArcGIS)]]
+- [[file:../can_tools/scrapers/official/FL/fl_state.py][Florida State Dashboard
+  Scraper (ArcGIS)]]
