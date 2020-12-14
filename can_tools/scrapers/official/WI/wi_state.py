@@ -161,7 +161,7 @@ class WisconsinState(ArcGIS, DatasetBase):
             "pos_fem": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="unqiue_people",
+                unit="unique_people",
                 sex="female",
             ),
             "pos_oth": CMU(
