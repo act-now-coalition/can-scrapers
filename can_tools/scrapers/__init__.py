@@ -9,7 +9,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     FloridaICUUsage,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
-    #Maryland,
+    Maryland,
     NewYorkTests,
     PennsylvaniaCasesDeaths,
     PennsylvaniaHospitals,
