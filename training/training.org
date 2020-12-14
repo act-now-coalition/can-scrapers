@@ -206,7 +206,6 @@ Finally the =data.covid_providers= table
     The integration tests test that the =put= method can successfully load the
     data into a test instance of the database (see below).
 
-
 *** Running tests
 
     To run the full suite of unit tests, execute the following from the root of
@@ -300,7 +299,7 @@ The scrapers are defined by 4 operations:
 
 *** =DatasetBase=
 
-This is the most important base class and all scrapers will inherit from it (as their last parent).
+This is the most important base class
 
 It is found in =can-scrapers/can_tools/scrapers/base.py=
 
@@ -315,15 +314,24 @@ It is found in =can-scrapers/can_tools/scrapers/base.py=
 - =_retrieve_dt=
 - =extract_CMU=
 
+**Methods that will be defined for you**
+
+- =put=
+- =validate=: a very basic version
+- =
+
 *** =StateDashboard= or =CountyDashboard=
 
-This is another class that you are likely to use and is used when we don't have another subclass that specializes in extracting data from that particular dashboard
+This is another class that you are likely to use and is used when we don't have
+another subclass that specializes in extracting data from that particular
+dashboard
 
 It is found in =can-scrapers/can_tools/scrapers/official/base.py=
 
 *** =ArcGIS=
 
-This subclass specializes in extracting information from an ArcGIS dashboard (which are most of the current scrapers).
+This subclass specializes in extracting information from an ArcGIS dashboard
+(which are most of the current scrapers).
 
 *Properties that must be defined*
 
