@@ -339,7 +339,12 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
     __table_args__ = (
         ForeignKeyConstraint(
             ["age", "race", "ethnicity", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.ethnicity, CovidDemographic.sex],
+            [
+                CovidDemographic.age,
+                CovidDemographic.race,
+                CovidDemographic.ethnicity,
+                CovidDemographic.sex,
+            ],
         ),
         ForeignKeyConstraint(
             ["location", "location_type"], [Location.location, Location.location_type]
@@ -356,7 +361,12 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
     __table_args__ = (
         ForeignKeyConstraint(
             ["age", "race", "ethnicity", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.ethnicity, CovidDemographic.sex],
+            [
+                CovidDemographic.age,
+                CovidDemographic.race,
+                CovidDemographic.ethnicity,
+                CovidDemographic.sex,
+            ],
         ),
         ForeignKeyConstraint(
             ["location_type", state_fips, location_name],

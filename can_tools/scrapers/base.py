@@ -98,7 +98,15 @@ class DatasetBase(ABC):
         self,
         df: pd.DataFrame,
         cmu: Dict[str, CMU],
-        columns: List[str] = ["category", "measurement", "unit", "age", "race", "ethnicity", "sex"],
+        columns: List[str] = [
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "ethnicity",
+            "sex",
+        ],
         var_name: str = "variable",
     ) -> pd.DataFrame:
         """
