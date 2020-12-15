@@ -1,0 +1,36 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+black = "==20.8b"
+geopandas = "*"
+numpy = "*"
+pandas = "*"
+psycopg2-binary = "*"
+pyppeteer = "*"
+pytest = "*"
+importlib-metadata = "*"
+requests = "*"
+us = "*"
+xlrd = "*"
+SQLAlchemy = "*"
+SQLAlchemy-Utils = "*"
+
+[dev-packages]
+ipython = "*"
+ipykernel = "*"
+mypy = "*"
+sphinx = "*"
+flask = "*"
+pyarrow = "*"
+apache-airflow = "*"
+data-science-types = "*"
+fastapi = "*"
+yapf = "*"
+sqlalchemy-stubs = "*"
+uvicorn = "*"
+
+[requires]
+python_version = "3.6"

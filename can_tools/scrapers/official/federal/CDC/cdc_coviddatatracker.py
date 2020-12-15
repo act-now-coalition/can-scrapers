@@ -12,6 +12,7 @@ class CDCCovidDataTracker(FederalDashboard):
     has_location = True
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
+    provider = "cdc"
 
     def fetch(self, test=False):
         # reset exceptions
