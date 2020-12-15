@@ -20,8 +20,8 @@ from can_tools.scrapers.official.PA import (
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NY import NewYorkTests
 from can_tools.scrapers.official.TN import (
-    TennesseeCasesDeathsTests,
-    TennesseeCasesDeathsTestsByCounty,
+    TennesseeCountyCasesDeathsTests,
+    TennesseeStatewideCasesDeathsTests,
 )
 from can_tools.scrapers.official.TX import TexasCasesDeaths, TexasTests
 from can_tools.scrapers.official.WI import Wisconsin
