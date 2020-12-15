@@ -112,13 +112,9 @@ class APISchemaMixin:
 
 class Location(Base, MetaSchemaMixin):
     __tablename__ = "locations"
-    location = Column(
-        BigInteger,
-        nullable=False,
-        unique=True,
-        primary_key=True,
-    )
-    location_type = Column(String, primary_key=True, nullable=False)
+    id = Column(String, primary_key=True)
+    location = Column(BigInteger, nullable=False)
+    location_type = Column(String, nullable=False)
     state_fips = Column(Integer)
     state = Column(String)
     name = Column(String, nullable=False)
@@ -179,7 +175,7 @@ class CovidVariable(Base, MetaSchemaMixin):
     measurement = Column(String, FKCascade(CovidMeasurement.name))
     unit = Column(String, FKCascade(CovidUnit.name))
 
-    official_obs = relationship("CovidOfficial", backref="variable")
+    official_obs = relationship("CovidObservation", backref="variable")
 
 
 class CovidDemographic(Base):
@@ -192,7 +188,7 @@ class CovidDemographic(Base):
     age = Column(String)
     race = Column(String)
     sex = Column(String)
-    official_obs = relationship("CovidOfficial", backref="demographic")
+    official_obs = relationship("CovidObservation", backref="demographic")
 
     __table_args__ = (
         UniqueConstraint(age, race, sex, name="uix_demo"),
@@ -209,79 +205,50 @@ class CovidProvider(Base, MetaSchemaMixin):
     )
     name = Column(String, unique=True, nullable=False)
     priority = Column(Integer, nullable=False)
-    official_obs = relationship("CovidOfficial", backref="provider")
+    official_obs = relationship("CovidObservation", backref="provider")
 
 
-class _ObservationBase:
-    dt = Column(Date)
-    location = Column(Integer)
-    location_type = Column(String)
-
-    @declared_attr
-    def variable_id(cls):
-        return Column(Integer, FKCascade(CovidVariable.id))
-
-    @declared_attr
-    def demographic_id(cls):
-        return Column(Integer, FKCascade(CovidDemographic.id))
-
-    @declared_attr
-    def provider_id(cls):
-        return Column(Integer, FKCascade(CovidProvider.id))
-
-    @declared_attr
-    def last_updated(cls):
-        return Column(DateTime, nullable=False, default=func.now())
-
-    @declared_attr
-    def __table_args__(cls):
-        return (
-            PrimaryKeyConstraint(
-                "dt",
-                "location",
-                "variable_id",
-                "demographic_id",
-                sqlite_on_conflict="REPLACE",
-            ),
-            ForeignKeyConstraint(
-                [cls.location, cls.location_type],
-                [Location.location, Location.location_type],
-            ),
-            {"schema": "data"},
-        )
-
-    value = Column(Numeric)
-
-
-class CovidObservation(Base, _ObservationBase, DataSchemaMixin):
+class CovidObservation(Base):
     __tablename__ = "covid_observations"
-
-
-class CovidOfficial(Base, _ObservationBase, DataSchemaMixin):
-    __tablename__ = "covid_official"
-
-
-class CovidUSAFacts(Base, _ObservationBase, DataSchemaMixin):
-    __tablename__ = "covid_usafacts"
+    dt = Column(Date)
+    location_id = Column(Integer, FKCascade(Location.id))
+    variable_id = Column(Integer, FKCascade(CovidVariable.id))
+    demographic_id = Column(Integer, FKCascade(CovidDemographic.id))
+    provider_id = Column(Integer, FKCascade(CovidProvider.id))
+    value = Column(Numeric)
+    last_updated = Column(DateTime, nullable=False, default=func.now())
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            "dt",
+            "location_id",
+            "variable_id",
+            "demographic_id",
+            "provider_id",
+            sqlite_on_conflict="REPLACE",
+        ),
+        {"schema": "data"},
+    )
 
 
 api_covid_us_statement = select(
     [
         CovidProvider.name.label("provider"),
-        CovidOfficial.dt,
+        CovidObservation.dt,
+        Location.id.label("location_id"),
         Location.location,
+        Location.location_type,
         CovidVariable.category.label("variable_name"),
         CovidVariable.measurement,
         CovidVariable.unit,
         CovidDemographic.age,
         CovidDemographic.race,
         CovidDemographic.sex,
-        CovidOfficial.last_updated,
-        CovidOfficial.value,
+        CovidObservation.last_updated,
+        CovidObservation.value,
     ]
 ).select_from(
     (
-        CovidOfficial.__table__.join(CovidVariable, isouter=True)
+        CovidObservation.__table__.join(CovidVariable, isouter=True)
         .join(Location, isouter=True)
         .join(CovidProvider, isouter=True)
         .join(CovidDemographic, isouter=True)
@@ -370,8 +337,7 @@ def build_insert_from_temp(
 ):
     columns = [
         cls.dt,
-        Location.location,
-        Location.location_type,
+        Location.id.label("location_id"),
         CovidVariable.id.label("variable_id"),
         CovidDemographic.id.label("demographic_id"),
         cls.value,
@@ -398,15 +364,15 @@ def build_insert_from_temp(
             )
         )
     )
-    covid_official = CovidOfficial.__table__
+    covid_table = CovidObservation.__table__
     if "postgres" in engine.dialect.name:
         from sqlalchemy.dialects.postgresql import insert
 
-        ins = insert(covid_official)
+        ins = insert(covid_table)
         statement = ins.from_select([x.name for x in columns], selector)
 
         return statement.on_conflict_do_update(
-            index_elements=[x.name for x in covid_official.primary_key.columns],
+            index_elements=[x.name for x in covid_table.primary_key.columns],
             set_=dict(
                 value=statement.excluded.value,
                 last_updated=statement.excluded.last_updated,
@@ -414,7 +380,7 @@ def build_insert_from_temp(
             ),
         )
 
-    ins = covid_official.insert()
+    ins = covid_table.insert()
     return ins.from_select([x.name for x in columns], selector)
 
 
