@@ -13,7 +13,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     PennsylvaniaCasesDeaths,
     PennsylvaniaHospitals,
     TennesseeCasesDeathsTests,
-    TennesseeCountyCasesDeathsTests,
+    TennesseeCasesDeathsTestsByCounty,
     TexasCasesDeaths,
     TexasTests,
     Wisconsin,

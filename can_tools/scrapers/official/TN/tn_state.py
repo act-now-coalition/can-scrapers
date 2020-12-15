@@ -41,23 +41,23 @@ class TennesseeCasesDeathsTests(CMU, StateDashboard):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "TOTAL_PROBABLE": CMU(category="cases", measurement="new", unit="people"),
+            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
             "TOTAL_DEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
             "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
             "POS_TESTS": CMU(
-                category="unspecified_tests_positive",
+                category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
             "NEG_TESTS": CMU(
-                category="unspecified_tests_negative",
+                category="pcr_tests_negative",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
             "TOTAL_TESTS": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
@@ -100,7 +100,7 @@ class TennesseeCasesDeathsTests(CMU, StateDashboard):
         return True
 
 
-class TennesseeCountyCasesDeathsTests(CMU, CountyDashboard):
+class TennesseeCasesDeathsTestsByCounty(CMU, CountyDashboard):
     """
     Fetch county level covid data from official state of Tennessee spreadsheet
     """
@@ -134,19 +134,19 @@ class TennesseeCountyCasesDeathsTests(CMU, CountyDashboard):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "TOTAL_PROBABLE": CMU(category="cases", measurement="new", unit="people"),
+            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
             "POS_TESTS": CMU(
-                category="unspecified_tests_positive",
+                category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
             "NEG_TESTS": CMU(
-                category="unspecified_tests_negative",
+                category="pcr_tests_negative",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
             "TOTAL_TESTS": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="cumulative",
                 unit="test_encounters",
             ),
