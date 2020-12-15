@@ -133,6 +133,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
             "age",
             "sex",
             "race",
+            "ethnicity",
         ]
 
         # TODO: We could do a different groupby and put this into states
