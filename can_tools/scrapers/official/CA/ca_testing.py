@@ -7,19 +7,20 @@ import pandas as pd
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateQueryAPI
 
+
 class California(StateQueryAPI):
 
     base_url = "https://public.tableau.com"
 
     def fetch(self):
-       return 
+        return
 
     def normalize(self):
         testing = self._get_testing()
         # cases = self._get_cases()
 
         # df = pd.concat([testing, cases], axis=0).sort_values(["dt", "county"])
-        df = pd.concat([testing],axis=0).sort_values(["dt"])
+        df = pd.concat([testing], axis=0).sort_values(["dt"])
         df["vintage"] = self._retrieve_vintage()
 
         return df
@@ -27,13 +28,8 @@ class California(StateQueryAPI):
     def _get_testing(self):
         viewPath = "StateDashboard_16008816705240/6_1CountyTesting"
         data = self._scrape_view(viewPath)
-        df = data['6.3 County Test - Line (2)']
+        df = data["6.3 County Test - Line (2)"]
         df["dt"] = pd.to_datetime(df["DAY(Test Date)-value"])
-        # df["measurement"] = "pcr_tests_total"
-        # df = df.rename(
-        #     columns={
-        #     "value": "variable"
-        # })
         crename = {
             "SUM(Tests)-value": CMU(
                 category="pcr_tests_total",
@@ -42,7 +38,11 @@ class California(StateQueryAPI):
             ),
         }
         # renamed["county"] = renamed["county"].apply(lambda x: x.lower().capitalize())
-        df = df.query("dt != '1970-01-01'").melt(id_vars=["dt"],value_vars=crename.keys()).dropna()
+        df = (
+            df.query("dt != '1970-01-01'")
+            .melt(id_vars=["dt"], value_vars=crename.keys())
+            .dropna()
+        )
         df = self.extract_CMU(df, crename)
 
         cols_to_keep = [
