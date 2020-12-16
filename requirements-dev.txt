@@ -11,6 +11,7 @@ attrs==19.3.0
 autopep8==1.5.4
 Babel==2.9.0
 backcall==0.2.0
+beautifulsoup4==4.9.3
 bernhard==0.2.6
 black==20.8b0
 bleach==3.2.1
