@@ -211,7 +211,7 @@ class CovidProvider(Base, MetaSchemaMixin):
 class CovidObservation(Base):
     __tablename__ = "covid_observations"
     dt = Column(Date)
-    location_id = Column(Integer, FKCascade(Location.id))
+    location_id = Column(String, FKCascade(Location.id))
     variable_id = Column(Integer, FKCascade(CovidVariable.id))
     demographic_id = Column(Integer, FKCascade(CovidDemographic.id))
     provider_id = Column(Integer, FKCascade(CovidProvider.id))
