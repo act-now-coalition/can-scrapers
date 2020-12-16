@@ -1,7 +1,7 @@
 import uuid
 from abc import ABC
 from contextlib import closing
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 import requests
@@ -10,6 +10,8 @@ from sqlalchemy.orm.session import sessionmaker
 
 from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
+    Base,
+    CovidObservation,
     TemptableOfficialHasLocation,
     TemptableOfficialNoLocation,
     build_insert_from_temp,
@@ -24,10 +26,8 @@ class StateDashboard(DatasetBase, ABC):
     Attributes
     ----------
 
-    table_name: str = "covid_official"
-        Name of database table to insert into
-    pk: str = '("vintage", "dt", "location", "variable_id", "demographic_id")'
-        Primary key on database table
+    table: Type[Base] = CovidObservation
+        SQLAlchemy base table to insert into
     provider = "state"
         Provider here is state
     data_type: str = "covid"
@@ -39,8 +39,7 @@ class StateDashboard(DatasetBase, ABC):
 
     """
 
-    table_name: str = "covid_official"
-    pk: str = '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
+    table: Type[Base] = CovidObservation
     provider = "state"
     data_type: str = "covid"
     has_location: bool

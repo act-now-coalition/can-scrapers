@@ -1,8 +1,9 @@
+from can_tools.models import Base
 import os
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 import pandas as pd
 from sqlalchemy.engine.base import Engine
@@ -39,13 +40,8 @@ class DatasetBase(ABC):
         The type of data for this scraper. This is often set to "covid"
         by subclasses
 
-    pk : str
-        The primary key for the table named `table_name` -- For covid
-        data it will be
-        '("vintage", "dt", "location_id", "variable_id", "demographic_id")'
-
-    table_name: str
-        The name of the database table where this data should be inserted
+    table: Type[Base]
+        The SQLAlchemy base table where this data should be inserted
 
     location_type: Optional[str]
         Optional information used when a scraper only retrieves data about a
@@ -56,8 +52,7 @@ class DatasetBase(ABC):
 
     autodag: bool = True
     data_type: str = "general"
-    pk: str
-    table_name: str
+    table: Type[Base]
     location_type: Optional[str]
     base_path: Path
 

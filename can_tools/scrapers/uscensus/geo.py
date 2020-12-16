@@ -1,6 +1,7 @@
 """
 Utilities for getting geographical information from US census Bureau
 """
+from can_tools.models import Location
 import geopandas as gpd
 import pandas as pd
 
@@ -139,8 +140,7 @@ class USGeoBaseAPI(InsertWithTempTableMixin, DatasetBaseNoDate):
         A string representing the PostgresQL primary key
     """
 
-    table_name = "locations"
-    pk = '("id")'
+    table = Location
     autodag = False
 
     def __init__(self, geo: str = "state", year: int = 2019):
@@ -173,6 +173,7 @@ class USGeoBaseAPI(InsertWithTempTableMixin, DatasetBaseNoDate):
         -------
 
         """
+        raise NotImplementedError()
         _sql_geo_insert = f"""
         INSERT INTO meta.{table_name} (location, location_type, state, name, area, latitude, longitude, fullname)
         SELECT tt.location, loct.id, tt.state, tt.name,
