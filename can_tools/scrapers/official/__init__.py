@@ -8,7 +8,7 @@ from can_tools.scrapers.official.FL import (
     Florida,
     FloridaHospitalCovid,
     FloridaHospitalUsage,
-    # FloridaICUUsage,
+    FloridaICUUsage,
 )
 
 from can_tools.scrapers.official.PA import (
