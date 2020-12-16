@@ -76,6 +76,7 @@ class TennesseeState(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -180,6 +181,7 @@ class TennesseeCounty(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
