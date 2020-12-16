@@ -42,12 +42,12 @@ class WisconsinCounties(WisconsinArcGIS):
 
         crename = {
             "positive": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
             ),
             "negative": CMU(
-                category="pcr_tests_negative",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
             ),
@@ -127,7 +127,7 @@ class WisconsinState(WisconsinArcGIS):
             # # totals across all sexes/ages/races/ethnicities
             # #
             "positive": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
             ),
@@ -153,19 +153,19 @@ class WisconsinState(WisconsinArcGIS):
             # #
             # # positive tests by sex
             "pos_male": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 sex="male",
             ),
             "pos_fem": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 sex="female",
             ),
             "pos_oth": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 sex="other",
@@ -185,61 +185,61 @@ class WisconsinState(WisconsinArcGIS):
             # #
             # # positive cases by age
             "pos_0_9": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="0-9",
             ),
             "pos_10_19": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="10-19",
             ),
             "pos_20_29": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="20-29",
             ),
             "pos_30_39": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="30-39",
             ),
             "pos_40_49": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="40-49",
             ),
             "pos_50_59": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="50-59",
             ),
             "pos_60_69": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="60-69",
             ),
             "pos_70_79": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="70-79",
             ),
             "pos_80_89": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="80-89",
             ),
             "pos_90": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 age="90_plus",
@@ -405,37 +405,37 @@ class WisconsinState(WisconsinArcGIS):
             # #
             # # positive cases by race
             "pos_aian": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="ai_an",
             ),
             "pos_asn": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="asian",
             ),
             "pos_blk": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="black",
             ),
             "pos_wht": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="white",
             ),
             "pos_mltoth": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="multiple_other",
             ),
             "pos_unk": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 race="unknown",
@@ -470,19 +470,19 @@ class WisconsinState(WisconsinArcGIS):
             # #
             # # positive cases by ethnicity
             "pos_e_hsp": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 ethnicity="hispanic",
             ),
             "pos_e_nhsp": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 ethnicity="non-hispanic",
             ),
             "pos_e_unk": CMU(
-                category="pcr_tests_positive",
+                category="cases",
                 measurement="cumulative",
                 unit="unique_people",
                 ethnicity="unknown",
