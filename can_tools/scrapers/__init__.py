@@ -5,7 +5,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CDCCovidDataTracker,
     Florida,
     FloridaHospitalCovid,
-    FloridaHospitalUsage,
+    # FloridaHospitalUsage,
     FloridaICUUsage,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
