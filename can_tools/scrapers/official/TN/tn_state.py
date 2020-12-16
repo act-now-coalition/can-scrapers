@@ -3,11 +3,10 @@ import requests
 import us
 
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import CountyDashboard
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class TennesseeState(CMU, StateDashboard):
+class TennesseeState(StateDashboard):
     """
     Fetch state level covid data from official state of Tennessee spreadsheet
     """
@@ -100,7 +99,7 @@ class TennesseeState(CMU, StateDashboard):
         return True
 
 
-class TennesseeCounty(CMU, CountyDashboard):
+class TennesseeCounty(StateDashboard):
     """
     Fetch county level covid data from official state of Tennessee spreadsheet
     """
