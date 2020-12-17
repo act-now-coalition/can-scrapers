@@ -48,17 +48,17 @@ class TennesseeState(StateDashboard):
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEG_TESTS": CMU(
                 category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "TOTAL_TESTS": CMU(
                 category="pcr_tests_total",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
         }
 
@@ -137,17 +137,17 @@ class TennesseeCounty(StateDashboard):
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEG_TESTS": CMU(
                 category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "TOTAL_TESTS": CMU(
                 category="pcr_tests_total",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
             "TOTAL_DEATHS": CMU(
