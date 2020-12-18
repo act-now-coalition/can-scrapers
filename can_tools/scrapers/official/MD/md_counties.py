@@ -24,6 +24,7 @@ class Maryland(ArcGIS, DatasetBase):
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
+        print(df)
         df["location"] = (self.state_fips * 1000) + df["county_fip"].astype(int)
 
         crename = {
@@ -34,19 +35,19 @@ class Maryland(ArcGIS, DatasetBase):
                 category="deaths", measurement="cumulative", unit="people"
             ),
             "total_pop_tested": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="cumulative",
                 unit="unique_people",
             ),
             "total_testing_vol": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "daily_testing_vol": CMU(
-                category="unspecified_tests_total",
+                category="pcr_tests_total",
                 measurement="new",
-                unit="test_encounters",
+                unit="specimens",
             ),
         }
         out = (
@@ -54,7 +55,6 @@ class Maryland(ArcGIS, DatasetBase):
             .assign(
                 dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
             )
-            .query("location not in (12998, 12999)")
             .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
