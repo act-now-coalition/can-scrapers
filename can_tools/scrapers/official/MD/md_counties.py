@@ -24,7 +24,6 @@ class Maryland(ArcGIS, DatasetBase):
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
-        print(df)
         df["location"] = (self.state_fips * 1000) + df["county_fip"].astype(int)
 
         crename = {
