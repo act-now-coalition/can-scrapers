@@ -5,68 +5,82 @@ from can_tools.scrapers import CMU, DatasetBase
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class Maryland(ArcGIS, DatasetBase):
+class MarylandState(ArcGIS, DatasetBase):
     """
     Fetch county level covid data from Maryland's ARCGIS dashboard, roll up to state level.
     """
 
     ARCGIS_ID = "njFNhDsUCentVYJW"
     has_location = True
-    location_type = "county"
+    location_type = "state"
     state_fips = int(us.states.lookup("Maryland").fips)
     source = "https://coronavirus.maryland.gov/"
 
     def fetch(self):
-        return self.get_all_jsons(
-            "MDH_COVID_19_Dashboard_Feature_Layer_Counties_MEMA", 0, ""
-        )
+        return self.get_all_jsons("MasterCaseTracker", 0, "")
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
         df["location"] = self.state_fips
-        df.drop(
-            columns=[
-                "objectid",
-                "county",
-                "district",
-                "county_fip",
-                "countynum",
-                "shape__area",
-                "shape__length",
-            ],
-            inplace=True,
-        )
-        df = df.groupby(["location"], as_index=False)[
-            "totalcasecount",
-            "totaldeathcount",
-            "probdeaths",
-            "eocstatus",
-            "total_pop_tested",
-            "daily_testing_vol",
-            "total_testing_vol",
-        ].sum()
+        df = df[df["filter"] == "s"].reset_index(drop=True)
+        df = df[
+            [
+                "location",
+                "totalcases",
+                "casedelta",
+                "negativetests",
+                "negdelta",
+                "bedstotal",
+                "bedsicu",
+                "bedsdelta",
+                "deaths",
+                "deathsdelta",
+                "totaltests",
+                "testsdelta",
+                "postestpercent",
+            ]
+        ]
         crename = {
-            "totalcasecount": CMU(
+            "totalcases": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "totaldeathcount": CMU(
-                category="deaths", measurement="cumulative", unit="people"
-            ),
-            "total_pop_tested": CMU(
-                category="pcr_tests_total",
+            "casedelta": CMU(category="cases", measurement="new", unit="people"),
+            "negativetests": CMU(
+                category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="unique_people",
+                unit="specimens",
             ),
-            "total_testing_vol": CMU(
+            "negdelta": CMU(
+                category="pcr_tests_negative", measurement="new", unit="specimens"
+            ),
+            "bedstotal": CMU(
+                category="hospital_beds_in_use_covid",
+                measurement="current",
+                unit="beds",
+            ),
+            "bedsicu": CMU(
+                category="icu_beds_in_use_covid", measurement="current", unit="beds"
+            ),
+            "bedsdelta": CMU(
+                category="hospital_beds_in_use_covid", measurement="new", unit="beds"
+            ),
+            "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
+            "deathsdelta": CMU(category="deaths", measurement="new", unit="people"),
+            "totaltests": CMU(
                 category="pcr_tests_total",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            "daily_testing_vol": CMU(
+            "testsdelta": CMU(
                 category="pcr_tests_total",
                 measurement="new",
                 unit="specimens",
+            ),
+            "postestpercent": CMU(
+                category="pcr_tests_positive",
+                measurement="rolling_average_7_day",
+                unit="percentage",
             ),
         }
 
