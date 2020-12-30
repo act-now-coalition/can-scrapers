@@ -2,29 +2,32 @@ import pandas as pd
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.DC.dc_base import DCBase
 
+
 class DCDeaths(DCBase):
     def _wrangle(self, data):
         """
         inherited helper function to transform excel data into standard dataframe format
-    
+
         accepts: Pd.Dataframe
         returns: Pd.Dataframe
         """
         df = data.transpose()
-        df =  ( df.rename(columns=df.iloc[0])
-                .drop(df.index[0]) 
-                .rename_axis("dt").reset_index() #make rownames into column 
-            ) 
+        df = (
+            df.rename(columns=df.iloc[0])
+            .drop(df.index[0])
+            .rename_axis("dt")
+            .reset_index()  # make rownames into column
+        )
         df["location_name"] = "District of Columbia"
         return df
-    
-    def normalize(self, data):
-        #retrieve data and convert dataframe structure
-        df_age = self._wrangle(data.parse('Lives Lost by Age'))
-        df_sex = self._wrangle(data.parse('Lives Lost by Sex'))
-        df_race = self._wrangle(data.parse('Lives Lost by Race'))
 
-        #maps for each df
+    def normalize(self, data):
+        # retrieve data and convert dataframe structure
+        df_age = self._wrangle(data.parse("Lives Lost by Age"))
+        df_sex = self._wrangle(data.parse("Lives Lost by Sex"))
+        df_race = self._wrangle(data.parse("Lives Lost by Race"))
+
+        # maps for each df
         crename_age = {
             "<19": CMU(
                 category="deaths",
@@ -119,23 +122,25 @@ class DCDeaths(DCBase):
                 measurement="cumulative",
                 unit="people",
                 race="unknown",
-            ),      
-             "All": CMU(
+            ),
+            "All": CMU(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
-            ),     
+            ),
         }
-        
-        #rename and add columns according to map
-        df_age = self._reshape(df_age,crename_age)
-        df_sex = self._reshape(df_sex,crename_sex)
-        df_race = self._reshape(df_race,crename_race)
 
-        #combine all into one df
+        # rename and add columns according to map
+        df_age = self._reshape(df_age, crename_age)
+        df_sex = self._reshape(df_sex, crename_sex)
+        df_race = self._reshape(df_race, crename_race)
+
+        # combine all into one df
         df = pd.DataFrame()
-        df = (df.append(df_age, ignore_index = True)
-                .append(df_sex, ignore_index = True)
-                .append(df_race, ignore_index = True))
+        df = (
+            df.append(df_age, ignore_index=True)
+            .append(df_sex, ignore_index=True)
+            .append(df_race, ignore_index=True)
+        )
 
         return df
