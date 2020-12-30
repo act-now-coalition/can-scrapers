@@ -37,16 +37,6 @@ class DCGeneral(DCBase):
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            # "Total Positives": CMU(
-            #     category="cases",
-            #     measurement="cumulative",
-            #     unit="people",
-            # ),
-            #  "Total Lives Lost": CMU(
-            #     category="deaths",
-            #     measurement="cumulative",
-            #     unit="people",
-            # ),
             "Total ICU Beds in Hospitals": CMU(
                 category="icu_beds_capacity",
                 measurement="current",
