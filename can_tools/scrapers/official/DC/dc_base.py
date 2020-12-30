@@ -1,6 +1,6 @@
 import pandas as pd
 import us
-import lxml.html
+from lxml import html
 import requests
 from abc import abstractmethod
 from can_tools.scrapers.official.base import StateDashboard
@@ -24,7 +24,7 @@ class DCBase(StateDashboard):
         res = requests.get(self.source)
         if not res.ok:
             raise ValueError("Could not fetch source of DC page")
-        tree = lxml.html.fromstring(res.content)
+        tree = html.fromstring(res.content)
         links = tree.xpath(
             '//a[contains(text(), "Download copy")]/@href'
         )  # find all download links
