@@ -77,7 +77,7 @@ class DCBase(StateDashboard):
             "race",
             "sex",
             "value",
-            "variable"
+            # "variable"
         ]
 
         return out.loc[:, cols_to_keep] 

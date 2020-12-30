@@ -74,11 +74,6 @@ class DCDeaths(DCBase):
                 unit="people",
                 age="80_plus",
             ),
-            "All": CMU(
-                category="deaths",
-                measurement="cumulative",
-                unit="people",
-            ),
         }
         crename_sex = {
             "Female": CMU(
@@ -124,7 +119,12 @@ class DCDeaths(DCBase):
                 measurement="cumulative",
                 unit="people",
                 race="unknown",
-            ),           
+            ),      
+             "All": CMU(
+                category="deaths",
+                measurement="cumulative",
+                unit="people",
+            ),     
         }
         
         #rename and add columns according to map

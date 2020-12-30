@@ -12,7 +12,7 @@ class DCGeneral(DCBase):
         """
         df = ( data.head(n=16)
                 .drop(['Unnamed: 0'], axis=1)
-                .transpose() #entries are rows not cols
+                .transpose() #flip the rows to cols 
              )
         df = ( df.drop([0], axis=1)
                 .rename(columns=df.iloc[0])
