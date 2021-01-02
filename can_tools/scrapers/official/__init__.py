@@ -20,6 +20,7 @@ from can_tools.scrapers.official.PA import (
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NY import NewYorkTests
 from can_tools.scrapers.official.TN import (
+    TennesseeAge,
     TennesseeCounty,
     TennesseeState,
 )
