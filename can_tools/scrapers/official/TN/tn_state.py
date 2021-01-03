@@ -23,7 +23,7 @@ class TennesseeBase(StateDashboard):
 
 class TennesseeState(TennesseeBase):
     """
-    Fetch state level covid data from official state of Tennessee spreadsheet
+    Fetch state level Covid-19 data from official state of Tennessee spreadsheet
     """
 
     source = (
@@ -115,7 +115,7 @@ class TennesseeState(TennesseeBase):
 
 class TennesseeCounty(TennesseeBase):
     """
-    Fetch county level covid data from official state of Tennessee spreadsheet
+    Fetch county level Covid-19 data from official state of Tennessee spreadsheet
     """
 
     source = (
@@ -222,7 +222,7 @@ class TennesseeCounty(TennesseeBase):
 
 class TennesseeAge(TennesseeBase):
     """
-    Fetch state level covid data by age from official state of Tennessee spreadsheet
+    Fetch state level Covid-19 data by age from official state of Tennessee spreadsheet
     """
 
     source = (
