@@ -20,6 +20,7 @@ class TennesseeBase(StateDashboard):
         df.loc[df["age"] == "71-80 years", "age"] = "71-80"
         df.loc[df["age"] == "81+ years", "age"] = "81_plus"
 
+
 class TennesseeState(TennesseeBase):
     """
     Fetch state level covid data from official state of Tennessee spreadsheet
@@ -261,9 +262,7 @@ class TennesseeAge(TennesseeBase):
         }
 
         # Move things into long format
-        df = df.melt(
-            id_vars=["dt", "age"], value_vars=crename.keys()
-        ).dropna()
+        df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(df, crename)
