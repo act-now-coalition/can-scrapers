@@ -216,7 +216,7 @@ class TennesseeCounty(TennesseeBase):
         return out
 
     def validate(self, df, df_hist) -> bool:
-        "The best developers write test cases first..."
+        "Striving to better, oft we mar what's well. -Shakespeare"
         return True
 
 
