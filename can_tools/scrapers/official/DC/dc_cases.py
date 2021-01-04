@@ -21,6 +21,7 @@ class DCCases(DCBase):
         return df
 
     def normalize(self, data):
+        data = pd.ExcelFile(data.content)
         df = self._wrangle(data.parse("Total Cases by Race"))
 
         crename = {

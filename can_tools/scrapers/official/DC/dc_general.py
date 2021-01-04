@@ -28,6 +28,7 @@ class DCGeneral(DCBase):
 
     def normalize(self, data):
         # retrieve and convert excel object to df, re-structure df
+        data = pd.ExcelFile(data.content)
         df = self._wrangle(data.parse("Overal Stats"))
 
         crename = {

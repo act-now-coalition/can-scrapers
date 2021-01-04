@@ -19,10 +19,12 @@ class DCDeaths(DCBase):
             .reset_index()  # make rownames into column
         )
         df["location_name"] = "District of Columbia"
+
         return df
 
     def normalize(self, data):
         # retrieve data and convert dataframe structure
+        data = pd.ExcelFile(data.content)
         df_age = self._wrangle(data.parse("Lives Lost by Age"))
         df_sex = self._wrangle(data.parse("Lives Lost by Sex"))
         df_race = self._wrangle(data.parse("Lives Lost by Race"))

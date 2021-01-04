@@ -1,6 +1,6 @@
 import pandas as pd
 import us
-from lxml import html
+import lxml.html
 import requests
 from abc import abstractmethod
 from can_tools.scrapers.official.base import StateDashboard
@@ -12,37 +12,60 @@ class DCBase(StateDashboard):
     location_type = "state"
     source = "https://coronavirus.dc.gov/page/coronavirus-data"
 
-    def fetch(self) -> pd.ExcelFile:
+    def fetch(self) -> requests.models.Response:
         """
         locate most recent data export, download excel file
 
         Returns
         -------
-        df: pd.ExcelFile
-            A pandas Excel File
+        xl: requests.models.Response
+            An html response object containing the downloaded data
+
+        Notes
+        -----
+        WINDOWS USES %# TO REMOVE LEADING 0'S, UNIX/LINUX USES %-
+        strftime() (and other date functions) use C implementations which are sys dependent
+        see https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l?view=msvc-160 for info
         """
+
+        # get yesterday's date for finding most recent file
+        date = self._retrieve_dt() - pd.Timedelta(days=1)
+
+        # query DC coronavirus webpage
         res = requests.get(self.source)
         if not res.ok:
             raise ValueError("Could not fetch source of DC page")
-        tree = html.fromstring(res.content)
-        links = tree.xpath(
-            '//a[contains(text(), "Download copy")]/@href'
-        )  # find all download links
 
-        # selects most recent (yesterdays) file by taking the first off the stack
-        if links[0].startswith("https"):
-            xl_src = links[0]
-        elif links[0].startswith("/"):
-            xl_src = "https://coronavirus.dc.gov" + links[0]
+        # find COVID data download links for specified date
+        tree = lxml.html.fromstring(res.content)
+        xp = "//a[contains(@href,'{date:%B-%-d-%Y}')]"
+        links = tree.xpath(xp.format(date=date))
+
+        # if no matching links are returned, take the most recently posted link
+        # if multiple are returned, take the most recent of the returned
+        # although, almost ALWAYS one link is returned
+        if len(links) == 0:
+            # raise ValueError(f"no links returned for {date} date")
+            xl_src = tree.xpath('//a[contains(text(), "Download copy of")]/@href')[0]
+        else:
+            xl_src = links[0].attrib["href"]
+
+        # add domain name to download link if necessary
+        if xl_src.startswith("https"):
+            pass
+        elif xl_src.startswith("/"):
+            xl_src = "https://coronavirus.dc.gov" + xl_src
         else:
             raise ValueError("Could not parse download link")
+        if str(date.strftime("%B-%-d-%Y")) not in xl_src:
+            raise ValueError(f"Link does not contain specified date ({date})")
 
-        # download xlsx from selected link
+        # download file from selected link
         xl = requests.get(xl_src)
         if not xl.ok:
             raise ValueError("Could not fetch download file")
 
-        return pd.ExcelFile(xl.content)  # read file into pd excel object
+        return xl  # return request response
 
     def _reshape(self, data: pd.DataFrame, map: dict) -> pd.DataFrame:
         """
