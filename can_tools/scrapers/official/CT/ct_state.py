@@ -8,7 +8,6 @@ from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official.base import SODA
 
 
-
 class CTCountyDeathHospitalizations(SODA, DatasetBase):
     source = "https://data.ct.gov/bfnu-rgqt.json"
     state_fips = int(us.states.lookup("Connecticut").fips)
@@ -18,10 +17,12 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
     cdh_id = "bfnu-rgqt"
     state_fips = int(us.states.lookup("Connecticut").fips)
     source = "https://data.ct.gov/resource/bfnu-rgqt.json"
+
     def fetch(self):
         cdh = self.get_dataset(self.cdh_id)
 
         return cdh
+
     def normalize(self, data) -> pd.DataFrame:
         # fips_df = pd.DataFrame.from_dict(self.state_fips)
         cdh_rename = {
@@ -34,7 +35,9 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
         cdh = data.rename(columns=cdh_rename)
         cdh["dt"] = pd.to_datetime(cdh["dt"])
         cdh = cdh.reindex(columns=cdh_rename.values())
-        for c in [c for c in cdh_rename.values() if (c != "dt") and (c != "location_name")]:
+        for c in [
+            c for c in cdh_rename.values() if (c != "dt") and (c != "location_name")
+        ]:
             cdh[c] = pd.to_numeric(cdh.loc[:, c])
         crename = {
             "cases_total": CMU(
@@ -44,18 +47,25 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
                 category="deaths", measurement="cumulative", unit="people"
             ),
             "hospital_beds_in_use_covid_total": CMU(
-                            category="hospital_beds_in_use_covid",
-                            measurement="current",
-                            unit="beds",
-                        ),
+                category="hospital_beds_in_use_covid",
+                measurement="current",
+                unit="beds",
+            ),
         }
-        for c in [c for c in cdh.columns if c not in (crename.keys()) and c != "dt" and c != "location_name"]:
+        for c in [
+            c
+            for c in cdh.columns
+            if c not in (crename.keys()) and c != "dt" and c != "location_name"
+        ]:
             cdh = cdh.drop(c, 1)
-        out = cdh.melt(id_vars=["dt", "location_name"], value_vars=crename.keys()).dropna()
+        out = cdh.melt(
+            id_vars=["dt", "location_name"], value_vars=crename.keys()
+        ).dropna()
 
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
+
 
 class CTCountyTests(SODA, DatasetBase):
     baseurl = "https://data.ct.gov/"
@@ -69,6 +79,7 @@ class CTCountyTests(SODA, DatasetBase):
         tests = self.get_dataset(self.test_id)
 
         return tests
+
     def normalize(self, data: Any) -> pd.DataFrame:
         # Get raw dataframe
         tests_rename = {
@@ -99,10 +110,10 @@ class CTCountyTests(SODA, DatasetBase):
                 category="antigen_tests_positive", measurement="new", unit="specimens"
             ),
             "negative_tests_ag_total": CMU(
-                            category="antigen_tests_negative",
-                            measurement="new",
-                            unit="specimens",
-                        ),
+                category="antigen_tests_negative",
+                measurement="new",
+                unit="specimens",
+            ),
             "tests_pcr_total": CMU(
                 category="pcr_tests_total", measurement="new", unit="specimens"
             ),
@@ -115,9 +126,15 @@ class CTCountyTests(SODA, DatasetBase):
                 unit="specimens",
             ),
         }
-        for c in [c for c in tests.columns if c not in (crename.keys()) and c != "dt" and c != "location_name"]:
+        for c in [
+            c
+            for c in tests.columns
+            if c not in (crename.keys()) and c != "dt" and c != "location_name"
+        ]:
             tests = tests.drop(c, 1)
-        out = tests.melt(id_vars=["dt", "location_name"], value_vars=crename.keys()).dropna()
+        out = tests.melt(
+            id_vars=["dt", "location_name"], value_vars=crename.keys()
+        ).dropna()
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
@@ -131,24 +148,29 @@ class CTState(SODA, DatasetBase):
     location_type = "state"
     state_fips = int(us.states.lookup("Connecticut").fips)
     source = "https://data.ct.gov/resource/rf3k-f8fg.json"
+
     def fetch(self):
         stateCaseTests = self.get_dataset(self.resource_id)
         return stateCaseTests
 
     def normalize(self, data: Any) -> pd.DataFrame:
-        
+
         data["date"] = pd.to_datetime(data["date"])
-        data = data.rename(columns = {"date": 'dt'})
+        data = data.rename(columns={"date": "dt"})
         data["location"] = self.state_fips
         for c in [c for c in data.columns if c != "dt" and c != "state"]:
             data[c] = pd.to_numeric(data.loc[:, c])
         data = data.loc[~data["dt"].isna(), :]
         crename = {
             "covid_19_tests_reported": CMU(
-                category="unspecified_tests_total", measurement="cumulative", unit="specimens"
+                category="unspecified_tests_total",
+                measurement="cumulative",
+                unit="specimens",
             ),
             "confirmedcases": CMU(
-                category="unspecified_tests_positive", measurement="cumulative", unit="unique_people"
+                category="unspecified_tests_positive",
+                measurement="cumulative",
+                unit="unique_people",
             ),
             "totalcases": CMU(
                 category="cases", measurement="cumulative", unit="people"
@@ -159,10 +181,16 @@ class CTState(SODA, DatasetBase):
                 unit="people",
             ),
             "hospitalizedcases": CMU(
-                category="hospital_beds_in_use_covid", measurement="cumulative", unit="beds"
-            )
+                category="hospital_beds_in_use_covid",
+                measurement="cumulative",
+                unit="beds",
+            ),
         }
-        for c in [c for c in data.columns if c not in (crename.keys()) and c != "dt" and c != "location"]:
+        for c in [
+            c
+            for c in data.columns
+            if c not in (crename.keys()) and c != "dt" and c != "location"
+        ]:
             data = data.drop(c, 1)
         out = data.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
         out["vintage"] = self._retrieve_vintage()

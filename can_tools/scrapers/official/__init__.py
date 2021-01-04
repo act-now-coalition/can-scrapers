@@ -25,4 +25,8 @@ from can_tools.scrapers.official.TN import (
 )
 from can_tools.scrapers.official.TX import TexasCasesDeaths, TexasTests
 from can_tools.scrapers.official.WI import Wisconsin
-from can_tools.scrapers.official.CT import CTCountyDeathHospitalizations, CTCountyTests, CTState
+from can_tools.scrapers.official.CT import (
+    CTCountyDeathHospitalizations,
+    CTCountyTests,
+    CTState,
+)
