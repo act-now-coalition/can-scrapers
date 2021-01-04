@@ -55,7 +55,6 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
 
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
-        print(out.columns)
         return out
 
 class CTCountyTests(SODA, DatasetBase):
@@ -168,5 +167,4 @@ class CTState(SODA, DatasetBase):
         out = data.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
-        print(out.columns)
         return out
