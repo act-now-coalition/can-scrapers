@@ -20,7 +20,7 @@ class DCDeaths(DCBase):
         )
         df["location_name"] = "District of Columbia"
 
-        return self._make_dt_date_and_drop(df)        
+        return self._make_dt_date_and_drop(df)
 
     def normalize(self, data):
         # retrieve data and convert dataframe structure

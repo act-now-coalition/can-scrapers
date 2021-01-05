@@ -32,7 +32,6 @@ class DCBase(StateDashboard):
         see https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l?view=msvc-160 for info
         """
 
-
         # get yesterday's date for finding most recent file
         date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=1)
 
