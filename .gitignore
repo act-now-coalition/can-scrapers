@@ -144,3 +144,7 @@ node_modules
 # macOS
 .DS_Store
 
+can_tools/scrapers/official/federal/CDC/output.csv
+can_tools/scrapers/official/federal/CDC/output-pf.csv
+can_tools/scrapers/official/DC/driver.py
+can_tools/scrapers/official/DC/output-cdc.csv

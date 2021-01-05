@@ -4,6 +4,9 @@ from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
 
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
+    CDCVaccineTotal,
+    CDCVaccinePfizer,
+    CDCVaccineModerna,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
 )

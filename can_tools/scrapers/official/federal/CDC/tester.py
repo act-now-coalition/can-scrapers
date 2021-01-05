@@ -3,7 +3,7 @@ import requests
 #for csv testing
 import csv
 import os
-os.chdir("C:\\Users\\Sean McClure\\Documents\\GitHub\\can-scrapers\\can_tools\\scrapers\\official\\CDCVaccine")
+# os.chdir("C:\\Users\\Sean McClure\\Documents\\GitHub\\can-scrapers\\can_tools\\scrapers\\official\\CDCVaccine")
 
 """
 ————————————————————————————————————————————————————————————————
@@ -20,7 +20,7 @@ def __snapshot__():
         raise ValueError("uhm erhm uhhhh wellll")
     raw = res.json()
     df = pd.json_normalize(raw['vaccination_data'])
-    df.to_csv("output.csv", index=False)
+    # df.to_csv("output.csv", index=False)
     print(df)
 
     return None
@@ -39,13 +39,13 @@ def _fetch(source):
     return pd.json_normalize(raw)
 
 def __complete__():
-    # link = "https://data.cdc.gov/resource/saz5-9hgg.json" ## PFIZER
-    link = "https://data.cdc.gov/resource/b7pe-5nws.json" ## MODERNA
+    link = "https://data.cdc.gov/resource/saz5-9hgg.json" ## PFIZER
+    # link = "https://data.cdc.gov/resource/b7pe-5nws.json" ## MODERNA
     
     df = _fetch(link) 
     # for name in df.columns:
     #     print(name)
-    df.to_csv("output.csv", index=False)
+    df.to_csv("output-pf.csv", index=False)
     print(df)
     return None
 
