@@ -24,7 +24,7 @@ class DCGeneral(DCBase):
             .reset_index()  # make rownames into column
         )
         df["location_name"] = "District of Columbia"
-        return df
+        return self._make_dt_date_and_drop(df)
 
     def normalize(self, data):
         # retrieve and convert excel object to df, re-structure df

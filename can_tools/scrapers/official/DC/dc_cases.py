@@ -18,7 +18,8 @@ class DCCases(DCBase):
         df = df.drop(df.index[0])
         df = df.rename_axis("dt").reset_index()  # make rownames into column
         df["location_name"] = "District of Columbia"
-        return df
+
+        return self._make_dt_date_and_drop(df)
 
     def normalize(self, data):
         data = pd.ExcelFile(data.content)

@@ -12,6 +12,10 @@ class DCBase(StateDashboard):
     location_type = "state"
     source = "https://coronavirus.dc.gov/page/coronavirus-data"
 
+    def _make_dt_date_and_drop(self, df):
+        df["dt"] = pd.to_datetime(df["dt"], errors="coerce")
+        return df.dropna(subset=["dt"])
+
     def fetch(self) -> requests.models.Response:
         """
         locate most recent data export, download excel file
@@ -28,8 +32,9 @@ class DCBase(StateDashboard):
         see https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strftime-wcsftime-strftime-l-wcsftime-l?view=msvc-160 for info
         """
 
+
         # get yesterday's date for finding most recent file
-        date = self._retrieve_dt() - pd.Timedelta(days=1)
+        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=1)
 
         # query DC coronavirus webpage
         res = requests.get(self.source)
