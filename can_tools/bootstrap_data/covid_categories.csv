@@ -52,3 +52,11 @@ test,reported_positivity
 hospital,critical_staff_shortage_yes
 hospital,critical_staff_shortage_no
 hospital,critical_staff_shortage_noreport
+vaccine,moderna_vaccine_allocated
+vaccine,moderna_vaccine_distributed
+vaccine,moderna_vaccine_initiated
+vaccine,moderna_vaccine_completed
+vaccine,pfizer_vaccine_allocated
+vaccine,pfizer_vaccine_distributed
+vaccine,pfizer_vaccine_initiated
+vaccine,pfizer_vaccine_completed
