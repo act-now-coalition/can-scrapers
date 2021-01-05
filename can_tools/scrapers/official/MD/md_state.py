@@ -17,7 +17,7 @@ class MarylandState(ArcGIS, DatasetBase):
     source = "https://coronavirus.maryland.gov/"
 
     def fetch(self):
-        return self.get_all_jsons("MasterCaseTracker", 0, "")
+        return self.get_all_jsons("MASTERCaseTracker", 0, "")
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
