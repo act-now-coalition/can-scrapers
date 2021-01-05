@@ -276,22 +276,7 @@ class TennesseeAge(TennesseeBase):
             columns=["category", "measurement", "unit", "race", "sex"],
         )
 
-        out = df.query("age != 'Pending'")
-
-        # Determine what columns to keep
-        cols_to_keep = [
-            "dt",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-
-        # Drop extraneous columns
-        out = df.loc[:, cols_to_keep]
+        out = df.query("age != 'Pending'").drop(["variable"], axis=1)
 
         # Convert value columns
         out["value"] = out["value"].astype(int)
