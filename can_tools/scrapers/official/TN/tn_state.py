@@ -271,8 +271,8 @@ class TennesseeAge(TennesseeBase):
 
         # Determine the category of each observation
         df = self.extract_CMU(
-            df, 
-            crename, 
+            df,
+            crename,
             columns=["category", "measurement", "unit", "race", "sex"],
         )
 
