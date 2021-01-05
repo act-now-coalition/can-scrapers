@@ -56,7 +56,7 @@ class DatasetBase(ABC):
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         # Set execution date information
-        self.execution_dt = execution_dt
+        self.execution_dt = pd.to_datetime(execution_dt)
 
         # Set storage path
         if "DATAPATH" in os.environ.keys():
