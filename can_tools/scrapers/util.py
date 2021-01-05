@@ -12,7 +12,7 @@ def requests_retry_session(backoff_factor=0.1, **kw):
     The only kwarg we provide a default value for is
     `backoff_factor`
     """
-    kwargs = dict(backoff_sfactor=backoff_factor)
+    kwargs = dict(backoff_factor=backoff_factor)
     kwargs.update(kw)
     adapter = HTTPAdapter(max_retries=Retry(**kwargs))
     http = requests.Session()
