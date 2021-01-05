@@ -23,7 +23,7 @@ class MarylandState(ArcGIS, DatasetBase):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
         df["location"] = self.state_fips
-        df = df[df["filter"] == "s"].reset_index(drop=True)
+        df = df.tail(1).reset_index(drop=True)
         df = df[
             [
                 "location",
