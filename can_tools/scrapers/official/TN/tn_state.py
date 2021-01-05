@@ -270,7 +270,11 @@ class TennesseeAge(TennesseeBase):
         df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(df, crename)
+        df = self.extract_CMU(
+            df, 
+            crename, 
+            columns=["category", "measurement", "unit", "race", "sex"],
+        )
 
         # Drop the information that we won't be keeping track of
         age_not_keep = ["Pending"]
