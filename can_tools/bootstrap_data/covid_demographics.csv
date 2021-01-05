@@ -1,5 +1,14 @@
 age,race,sex
 all,all,all
+0-10,all,all
+11-20,all,all
+21-30,all,all
+31-40,all,all
+41-50,all,all
+51-60,all,all
+61-70,all,all
+71-80,all,all
+81_plus,all,all
 0-19,all,all
 20-29,all,all
 30-39,all,all
