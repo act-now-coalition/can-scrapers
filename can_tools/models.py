@@ -391,20 +391,19 @@ def _bootstrap_csv_to_orm(cls: Type[Base], engine: Engine):
     rows = [cls(**x) for x in records]
     if "postgres" in engine.dialect.name:
         from sqlalchemy.dialects.postgresql import insert
-        ins = (
-            insert(cls.__table__, values=records, bind=engine)
-            .on_conflict_do_nothing()
-        )
+
+        ins = insert(
+            cls.__table__, values=records, bind=engine
+        ).on_conflict_do_nothing()
         return ins, rows
     else:
         ins = cls.__table__.insert(values=records, bind=engine)
         return ins, rows
 
-            
-    
 
-
-def bootstrap(sess: sa.orm.session.Session, delete_first: bool=True) -> Dict[str, List[Base]]:
+def bootstrap(
+    sess: sa.orm.session.Session, delete_first: bool = True
+) -> Dict[str, List[Base]]:
     tables: List[Type[Base]] = [
         CovidCategory,
         CovidMeasurement,

@@ -4,10 +4,15 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
+from can_tools.scrapers.util import requests_retry_session
 
 
 class TennesseeBase(StateDashboard):
     state_fips = int(us.states.lookup("Tennessee").fips)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = requests_retry_session()
 
     def translate_age(self, df: pd.DataFrame):
         df.loc[df["age"] == "0-10 years", "age"] = "0-10"
@@ -39,7 +44,7 @@ class TennesseeState(TennesseeBase):
             "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
             "novel-coronavirus/datasets/Public-Dataset-Daily-Case-Info.XLSX"
         )
-        request = requests.get(url)
+        request = self.session.get(url)
         return request.content
 
     def normalize(self, data) -> pd.DataFrame:
@@ -131,7 +136,7 @@ class TennesseeCounty(TennesseeBase):
             "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
             "novel-coronavirus/datasets/Public-Dataset-County-New.XLSX"
         )
-        request = requests.get(url)
+        request = self.session.get(url)
         return request.content
 
     def normalize(self, data) -> pd.DataFrame:
@@ -238,7 +243,7 @@ class TennesseeAge(TennesseeBase):
             "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
             "novel-coronavirus/datasets/Public-Dataset-Age.XLSX"
         )
-        request = requests.get(url)
+        request = self.session.get(url)
         return request.content
 
     def normalize(self, data) -> pd.DataFrame:
