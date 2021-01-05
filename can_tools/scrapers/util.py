@@ -14,7 +14,7 @@ def requests_retry_session(backoff_factor=0.1, **kw):
     """
     kwargs = dict(backoff_sfactor=backoff_factor)
     kwargs.update(kw)
-    adapter = HTTPAdapter(max_retries=Retry(**kw))
+    adapter = HTTPAdapter(max_retries=Retry(**kwargs))
     http = requests.Session()
     http.mount("https://", adapter)
     http.mount("http://", adapter)
