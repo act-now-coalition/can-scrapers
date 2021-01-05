@@ -276,9 +276,7 @@ class TennesseeAge(TennesseeBase):
             columns=["category", "measurement", "unit", "race", "sex"],
         )
 
-        # Drop the information that we won't be keeping track of
-        age_not_keep = ["Pending"]
-        out = df.loc[~df["age"].isin(age_not_keep), :]
+        out = df.query("age != 'Pending'")
 
         # Determine what columns to keep
         cols_to_keep = [
