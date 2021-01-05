@@ -1,4 +1,7 @@
 from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHospitals
+
+from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
+
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
     HHSReportedPatientImpactHospitalCapacityFacility,
