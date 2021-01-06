@@ -3,15 +3,21 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
     CDCCovidDataTracker,
+    DCCases,
+    DCDeaths,
+    DCGeneral,
     Florida,
     FloridaHospitalCovid,
     FloridaHospitalUsage,
     FloridaICUUsage,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
+    MarylandCounties,
+    MarylandState,
     NewYorkTests,
     PennsylvaniaCasesDeaths,
     PennsylvaniaHospitals,
+    TennesseeAge,
     TennesseeCounty,
     TennesseeState,
     TexasCasesDeaths,
@@ -19,3 +25,5 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WisconsinCounties,
     WisconsinState,
 )
+
+from can_tools.scrapers import util

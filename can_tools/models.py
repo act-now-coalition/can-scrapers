@@ -397,14 +397,26 @@ def build_insert_from_temp(
     return ins.from_select([x.name for x in columns], selector)
 
 
-def _bootstrap_csv_to_orm(cls: Type[Base]):
+def _bootstrap_csv_to_orm(cls: Type[Base], engine: Engine):
     fn = cls.__tablename__ + ".csv"
     path = Path(__file__).parent / "bootstrap_data" / fn
     records = pd.read_csv(path).to_dict(orient="records")
-    return [cls(**x) for x in records]
+    rows = [cls(**x) for x in records]
+    if "postgres" in engine.dialect.name:
+        from sqlalchemy.dialects.postgresql import insert
+
+        ins = insert(
+            cls.__table__, values=records, bind=engine
+        ).on_conflict_do_nothing()
+        return ins, rows
+    else:
+        ins = cls.__table__.insert(values=records, bind=engine)
+        return ins, rows
 
 
-def bootstrap(sess) -> Dict[str, List[Base]]:
+def bootstrap(
+    sess: sa.orm.session.Session, delete_first: bool = True
+) -> Dict[str, List[Base]]:
     tables: List[Type[Base]] = [
         CovidCategory,
         CovidMeasurement,
@@ -415,18 +427,21 @@ def bootstrap(sess) -> Dict[str, List[Base]]:
         CovidVariable,
     ]
 
+    if sess.bind is None:
+        raise ValueError("Session must be bound to an engine or connection")
+
     # drop in reverse order to avoid constraint issues
-    for t in tables[::-1]:
-        # first delete from table
-        sess.execute(t.__table__.delete())
-        sess.commit()
+    if delete_first:
+        for t in tables[::-1]:
+            # first delete from table
+            sess.execute(t.__table__.delete())
+            sess.commit()
 
     components = {}
     for t in tables:
-        rows = _bootstrap_csv_to_orm(t)
+        ins, rows = _bootstrap_csv_to_orm(t, sess.bind)
         components[t.__tablename__] = rows
-        sess.add_all(rows)
-        sess.commit()
+        ins.execute()
 
     return components
 
