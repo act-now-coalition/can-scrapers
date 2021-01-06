@@ -119,7 +119,7 @@ class DCDeaths(DCBase):
                 measurement="cumulative",
                 unit="people",
                 race="white",
-                ethnicity="non-hispanic"
+                ethnicity="non-hispanic",
             ),
             "Unknown": CMU(
                 category="deaths",

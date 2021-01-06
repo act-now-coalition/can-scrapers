@@ -89,7 +89,9 @@ class DCBase(StateDashboard):
                 pd.Dataframe: dataframe ready for put() function
         """
 
-        out = data.melt(id_vars=["dt", "location_name"], value_vars=_map.keys()).dropna()
+        out = data.melt(
+            id_vars=["dt", "location_name"], value_vars=_map.keys()
+        ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         out = self.extract_CMU(out, _map)

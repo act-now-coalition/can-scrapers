@@ -76,13 +76,11 @@ class DCGeneral(DCBase):
             "Total COVID-19 Patients in DC Hospitals": CMU(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
-                unit="beds"
+                unit="beds",
             ),
             "Total Patients in DC Hospitals (COVID and non-COVID": CMU(
-                category="hospital_beds_in_use",
-                measurement="current",
-                unit="beds"
-            )
+                category="hospital_beds_in_use", measurement="current", unit="beds"
+            ),
         }
 
         # return df in correct format for put() with new/renamed cols
