@@ -23,10 +23,7 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
 
     def normalize(self, data) -> pd.DataFrame:
         # fips_df = pd.DataFrame.from_dict(self.state_fips)
-        cdh_rename = {
-            "dateupdated": "dt",
-            "county": "location_name"
-        }
+        cdh_rename = {"dateupdated": "dt", "county": "location_name"}
         cdh = data.rename(columns=cdh_rename)
         cdh["dt"] = pd.to_datetime(cdh["dt"])
         cdh = cdh.reindex(columns=cdh.columns)
@@ -71,10 +68,7 @@ class CTCountyTests(SODA, DatasetBase):
 
     def normalize(self, data: Any) -> pd.DataFrame:
         # Get raw dataframe
-        tests_rename = {
-            "date": "dt",
-            "county": "location_name"
-        }
+        tests_rename = {"date": "dt", "county": "location_name"}
         tests = data.rename(columns=tests_rename)
 
         tests["dt"] = pd.to_datetime(tests["dt"])
