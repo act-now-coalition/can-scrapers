@@ -1,3 +1,4 @@
+BeautifulSoup4==4.9.3
 black==20.8b
 geopandas==0.8.1
 numpy==1.19.3
