@@ -1,5 +1,7 @@
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHistorical,; Massachusetts,
+    ArizonaData,
+    ArizonaStateData,
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
     CDCCovidDataTracker,
