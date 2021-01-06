@@ -71,30 +71,28 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
         numeric_cols = list(df.select_dtypes("number"))
         df.loc[:, numeric_cols] = df.loc[:, numeric_cols].where(lambda x: x > 0, np.nan)
 
-        # Create new columns that we need
-        vars_to_compute_sum = {
-            "inpatient_beds_used_covid_7_day_sum": (
-                "total_adult_patients_hospitalized_confirmed_covid_7_day_sum",
-                "total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum",
-            ),
-            "inpatient_beds_used_covid_7_day_coverage": (
-                "total_adult_patients_hospitalized_confirmed_covid_7_day_coverage",
-                "total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage",
-            ),
-        }
-        for (_var, (x1, x2)) in vars_to_compute_sum.items():
-            df[_var] = df.eval(f"{x1} + {x2}")
-
+        # Variables that can be determined with "simple average"
         vars_to_compute_avg = [
             "inpatient_beds_7_day",
             "inpatient_beds_used_7_day",
-            "inpatient_beds_used_covid_7_day",
             "total_staffed_adult_icu_beds_7_day",
             "staffed_adult_icu_bed_occupancy_7_day",
             "staffed_icu_adult_patients_confirmed_covid_7_day",
         ]
         for var in vars_to_compute_avg:
-            df[f"{var}_canavg"] = df.eval(f"{var}_sum / {var}_coverage")
+            df.loc[:, f"{var}_canavg"] = df.eval(f"{var}_sum / {var}_coverage")
+
+        # Variables that require "more complicated average"
+        aps = "total_adult_patients_hospitalized_confirmed_covid_7_day_sum"
+        apc = "total_adult_patients_hospitalized_confirmed_covid_7_day_coverage"
+        pps = "total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum"
+        ppc = "total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage"
+        temp = df.eval(f"{aps} / {apc}")
+        # Do the pediatric sum second so that we keep adult values if they're available
+        # (while filling pediatric missing data with 0s) but if adult is missing then
+        # it will stay as missing
+        temp = temp + df.eval(f"{pps} / {ppc}").fillna(0.0)
+        df.loc[:, "inpatient_beds_used_covid_7_day_canavg"] = temp.values
 
         crename = {
             "inpatient_beds_7_day_canavg": CMU(
