@@ -70,6 +70,7 @@ class MarylandCounties(ArcGIS, DatasetBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]

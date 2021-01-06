@@ -107,6 +107,7 @@ class MarylandState(ArcGIS, DatasetBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
