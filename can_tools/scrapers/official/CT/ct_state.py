@@ -9,8 +9,6 @@ from can_tools.scrapers.official.base import SODA
 
 
 class CTCountyDeathHospitalizations(SODA, DatasetBase):
-    source = "https://data.ct.gov/bfnu-rgqt.json"
-    state_fips = int(us.states.lookup("Connecticut").fips)
     baseurl = "https://data.ct.gov/"
     has_location = False
     location_type = "county"
@@ -27,37 +25,28 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
         # fips_df = pd.DataFrame.from_dict(self.state_fips)
         cdh_rename = {
             "dateupdated": "dt",
-            "county": "location_name",
-            "totalcases": "cases_total",
-            "totaldeaths": "deaths_total",
-            "hospitalization": "hospital_beds_in_use_covid_total",
+            "county": "location_name"
         }
         cdh = data.rename(columns=cdh_rename)
         cdh["dt"] = pd.to_datetime(cdh["dt"])
-        cdh = cdh.reindex(columns=cdh_rename.values())
+        cdh = cdh.reindex(columns=cdh.columns)
         for c in [
             c for c in cdh_rename.values() if (c != "dt") and (c != "location_name")
         ]:
             cdh[c] = pd.to_numeric(cdh.loc[:, c])
         crename = {
-            "cases_total": CMU(
+            "totalcases": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "deaths_total": CMU(
+            "totaldeaths": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
-            "hospital_beds_in_use_covid_total": CMU(
+            "hospitalization": CMU(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
         }
-        for c in [
-            c
-            for c in cdh.columns
-            if c not in (crename.keys()) and c != "dt" and c != "location_name"
-        ]:
-            cdh = cdh.drop(c, 1)
         out = cdh.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
@@ -84,54 +73,43 @@ class CTCountyTests(SODA, DatasetBase):
         # Get raw dataframe
         tests_rename = {
             "date": "dt",
-            "county": "location_name",
-            "number_of_ag_tests": "tests_ag_total",
-            "number_of_ag_positives": "positive_tests_ag_total",
-            "number_of_ag_negatives": "negative_tests_ag_total",
-            "number_of_pcr_tests": "tests_pcr_total",
-            "number_of_pcr_positives": "positive_tests_pcr_total",
-            "number_of_pcr_negatives": "negative_tests_pcr_total",
+            "county": "location_name"
         }
         tests = data.rename(columns=tests_rename)
 
         tests["dt"] = pd.to_datetime(tests["dt"])
 
-        tests = tests.reindex(columns=tests_rename.values())
-        for c in [c for c in tests_rename.values() if "tests" in c]:
+        tests = tests.reindex(columns=tests.columns)
+        for c in [c for c in tests_rename.values() if "number" in c]:
             tests[c] = pd.to_numeric(tests.loc[:, c])
         tests = tests.loc[~tests["dt"].isna(), :]
         tests = tests.query("location_name != 'Pending address validation'")
 
         crename = {
-            "tests_ag_total": CMU(
+            "number_of_ag_tests": CMU(
                 category="antigen_tests_total", measurement="new", unit="specimens"
             ),
-            "positive_tests_ag_total": CMU(
+            "number_of_ag_positives": CMU(
                 category="antigen_tests_positive", measurement="new", unit="specimens"
             ),
-            "negative_tests_ag_total": CMU(
+            "number_of_ag_negatives": CMU(
                 category="antigen_tests_negative",
                 measurement="new",
                 unit="specimens",
             ),
-            "tests_pcr_total": CMU(
+            "number_of_pcr_tests": CMU(
                 category="pcr_tests_total", measurement="new", unit="specimens"
             ),
-            "positive_tests_pcr_total": CMU(
+            "number_of_pcr_positives": CMU(
                 category="pcr_tests_positive", measurement="new", unit="specimens"
             ),
-            "negative_tests_pcr_total": CMU(
+            "number_of_pcr_negatives": CMU(
                 category="pcr_tests_negative",
                 measurement="new",
                 unit="specimens",
             ),
         }
-        for c in [
-            c
-            for c in tests.columns
-            if c not in (crename.keys()) and c != "dt" and c != "location_name"
-        ]:
-            tests = tests.drop(c, 1)
+
         out = tests.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
@@ -186,12 +164,6 @@ class CTState(SODA, DatasetBase):
                 unit="beds",
             ),
         }
-        for c in [
-            c
-            for c in data.columns
-            if c not in (crename.keys()) and c != "dt" and c != "location"
-        ]:
-            data = data.drop(c, 1)
         out = data.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
