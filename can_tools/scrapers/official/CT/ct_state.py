@@ -41,7 +41,7 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
         out = cdh.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
-        out["value"] = pd.to_numeric(out.loc[:, 'value'])
+        out["value"] = pd.to_numeric(out.loc[:, "value"])
 
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
@@ -98,7 +98,7 @@ class CTCountyTests(SODA, DatasetBase):
         out = tests.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
-        out["value"] = pd.to_numeric(out.loc[:, 'value'])
+        out["value"] = pd.to_numeric(out.loc[:, "value"])
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
@@ -149,7 +149,7 @@ class CTState(SODA, DatasetBase):
             ),
         }
         out = data.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
-        out["value"] = pd.to_numeric(out.loc[:, 'value'])
+        out["value"] = pd.to_numeric(out.loc[:, "value"])
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
