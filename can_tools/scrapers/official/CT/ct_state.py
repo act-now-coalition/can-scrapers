@@ -22,15 +22,9 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
         return cdh
 
     def normalize(self, data) -> pd.DataFrame:
-        # fips_df = pd.DataFrame.from_dict(self.state_fips)
         cdh_rename = {"dateupdated": "dt", "county": "location_name"}
         cdh = data.rename(columns=cdh_rename)
         cdh["dt"] = pd.to_datetime(cdh["dt"])
-        cdh = cdh.reindex(columns=cdh.columns)
-        for c in [
-            c for c in cdh_rename.values() if (c != "dt") and (c != "location_name")
-        ]:
-            cdh[c] = pd.to_numeric(cdh.loc[:, c])
         crename = {
             "totalcases": CMU(
                 category="cases", measurement="cumulative", unit="people"
@@ -47,6 +41,7 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
         out = cdh.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
+        out["value"] = pd.to_numeric(out.loc[:, 'value'])
 
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
@@ -72,10 +67,6 @@ class CTCountyTests(SODA, DatasetBase):
         tests = data.rename(columns=tests_rename)
 
         tests["dt"] = pd.to_datetime(tests["dt"])
-
-        tests = tests.reindex(columns=tests.columns)
-        for c in [c for c in tests_rename.values() if "number" in c]:
-            tests[c] = pd.to_numeric(tests.loc[:, c])
         tests = tests.loc[~tests["dt"].isna(), :]
         tests = tests.query("location_name != 'Pending address validation'")
 
@@ -107,6 +98,7 @@ class CTCountyTests(SODA, DatasetBase):
         out = tests.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
+        out["value"] = pd.to_numeric(out.loc[:, 'value'])
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
@@ -130,8 +122,6 @@ class CTState(SODA, DatasetBase):
         data["date"] = pd.to_datetime(data["date"])
         data = data.rename(columns={"date": "dt"})
         data["location"] = self.state_fips
-        for c in [c for c in data.columns if c != "dt" and c != "state"]:
-            data[c] = pd.to_numeric(data.loc[:, c])
         data = data.loc[~data["dt"].isna(), :]
         crename = {
             "covid_19_tests_reported": CMU(
@@ -159,6 +149,7 @@ class CTState(SODA, DatasetBase):
             ),
         }
         out = data.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
+        out["value"] = pd.to_numeric(out.loc[:, 'value'])
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
         return out
