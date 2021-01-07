@@ -163,3 +163,5 @@ adult_icu_beds_in_use_covid,rolling_average_7_day,beds
 ventilators_available,current,people
 ventilators_in_use,current,people
 ventilators_capacity,current,people
+vaccine_distributed,cumulative,doses
+vaccine_initiated,cumulative,people

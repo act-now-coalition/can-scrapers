@@ -52,3 +52,6 @@ test,reported_positivity
 hospital,critical_staff_shortage_yes
 hospital,critical_staff_shortage_no
 hospital,critical_staff_shortage_noreport
+vaccine,vaccine_initiated
+vaccine,vaccine_distributed
+

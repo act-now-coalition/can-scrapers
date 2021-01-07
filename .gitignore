@@ -148,3 +148,8 @@ can_tools/scrapers/official/federal/CDC/output.csv
 can_tools/scrapers/official/federal/CDC/output-pf.csv
 can_tools/scrapers/official/DC/driver.py
 can_tools/scrapers/official/DC/output-cdc.csv
+can_tools/scrapers/official/federal/CDC/math.py
+can_tools/scrapers/official/federal/CDC/pfizer.csv
+can_tools/scrapers/official/federal/CDC/total.csv
+can_tools/scrapers/official/federal/CDC/tester.py
+can_tools/scrapers/official/federal/CDC/moderna.csv
