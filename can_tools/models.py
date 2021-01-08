@@ -164,7 +164,7 @@ class CovidUnit(Base, MetaSchemaMixin):
     )
 
 
-class CovidVariable(Base, MetaSchemaMixin):
+class CovidVariable(Base):
     __tablename__ = "covid_variables"
     id = Column(
         Integer,
@@ -176,6 +176,11 @@ class CovidVariable(Base, MetaSchemaMixin):
     unit = Column(String, FKCascade(CovidUnit.name))
 
     official_obs = relationship("CovidObservation", backref="variable")
+
+    __table_args__ = (
+        UniqueConstraint(category, measurement, unit, name="uix_variables"),
+        {"schema": "meta"},
+    )
 
 
 class CovidDemographic(Base):
@@ -348,6 +353,7 @@ def build_insert_from_temp(
     cls: Union[Type[TemptableOfficialNoLocation], Type[TemptableOfficialHasLocation]],
     engine: Engine,
 ):
+    print("Have insert_op = ", insert_op)
     columns = [
         cls.dt,
         Location.id.label("location_id"),
