@@ -33,7 +33,7 @@ class DCBase(StateDashboard):
         """
 
         # get yesterday's date for finding most recent file
-        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=1)
+        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=2)
 
         # query DC coronavirus webpage
         res = requests.get(self.source)
