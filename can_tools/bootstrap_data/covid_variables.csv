@@ -165,3 +165,7 @@ ventilators_in_use,current,people
 ventilators_capacity,current,people
 vaccine_distributed,cumulative,doses
 vaccine_initiated,cumulative,people
+pfizer_vaccine_first_dose_allocated,cumulative,doses
+pfizer_vaccine_second_dose_allocated,cumulative,doses
+moderna_vaccine_first_dose_allocated,cumulative,doses
+moderna_vaccine_second_dose_allocated,cumulative,doses

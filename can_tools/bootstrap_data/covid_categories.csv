@@ -54,4 +54,8 @@ hospital,critical_staff_shortage_no
 hospital,critical_staff_shortage_noreport
 vaccine,vaccine_initiated
 vaccine,vaccine_distributed
+vaccine,pfizer_vaccine_first_dose_allocated
+vaccine,pfizer_vaccine_second_dose_allocated
+vaccine,moderna_vaccine_first_dose_allocated
+vaccine,moderna_vaccine_second_dose_allocated
 

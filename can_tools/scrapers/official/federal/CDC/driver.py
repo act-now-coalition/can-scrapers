@@ -3,8 +3,9 @@ import pandas as pd
 import csv
 import sys
 
-# scraper = CDCCovidDataTracker()
-# x = scraper.normalize(scraper.fetch())
+if len(sys.argv) == 1: 
+    print("no args supplied. bye")
+    quit()
 
 prompt = sys.argv[1]
 if prompt == "moderna":
@@ -14,16 +15,16 @@ elif prompt == "pfizer":
 elif prompt == "total":
     scraper = CDCVaccineTotal()
 else:
-    print("type correctly lol")
+    print("type correctly lol. bye")
     quit()
 
 df = scraper.normalize(scraper.fetch())
-print(df.head(20))
-# for val in df["LongName"].unique():
-#     print (val)
+print(df)
+# for val in df["loc_name"].unique():
+#     print("-"+val+"-")
 
 if sys.argv[len(sys.argv)-1] == "csv":
     print("\nwriting to csv...")    
     fl = prompt + ".csv"
     df.to_csv(fl, index=False)
-    print("done ++")
+    print("done +++")
