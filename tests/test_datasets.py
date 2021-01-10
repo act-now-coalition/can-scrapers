@@ -29,6 +29,7 @@ def _covid_dataset_tests(cls, df):
         "unit",
         "age",
         "race",
+        "ethnicity",
         "sex",
         "value",
     ]
@@ -51,7 +52,9 @@ def _test_data_structure(cls, df):
 
 @pytest.mark.parametrize("cls", ALL_SCRAPERS)
 def test_datasets(cls):
-    execution_date = (pd.Timestamp.today() - pd.Timedelta('1 days')).strftime('%Y-%m-%d')
+    execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
+        "%Y-%m-%d"
+    )
     d = cls(execution_date)
 
     slow_scrapers = [CDCCovidDataTracker]

@@ -164,7 +164,7 @@ class CovidUnit(Base, MetaSchemaMixin):
     )
 
 
-class CovidVariable(Base, MetaSchemaMixin):
+class CovidVariable(Base):
     __tablename__ = "covid_variables"
     id = Column(
         Integer,
@@ -177,6 +177,11 @@ class CovidVariable(Base, MetaSchemaMixin):
 
     official_obs = relationship("CovidObservation", backref="variable")
 
+    __table_args__ = (
+        UniqueConstraint(category, measurement, unit, name="uix_variables"),
+        {"schema": "meta"},
+    )
+
 
 class CovidDemographic(Base):
     __tablename__ = "covid_demographics"
@@ -187,11 +192,12 @@ class CovidDemographic(Base):
     )
     age = Column(String)
     race = Column(String)
+    ethnicity = Column(String)
     sex = Column(String)
     official_obs = relationship("CovidObservation", backref="demographic")
 
     __table_args__ = (
-        UniqueConstraint(age, race, sex, name="uix_demo"),
+        UniqueConstraint(age, race, ethnicity, sex, name="uix_demo"),
         {"schema": "meta"},
     )
 
@@ -242,6 +248,7 @@ api_covid_us_statement = select(
         CovidVariable.unit,
         CovidDemographic.age,
         CovidDemographic.race,
+        CovidDemographic.ethnicity,
         CovidDemographic.sex,
         CovidObservation.last_updated,
         CovidObservation.value,
@@ -270,6 +277,7 @@ class _TempOfficial:
     dt = Column(Date, nullable=False)
     age = Column(String, nullable=False)
     race = Column(String, nullable=False)
+    ethnicity = Column(String, nullable=False)
     sex = Column(String, nullable=False)
     last_updated = Column(DateTime, nullable=False, default=func.now())
 
@@ -302,8 +310,13 @@ class TemptableOfficialHasLocation(Base, _TempOfficial, DataSchemaMixin):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["age", "race", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+            ["age", "race", "ethnicity", "sex"],
+            [
+                CovidDemographic.age,
+                CovidDemographic.race,
+                CovidDemographic.ethnicity,
+                CovidDemographic.sex,
+            ],
         ),
         ForeignKeyConstraint(
             ["location", "location_type"], [Location.location, Location.location_type]
@@ -319,8 +332,13 @@ class TemptableOfficialNoLocation(Base, _TempOfficial, DataSchemaMixin):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["age", "race", "sex"],
-            [CovidDemographic.age, CovidDemographic.race, CovidDemographic.sex],
+            ["age", "race", "ethnicity", "sex"],
+            [
+                CovidDemographic.age,
+                CovidDemographic.race,
+                CovidDemographic.ethnicity,
+                CovidDemographic.sex,
+            ],
         ),
         ForeignKeyConstraint(
             ["location_type", state_fips, location_name],
@@ -335,6 +353,7 @@ def build_insert_from_temp(
     cls: Union[Type[TemptableOfficialNoLocation], Type[TemptableOfficialHasLocation]],
     engine: Engine,
 ):
+    print("Have insert_op = ", insert_op)
     columns = [
         cls.dt,
         Location.id.label("location_id"),

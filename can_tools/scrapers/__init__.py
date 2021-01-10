@@ -22,7 +22,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TennesseeState,
     TexasCasesDeaths,
     TexasTests,
-    Wisconsin,
+    WisconsinCounties,
+    WisconsinState,
 )
 
 from can_tools.scrapers import util
