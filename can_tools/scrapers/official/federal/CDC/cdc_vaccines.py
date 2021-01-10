@@ -10,6 +10,8 @@ from can_tools.scrapers.official.base import FederalDashboard, DatasetBase
 NOTES: 
     currently does not track "TOTAL" column in moderna/pfizer datasets ---- not sure how to do so—brainstorm then ask lol
     think about how to add weekly allocations/amounts for pfizer/moderna datasets
+
+    some not tallied by region but department (eg: federal entities) -- how to include?
 """
 class CDCVaccineBase(FederalDashboard, DatasetBase):
     has_location = True
@@ -17,6 +19,7 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
     provider = "cdc"
     source: "string"
     query_type: "string"
+    lm: str
 
     def fetch(self):
         fetch_urls = {
@@ -32,7 +35,7 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
 
     def _get_fips(self, names):
         """
-            returns a dictionary containing the fips codes for each state/territory in list (names).
+            creates a dictionary containing the fips codes for each state/territory in list (names).
             ultimately used to help replace state names with fips code values
             
             Accepts
@@ -76,8 +79,8 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         states = list(map(str, us.states.STATES_AND_TERRITORIES)) #get all us states+
         states.append("DC")
         #throws warning w/o .copy() b/c would be subsetting a view of df
-        data = data[data[colname].isin(states)].copy()
-        fips_dict = self._get_fips(list(data[colname]))
+        data = data[data[colname].isin(states)].copy() #remove entries w/ no fips code
+        fips_dict = self._get_fips(list(data[colname])) #get dictionary of fips codes
         data[colname] = data[colname].map(fips_dict)
 
         return data.dropna().reset_index(drop=True)
@@ -131,23 +134,22 @@ class CDCVaccineTotal(CDCVaccineBase):
 class CDCVaccinePfizer(CDCVaccineBase):
     query_type = 'pfizer'
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccine-Distribution-Allocations-by-Juris/saz5-9hgg"
+    lm: str
 
     def normalize(self, data):
-        data = data.json()
         #read data and remove extra chars from location names
-        df = pd.json_normalize(data).rename(columns={"jurisdiction":"location"})
+        raw = data.json()
+        df = pd.json_normalize(raw).rename(columns={"jurisdiction":"location"})
         df['location'] = df['location'].str.replace('*','').str.replace(' ~','')
         
+        #use when dataset was last updated as date
+        url_time = data.headers["Last-Modified"]
+        df["dt"] = pd.to_datetime(url_time, format='%a, %d %b %Y %H:%M:%S GMT').date()
+
         #fix column names to match us library convention
         fix_names = {"U.S. Virgin Islands":"Virgin Islands", "District of Columbia": "DC"}
         df["location"] = df['location'].map(fix_names).fillna(df['location'])
         
-        # set updated date to last tuesday (when the dataset is updated)
-        # today = datetime.datetime.strptime('01/04/21 00:00', '%m/%d/%y %H:%M') #for debugging
-        today = self._retrieve_dt("US/Eastern")
-        last_tuesday = today - pd.Timedelta(days=(today.weekday() - 1) % 7)   
-        df["dt"] = last_tuesday
-
         df["loc_name"] = df["location"] #for debugging/viewing
         #replace location names w/ fips codes, and keep only locations that have a fips code
         df = self._replace_remove_locs(df, "location")
@@ -186,20 +188,18 @@ class CDCVaccineModerna(CDCVaccineBase):
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccine-Distribution-Allocations-by-Juris/b7pe-5nws"
     
     def normalize(self, data):
-        data = data.json()
+        raw = data.json()
         #read data and remove extra chars from location names
-        df = pd.json_normalize(data).rename(columns={"jurisdiction":"location"})
+        df = pd.json_normalize(raw).rename(columns={"jurisdiction":"location"})
         df['location'] = df['location'].str.replace('*','').str.replace(' ~','')
         
         #fix column names to match us library convention
         fix_names = {"U.S. Virgin Islands":"Virgin Islands", "District of Columbia": "DC"}
         df["location"] = df['location'].map(fix_names).fillna(df['location'])
         
-        # set updated date to last tuesday (when the dataset is updated)
-        # today = datetime.datetime.strptime('01/04/21 00:00', '%m/%d/%y %H:%M') #for debugging
-        today = self._retrieve_dt("US/Eastern")
-        last_tuesday = today - pd.Timedelta(days=(today.weekday() - 1) % 7)   
-        df["dt"] = last_tuesday
+        #use when dataset was updated as date
+        url_time = data.headers["Last-Modified"]
+        df["dt"] = pd.to_datetime(url_time, format='%a, %d %b %Y %H:%M:%S GMT').date()
 
         df["loc_name"] = df["location"] #for debugging/viewing
         #replace location names w/ fips codes, and keep only locations that have a fips code
