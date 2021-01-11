@@ -48,6 +48,8 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         #use when dataset was last updated as date
         url_time = data.headers["Last-Modified"]
         df["dt"] = pd.to_datetime(url_time, format='%a, %d %b %Y %H:%M:%S GMT').date()
+        df["loc_name"] = df["location"] #for debugging/viewing
+
         
         #replace location names w/ fips codes; keep only locations that have a fips code
         df = self._replace_fips(df)
@@ -86,7 +88,6 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         """
         replace state names with fips codes and remove entries w/o a fips code
         """
-        data["loc_name"] = data["location"] #for debugging/viewing
         data['location'] = data['location'].map(us.states.mapping('name', 'fips'))
         return data.dropna().reset_index(drop=True)
 
