@@ -34,13 +34,10 @@ class IowaCasesDeaths(ArcGIS):
     def fetch(self) -> Any:
         return self.get_all_jsons(self.service, 0, "")
 
-    def pre_normalize(self, data) -> pd.DataFrame:
-        df = self.arcgis_jsons_to_df(data)
-
-        # Make columns names all-lowercase
-        df.columns = [x.lower() for x in list(df)]
+    def pre_normalize(self, df) -> pd.DataFrame:
 
         df = df.rename(columns={"name": "location_name", "last_updated": "dt"})
+        df["dt"] = df["dt"].map(self._esri_ts_to_dt).map(lambda x: x.date())
 
         crename = {
             "confirmed": CMU(
@@ -59,18 +56,25 @@ class IowaCasesDeaths(ArcGIS):
         }
 
         out = (
-            df.melt(id_vars=["dt", "location_name", "fips"], value_vars=crename.keys())
+            df.melt(id_vars=["dt", "location_name"], value_vars=crename.keys())
             .assign(dt=self._retrieve_dt("US/Central"))
             .dropna()
         )
 
         out = self.extract_CMU(out, crename)
 
-        return out.loc[:, self.cols_to_keep.append("fips")].query("fips != '0'")
+        return out.loc[:, self.cols_to_keep].query(
+            "location_name != 'Pending Investigation'"
+        )
 
     def normalize(self, data) -> pd.DataFrame:
         # Normalize data, which is dependent on the current class
-        out = self.pre_normalize(data)
+        df = self.arcgis_jsons_to_df(data)
+
+        # Make columns names all-lowercase
+        df.columns = [x.lower() for x in list(df)]
+
+        out = self.pre_normalize(df)
 
         out["vintage"] = self._retrieve_vintage()
         return out
@@ -80,12 +84,9 @@ class IowaHospitals(IowaCasesDeaths):
 
     source = "https://coronavirus.iowa.gov/pages/rmcc-data"
     service: str = "COVID19_RMCC_Hospitalization"
+    location_type = "region"
 
-    def pre_normalize(self, data) -> pd.DataFrame:
-        df = self.arcgis_jsons_to_df(data)
-
-        # Make columns names all-lowercase
-        df.columns = [x.lower() for x in list(df)]
+    def pre_normalize(self, df) -> pd.DataFrame:
         df = df.rename(columns={"rmcc": "location_name"})
 
         crename = {
@@ -121,5 +122,7 @@ class IowaHospitals(IowaCasesDeaths):
         )
 
         out = self.extract_CMU(out, crename)
+
+        out["dt"] = self._retrieve_dt()
 
         return out.loc[:, self.cols_to_keep]
