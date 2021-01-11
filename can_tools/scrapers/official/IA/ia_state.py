@@ -16,7 +16,7 @@ class IowaCasesDeaths(ArcGIS):
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Iowa").fips)
-    source = "https://coronavirus.iowa.gov/pages/rmcc-data"
+    source = "https://coronavirus.iowa.gov/pages/case-counts"
     service: str = "IA_COVID19_Cases"
 
     cols_to_keep = [
@@ -29,7 +29,6 @@ class IowaCasesDeaths(ArcGIS):
         "race",
         "sex",
         "value",
-        "fips"
     ]
 
     def fetch(self) -> Any:
@@ -40,9 +39,8 @@ class IowaCasesDeaths(ArcGIS):
 
         # Make columns names all-lowercase
         df.columns = [x.lower() for x in list(df)]
-        df = df.rename(
-            columns={"name": "location_name", "last_updated": "dt"}
-        )
+
+        df = df.rename(columns={"name": "location_name", "last_updated": "dt"})
 
         crename = {
             "confirmed": CMU(
@@ -61,15 +59,14 @@ class IowaCasesDeaths(ArcGIS):
         }
 
         out = (
-            df.melt(id_vars=["dt", "location_name","fips"], value_vars=crename.keys())
+            df.melt(id_vars=["dt", "location_name", "fips"], value_vars=crename.keys())
             .assign(dt=self._retrieve_dt("US/Central"))
             .dropna()
         )
 
         out = self.extract_CMU(out, crename)
 
-        return out.loc[:, self.cols_to_keep].query("fips != '0'")
-
+        return out.loc[:, self.cols_to_keep.append("fips")].query("fips != '0'")
 
     def normalize(self, data) -> pd.DataFrame:
         # Normalize data, which is dependent on the current class
@@ -81,7 +78,48 @@ class IowaCasesDeaths(ArcGIS):
 
 class IowaHospitals(IowaCasesDeaths):
 
+    source = "https://coronavirus.iowa.gov/pages/rmcc-data"
     service: str = "COVID19_RMCC_Hospitalization"
 
     def pre_normalize(self, data) -> pd.DataFrame:
         df = self.arcgis_jsons_to_df(data)
+
+        # Make columns names all-lowercase
+        df.columns = [x.lower() for x in list(df)]
+        df = df.rename(columns={"rmcc": "location_name"})
+
+        crename = {
+            "total_inpatient_beds_available": CMU(
+                category="hospital_beds_capacity",
+                measurement="current",
+                unit="beds",
+            ),
+            "total_hospitalized": CMU(
+                category="hospital_beds_in_use", measurement="current", unit="beds"
+            ),
+            "icu": CMU(
+                category="icu_beds_in_use",
+                measurement="current",
+                unit="beds",
+            ),
+            "ventilators_available": CMU(
+                category="ventilators_capacity",
+                measurement="current",
+                unit="people",
+            ),
+            "ventilator": CMU(
+                category="ventilators_in_use",
+                measurement="current",
+                unit="people",
+            ),
+        }
+
+        out = (
+            df.melt(id_vars=["location_name"], value_vars=crename.keys())
+            .assign(dt=self._retrieve_dt("US/Central"))
+            .dropna()
+        )
+
+        out = self.extract_CMU(out, crename)
+
+        return out.loc[:, self.cols_to_keep]
