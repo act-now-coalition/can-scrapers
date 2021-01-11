@@ -1,6 +1,5 @@
 from can_tools.scrapers.official.federal.CDC import ( 
     CDCCovidDataTracker, 
-    CDCVaccineBase, 
     CDCVaccineTotal,
     CDCVaccinePfizer,
     CDCVaccineModerna,

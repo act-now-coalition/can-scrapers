@@ -3,7 +3,7 @@ from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
-    CDCVaccineBase, 
+    CDCVaccineBase,
     CDCVaccineTotal,
     CDCVaccinePfizer,
     CDCVaccineModerna,

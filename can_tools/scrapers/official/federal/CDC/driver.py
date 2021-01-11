@@ -20,11 +20,11 @@ else:
 
 df = scraper.normalize(scraper.fetch())
 print(df)
-# for val in df["value"].unique():
-#     print(val)
+for val in df["loc_name"].unique():
+    print(val)
 
 if sys.argv[len(sys.argv)-1] == "csv":
     print("\nwriting to csv...")    
     fl = prompt + ".csv"
-    df.to_csv(fl, index=False)
+    df.to_csv(fl, index=True)
     print("done +++")

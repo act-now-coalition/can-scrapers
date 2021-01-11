@@ -113,7 +113,6 @@ class DCBase(StateDashboard):
 
         return out.loc[:, cols_to_keep]
 
-    @abstractmethod
     def _wrangle(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Parent function to re-structure df into standard form.
