@@ -96,7 +96,12 @@ def make_put_op(cls, task_id="put") -> PythonOperator:
         except Exception as e:
             raise e
 
-    op = PythonOperator(python_callable=inner, task_id=task_id, provide_context=True)
+    op = PythonOperator(
+        python_callable=inner,
+        task_id=task_id,
+        provide_context=True,
+        pool="put_op_pool",
+    )
     return op
 
 
