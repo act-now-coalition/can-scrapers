@@ -166,7 +166,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
 
         # TODO: Throwing out territories because I don't remember which weren't
         # included in the census data :(
-        out_county = out_county.query("location < 60_000")
+        out_county = out_county.query("location < 60_000").copy()
 
         # Add vintage
         out_county.loc[:, "vintage"] = self._retrieve_vintage()
