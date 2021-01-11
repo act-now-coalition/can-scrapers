@@ -33,7 +33,6 @@ from can_tools.scrapers.official.TN import (
     TennesseeState,
 )
 from can_tools.scrapers.official.TX import TexasCasesDeaths, TexasTests
-from can_tools.scrapers.official.WI import Wisconsin
 from can_tools.scrapers.official.WI import WisconsinCounties, WisconsinState
 
 from can_tools.scrapers.official.CT import (
