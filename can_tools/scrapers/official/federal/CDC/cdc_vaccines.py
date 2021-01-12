@@ -1,11 +1,12 @@
 import pandas as pd
 import requests
+from abc import ABC
 
 DC_STATEHOOD = 1  # Include DC in the us/fips library
 import us
 
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import FederalDashboard, DatasetBase
+from can_tools.scrapers.official.base import FederalDashboard
 
 """
 NOTES: 
@@ -18,8 +19,7 @@ NOTES:
         but idk if that would work with the setup we have
 """
 
-
-class CDCVaccineBase(FederalDashboard, DatasetBase):
+class CDCVaccineBase(FederalDashboard):
     has_location = True
     location_type = "state"
     provider = "cdc"
@@ -48,10 +48,11 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         fix_names = {"U.S. Virgin Islands": "Virgin Islands"}
         df["location"] = df["location"].map(fix_names).fillna(df["location"])
 
+        # print(df.head(20))
+
         # use when dataset was last updated as date
         url_time = data.headers["Last-Modified"]
         df["dt"] = pd.to_datetime(url_time, format="%a, %d %b %Y %H:%M:%S GMT").date()
-        df["loc_name"] = df["location"]  # for debugging/viewing
 
         # replace location names w/ fips codes; keep only locations that have a fips code
         df["location"] = df["location"].map(us.states.mapping("name", "fips"))
@@ -64,10 +65,43 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         melt data into format for put() function ()
         add comment....
         """
+        #use these columns for melt (replaces crename.keys())
+        #removes cols we dont want
+        colnames = list(data.columns)
+        colnames = [e for e in colnames if e not in {'hhs_region', 'dt', 'location', 'first_doses_12_14', 'second_doses_shipment_12_14'}]
 
         out = data.melt(
-            id_vars=["dt", "location", "loc_name"], value_vars=self.crename.keys()
+            id_vars=["dt", "location"], value_vars=colnames
         ).dropna()
+
+        out['dt_str'] = out['variable']
+        #remove date from col to make CMU variable 
+        out.loc[~out['variable'].str.contains('total'), 'variable'] = out['variable'].str.strip().str[:-6]
+        #rename slightly not matching colnames
+        out.loc[out['variable']=='second_dose_shipment', 'variable'] = 'second_dose_shipment_week_of'
+
+        # print("new variables: ")
+        # for val in out['variable'].unique():
+        #     print(val)
+
+        #locate rows where entry is not total, take the last 5 chars
+        #mark rows with total as keep (to keep old time)
+        out.loc[out['dt_str'].str.contains('total'), 'dt_str'] = 'keep'
+        # out.loc[~out['dt_str'].str.contains('total'), 'dt_str'] = pd.to_datetime(out['dt_str'].str.strip().str[-5:], format="%m_%d")
+        out.loc[~out['dt_str'].str.contains('total'), 'dt_str'] = out['dt_str'].str.strip().str[-5:]
+        # out.loc[out.dt_str != 'keep', 'dt_str'] = out['dt_str'] + " test modify"
+        # out.loc[out.dt_str != 'keep', 'dt_str'] = pd.to_datetime(out['dt_str'].str.strip().str[-5:], format="%m_%d")
+
+        #need to add proper year depending on month is 12 or 1 > 
+            ## what happens if it lasts until next year?
+
+        #replace dt for non total rows with dt_str data
+        out.loc[out.dt_str != 'keep', 'dt'] = out['dt_str']
+        
+        # print('dates: ')
+        # for d in out['dt'].unique():
+        #     print(d)
+
         out = self.extract_CMU(out, self.crename)
         out["vintage"] = self._retrieve_vintage()
         if out["value"].dtype == object:
@@ -77,9 +111,9 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
 
         cols_to_keep = [
             "vintage",
+            "variable",
             "dt",
             "location",
-            "loc_name",
             "category",
             "measurement",
             "unit",
@@ -89,6 +123,8 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
             "sex",
             "value",
         ]
+
+
         return out.loc[:, cols_to_keep]
 
 
@@ -143,6 +179,16 @@ class CDCVaccinePfizer(CDCVaccineBase):
         "total_allocation_pfizer_second_dose_shipments": CMU(
             category="pfizer_vaccine_second_dose_allocated",
             measurement="cumulative",
+            unit="doses",
+        ),
+        "doses_allocated_week_of": CMU(
+            category="pfizer_vaccine_first_dose_allocated",
+            measurement="new_7_day",
+            unit="doses",
+        ),
+        "second_dose_shipment_week_of": CMU(
+            category="pfizer_vaccine_second_dose_allocated",
+            measurement="new_7_day",
             unit="doses",
         ),
     }
