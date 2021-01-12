@@ -20,8 +20,8 @@ else:
 
 df = scraper.normalize(scraper.fetch())
 print(df)
-for val in df["loc_name"].unique():
-    print(val)
+# for val in df["loc_name"].unique():
+#     print(val)
 
 if sys.argv[len(sys.argv)-1] == "csv":
     print("\nwriting to csv...")    

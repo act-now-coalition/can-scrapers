@@ -50,9 +50,9 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         df["dt"] = pd.to_datetime(url_time, format='%a, %d %b %Y %H:%M:%S GMT').date()
         df["loc_name"] = df["location"] #for debugging/viewing
 
-        
         #replace location names w/ fips codes; keep only locations that have a fips code
-        df = self._replace_fips(df)
+        df['location'] = df['location'].map(us.states.mapping('name', 'fips'))
+        df = df.dropna().reset_index(drop=True)
         #melt into correct format and return
         return self._reshape(df)
 
@@ -84,13 +84,6 @@ class CDCVaccineBase(FederalDashboard, DatasetBase):
         ]
         return out.loc[:, cols_to_keep]
 
-    def _replace_fips(self, data):
-        """
-        replace state names with fips codes and remove entries w/o a fips code
-        """
-        data['location'] = data['location'].map(us.states.mapping('name', 'fips'))
-        return data.dropna().reset_index(drop=True)
-
 class CDCVaccineTotal(CDCVaccineBase):
     query_type = 'total'
     source = "https://covid.cdc.gov/covid-data-tracker/#vaccinations"
@@ -100,6 +93,12 @@ class CDCVaccineTotal(CDCVaccineBase):
         ),
         "Doses_Administered": CMU(
             category="vaccine_initiated", measurement="cumulative", unit="people"
+        ),
+        "Administered_Moderna": CMU(
+                category="moderna_vaccine_initiated", measurement="cumulative", unit="people"
+        ),
+        "Administered_Pfizer": CMU(
+                category="pfizer_vaccine_initiated", measurement="cumulative", unit="people"
         ),
     }
 
@@ -114,7 +113,8 @@ class CDCVaccineTotal(CDCVaccineBase):
         df["loc_name"] = df["location"] #for debugging/viewing
 
         #replace location names w/ fips codes, and keep only locations that have a fips code
-        df = self._replace_fips(df)
+        df['location'] = df['location'].map(us.states.mapping('name', 'fips'))
+        df = df.dropna().reset_index(drop=True)
         #and melt + return
         return self._reshape(df)
 

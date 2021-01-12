@@ -58,4 +58,5 @@ vaccine,pfizer_vaccine_first_dose_allocated
 vaccine,pfizer_vaccine_second_dose_allocated
 vaccine,moderna_vaccine_first_dose_allocated
 vaccine,moderna_vaccine_second_dose_allocated
-
+vaccine,pfizer_vaccine_initiated
+vaccine,moderna_vaccine_initiated
