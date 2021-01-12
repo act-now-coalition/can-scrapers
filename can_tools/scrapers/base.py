@@ -1,12 +1,18 @@
 from can_tools.models import Base
+
 import os
 import pickle
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 
 import pandas as pd
+import us
 from sqlalchemy.engine.base import Engine
+
+
+ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
 
 
 class CMU:
