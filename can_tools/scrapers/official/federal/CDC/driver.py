@@ -1,9 +1,14 @@
-from can_tools.scrapers.official import CDCCovidDataTracker, CDCVaccineTotal, CDCVaccineModerna, CDCVaccinePfizer 
-import pandas as pd 
+from can_tools.scrapers.official import (
+    CDCCovidDataTracker,
+    CDCVaccineTotal,
+    CDCVaccineModerna,
+    CDCVaccinePfizer,
+)
+import pandas as pd
 import csv
 import sys
 
-if len(sys.argv) == 1: 
+if len(sys.argv) == 1:
     print("no args supplied. bye")
     quit()
 
@@ -20,11 +25,11 @@ else:
 
 df = scraper.normalize(scraper.fetch())
 print(df)
-# for val in df["loc_name"].unique():
+# for val in df["category"].unique():
 #     print(val)
 
-if sys.argv[len(sys.argv)-1] == "csv":
-    print("\nwriting to csv...")    
+if sys.argv[len(sys.argv) - 1] == "csv":
+    print("\nwriting to csv...")
     fl = prompt + ".csv"
     df.to_csv(fl, index=True)
     print("done +++")
