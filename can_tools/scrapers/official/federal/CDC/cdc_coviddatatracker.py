@@ -30,7 +30,9 @@ class CDCCovidDataTracker(FederalDashboard):
                 random.sample(us.STATES, 3),
             )
         else:
-            urls = map(lambda x: fetcher_url.format(x.abbr.lower()), us.STATES)
+            urls = map(
+                lambda x: fetcher_url.format(x.abbr.lower()), us.STATES + [us.states.DC]
+            )
         responses = list(map(requests.get, urls))
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
