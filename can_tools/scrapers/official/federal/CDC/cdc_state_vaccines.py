@@ -25,9 +25,7 @@ class CDCStateVaccine(FederalDashboard):
 
     def normalize(self, data):
         # Read data in
-        df = pd.DataFrame.from_records(
-            data["vaccination_data"]
-        )
+        df = pd.DataFrame.from_records(data["vaccination_data"])
 
         # Set date
         df["dt"] = pd.to_datetime(df["Date"])
@@ -41,16 +39,24 @@ class CDCStateVaccine(FederalDashboard):
 
         crename = {
             "Doses_Distributed": CMU(
-                category="total_vaccine_distributed", measurement="cumulative", unit="doses"
+                category="total_vaccine_distributed",
+                measurement="cumulative",
+                unit="doses",
             ),
             "Doses_Administered": CMU(
-                category="total_vaccine_initiated", measurement="cumulative", unit="people"
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
             ),
             "Administered_Moderna": CMU(
-                category="moderna_vaccine_initiated", measurement="cumulative", unit="people"
+                category="moderna_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
             ),
             "Administered_Pfizer": CMU(
-                category="pfizer_vaccine_initiated", measurement="cumulative", unit="people"
+                category="pfizer_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
             ),
         }
 
