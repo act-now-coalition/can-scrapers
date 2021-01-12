@@ -166,3 +166,11 @@ adult_icu_beds_in_use_covid,rolling_average_7_day,beds
 ventilators_available,current,people
 ventilators_in_use,current,people
 ventilators_capacity,current,people
+moderna_vaccine_allocated,cumulative,doses
+moderna_vaccine_distributed,cumulative,doses
+moderna_vaccine_initiated,cumulative,people
+moderna_vaccine_completed,cumulative,people
+pfizer_vaccine_allocated,cumulative,doses
+pfizer_vaccine_distributed,cumulative,doses
+pfizer_vaccine_initiated,cumulative,people
+pfizer_vaccine_completed,cumulative,people
