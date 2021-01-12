@@ -60,3 +60,7 @@ vaccine,pfizer_vaccine_allocated
 vaccine,pfizer_vaccine_distributed
 vaccine,pfizer_vaccine_initiated
 vaccine,pfizer_vaccine_completed
+vaccine,total_vaccine_allocated
+vaccine,total_vaccine_distributed
+vaccine,total_vaccine_initiated
+vaccine,total_vaccine_completed
