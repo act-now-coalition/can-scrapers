@@ -1,8 +1,6 @@
 import pandas as pd
 import requests
 from abc import ABC
-
-DC_STATEHOOD = 1  # Include DC in the us/fips library
 import us
 
 from can_tools.scrapers.base import CMU
@@ -68,7 +66,9 @@ class CDCVaccineBase(FederalDashboard):
         #use these columns for melt (replaces crename.keys())
         #removes cols we dont want
         colnames = list(data.columns)
-        colnames = [e for e in colnames if e not in {'hhs_region', 'dt', 'location', 'first_doses_12_14', 'second_doses_shipment_12_14'}]
+        colnames = [e for e in colnames if e not in {'hhs_region', 'dt', 'location', 'first_doses_12_14', 'second_doses_shipment_12_14','second_dose_shipment_week_of_01_18','doses_distribution_week_of_01_18'}]
+
+        print(colnames)
 
         out = data.melt(
             id_vars=["dt", "location"], value_vars=colnames
@@ -78,7 +78,7 @@ class CDCVaccineBase(FederalDashboard):
         #remove date from col to make CMU variable 
         out.loc[~out['variable'].str.contains('total'), 'variable'] = out['variable'].str.strip().str[:-6]
         #rename slightly not matching colnames
-        out.loc[out['variable']=='second_dose_shipment', 'variable'] = 'second_dose_shipment_week_of'
+        out.loc[out['variable'] == 'second_dose_shipment', 'variable'] = 'second_dose_shipment_week_of'
 
         # print("new variables: ")
         # for val in out['variable'].unique():
@@ -87,16 +87,18 @@ class CDCVaccineBase(FederalDashboard):
         #locate rows where entry is not total, take the last 5 chars
         #mark rows with total as keep (to keep old time)
         out.loc[out['dt_str'].str.contains('total'), 'dt_str'] = 'keep'
-        # out.loc[~out['dt_str'].str.contains('total'), 'dt_str'] = pd.to_datetime(out['dt_str'].str.strip().str[-5:], format="%m_%d")
         out.loc[~out['dt_str'].str.contains('total'), 'dt_str'] = out['dt_str'].str.strip().str[-5:]
-        # out.loc[out.dt_str != 'keep', 'dt_str'] = out['dt_str'] + " test modify"
-        # out.loc[out.dt_str != 'keep', 'dt_str'] = pd.to_datetime(out['dt_str'].str.strip().str[-5:], format="%m_%d")
+        out['dt_str'] = pd.to_datetime(out.dt_str[out['dt_str'] != 'keep'], format="%m_%d")
 
-        #need to add proper year depending on month is 12 or 1 > 
-            ## what happens if it lasts until next year?
+        out['dt_str'] = out['dt_str'].mask(out['dt_str'].dt.month == 12, 
+                             out['dt_str'] + pd.offsets.DateOffset(year=2020))
+        out['dt_str'] = out['dt_str'].mask(out['dt_str'].dt.month == 1, 
+                             out['dt_str'] + pd.offsets.DateOffset(year=2021))
+
+        print(out)
 
         #replace dt for non total rows with dt_str data
-        out.loc[out.dt_str != 'keep', 'dt'] = out['dt_str']
+        out.loc[out["dt_str"].notnull(), 'dt'] = out['dt_str']
         
         # print('dates: ')
         # for d in out['dt'].unique():
@@ -127,44 +129,6 @@ class CDCVaccineBase(FederalDashboard):
 
         return out.loc[:, cols_to_keep]
 
-
-class CDCVaccineTotal(CDCVaccineBase):
-    query_type = "total"
-    source = "https://covid.cdc.gov/covid-data-tracker/#vaccinations"
-    crename = {
-        "Doses_Distributed": CMU(
-            category="vaccine_distributed", measurement="cumulative", unit="doses"
-        ),
-        "Doses_Administered": CMU(
-            category="vaccine_initiated", measurement="cumulative", unit="people"
-        ),
-        "Administered_Moderna": CMU(
-            category="moderna_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "Administered_Pfizer": CMU(
-            category="pfizer_vaccine_initiated", measurement="cumulative", unit="people"
-        ),
-    }
-
-    # override base method
-    def normalize(self, data):
-        data = data.json()
-        df = pd.json_normalize(data["vaccination_data"]).rename(
-            columns={"Date": "dt", "LongName": "location"}
-        )
-
-        # fix column name formatting to match us library convention
-        fix_names = {"New York State": "New York"}
-        df["location"] = df["location"].map(fix_names).fillna(df["location"])
-        df["loc_name"] = df["location"]  # for debugging/viewing
-
-        # replace location names w/ fips codes, and keep only locations that have a fips code
-        df["location"] = df["location"].map(us.states.mapping("name", "fips"))
-        df = df.dropna().reset_index(drop=True)
-        # and melt + return
-        return self._reshape(df)
 
 
 class CDCVaccinePfizer(CDCVaccineBase):

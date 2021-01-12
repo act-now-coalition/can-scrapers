@@ -1,6 +1,5 @@
 from can_tools.scrapers.official import (
     CDCCovidDataTracker,
-    CDCVaccineTotal,
     CDCVaccineModerna,
     CDCVaccinePfizer,
 )
@@ -17,15 +16,13 @@ if prompt == "moderna":
     scraper = CDCVaccineModerna()
 elif prompt == "pfizer":
     scraper = CDCVaccinePfizer()
-elif prompt == "total":
-    scraper = CDCVaccineTotal()
 else:
     print("type correctly lol. bye")
     quit()
 
 df = scraper.normalize(scraper.fetch())
 print(df)
-# for val in df["category"].unique():
+# for val in df["location"].unique():
 #     print(val)
 
 if sys.argv[len(sys.argv) - 1] == "csv":

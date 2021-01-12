@@ -5,7 +5,6 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CDCCovidDataTracker,
     CDCVaccineModerna,
     CDCVaccinePfizer,
-    CDCVaccineTotal,
     DCCases,
     DCDeaths,
     DCGeneral,
