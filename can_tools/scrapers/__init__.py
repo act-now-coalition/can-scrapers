@@ -3,8 +3,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
     CDCCovidDataTracker,
-    CDCVaccineModerna,
-    CDCVaccinePfizer,
+    CDCStateVaccine,
     DCCases,
     DCDeaths,
     DCGeneral,
@@ -26,6 +25,11 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TexasTests,
     WisconsinCounties,
     WisconsinState,
+)
+
+from can_tools.scrapers.ctp import (
+    CovidTrackingProject,
+    CovidTrackingProjectDemographics,
 )
 
 from can_tools.scrapers import util
