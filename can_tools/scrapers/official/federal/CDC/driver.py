@@ -22,6 +22,8 @@ else:
 
 df = scraper.normalize(scraper.fetch())
 print(df)
+# df = df.drop(columns={"value", "location"})
+# print(df.drop_duplicates())
 # for val in df["location"].unique():
 #     print(val)
 
