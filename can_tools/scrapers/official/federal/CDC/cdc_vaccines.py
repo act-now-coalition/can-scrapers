@@ -131,7 +131,7 @@ class CDCVaccinePfizer(FederalDashboard):
             out["dt_str"] + pd.offsets.DateOffset(year=2021),
         )
 
-        # replace dt with non null rows dt_str data (replace weekly allocation rows, leave total rows)
+        # replace dt with non null dt_str data (replace weekly allocation rows, leave total rows)
         out.loc[out["dt_str"].notnull(), "dt"] = out["dt_str"].dt.date
 
         out = self.extract_CMU(out, self.crename)

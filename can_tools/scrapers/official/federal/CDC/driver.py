@@ -6,6 +6,7 @@ from can_tools.scrapers.official import (
 import pandas as pd
 import csv
 import sys
+import tabulate
 
 if len(sys.argv) == 1:
     print("no args supplied. bye")
@@ -22,8 +23,8 @@ else:
 
 df = scraper.normalize(scraper.fetch())
 print(df)
-# df = df.drop(columns={"value", "location"})
-# print(df.drop_duplicates())
+# df = df.drop(columns={"value", "location","age","sex","race","ethnicity","dt","vintage"})
+# print(df.drop_duplicates().to_markdown(index=False))
 # for val in df["location"].unique():
 #     print(val)
 
