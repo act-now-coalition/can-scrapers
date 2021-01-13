@@ -27,4 +27,9 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WisconsinState,
 )
 
+from can_tools.scrapers.ctp import (
+    CovidTrackingProject,
+    CovidTrackingProjectDemographics,
+)
+
 from can_tools.scrapers import util
