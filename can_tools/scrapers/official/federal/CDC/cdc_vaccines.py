@@ -120,7 +120,7 @@ class CDCVaccinePfizer(FederalDashboard):
         out["dt_str"] = pd.to_datetime(
             out.dt_str[out["dt_str"] != "keep"], format="%m_%d"
         )
-        #"keeps" get transformed to NaT's
+        # "keeps" get transformed to NaT's
 
         # add year to dt_str depending on the month (if december, 2020, if not december, 2021)
         out["dt_str"] = out["dt_str"].mask(
