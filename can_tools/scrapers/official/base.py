@@ -2,6 +2,7 @@ import uuid
 from abc import ABC
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from numpy.core.numeric import full
 
 import pandas as pd
 import requests
@@ -470,7 +471,8 @@ class StateQueryAPI(StateDashboard, ABC):
 class TableauDashboard(StateDashboard, ABC):
     baseurl: str
     viewPath: str
-    # viewpaths: List
+    filterFunctionName: str
+    filterFunctionValue: str
 
     def __init__(
         self,
@@ -479,26 +481,34 @@ class TableauDashboard(StateDashboard, ABC):
     ):
         super().__init__(execution_dt)
 
-    def _scrape_view(self, viewPath):
+    def _scrape_view(self):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
         req = requests.Session()
-        fullURL = self.baseurl + "/views/" + viewPath
-        reqg = req.get(
-            fullURL,
-            params={
-                ":language": "en",
-                ":display_count": "y",
-                ":origin": "viz_share_link",
-                ":embed": "y",
-                ":showVizHome": "n",
-                ":jsdebug": "y",
-                ":apiID": "host4",
-                "#navType": "1",
-                "navSrc": "Parse",
-            },
-        )
+        fullURL = self.baseurl + "/views/" + self.viewPath
+        if self.filterFunctionName is not None:
+            params = ':language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&'
+            params += self.filterFunctionName + '=' + self.filterFunctionValue
+            reqg = req.get(
+                fullURL,
+                params=params
+            )
+        else:
+            reqg = req.get(
+                fullURL,
+                params={
+                    ":language": "en",
+                    ":display_count": "y",
+                    ":origin": "viz_share_link",
+                    ":embed": "y",
+                    ":showVizHome": "n",
+                    ":jsdebug": "y",
+                    ":apiID": "host4",
+                    "#navType": "1",
+                    "navSrc": "Parse",
+                },
+            )
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
@@ -508,6 +518,7 @@ class TableauDashboard(StateDashboard, ABC):
             dataUrl,
             data={
                 "sheet_id": tableauData["sheetId"],
+                "showParams": tableauData["showParams"]
             },
         )
         # Parse the response.
