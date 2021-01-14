@@ -36,9 +36,6 @@ class CDCStateVaccine(FederalDashboard):
         df.loc[:, "location"] = df["Location"].map(
             lambda x: int(us.states.lookup(x).fips)
         )
-        df.loc[:, "Administered_Dose2"] = df.eval(
-            "Doses_Administered - Administered_Dose1"
-        )
 
         crename = {
             "Doses_Distributed": CMU(
@@ -51,10 +48,10 @@ class CDCStateVaccine(FederalDashboard):
                 measurement="cumulative",
                 unit="people",
             ),
-            "Administered_Dose2": CMU(
-                category="total_vaccine_completed",
+            "Doses_Administered": CMU(
+                category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="people",
+                unit="doses",
             ),
         }
 
