@@ -331,7 +331,9 @@ class TennesseeAgeByCounty(TennesseeBase):
         df = pd.read_excel(data, parse_dates=["DATE"])
 
         # Rename columns
-        df = df.rename(columns={"DATE": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"})
+        df = df.rename(
+            columns={"DATE": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"}
+        )
 
         # Drop the information that we won't be keeping track of
         age_not_keep = ["Pending"]
@@ -341,7 +343,7 @@ class TennesseeAgeByCounty(TennesseeBase):
 
         # Fix incorrectly spelled county names
         df.loc[df["location_name"] == "Dekalb", "location_name"] = "DeKalb"
-        
+
         # Translate age column
         self.translate_age(df)
 
@@ -353,10 +355,14 @@ class TennesseeAgeByCounty(TennesseeBase):
         }
 
         # Move things into long format
-        df = df.melt(id_vars=["dt", "location_name", "age"], value_vars=crename.keys()).dropna()
+        df = df.melt(
+            id_vars=["dt", "location_name", "age"], value_vars=crename.keys()
+        ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(df, crename, ["category", "measurement", "unit", "race", "sex"])
+        df = self.extract_CMU(
+            df, crename, ["category", "measurement", "unit", "race", "sex"]
+        )
 
         # Determine what columns to keep
         cols_to_keep = [
