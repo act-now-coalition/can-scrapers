@@ -303,3 +303,85 @@ class TennesseeAge(TennesseeBase):
     def validate(self, df, df_hist) -> bool:
         "The best is the enemy of the good. -Voltaire"
         return True
+
+
+class TennesseeAgeByCounty(TennesseeBase):
+    """
+    Fetch county level Covid-19 data by age from official state of Tennessee spreadsheet
+    """
+
+    source = (
+        "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
+        "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
+    )
+    has_location = False
+    location_type = "county"
+
+    def fetch(self) -> requests.Response:
+        # Set url of downloadable dataset
+        url = (
+            "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
+            "novel-coronavirus/datasets/Public-Dataset-Daily-County-Age-Group.XLSX"
+        )
+        request = self.session.get(url)
+        return request.content
+
+    def normalize(self, data) -> pd.DataFrame:
+        # Read data into data frame
+        df = pd.read_excel(data, parse_dates=["DATE"])
+
+        # Rename columns
+        df = df.rename(columns={"DATE": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"})
+
+        # Drop the information that we won't be keeping track of
+        age_not_keep = ["Pending"]
+        df = df.loc[~df["age"].isin(age_not_keep), :]
+        loc_not_keep = ["Out of State", "Pending"]
+        df = df.loc[~df["location_name"].isin(loc_not_keep), :]
+
+        # Fix incorrectly spelled county names
+        df.loc[df["location_name"] == "Dekalb", "location_name"] = "DeKalb"
+        
+        # Translate age column
+        self.translate_age(df)
+
+        # Create dictionary for columns to map
+        crename = {
+            "CASE_COUNT": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
+        }
+
+        # Move things into long format
+        df = df.melt(id_vars=["dt", "location_name", "age"], value_vars=crename.keys()).dropna()
+
+        # Determine the category of each observation
+        df = self.extract_CMU(df, crename, ["category", "measurement", "unit", "race", "sex"])
+
+        # Determine what columns to keep
+        cols_to_keep = [
+            "dt",
+            "location_name",
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "sex",
+            "value",
+        ]
+
+        # Drop extraneous columns
+        out = df.loc[:, cols_to_keep]
+
+        # Convert value columns
+        out["value"] = out["value"].astype(int)
+
+        # Add rows that don't change
+        out["vintage"] = self._retrieve_vintage()
+
+        return out
+
+    def validate(self, df, df_hist) -> bool:
+        "Quality means doing it right even when no one is looking. -Henry Ford"
+        return True
