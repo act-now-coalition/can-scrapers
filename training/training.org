@@ -162,8 +162,8 @@ The foreign key relationships are
   US states and counties this includes the US FIPS code
 - The =meta.covid_variables= table contains information on the variable, its
   units, and form of measurement. We'll talk through this one in more detail
-- The =meta.covid_demographics= contains information on the age, rage, and sex
-  for individuals represented in the data observations.
+- The =meta.covid_demographics= contains information on the age, race, ethnicity, 
+  and sex for individuals represented in the data observations.
 - =data.covid_providers= helps us keep track where this data comes from. We'll
   look at this one also...
 

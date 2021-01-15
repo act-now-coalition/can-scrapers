@@ -96,7 +96,12 @@ def make_put_op(cls, task_id="put") -> PythonOperator:
         except Exception as e:
             raise e
 
-    op = PythonOperator(python_callable=inner, task_id=task_id, provide_context=True)
+    op = PythonOperator(
+        python_callable=inner,
+        task_id=task_id,
+        provide_context=True,
+        pool="put_op_pool",
+    )
     return op
 
 
@@ -121,7 +126,7 @@ def default_dag_kw(dag_id, default_args=dict(), **kw):
         dag_id=dag_id,
         default_args=_make_default_args(**default_args),
         schedule_interval="30 9 * * *",
-        max_active_runs=4,
+        max_active_runs=2,
         catchup=False,
     )
     out.update(kw)

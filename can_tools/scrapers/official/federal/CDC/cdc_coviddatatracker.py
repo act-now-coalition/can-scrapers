@@ -2,9 +2,8 @@ import random
 import requests
 
 import pandas as pd
-import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import CMU, ALL_STATES_PLUS_DC
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -27,10 +26,10 @@ class CDCCovidDataTracker(FederalDashboard):
             # When testing, choos random 3 states
             urls = map(
                 lambda x: fetcher_url.format(x.abbr.lower()),
-                random.sample(us.STATES, 3),
+                random.sample(ALL_STATES_PLUS_DC, 3),
             )
         else:
-            urls = map(lambda x: fetcher_url.format(x.abbr.lower()), us.STATES)
+            urls = map(lambda x: fetcher_url.format(x.abbr.lower()), ALL_STATES_PLUS_DC)
         responses = list(map(requests.get, urls))
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
@@ -86,6 +85,7 @@ class CDCCovidDataTracker(FederalDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]

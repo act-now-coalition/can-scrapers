@@ -4,18 +4,37 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
+from can_tools.scrapers.util import requests_retry_session
 
 
-class TennesseeState(StateDashboard):
+class TennesseeBase(StateDashboard):
+    state_fips = int(us.states.lookup("Tennessee").fips)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = requests_retry_session()
+
+    def translate_age(self, df: pd.DataFrame):
+        df.loc[df["age"] == "0-10 years", "age"] = "0-10"
+        df.loc[df["age"] == "11-20 years", "age"] = "11-20"
+        df.loc[df["age"] == "21-30 years", "age"] = "21-30"
+        df.loc[df["age"] == "31-40 years", "age"] = "31-40"
+        df.loc[df["age"] == "41-50 years", "age"] = "41-50"
+        df.loc[df["age"] == "51-60 years", "age"] = "51-60"
+        df.loc[df["age"] == "61-70 years", "age"] = "61-70"
+        df.loc[df["age"] == "71-80 years", "age"] = "71-80"
+        df.loc[df["age"] == "81+ years", "age"] = "81_plus"
+
+
+class TennesseeState(TennesseeBase):
     """
-    Fetch state level covid data from official state of Tennessee spreadsheet
+    Fetch state level Covid-19 data from official state of Tennessee spreadsheet
     """
 
     source = (
         "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
         "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
     )
-    state_fips = int(us.states.lookup("Tennessee").fips)
     has_location = True
     location_type = "state"
 
@@ -25,7 +44,7 @@ class TennesseeState(StateDashboard):
             "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
             "novel-coronavirus/datasets/Public-Dataset-Daily-Case-Info.XLSX"
         )
-        request = requests.get(url)
+        request = self.session.get(url)
         return request.content
 
     def normalize(self, data) -> pd.DataFrame:
@@ -48,17 +67,17 @@ class TennesseeState(StateDashboard):
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEG_TESTS": CMU(
                 category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "TOTAL_TESTS": CMU(
                 category="pcr_tests_total",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
         }
 
@@ -76,6 +95,7 @@ class TennesseeState(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -99,16 +119,15 @@ class TennesseeState(StateDashboard):
         return True
 
 
-class TennesseeCounty(StateDashboard):
+class TennesseeCounty(TennesseeBase):
     """
-    Fetch county level covid data from official state of Tennessee spreadsheet
+    Fetch county level Covid-19 data from official state of Tennessee spreadsheet
     """
 
     source = (
         "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
         "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
     )
-    state_fips = int(us.states.lookup("Tennessee").fips)
     has_location = False
     location_type = "county"
 
@@ -118,7 +137,7 @@ class TennesseeCounty(StateDashboard):
             "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
             "novel-coronavirus/datasets/Public-Dataset-County-New.XLSX"
         )
-        request = requests.get(url)
+        request = self.session.get(url)
         return request.content
 
     def normalize(self, data) -> pd.DataFrame:
@@ -137,17 +156,17 @@ class TennesseeCounty(StateDashboard):
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEG_TESTS": CMU(
                 category="pcr_tests_negative",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "TOTAL_TESTS": CMU(
                 category="pcr_tests_total",
                 measurement="cumulative",
-                unit="test_encounters",
+                unit="specimens",
             ),
             "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
             "TOTAL_DEATHS": CMU(
@@ -180,6 +199,7 @@ class TennesseeCounty(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -203,5 +223,72 @@ class TennesseeCounty(StateDashboard):
         return out
 
     def validate(self, df, df_hist) -> bool:
-        "The best developers write test cases first..."
+        "Striving to better, oft we mar what's well. -Shakespeare"
+        return True
+
+
+class TennesseeAge(TennesseeBase):
+    """
+    Fetch state level Covid-19 data by age from official state of Tennessee spreadsheet
+    """
+
+    source = (
+        "https://www.tn.gov/content/tn/health/cedep/ncov/data.html"
+        "https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html"
+    )
+    has_location = True
+    location_type = "state"
+
+    def fetch(self) -> requests.Response:
+        # Set url of downloadable dataset
+        url = (
+            "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
+            "novel-coronavirus/datasets/Public-Dataset-Age.XLSX"
+        )
+        request = self.session.get(url)
+        return request.content
+
+    def normalize(self, data) -> pd.DataFrame:
+        # Read data into data frame
+        df = pd.read_excel(data, parse_dates=["DATE"])
+
+        # Rename columns
+        df = df.rename(columns={"DATE": "dt", "AGE_RANGE": "age"})
+
+        # Translate age column
+        self.translate_age(df)
+
+        # Create dictionary for columns to map
+        crename = {
+            "AR_CASECOUNT": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
+            "AR_TOTALDEATHS": CMU(
+                category="deaths", measurement="cumulative", unit="people"
+            ),
+        }
+
+        # Move things into long format
+        df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
+
+        # Determine the category of each observation
+        df = self.extract_CMU(
+            df,
+            crename,
+            columns=["category", "measurement", "unit", "race", "ethnicity", "sex"],
+        )
+
+        out = df.query("age != 'Pending'").drop(["variable"], axis=1)
+
+        # Convert value columns
+        out["value"] = out["value"].astype(int)
+
+        # Add rows that don't change
+        out["location"] = self.state_fips
+        out["vintage"] = self._retrieve_vintage()
+
+        return out
+
+    def validate(self, df, df_hist) -> bool:
+        "The best is the enemy of the good. -Voltaire"
         return True

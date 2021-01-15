@@ -69,6 +69,7 @@ class Florida(ArcGIS):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
