@@ -95,6 +95,7 @@ class California(TableauDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
             "vintage",
