@@ -186,3 +186,4 @@ pfizer_vaccine_first_dose_allocated,cumulative,doses
 pfizer_vaccine_second_dose_allocated,cumulative,doses
 pfizer_vaccine_first_dose_allocated,new_7_day,doses
 pfizer_vaccine_second_dose_allocated,new_7_day,doses
+total_vaccine_doses_administered,cumulative,doses
