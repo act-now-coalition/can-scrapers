@@ -80,7 +80,7 @@ class CDCVaccinePfizer(FederalDashboard):
         Accepts
         -------
             data: pandas.Dataframe()
-        Returns: 
+        Returns:
             pandas.Dataframe()
         """
         # use these columns for transformation to long format (replaces crename.keys())
@@ -94,18 +94,19 @@ class CDCVaccinePfizer(FederalDashboard):
                 for weekly entries: extract dates from column headers ('variable' column)
                 for 'total' entries: use when dataset last updated as date 
         """
-        #set date column as string version of correct date (see above)
+        # set date column as string version of correct date (see above)
         out["dt"] = out["variable"]
         out.loc[out["variable"].str.contains("total"), "dt"] = self.last_updated
         out.loc[~out["variable"].str.contains("total"), "dt"] = (
             out["dt"].str.strip().str[-5:]
         )
 
-        #convert both string formats to date -- uses temporary column that's later dropped
-        out['tmp'] = pd.to_datetime(out['dt'], format='%m_%d', errors='coerce')
-        mask = out['tmp'].isnull()
-        out.loc[mask, 'tmp'] = pd.to_datetime(out[mask]['dt'], format='%a, %d %b %Y %H:%M:%S GMT',
-                                             errors='coerce')
+        # convert both string formats to date -- uses temporary column that's later dropped
+        out["tmp"] = pd.to_datetime(out["dt"], format="%m_%d", errors="coerce")
+        mask = out["tmp"].isnull()
+        out.loc[mask, "tmp"] = pd.to_datetime(
+            out[mask]["dt"], format="%a, %d %b %Y %H:%M:%S GMT", errors="coerce"
+        )
         out["dt"] = out["tmp"]
         out = out.drop(columns={"tmp"})
 
@@ -118,7 +119,7 @@ class CDCVaccinePfizer(FederalDashboard):
             (out["dt"].dt.month != 12) & (out["dt"].dt.year == 1900),
             out["dt"] + pd.DateOffset(years=121),
         )
-        out['dt'] = out['dt'].dt.date
+        out["dt"] = out["dt"].dt.date
 
         """
             working with variable/mapping:
@@ -147,8 +148,6 @@ class CDCVaccinePfizer(FederalDashboard):
         out.loc[
             out["variable"].isin(fix_first_doses), "variable"
         ] = "doses_allocated_week_of"
-        print(out)
-
 
         # replace variable column with specified CMU paring, add vintage, convert value column to int
         out = self.extract_CMU(out, self.crename)
