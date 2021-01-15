@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import CMU, ALL_STATES_PLUS_DC
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -31,7 +31,7 @@ class CDCStateVaccine(FederalDashboard):
         df["dt"] = pd.to_datetime(df["Date"])
 
         # Only keep states and set fips codes
-        state_abbr_list = [x.abbr for x in us.STATES]
+        state_abbr_list = [x.abbr for x in ALL_STATES_PLUS_DC]
         df = df.loc[df["Location"].isin(state_abbr_list), :]
         df.loc[:, "location"] = df["Location"].map(
             lambda x: int(us.states.lookup(x).fips)
@@ -43,20 +43,15 @@ class CDCStateVaccine(FederalDashboard):
                 measurement="cumulative",
                 unit="doses",
             ),
-            "Doses_Administered": CMU(
+            "Administered_Dose1": CMU(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Administered_Moderna": CMU(
-                category="moderna_vaccine_initiated",
+            "Doses_Administered": CMU(
+                category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="people",
-            ),
-            "Administered_Pfizer": CMU(
-                category="pfizer_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
+                unit="doses",
             ),
         }
 

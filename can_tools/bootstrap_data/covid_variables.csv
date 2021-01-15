@@ -178,3 +178,4 @@ total_vaccine_allocated,cumulative,doses
 total_vaccine_distributed,cumulative,doses
 total_vaccine_initiated,cumulative,people
 total_vaccine_completed,cumulative,people
+total_vaccine_doses_administered,cumulative,doses
