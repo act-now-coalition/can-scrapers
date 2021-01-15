@@ -5,10 +5,15 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 
 from typing import Any
+import us
 
 
 class California(TableauDashboard):
 
+    source = "https://covid19.ca.gov/state-dashboard/"
+    location_type = "county"
+    state_fips = int(us.states.lookup("California").fips)
+    has_location = False
     baseurl = "https://public.tableau.com"
     viewPath = "StateDashboard_16008816705240/6_1CountyTesting"
     filterFunctionName = "[federated.1vtltxr1fwdaou18i20yk06cu6zn].[none:COUNTY:nk]"
@@ -74,13 +79,16 @@ class California(TableauDashboard):
         "Yuba",
     ]
 
-    def fetch(self) -> Any:
+    def fetch(self, test=False) -> Any:
         df = DataFrame()
         for county in self.counties:
             currentCounty = DataFrame()
             currentCounty = self._get_testing(county)
             currentCounty["location_name"] = county
             df = pd.concat([df, currentCounty], axis=0).sort_values(["dt"])
+            if test and county is "Contra Costa":
+                # If test, only use first 7 counties
+                break
         return df
 
     def normalize(self, data) -> pd.DataFrame:
