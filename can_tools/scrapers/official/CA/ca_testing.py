@@ -6,6 +6,7 @@ from can_tools.scrapers.official.base import TableauDashboard
 
 from typing import Any
 
+
 class California(TableauDashboard):
 
     baseurl = "https://public.tableau.com"
