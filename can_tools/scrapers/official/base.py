@@ -469,15 +469,34 @@ class StateQueryAPI(StateDashboard, ABC):
 
 
 class TableauDashboard(StateDashboard, ABC):
+    """
+    Fetch data from a Tableau dashboard
+
+    Must define class variables:
+
+    * `baseurl`
+    * `viewPath`
+
+    in order to use this class.
+
+    If the dashboard requires a filter, define:
+
+    * `filterFunctionName`
+    * `filterFunctionValue`
+
+    to drill down on values like counties, dates, etc.
+
+    """
+
     baseurl: str
     viewPath: str
     filterFunctionName: str
     filterFunctionValue: str
 
     def __init__(
-        self,
+        # self,
         execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
-        params: Optional[Dict[str, Union[int, str]]] = None,
+        # params: Optional[Dict[str, Union[int, str]]] = None,
     ):
         super().__init__(execution_dt)
 
