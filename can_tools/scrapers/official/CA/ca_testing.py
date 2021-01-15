@@ -83,6 +83,7 @@ class California(TableauDashboard):
         return df
 
     def normalize(self, data) -> pd.DataFrame:
+        data.loc[:, "value"] = pd.to_numeric(data["value"])
         data["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
@@ -95,6 +96,7 @@ class California(TableauDashboard):
             "race",
             "sex",
             "value",
+            "vintage",
         ]
 
         return data.loc[:, cols_to_keep]

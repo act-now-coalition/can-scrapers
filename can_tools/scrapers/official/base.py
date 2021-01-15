@@ -494,9 +494,8 @@ class TableauDashboard(StateDashboard, ABC):
     filterFunctionValue: str
 
     def __init__(
-        # self,
+        self,
         execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
-        # params: Optional[Dict[str, Union[int, str]]] = None,
     ):
         super().__init__(execution_dt)
 
