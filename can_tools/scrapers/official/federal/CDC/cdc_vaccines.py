@@ -19,6 +19,7 @@ class CDCVaccinePfizer(FederalDashboard):
     location_type = "state"
     provider = "cdc"
     query_type = "pfizer"
+    last_updated: str
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccine-Distribution-Allocations-by-Juris/saz5-9hgg"
     crename = {
         "total_pfizer_allocation_first_dose_shipments": CMU(
@@ -56,16 +57,13 @@ class CDCVaccinePfizer(FederalDashboard):
 
     def normalize(self, data):
         raw = data.json()
+        self.last_updated = data.headers["Last-Modified"]
         df = pd.json_normalize(raw).rename(columns={"jurisdiction": "location"})
 
         # fix column names to match us library convention & remove extra chars
         df["location"] = df["location"].str.replace("*", "").str.replace(" ~", "")
         fix_names = {"U.S. Virgin Islands": "Virgin Islands"}
         df["location"] = df["location"].map(fix_names).fillna(df["location"])
-
-        # use when dataset was last updated as date (this is overriden later for the weekly allocations--but is kept for the total allocations)
-        url_time = data.headers["Last-Modified"]
-        df["dt"] = pd.to_datetime(url_time, format="%a, %d %b %Y %H:%M:%S GMT").date()
 
         # replace location names w/ fips codes; keep only locations that have a fips code
         df["location"] = df["location"].map(us.states.mapping("name", "fips"))
@@ -78,23 +76,61 @@ class CDCVaccinePfizer(FederalDashboard):
         """
         melt data into format for put() function ()
         takes dates embedded in weekly allocation column headers and uses them as dates in the dt column.
+
+        Accepts
+        -------
+            data: pandas.Dataframe()
+        Returns: 
+            pandas.Dataframe()
         """
-        # use these columns for melt (replaces crename.keys())
-        colnames = list(data.columns)
+        # use these columns for transformation to long format (replaces crename.keys())
         # removes cols we dont want to melt with
-        colnames = [e for e in colnames if e not in {"hhs_region", "dt", "location"}]
+        colnames = list(data.columns)
+        colnames = [i for i in colnames if i not in {"hhs_region", "location"}]
+        out = data.melt(id_vars=["location"], value_vars=colnames).dropna()
 
-        out = data.melt(id_vars=["dt", "location"], value_vars=colnames).dropna()
+        """
+            working with the dates:
+                for weekly entries: extract dates from column headers ('variable' column)
+                for 'total' entries: use when dataset last updated as date 
+        """
+        #set date column as string version of correct date (see above)
+        out["dt"] = out["variable"]
+        out.loc[out["variable"].str.contains("total"), "dt"] = self.last_updated
+        out.loc[~out["variable"].str.contains("total"), "dt"] = (
+            out["dt"].str.strip().str[-5:]
+        )
 
-        # temporary column--format values as a date, then replace dt with these vals
-        out["dt_str"] = out["variable"]
+        #convert both string formats to date -- uses temporary column that's later dropped
+        out['tmp'] = pd.to_datetime(out['dt'], format='%m_%d', errors='coerce')
+        mask = out['tmp'].isnull()
+        out.loc[mask, 'tmp'] = pd.to_datetime(out[mask]['dt'], format='%a, %d %b %Y %H:%M:%S GMT',
+                                             errors='coerce')
+        out["dt"] = out["tmp"]
+        out = out.drop(columns={"tmp"})
+
+        # update to current year if year is 1900 (set by default). If december -> 2020, if not december -> 2021
+        out["dt"] = out["dt"].mask(
+            (out["dt"].dt.month == 12) & (out["dt"].dt.year == 1900),
+            out["dt"] + pd.DateOffset(years=120),
+        )
+        out["dt"] = out["dt"].mask(
+            (out["dt"].dt.month != 12) & (out["dt"].dt.year == 1900),
+            out["dt"] + pd.DateOffset(years=121),
+        )
+        out['dt'] = out['dt'].dt.date
+
+        """
+            working with variable/mapping:
+                standardize variable names (remove date endings, convert to 'standard' string if necessary)
+                extract CMU parings
+                add vintage, convert dtypes if needed
+        """
         # remove date from column names to make usuable as a CMU variable (leave "total" rows as is)
         out.loc[~out["variable"].str.contains("total"), "variable"] = (
             out["variable"].str.strip().str[:-6]
         )
 
-        # rename non matching colnames
-        # the weekly column names change a lot — i've chosen the standard based on which was the most frequently used
         fix_first_doses = [
             "first_doses",
             "doses_distribution_week_of",
@@ -111,30 +147,10 @@ class CDCVaccinePfizer(FederalDashboard):
         out.loc[
             out["variable"].isin(fix_first_doses), "variable"
         ] = "doses_allocated_week_of"
+        print(out)
 
-        # take the date from in column name and transform into date -- leave 'total' entries unchanged (mark as keep for keep original date)
-        out.loc[out["dt_str"].str.contains("total"), "dt_str"] = "keep"
-        out.loc[~out["dt_str"].str.contains("total"), "dt_str"] = (
-            out["dt_str"].str.strip().str[-5:]
-        )
-        out["dt_str"] = pd.to_datetime(
-            out.dt_str[out["dt_str"] != "keep"], format="%m_%d"
-        )
-        # "keeps" get transformed to NaT's
 
-        # add year to dt_str depending on the month (if december, 2020, if not december, 2021)
-        out["dt_str"] = out["dt_str"].mask(
-            out["dt_str"].dt.month == 12,
-            out["dt_str"] + pd.DateOffset(years=120),
-        )
-        out["dt_str"] = out["dt_str"].mask(
-            out["dt_str"].dt.month != 12,
-            out["dt_str"] + pd.DateOffset(years=121),
-        )
-
-        # replace dt with non null dt_str data (replace weekly allocation rows, leave total rows)
-        out.loc[out["dt_str"].notnull(), "dt"] = out["dt_str"].dt.date
-
+        # replace variable column with specified CMU paring, add vintage, convert value column to int
         out = self.extract_CMU(out, self.crename)
         out["vintage"] = self._retrieve_vintage()
         if out["value"].dtype == object:
