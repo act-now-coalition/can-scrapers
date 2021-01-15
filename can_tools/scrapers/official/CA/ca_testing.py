@@ -4,86 +4,86 @@ from pandas.core.frame import DataFrame
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 
+from typing import Any
 
 class California(TableauDashboard):
 
     baseurl = "https://public.tableau.com"
     viewPath = "StateDashboard_16008816705240/6_1CountyTesting"
-    filterFunctionName = '[federated.1vtltxr1fwdaou18i20yk06cu6zn].[none:COUNTY:nk]'
+    filterFunctionName = "[federated.1vtltxr1fwdaou18i20yk06cu6zn].[none:COUNTY:nk]"
 
     counties = [
-        'Alameda',
-        'Alpine',
-        'Amador',
-        'Butte',
-        'Calaveras',
-        'Colusa',
-        'Contra Costa',
-        'Del Norte',
-        'El Dorado',
-        'Fresno',
-        'Glenn',
-        'Humboldt',
-        'Imperial',
-        'Inyo',
-        'Kern',
-        'Kings',
-        'Lake',
-        'Lassen',
-        'Los Angeles',
-        'Madera',
-        'Marin',
-        'Mariposa',
-        'Mendocino',
-        'Merced',
-        'Modoc',
-        'Mono',
-        'Monterey',
-        'Napa',
-        'Nevada',
-        'Orange',
-        'Placer',
-        'Plumas',
-        'Riverside',
-        'Sacramento',
-        'San Benito',
-        'San Bernardino',
-        'San Diego',
-        'San Francisco',
-        'San Joaquin',
-        'San Luis Obispo',
-        'San Mateo',
-        'Santa Barbara',
-        'Santa Clara',
-        'Santa Cruz',
-        'Shasta',
-        'Sierra',
-        'Siskiyou',
-        'Solano',
-        'Sonoma',
-        'Stanislaus',
-        'Sutter',
-        'Tehama',
-        'Trinity',
-        'Tulare',
-        'Tuolumne',
-        'Ventura',
-        'Yolo',
-        'Yuba',
+        "Alameda",
+        "Alpine",
+        "Amador",
+        "Butte",
+        "Calaveras",
+        "Colusa",
+        "Contra Costa",
+        "Del Norte",
+        "El Dorado",
+        "Fresno",
+        "Glenn",
+        "Humboldt",
+        "Imperial",
+        "Inyo",
+        "Kern",
+        "Kings",
+        "Lake",
+        "Lassen",
+        "Los Angeles",
+        "Madera",
+        "Marin",
+        "Mariposa",
+        "Mendocino",
+        "Merced",
+        "Modoc",
+        "Mono",
+        "Monterey",
+        "Napa",
+        "Nevada",
+        "Orange",
+        "Placer",
+        "Plumas",
+        "Riverside",
+        "Sacramento",
+        "San Benito",
+        "San Bernardino",
+        "San Diego",
+        "San Francisco",
+        "San Joaquin",
+        "San Luis Obispo",
+        "San Mateo",
+        "Santa Barbara",
+        "Santa Clara",
+        "Santa Cruz",
+        "Shasta",
+        "Sierra",
+        "Siskiyou",
+        "Solano",
+        "Sonoma",
+        "Stanislaus",
+        "Sutter",
+        "Tehama",
+        "Trinity",
+        "Tulare",
+        "Tuolumne",
+        "Ventura",
+        "Yolo",
+        "Yuba",
     ]
 
-    def fetch(self):
-        return
-
-    def normalize(self):
+    def fetch(self) -> Any:
         df = DataFrame()
         for county in self.counties:
             currentCounty = DataFrame()
             currentCounty = self._get_testing(county)
             currentCounty["location_name"] = county
-            df = pd.concat([df,currentCounty], axis=0).sort_values(["dt"])          
+            df = pd.concat([df, currentCounty], axis=0).sort_values(["dt"])
+        return df
 
-        df["vintage"] = self._retrieve_vintage()
+    def normalize(self, data) -> pd.DataFrame:
+        data["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
             "dt",
@@ -97,11 +97,11 @@ class California(TableauDashboard):
             "value",
         ]
 
-        return df.loc[:,cols_to_keep]
+        return data.loc[:, cols_to_keep]
 
-    def _get_testing(self,county):
+    def _get_testing(self, county):
         self.filterFunctionValue = county
-        data = self._scrape_view()
+        data = self.get_tableau_view()
         df = data["6.3 County Test - Line (2)"]
         df["dt"] = pd.to_datetime(df["DAY(Test Date)-value"])
         crename = {

@@ -481,19 +481,16 @@ class TableauDashboard(StateDashboard, ABC):
     ):
         super().__init__(execution_dt)
 
-    def _scrape_view(self):
+    def get_tableau_view(self):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
         req = requests.Session()
         fullURL = self.baseurl + "/views/" + self.viewPath
         if self.filterFunctionName is not None:
-            params = ':language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&'
-            params += self.filterFunctionName + '=' + self.filterFunctionValue
-            reqg = req.get(
-                fullURL,
-                params=params
-            )
+            params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
+            params += self.filterFunctionName + "=" + self.filterFunctionValue
+            reqg = req.get(fullURL, params=params)
         else:
             reqg = req.get(
                 fullURL,
@@ -518,7 +515,7 @@ class TableauDashboard(StateDashboard, ABC):
             dataUrl,
             data={
                 "sheet_id": tableauData["sheetId"],
-                "showParams": tableauData["showParams"]
+                "showParams": tableauData["showParams"],
             },
         )
         # Parse the response.
