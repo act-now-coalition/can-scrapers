@@ -22,6 +22,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TennesseeCounty,
     TennesseeState,
     TexasCasesDeaths,
+    TexasVaccine,
+    TexasVaccineDemographics,
     TexasTests,
     WisconsinCounties,
     WisconsinState,
