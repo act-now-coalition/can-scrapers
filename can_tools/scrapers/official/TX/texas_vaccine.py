@@ -6,8 +6,7 @@ from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 # the crename keys became absurdly long so I store them in another file
-# if there's a way to 'find and replace' values inside the CMU objects, that would cut the length to 1/3 the current
-from .tx_vaccine_crenames import crename, crename_female, crename_male, crename_unknown
+from .tx_vaccine_crenames import crename_demographics, crename
 
 
 class TexasVaccine(StateDashboard):
@@ -66,9 +65,9 @@ class TexasVaccineDemographics(TexasVaccine):
         df_male = df.iloc[6:12, :]
         df_unknown = df.iloc[12:18, :]
 
-        df_female = self._reshape(df_female, crename_female)
-        df_male = self._reshape(df_male, crename_male)
-        df_unknown = self._reshape(df_unknown, crename_unknown)
+        df_female = self._reshape(df_female, "female")
+        df_male = self._reshape(df_male, "male")
+        df_unknown = self._reshape(df_unknown, "unknown")
 
         df = pd.DataFrame()
         return (
@@ -77,7 +76,7 @@ class TexasVaccineDemographics(TexasVaccine):
             .append(df_unknown, ignore_index=True)
         )
 
-    def _reshape(self, data, _map) -> pd.DataFrame:
+    def _reshape(self, data, sex) -> pd.DataFrame:
         # variables we want to track
         columns = [
             "Doses Administered",
@@ -94,7 +93,8 @@ class TexasVaccineDemographics(TexasVaccine):
         # Age Group is dropped before returning
         out["variable"] = out["variable"] + " " + out["Age Group"]
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_CMU(out, _map)
+        out = self.extract_CMU(out, crename_demographics)
+        out["sex"] = sex
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
