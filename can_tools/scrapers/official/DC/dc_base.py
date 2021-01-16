@@ -33,7 +33,7 @@ class DCBase(StateDashboard):
         """
 
         # get yesterday's date for finding most recent file
-        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=2)
+        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=1)
 
         # query DC coronavirus webpage
         res = requests.get(self.source)
@@ -61,8 +61,6 @@ class DCBase(StateDashboard):
             xl_src = "https://coronavirus.dc.gov" + xl_src
         else:
             raise ValueError("Could not parse download link")
-        if str(date.strftime("%B-%-d-%Y")) not in xl_src:
-            raise ValueError(f"Link does not contain specified date ({date})")
 
         # download file from selected link
         xl = requests.get(xl_src)
