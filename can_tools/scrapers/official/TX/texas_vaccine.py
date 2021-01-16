@@ -70,7 +70,8 @@ class TexasVaccineDemographics(TexasVaccine):
         df_male = self._reshape(df_male, crename_male)
         df_unknown = self._reshape(df_unknown, crename_unknown)
 
-        df = pd.DataFrame()
+        df = pd.concat([df_female, df_male, df_unknown], axis=0, ignore_index=True)
+        return df
         return (
             df.append(df_female, ignore_index=True)
             .append(df_male, ignore_index=True)
