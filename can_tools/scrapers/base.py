@@ -95,7 +95,7 @@ class DatasetBase(ABC):
 
         return out
 
-    def _retrieve_dtm1d(self, tz: str="US/Eastern") ->pd.Timestamp:
+    def _retrieve_dtm1d(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the datetime of one day ago in a specific timezone """
         out = pd.Timestamp.utcnow().tz_convert(tz).normalize().tz_localize(None)
 
