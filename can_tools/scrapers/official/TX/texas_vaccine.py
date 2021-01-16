@@ -5,7 +5,7 @@ import requests
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
-# the crename keys became absurdly long so I store them in another file
+# the crename keys became long so I store them in another file
 from .tx_vaccine_crenames import crename_demographics, crename
 
 
@@ -25,7 +25,8 @@ class TexasVaccine(StateDashboard):
     def normalize(self, data) -> pd.DataFrame:
         data = pd.ExcelFile(data.content)
         df = data.parse("By County").rename(columns={"County Name": "location_name"})
-        df["dt"] = self._retrieve_dt("US/Eastern") - pd.Timedelta(days=1)
+        df["dt"] = self._retrieve_dtm1d("US/Eastern")
+        # currenty ignores statewide data
         df = df[(df["location_name"] != "*Other") & (df["location_name"] != "Texas")]
 
         out = df.melt(
@@ -53,12 +54,13 @@ class TexasVaccine(StateDashboard):
 
 class TexasVaccineDemographics(TexasVaccine):
     location_type = "state"
+    has_location = True
 
     def normalize(self, data) -> pd.DataFrame:
         data = pd.ExcelFile(data.content)
         df = data.parse("Vaccinations by Gender, Age")
-        df["dt"] = self._retrieve_dt("US/Eastern") - pd.Timedelta(days=1)
-        df["location_name"] = "Texas"
+        df["dt"] = self._retrieve_dtm1d("US/Eastern")
+        df["location"] = self.state_fips
 
         # if the number of rows for each gender are changed this will break
         df_female = df.iloc[0:6, :]
@@ -70,11 +72,8 @@ class TexasVaccineDemographics(TexasVaccine):
         df_unknown = self._reshape(df_unknown, "unknown")
 
         df = pd.DataFrame()
-        return (
-            df.append(df_female, ignore_index=True)
-            .append(df_male, ignore_index=True)
-            .append(df_unknown, ignore_index=True)
-        )
+        df = pd.concat([df_female, df_male, df_unknown], axis=0, ignore_index=True)
+        return df
 
     def _reshape(self, data, sex) -> pd.DataFrame:
         # variables we want to track
@@ -86,7 +85,7 @@ class TexasVaccineDemographics(TexasVaccine):
 
         # use Age Group as an ID var to keep each age group distinct for each variable in columns
         out = data.melt(
-            id_vars=["dt", "location_name", "Age Group"], value_vars=columns
+            id_vars=["dt", "location", "Age Group"], value_vars=columns
         ).dropna()
 
         # then recombine so we can replace the variable with a CMU pair, while keeping the age buckets
@@ -100,7 +99,7 @@ class TexasVaccineDemographics(TexasVaccine):
         cols_to_keep = [
             "vintage",
             "dt",
-            "location_name",
+            "location",
             "category",
             "measurement",
             "unit",
