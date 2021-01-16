@@ -8,7 +8,7 @@ from typing import Any
 import us
 
 
-class California(TableauDashboard):
+class CaliforniaTesting(TableauDashboard):
 
     source = "https://covid19.ca.gov/state-dashboard/"
     location_type = "county"
