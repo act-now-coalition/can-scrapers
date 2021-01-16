@@ -81,12 +81,19 @@ class CaliforniaTesting(TableauDashboard):
 
     def fetch(self, test=False) -> Any:
         df = DataFrame()
-        for county in self.counties:
-            currentCounty = DataFrame()
-            currentCounty = self._get_testing(county)
-            currentCounty["location_name"] = county
-            df = pd.concat([df, currentCounty], axis=0).sort_values(["dt"])
-            if test and county is "Contra Costa":
+        for countyName in self.counties:
+            self.filterFunctionValue = countyName
+            countyData = self.get_tableau_view()
+            countyTestCounts = self._get_test_counts(countyData)
+            countyTestPositivity = self._get_test_positivity(countyData)
+            currentCounty = pd.concat(
+                [countyTestCounts, countyTestPositivity], axis=0
+            ).sort_values(["dt"])
+            currentCounty["location_name"] = countyName
+            df = pd.concat([df, currentCounty], axis=0).sort_values(
+                ["dt", "location_name"]
+            )
+            if test and countyName == "Contra Costa":
                 # If test, only use first 7 counties
                 break
         return df
@@ -111,10 +118,8 @@ class CaliforniaTesting(TableauDashboard):
 
         return data.loc[:, cols_to_keep]
 
-    def _get_testing(self, county):
-        self.filterFunctionValue = county
-        data = self.get_tableau_view()
-        df = data["6.3 County Test - Line (2)"]
+    def _get_test_counts(self, countyData):
+        df = countyData["6.3 County Test - Line (2)"]
         df["dt"] = pd.to_datetime(df["DAY(Test Date)-value"])
         crename = {
             "SUM(Tests)-value": CMU(
@@ -124,7 +129,29 @@ class CaliforniaTesting(TableauDashboard):
             ),
         }
         df = (
-            df.query("dt != '1970-01-01'")
+            df.query("dt >= '2020-01-01'")
+            .melt(id_vars=["dt"], value_vars=crename.keys())
+            .dropna()
+        )
+        df = self.extract_CMU(df, crename)
+
+        return df
+
+    def _get_test_positivity(self, countyData):
+        df = countyData["6.4 County Pos - Line (2)"].rename(
+            columns={"Measure Names-alias": "countyOrState"}
+        )
+        df = df[~df.countyOrState.str.contains("Statewide")]
+        df["dt"] = pd.to_datetime(df["DAY(Test Date)-value"])
+        crename = {
+            "Measure Values-value": CMU(
+                category="pcr_tests_positive",
+                measurement="rolling_average_14_day",
+                unit="percentage",
+            ),
+        }
+        df = (
+            df.query("dt >= '2020-01-01'")
             .melt(id_vars=["dt"], value_vars=crename.keys())
             .dropna()
         )
