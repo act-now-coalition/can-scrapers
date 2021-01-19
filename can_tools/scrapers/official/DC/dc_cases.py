@@ -50,7 +50,7 @@ class DCCases(DCBase):
                 category="cases",
                 measurement="cumulative",
                 unit="people",
-                race="native_american",
+                race="ai_an",
             ),
             "Native Hawaiin Pacific Islander": CMU(  ##question?
                 category="cases",

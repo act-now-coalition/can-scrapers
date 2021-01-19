@@ -1,12 +1,22 @@
 from can_tools.models import Base
+
 import os
 import pickle
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 
 import pandas as pd
+import us
 from sqlalchemy.engine.base import Engine
+
+
+# `us` v2.0 removed DC from the `us.STATES` list, so we are creating
+# our own which includes DC. In v3.0, there will be an env option to
+# include `DC` in the `us.STATES` list and, if we upgrade, we should
+# activate that option and replace this with just `us.STATES`
+ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
 
 
 class CMU:
@@ -17,6 +27,7 @@ class CMU:
         unit="people",
         age="all",
         race="all",
+        ethnicity="all",
         sex="all",
     ):
         self.category = category
@@ -24,6 +35,7 @@ class CMU:
         self.unit = unit
         self.age = age
         self.race = race
+        self.ethnicity = ethnicity
         self.sex = sex
 
 
@@ -91,7 +103,15 @@ class DatasetBase(ABC):
         self,
         df: pd.DataFrame,
         cmu: Dict[str, CMU],
-        columns: List[str] = ["category", "measurement", "unit", "age", "race", "sex"],
+        columns: List[str] = [
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "ethnicity",
+            "sex",
+        ],
         var_name: str = "variable",
     ) -> pd.DataFrame:
         """

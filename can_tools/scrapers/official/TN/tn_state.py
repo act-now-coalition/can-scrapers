@@ -95,6 +95,7 @@ class TennesseeState(TennesseeBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -198,6 +199,7 @@ class TennesseeCounty(TennesseeBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -270,26 +272,13 @@ class TennesseeAge(TennesseeBase):
         df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(df, crename)
+        df = self.extract_CMU(
+            df,
+            crename,
+            columns=["category", "measurement", "unit", "race", "ethnicity", "sex"],
+        )
 
-        # Drop the information that we won't be keeping track of
-        age_not_keep = ["Pending"]
-        out = df.loc[~df["age"].isin(age_not_keep), :]
-
-        # Determine what columns to keep
-        cols_to_keep = [
-            "dt",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "sex",
-            "value",
-        ]
-
-        # Drop extraneous columns
-        out = df.loc[:, cols_to_keep]
+        out = df.query("age != 'Pending'").drop(["variable"], axis=1)
 
         # Convert value columns
         out["value"] = out["value"].astype(int)

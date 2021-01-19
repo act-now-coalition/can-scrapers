@@ -67,10 +67,19 @@ class DCGeneral(DCBase):
                 measurement="current",
                 unit="people",
             ),
-            "Total COVID-19 Patients in ICU": CMU(  ##check
+            # Check
+            "Total COVID-19 Patients in ICU": CMU(
                 category="icu_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
+            ),
+            "Total COVID-19 Patients in DC Hospitals": CMU(
+                category="hospital_beds_in_use_covid",
+                measurement="current",
+                unit="beds",
+            ),
+            "Total Patients in DC Hospitals (COVID and non-COVID": CMU(
+                category="hospital_beds_in_use", measurement="current", unit="beds"
             ),
         }
 

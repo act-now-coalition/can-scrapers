@@ -1,5 +1,6 @@
 category,measurement,unit
 cases,cumulative,people
+cases,cumulative,unique_people
 cases,new,people
 cases,rolling_average_7_day,people
 deaths,cumulative,people
@@ -8,6 +9,7 @@ deaths,rolling_average_7_day,people
 hospital_beds_in_use_covid,cumulative,beds
 hospital_beds_in_use_covid,new,beds
 hospital_beds_in_use_covid,current,beds
+hospital_beds_in_use_covid,cumulative,people
 hospital_beds_in_use,current,beds
 hospital_beds_available,current,beds
 hospital_beds_capacity,current,beds
@@ -20,6 +22,7 @@ pediatric_icu_beds_in_use_covid,current,beds
 pediatric_icu_beds_available,current,beds
 pediatric_icu_beds_capacity,current,beds
 icu_beds_in_use_covid,current,beds
+icu_beds_in_use_covid,cumulative,people
 icu_beds_in_use,current,beds
 icu_beds_available,current,beds
 icu_beds_capacity,current,beds
@@ -163,3 +166,16 @@ adult_icu_beds_in_use_covid,rolling_average_7_day,beds
 ventilators_available,current,people
 ventilators_in_use,current,people
 ventilators_capacity,current,people
+moderna_vaccine_allocated,cumulative,doses
+moderna_vaccine_distributed,cumulative,doses
+moderna_vaccine_initiated,cumulative,people
+moderna_vaccine_completed,cumulative,people
+pfizer_vaccine_allocated,cumulative,doses
+pfizer_vaccine_distributed,cumulative,doses
+pfizer_vaccine_initiated,cumulative,people
+pfizer_vaccine_completed,cumulative,people
+total_vaccine_allocated,cumulative,doses
+total_vaccine_distributed,cumulative,doses
+total_vaccine_initiated,cumulative,people
+total_vaccine_completed,cumulative,people
+total_vaccine_doses_administered,cumulative,doses

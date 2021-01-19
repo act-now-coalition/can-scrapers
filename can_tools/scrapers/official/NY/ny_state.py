@@ -81,6 +81,7 @@ class NewYorkTests(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
