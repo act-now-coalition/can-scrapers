@@ -469,7 +469,7 @@ class TableauMapClick(StateDashboard, ABC):
     Defines a few commonly-used helper methods for snagging Tableau data
     from mapclick-driven dashboard pages specifically
     """
-    
+
     def getTbluMapFilter(self, htmDump) -> List:
         """
         Extracts the onMapClick background data filter function from a raw tableau HTML bootstrap return
@@ -486,9 +486,9 @@ class TableauMapClick(StateDashboard, ABC):
         """
         urlFltr = []
         # Grab the map filter function guts:
-        for fn in htmDump["worldUpdate"]["applicationPresModel"][
-            "workbookPresModel"
-        ]["dashboardPresModel"]["userActions"]:
+        for fn in htmDump["worldUpdate"]["applicationPresModel"]["workbookPresModel"][
+            "dashboardPresModel"
+        ]["userActions"]:
             if fn.get("name") == "Map filter":
                 urlFltr = (
                     urllib.parse.unquote(fn.get("linkSpec").get("url"))
@@ -498,7 +498,7 @@ class TableauMapClick(StateDashboard, ABC):
                 )
         return urlFltr
 
-    def extractTbluData(self, htmdump, area) -> pd.DataFrame:  
+    def extractTbluData(self, htmdump, area) -> pd.DataFrame:
         """
         Extracts data from raw tableau HTML bootstrap return
 
@@ -506,7 +506,7 @@ class TableauMapClick(StateDashboard, ABC):
         ----------
         htmdump : json
             The raw json-ized output of the fdat data field from getRawTbluPageData
-            
+
         area : the FIPS code of the htmdump
 
         Returns
@@ -535,9 +535,9 @@ class TableauMapClick(StateDashboard, ABC):
             "dataValues"
         ]
         # First extract the datatype and indices:
-        for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-            "presModelHolder"
-        ]["genPresModelMapPresModel"]["presModelMap"]:
+        for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"][
+            "genPresModelMapPresModel"
+        ]["presModelMap"]:
             dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
                 "presModelHolder"
             ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
@@ -587,8 +587,8 @@ class TableauMapClick(StateDashboard, ABC):
             return val
         else:
             return None
-    
-    def getRawTbluPageData(self, url, bsRt, reqParams) -> (json,json):
+
+    def getRawTbluPageData(self, url, bsRt, reqParams) -> (json, json):
         """
         Extracts and parses htm data from a tableau dashboard page
 
@@ -596,11 +596,11 @@ class TableauMapClick(StateDashboard, ABC):
         ----------
         url : str
             The root of the Tableau dashboard
-            
+
         bsRt : str
-            The bootstrap root url.  
+            The bootstrap root url.
             Typically everything before the first '/' delimiter in 'url'
-        
+
         reqParams : dict
             Dictionary of request parameters useable by 'requests' library
 
@@ -630,5 +630,5 @@ class TableauMapClick(StateDashboard, ABC):
         # load info head and data group separately
         info = json.loads(dat.group(1))
         fdat = json.loads(dat.group(2))
-        
+
         return (info, fdat)
