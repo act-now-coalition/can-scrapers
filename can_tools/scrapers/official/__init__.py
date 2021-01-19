@@ -36,8 +36,9 @@ from can_tools.scrapers.official.TN import (
 from can_tools.scrapers.official.TX import (
     TexasCasesDeaths,
     TexasTests,
-    TexasVaccine,
-    TexasVaccineDemographics,
+    TexasCountyVaccine,
+    TexasStateVaccine,
+    # TexasVaccineDemographics,
 )
 from can_tools.scrapers.official.WI import WisconsinCounties, WisconsinState
 
