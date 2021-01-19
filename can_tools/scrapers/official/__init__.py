@@ -13,6 +13,7 @@ from can_tools.scrapers.official.FL import (
     FloridaHospitalCovid,
     FloridaHospitalUsage,
     FloridaICUUsage,
+    FloridaVaccine,
 )
 
 from can_tools.scrapers.official.PA import (
