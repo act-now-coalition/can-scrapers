@@ -52,3 +52,5 @@ from can_tools.scrapers.official.CT import (
     CTCountyTests,
     CTState,
 )
+
+from can_tools.scrapers.official.OH import OhioVaccineCounty

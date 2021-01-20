@@ -19,6 +19,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     MarylandState,
     NewYorkTests,
     NorthCarolinaVaccineCounty,
+    OhioVaccineCounty,
     PennsylvaniaCasesDeaths,
     PennsylvaniaHospitals,
     TennesseeAge,
