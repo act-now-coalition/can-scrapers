@@ -25,6 +25,7 @@ from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineState,
     IllinoisVaccineCounty,
 )
+from can_tools.scrapers.official.MI import MichiganVaccineCounty
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
     MarylandState,
