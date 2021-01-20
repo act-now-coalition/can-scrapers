@@ -31,6 +31,7 @@ from can_tools.scrapers.official.MD import (
 )
 
 # from can_tools.scrapers.official.MA import Massachusetts
+from can_tools.scrapers.official.NC import NorthCarolinaVaccineCounty
 from can_tools.scrapers.official.NY import NewYorkTests
 from can_tools.scrapers.official.TN import (
     TennesseeAge,
