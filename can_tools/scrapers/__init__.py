@@ -13,6 +13,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     FloridaICUUsage,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
+    IllinoisVaccineCounty,
+    IllinoisVaccineState,
     MarylandCounties,
     MarylandState,
     NewYorkTests,

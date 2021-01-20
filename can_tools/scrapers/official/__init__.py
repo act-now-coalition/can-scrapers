@@ -21,6 +21,10 @@ from can_tools.scrapers.official.PA import (
 )
 
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
+from can_tools.scrapers.official.IL.il_vaccine import (
+    IllinoisVaccineState,
+    IllinoisVaccineCounty,
+)
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
     MarylandState,
