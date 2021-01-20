@@ -126,7 +126,7 @@ def default_dag_kw(dag_id, default_args=dict(), **kw):
         dag_id=dag_id,
         default_args=_make_default_args(**default_args),
         schedule_interval="30 9 * * *",
-        max_active_runs=2,
+        max_active_runs=1,
         catchup=False,
     )
     out.update(kw)
