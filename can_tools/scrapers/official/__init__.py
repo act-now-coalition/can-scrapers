@@ -17,6 +17,7 @@ from can_tools.scrapers.official.FL import (
 
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
+    PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
 )
 
