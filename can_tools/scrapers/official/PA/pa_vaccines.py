@@ -42,7 +42,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                                         [
                                             (
                                                 "c",
-                                                "Counts of People by County of Residence",
+                                                "Counts of People by County",
                                                 0,
                                             )
                                         ]

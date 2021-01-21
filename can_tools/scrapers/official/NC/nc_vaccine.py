@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import us
 
@@ -46,12 +47,14 @@ class NorthCarolinaVaccineCounty(StateDashboard):
                     "Total Doses": "value",
                 }
             )
+            .replace({"value": {" ": np.nan}})
             .pipe(lambda x: x.loc[x["location_name"] != "Missing"])
             .assign(
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
                 dt=dt,
             )
+            .dropna()
             .pipe(self.extract_CMU, cmu=cmus)
             .drop(["variable"], axis=1)
         )
