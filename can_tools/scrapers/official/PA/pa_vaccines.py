@@ -53,12 +53,12 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                                             (
                                                 "c",
                                                 "PartiallyCovered",
-                                                "total_vaccines_initiated",
+                                                "total_vaccine_initiated",
                                             ),
                                             (
                                                 "c",
                                                 "FullyCovered",
-                                                "total_vaccines_completed",
+                                                "total_vaccine_completed",
                                             ),
                                         ],
                                         [],
@@ -122,15 +122,18 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows)
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
 
+        # Make sure McKean follows capitalization in db
+        df = df.replace({"location_name": {"Mckean": "McKean"}})
+
         # Reshape
         crename = {
-            "total_vaccines_initiated": CMU(
-                category="total_vaccines_initiated",
+            "total_vaccine_initiated": CMU(
+                category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccines_completed": CMU(
-                category="total_vaccines_completed",
+            "total_vaccine_completed": CMU(
+                category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -143,6 +146,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
+            "vintage",
             "dt",
             "location_name",
             "category",
