@@ -1,5 +1,4 @@
 import pandas as pd
-from tabula import read_pdf
 import camelot
 import requests
 import us
@@ -34,6 +33,9 @@ class FloridaCountyVaccine(StateDashboard):
 
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
+        if len(data) > 1:
+            raise ValueError("more tables returned than expected value")
+
         df = data[0].df
         df.columns = [
             "location_name",
