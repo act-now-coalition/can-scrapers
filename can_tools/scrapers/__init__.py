@@ -20,6 +20,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     NewYorkTests,
     OhioVaccineCounty,
     PennsylvaniaCasesDeaths,
+    PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
     TennesseeAge,
     TennesseeCounty,
