@@ -1,5 +1,7 @@
 from can_tools.scrapers.official.PA.pa_state import (
     PennsylvaniaCasesDeaths,
-    PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
+)
+from can_tools.scrapers.official.PA.pa_vaccines import (
+    PennsylvaniaCountyVaccines,
 )
