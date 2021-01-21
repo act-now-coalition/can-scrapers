@@ -14,20 +14,6 @@ class FloridaCountyVaccine(StateDashboard):
     state_fips = int(us.states.lookup("Florida").fips)
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
 
-    def __fetch(self):
-        fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
-        """ area is the location of table in pdf by distance from [top, left, top + height, left + width] in units of pixels (inches*72)
-            see https://stackoverflow.com/a/61097723/14034347
-        """
-        return read_pdf(
-            fetch_url,
-            pages=2,
-            # area=[134, 77, 1172.16, 792],
-            lattice=True,
-            guess=True,
-            pandas_options={"dtype": str},
-        )
-
     def fetch(self):
         return camelot.read_pdf(self.fetch_url, pages="2", flavor="stream")
 
@@ -37,6 +23,7 @@ class FloridaCountyVaccine(StateDashboard):
             raise ValueError("more tables returned than expected value")
 
         df = data[0].df
+        df = df.iloc[6:].reset_index(drop=True)
         df.columns = [
             "location_name",
             "first_dose_new",
@@ -46,16 +33,14 @@ class FloridaCountyVaccine(StateDashboard):
             "series_complete_total",
             "total_people_vaccinated_total",
         ]
-        df = df.iloc[6:].reset_index(drop=True)
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
-        df = df[
-            (df["location_name"] != "Unknown")
-            & (df["location_name"] != "Out-Of-State")
-            & (df["location_name"] != "Total")
-        ]
-        df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
-        df.loc[df["location_name"] == "Dade", "location_name"] = "Miami-Dade"
+        df = df.query(
+            "location_name != 'Unknown' &"
+            "location_name != 'Out-Of-State' &"
+            "location_name != 'Total'"
+        )
+        df = df.replace({"location_name": {"Desoto": "DeSoto", "Dade": "Miami-Dade"}})
 
         crename = {
             "first_dose_new": CMU(
