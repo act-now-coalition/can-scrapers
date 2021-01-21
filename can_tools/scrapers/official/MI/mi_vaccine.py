@@ -48,8 +48,7 @@ class MichiganVaccineCounty(StateDashboard):
         }
         not_counties = ["No County", "Detroit"]  # noqa
         return (
-            data
-            .rename(columns=colnames)
+            data.rename(columns=colnames)
             .loc[:, ["location_name", "dt", "variable", "value"]]
             .query("location_name not in  @not_counties")
             .assign(
