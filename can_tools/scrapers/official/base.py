@@ -519,7 +519,7 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
         model_data = json.loads(model_res.content)
 
         # Extract relevant info
-        ds_id = model_data["models"][0]["id"]
+        ds_id = model_data["models"][0]["dbName"]
         model_id = model_data["models"][0]["id"]
         report_id = model_data["exploration"]["report"]["objectId"]
 
