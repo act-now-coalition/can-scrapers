@@ -17,6 +17,7 @@ from can_tools.scrapers.official.FL import (
 
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
+    PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
 )
 
@@ -32,6 +33,7 @@ from can_tools.scrapers.official.MD import (
 )
 
 # from can_tools.scrapers.official.MA import Massachusetts
+from can_tools.scrapers.official.NC import NorthCarolinaVaccineCounty
 from can_tools.scrapers.official.NY import NewYorkTests
 from can_tools.scrapers.official.TN import (
     TennesseeAge,
@@ -52,3 +54,5 @@ from can_tools.scrapers.official.CT import (
     CTCountyTests,
     CTState,
 )
+
+from can_tools.scrapers.official.OH import OhioVaccineCounty
