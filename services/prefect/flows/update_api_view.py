@@ -1,5 +1,7 @@
 from contextlib import closing
 from datetime import timedelta
+import os
+import pathlib
 
 import pandas as pd
 import prefect
@@ -15,11 +17,12 @@ DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}"
 
 
+
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def export_to_csv(connstr: str):
     db = sa.create_engine(connstr)
     with open(CSV_FN, "w") as f:
-        with closing(db.get_conn()) as conn:
+        with closing(db.raw_connection()) as conn:
             with closing(conn.cursor()) as cur:
                 cur.copy_expert(
                     "COPY (SELECT * From covid_us) TO STDOUT CSV HEADER;", f
@@ -28,8 +31,8 @@ def export_to_csv(connstr: str):
     return True
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
-def create_parquet():
+@task(max_retries=3, retry_delay=timedelta(minutes=1), nout=2)
+def create_parquet(_success):
     ts = prefect.context.scheduled_start_time
     dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
     vintage_fn = FN_STR.format(dt_str) + ".parquet"
@@ -40,12 +43,17 @@ def create_parquet():
     df.to_parquet(DATA_PATH / fn, index=False)
     return vintage_fn, fn
 
+@task
+def get_gcs_cmd(fn):
+    return f"gsutil acl ch -u AllUsers:R gs://can-scrape-outputs/final/{fn}"
 
-with Flow("Update parquet files", sched = CronSchedule("10 */2 * * *")) as f:
+
+shell = ShellTask()
+with Flow("UpdateParquetFiles", CronSchedule("10 */2 * * *")) as f:
     connstr = EnvVarSecret("COVID_DB_CONN_URI")
-    export_to_csv(connstr)
-    vintage_fn, fn = create_parquet()
-    ShellTask(command=f"gsutil acl ch -u AllUsers:R gs://final/{vintage_fn}")
-    ShellTask(command=f"gsutil acl ch -u AllUsers:R gs://final/{fn}")
+    success = export_to_csv(connstr)
+    vintage_fn, fn = create_parquet(success)
+    shell(get_gcs_cmd(vintage_fn))
+    shell(get_gcs_cmd(fn))
 
 f.register(project_name="can-scrape")
