@@ -1,0 +1,14 @@
+[Unit]
+Description=prefect server
+
+[Service]
+User=sglyon
+Group=sglyon
+Type=simple
+WorkingDirectory=/home/sglyon/can-scrapers
+ExecStart=/home/sglyon/miniconda/envs/prefect-can-scrapers/bin/prefect server start --ui-port 8432
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
