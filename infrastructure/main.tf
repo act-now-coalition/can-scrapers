@@ -41,7 +41,7 @@ module "cloud_run_postgraphile" {
   },
   {
     name  = "POSTGRAPHILE_DB_SCHEMA"
-    value = "api"
+    value = "public"
   }]
 }
 output "cloudrun_postgraphile_url" {
@@ -61,7 +61,7 @@ module "cloud_run_postgrest" {
   },
   {
     name = "PGRST_DB_SCHEMA"
-    value = "api, meta"
+    value = "public, api, meta"
   },
   {
     name = "PGRST_DB_ANON_ROLE"
