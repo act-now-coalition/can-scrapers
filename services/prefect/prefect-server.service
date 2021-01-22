@@ -6,7 +6,7 @@ User=sglyon
 Group=sglyon
 Type=simple
 WorkingDirectory=/home/sglyon/can-scrapers
-ExecStart=/home/sglyon/miniconda/envs/prefect-can-scrapers/bin/prefect server start --ui-port 8432
+ExecStart=/home/sglyon/miniconda/envs/prefect-can-scrapers/bin/prefect server start --ui-port 8432 --use-volume
 Restart=always
 RestartSec=5s
 

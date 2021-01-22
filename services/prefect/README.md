@@ -28,12 +28,16 @@ TODO
 **Launch steps**:
 
 ```shell
+mount ~/scraper-outputs
 cd can-scrapers/services/prefect
 make sync_services
 make start_services
 conda activate prefect-can-scrapers
 prefect server create-tenant --name can --slug can
 prefect create project can-scrape
+sudo ln -s nginx.conf /etc/nginx/sites-enabled/prefect
+sudo systemctl restart nginx
+sudo certbot --nginx
 ```
 
 **Notes**:
