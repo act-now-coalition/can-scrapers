@@ -9,7 +9,6 @@ from can_tools.scrapers.base import DatasetBase
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
-from prefect.engine.results import GCSResult
 
 
 @task
@@ -46,9 +45,8 @@ def put(d: DatasetBase, df: pd.DataFrame, connstr: str) -> bool:
 
 def create_flow_for_scraper(ix:int, d: Type[DatasetBase]):
     sched = CronSchedule(f"{ix} */4 * * *")
-    result = GCSResult(bucket="can-scrape-outputs")
 
-    with Flow(cls.__name__, sched, result=result) as flow:
+    with Flow(cls.__name__, sched) as flow:
         ts = pd.Timestamp.utcnow()
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
         d = create_scraper(cls, ts)
