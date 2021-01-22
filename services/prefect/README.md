@@ -35,3 +35,7 @@ conda activate prefect-can-scrapers
 prefect server create-tenant --name can --slug can
 prefect create project can-scrape
 ```
+
+**Notes**:
+
+Any time the server restarts, you should do `mount ~/scraper-outputs` to run gcsfuse and link the ~/scraper-outputs directory to the cloud storage bucket
