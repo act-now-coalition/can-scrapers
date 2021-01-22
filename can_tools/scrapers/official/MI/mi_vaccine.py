@@ -47,14 +47,42 @@ class MichiganVaccineCounty(StateDashboard):
             ),
         }
         not_counties = ["No County", "Detroit"]  # noqa
-        return (
+
+        # need to sum over all the possible facility types for distribution
+        df = (
             data.rename(columns=colnames)
             .loc[:, ["location_name", "dt", "variable", "value"]]
             .query("location_name not in  @not_counties")
-            .assign(
+            .pivot_table(
+                index=["dt", "location_name"],
+                columns="variable",
+                values="value",
+                aggfunc="sum"
+            )
+            .fillna(0)
+            .astype(int)
+        )
+
+        # now we need to reindex to fill in all dates -- fill missing with 0
+        dates = pd.Series(df.index.get_level_values("dt")).agg(["min", "max"])
+        new_index = pd.MultiIndex.from_product([
+            pd.date_range(*dates),
+            df.index.get_level_values("location_name").unique()
+        ], names=["dt", "location_name"])
+
+        return (
+            df
+            .reindex(new_index, fill_value=0)         # fill in missing dates
+            .sort_index()                             # make sure we are sorted
+            .unstack(level=["location_name"])         # make index=dt, columns=[variable,loc_name]
+            .cumsum()                                 # compute cumulative sum
+            .stack(level=[0, 1])  # long form Series
+            .rename("value")                          # name the series
+            .reset_index()                            # convert to long form df
+            .assign(                                  # fill fix value
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_CMU, cmu=cmus)
-            .drop(["variable"], axis=1)
+            .pipe(self.extract_CMU, cmu=cmus)         # extract CMUs
+            .drop(["variable"], axis=1)               # drop variable
         )
