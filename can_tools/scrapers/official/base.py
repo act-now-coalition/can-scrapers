@@ -482,6 +482,10 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
     def sess(self):
         if self._sess is not None:
             return self._sess
+        else:
+            self._setup_sess()
+
+    def _setup_sess(self):
 
         self._sess = requests.Session()
         self._sess.headers.update(
