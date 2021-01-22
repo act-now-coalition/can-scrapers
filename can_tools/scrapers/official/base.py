@@ -472,16 +472,24 @@ class StateQueryAPI(StateDashboard, ABC):
 class MicrosoftBIDashboard(StateDashboard, ABC):
     powerbi_url: str
 
-    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        # super(MicrosoftBIDashboard, self).__init__(execution_dt)
 
-        self.sess = requests.Session()
-        self.sess.headers.update(
+
+    def __init__(self, *a, **kw):
+        super(MicrosoftBIDashboard, self).__init__(*a, **kw)
+        self._sess = None
+
+    @property
+    def sess(self):
+        if self._sess is not None:
+            return self._sess
+
+        self._sess = requests.Session()
+        self._sess.headers.update(
             {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)",
             }
         )
-        self.source_res = self.sess.get(self.source)
+        self.source_res = self._sess.get(self.source)
         self.source_soup = BeautifulSoup(self.source_res.content, features="lxml")
 
     def powerbi_models_url(self, rk):
