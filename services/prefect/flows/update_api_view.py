@@ -2,7 +2,7 @@ from contextlib import closing
 from datetime import timedelta
 
 import pandas as pd
-import prefect.context
+import prefect
 import sqlalchemy as sa
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
