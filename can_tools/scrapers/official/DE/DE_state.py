@@ -162,6 +162,7 @@ class DelawareStateData(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
