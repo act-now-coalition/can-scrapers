@@ -109,6 +109,7 @@ class DelawareCountyData(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
