@@ -21,6 +21,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TennesseeAge,
     TennesseeAgeByCounty,
     TennesseeCounty,
+    TennesseeRaceEthnicitySex,
     TennesseeState,
     TexasCasesDeaths,
     TexasTests,
