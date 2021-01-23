@@ -96,7 +96,7 @@ class DelawareCountyData(StateDashboard):
             .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out.rename(columns={"Name": "variable"}, inplace=True)
+        out.rename(columns={"StatUnit": "variable"}, inplace=True)
         # Extract category information and add other variable context
         out = self.extract_CMU(out, crename)
 
