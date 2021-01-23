@@ -41,7 +41,7 @@ module "cloud_run_postgraphile" {
   },
   {
     name  = "POSTGRAPHILE_DB_SCHEMA"
-    value = "api"
+    value = "public"
   }]
 }
 output "cloudrun_postgraphile_url" {
@@ -61,7 +61,7 @@ module "cloud_run_postgrest" {
   },
   {
     name = "PGRST_DB_SCHEMA"
-    value = "api, meta"
+    value = "public, meta, data"
   },
   {
     name = "PGRST_DB_ANON_ROLE"
@@ -300,3 +300,40 @@ resource "google_compute_firewall" "kong_data" {
   source_ranges = ["0.0.0.0/0"]
   target_tags = ["kong"]
 }
+
+
+# prefect vm
+
+resource "google_compute_address" "prefect_ip" {
+  name="prefect-ip"
+}
+
+resource "google_compute_instance" "prefect_vm" {
+  name = "prefect"
+  machine_type="n2d-standard-8"
+  zone = "${var.gcp_region}-b"
+  tags = ["sglyon", "prefect", "http-server", "https-server"]
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+    }
+  }
+
+  service_account {
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    email  = "can-scrape-storage-accessor@covidactnow-dev.iam.gserviceaccount.com"
+    scopes = ["cloud-platform"]
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+      nat_ip = google_compute_address.prefect_ip.address
+    }
+  }
+}
+
+output "prefect_ip" {
+ value = google_compute_address.prefect_ip.address
+}
+
