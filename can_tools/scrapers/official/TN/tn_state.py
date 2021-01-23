@@ -409,22 +409,42 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         df = pd.read_excel(data, parse_dates=["Date"])
 
         # Rename columns
-        df = df.rename(columns={"Date": "dt", "CAT_DETAIL": "category_detail", "Category": "category_name"})
+        df = df.rename(
+            columns={
+                "Date": "dt",
+                "CAT_DETAIL": "category_detail",
+                "Category": "category_name",
+            }
+        )
 
         # Drop the information that we won't be keeping track of
         cat_detail_not_keep = ["Pending"]
         df = df.loc[~df["category_detail"].isin(cat_detail_not_keep), :]
 
         # Translate race, ethnicity, and gender (sex) to standard names
-        df.loc[df["category_detail"] == "American Indian or Alaska Native", "category_detail"] = "ai_an"
+        df.loc[
+            df["category_detail"] == "American Indian or Alaska Native",
+            "category_detail",
+        ] = "ai_an"
         df.loc[df["category_detail"] == "Asian", "category_detail"] = "asian"
-        df.loc[df["category_detail"] == "Black or African American", "category_detail"] = "black"
+        df.loc[
+            df["category_detail"] == "Black or African American", "category_detail"
+        ] = "black"
         df.loc[df["category_detail"] == "White", "category_detail"] = "white"
-        df.loc[df["category_detail"] == "Native Hawaiian or Other Pacific Islander", "category_detail"] = "pacific_islander"
-        df.loc[df["category_detail"] == "Other/ Multiracial", "category_detail"] = "multiple_other"
-        df.loc[df["category_detail"] == "Other/Multiracial", "category_detail"] = "multiple_other"
+        df.loc[
+            df["category_detail"] == "Native Hawaiian or Other Pacific Islander",
+            "category_detail",
+        ] = "pacific_islander"
+        df.loc[
+            df["category_detail"] == "Other/ Multiracial", "category_detail"
+        ] = "multiple_other"
+        df.loc[
+            df["category_detail"] == "Other/Multiracial", "category_detail"
+        ] = "multiple_other"
         df.loc[df["category_detail"] == "Hispanic", "category_detail"] = "hispanic"
-        df.loc[df["category_detail"] == "Not Hispanic or Latino", "category_detail"] = "non-hispanic"
+        df.loc[
+            df["category_detail"] == "Not Hispanic or Latino", "category_detail"
+        ] = "non-hispanic"
         df.loc[df["category_detail"] == "Female", "category_detail"] = "female"
         df.loc[df["category_detail"] == "Male", "category_detail"] = "male"
 
@@ -447,7 +467,17 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         }
 
         # Move things into long format
-        df = df.melt(id_vars=["dt", "category_detail", "category_name", "race", "ethnicity", "sex"], value_vars=crename.keys()).dropna()
+        df = df.melt(
+            id_vars=[
+                "dt",
+                "category_detail",
+                "category_name",
+                "race",
+                "ethnicity",
+                "sex",
+            ],
+            value_vars=crename.keys(),
+        ).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(df, crename, ["category", "measurement", "unit", "age"])
