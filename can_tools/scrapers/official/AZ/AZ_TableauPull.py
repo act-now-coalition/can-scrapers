@@ -10,7 +10,7 @@ class ArizonaData(TableauMapClick, StateDashboard):
     Fetch county level covid data from Arizona's Tableau dashboard
     """
 
-    # Initialize
+    # Initlze
     source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
     has_location = True
     location_type = "county"
