@@ -30,10 +30,25 @@ class OhioVaccineCounty(StateDashboard):
         }
 
         not_counties = ["Out of State", "Unknown"]  # noqa
+        dates = list(data["date"].agg([min, max]))
+        idx = pd.MultiIndex.from_product([
+            pd.date_range(*dates), sorted(list(data["county"].unique()))
+        ], names=["dt", "location_name"])
 
         return (
-            data.rename(columns={"county": "location_name", "date": "dt"})
-            .melt(id_vars=["location_name", "dt"])
+            data
+            .rename(columns={"county": "location_name", "date": "dt"})
+            .set_index(["dt", "location_name"])
+            .reindex(idx, fill_value=0)
+            .unstack(
+                level=["location_name"]
+            )
+            .sort_index()
+            .cumsum()
+            .stack(level=[0, 1])
+            .rename("value")  # name the series
+            .reset_index()  # convert to long form df
+            .rename(columns={"level_1": "variable"})
             .dropna()
             .assign(
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
