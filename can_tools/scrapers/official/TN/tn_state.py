@@ -95,6 +95,7 @@ class TennesseeState(TennesseeBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -198,6 +199,7 @@ class TennesseeCounty(TennesseeBase):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -273,7 +275,7 @@ class TennesseeAge(TennesseeBase):
         df = self.extract_CMU(
             df,
             crename,
-            columns=["category", "measurement", "unit", "race", "sex"],
+            columns=["category", "measurement", "unit", "race", "ethnicity", "sex"],
         )
 
         out = df.query("age != 'Pending'").drop(["variable"], axis=1)

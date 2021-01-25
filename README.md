@@ -76,7 +76,7 @@ and `put` which must be implemented in order to create a scraper.
 * The `fetch` method should grab the data and return the raw HTML page.
 * The `normalize` method should transform the raw HTML page into scraped data
   and return a DataFrame with columns `(vintage, dt, location, category,
-  measurement, unit, age, race, sex, value, provider)`.
+  measurement, unit, age, race, ethnicity, sex, value, provider)`.
 * The `validate` method should verify the data to ensure that it passes any
   necessary sanity checks.
 * The `put` method takes a SQL connection and a DataFrame and then puts the

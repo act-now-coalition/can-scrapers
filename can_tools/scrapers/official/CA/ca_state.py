@@ -71,6 +71,7 @@ class CaliforniaCasesDeaths(StateQueryAPI):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
@@ -150,6 +151,7 @@ class CaliforniaHospitals(CaliforniaCasesDeaths):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]

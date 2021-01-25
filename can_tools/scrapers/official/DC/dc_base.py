@@ -33,7 +33,7 @@ class DCBase(StateDashboard):
         """
 
         # get yesterday's date for finding most recent file
-        date = pd.to_datetime(self.execution_dt) - pd.Timedelta(days=1)
+        date = self._retrieve_dtm1d("US/Eastern")
 
         # query DC coronavirus webpage
         res = requests.get(self.source)
@@ -61,8 +61,6 @@ class DCBase(StateDashboard):
             xl_src = "https://coronavirus.dc.gov" + xl_src
         else:
             raise ValueError("Could not parse download link")
-        if str(date.strftime("%B-%-d-%Y")) not in xl_src:
-            raise ValueError(f"Link does not contain specified date ({date})")
 
         # download file from selected link
         xl = requests.get(xl_src)
@@ -71,28 +69,30 @@ class DCBase(StateDashboard):
 
         return xl  # return request response
 
-    def _reshape(self, data: pd.DataFrame, map: dict) -> pd.DataFrame:
+    def _reshape(self, data: pd.DataFrame, _map: dict) -> pd.DataFrame:
         """
         Function to prep data for put() function. renames and adds columns according to CMU (map) entries
 
             Accepts
             -------
-                data: df w/ column names according the map parameter
+                data: df w/ column names according the _map parameter
                     example of format:
                                 dt   Variable Name  ...         location_name
                     0   2020-03-07  Variable Value  ...  District of Columbia
                     ...
-                map: dictionary with CMU keys/values
+                _map: dictionary with CMU keys/values
 
             Returns
             -------
                 pd.Dataframe: dataframe ready for put() function
         """
 
-        out = data.melt(id_vars=["dt", "location_name"], value_vars=map.keys()).dropna()
+        out = data.melt(
+            id_vars=["dt", "location_name"], value_vars=_map.keys()
+        ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
-        out = self.extract_CMU(out, map)
+        out = self.extract_CMU(out, _map)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
@@ -104,6 +104,7 @@ class DCBase(StateDashboard):
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
