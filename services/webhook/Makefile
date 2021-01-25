@@ -9,7 +9,3 @@ start:
 
 restart:
 		sudo systemctl restart webhook
-
-setup_nginx:
-		sudo ln -s ./nginx.conf /etc/nginx/sites-enabled/webhook
-		sudo systemctl restart nginx

@@ -23,7 +23,7 @@ Description=Webhook daemon
 User=sglyon
 Group=sglyon
 Type=simple
-ExecStart=/home/sglyon/go/bin/webhook -hooks /home/sglyon/webhooks/hooks.json  -verbose -ip "127.0.0.1" -urlprefix "" -hotreload
+ExecStart=/home/sglyon/go/bin/webhook -hooks /home/sglyon/can-scrapers/services/webhook/hooks.json  -verbose -ip "127.0.0.1" -urlprefix "" -hotreload
 Restart=always
 RestartSec=5s
 

@@ -14,3 +14,8 @@ restart_services:
 	sudo systemctl restart prefect-agent
 	sudo systemctl restart prefect-server
 
+setup_nginx:
+	sudo rm -f /etc/nginx/sites-enabled/prefect
+	sudo cp ./nginx.conf /etc/nginx/sites-enabled/prefect
+	sudo systemctl restart nginx
+
