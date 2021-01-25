@@ -48,10 +48,16 @@ def create_flow_for_scraper(ix:int, d: Type[DatasetBase]):
         ts = pd.Timestamp.utcnow()
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
         d = create_scraper(cls, ts)
-        data = fetch(d)
-        df = normalize(d, data)
-        validate(d, df)
-        put(d, df, connstr)
+        fetched = fetch(d)
+        normalized = normalize(d)
+        validated = validate(d)
+        done = put(d, connstr)
+
+        normalized.set_upstream(fetched)
+        validated.set_upstream(normalized)
+        done.set_upstream(validated)
+
+
 
     return flow
 
