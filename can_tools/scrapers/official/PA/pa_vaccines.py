@@ -79,6 +79,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
     def fetch(self):
         # Get general information
+        self._setup_sess()
         dashboard_frame = self.get_dashboard_iframe()
         resource_key = self.get_resource_key(dashboard_frame)
         ds_id, model_id, report_id = self.get_model_data(resource_key)

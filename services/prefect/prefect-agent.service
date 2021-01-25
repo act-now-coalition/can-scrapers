@@ -1,0 +1,16 @@
+[Unit]
+Description=prefect agents
+
+[Service]
+Environment="DATAPATH=/home/sglyon/scraper-outputs"
+User=sglyon
+Group=sglyon
+Type=simple
+WorkingDirectory=/home/sglyon/can-scrapers
+ExecStart=/home/sglyon/miniconda/envs/prefect-can-scrapers/bin/prefect agent local start --api https://can-prefect.valorumdata.com/graphql
+Restart=always
+RestartSec=5s
+After=prefect-server.service
+
+[Install]
+WantedBy=multi-user.target
