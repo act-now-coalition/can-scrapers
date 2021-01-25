@@ -11,9 +11,10 @@ TODO
 **Pre-req**:
 
 - Create a service account with IAM role storage admin
+
   - I also added condition for just one bucket
   - Service account email address was "can-scrape-storage-accessor@covidactnow-dev.iam.gserviceaccount.com", which is why this appears in the terraform entry for the `service_account.email` for the instance
-**Setup steps**:
+    **Setup steps**:
 
 - Created instance in ../infrastructure/main.tf
 - ssh'd into the instance
@@ -39,6 +40,42 @@ sudo ln -s nginx.conf /etc/nginx/sites-enabled/prefect
 sudo systemctl restart nginx
 sudo certbot --nginx
 ```
+
+
+**Setup Flows**:
+
+```shell
+conda activate prefect-can-scrapers
+cd ~/can-scrapers/services/prefect/flows
+python generated_flows.py
+python clean_sql.py
+python update_api_view.py
+```
+
+**Setup webhook**:
+
+- Generate a random password
+- Add Change the field `[0].trigger-rule.and[0].match.secret` from `PASSWORD` to your random password
+- Start the webhook server...
+
+```shell
+cd ~/can-scrapers/services/webhook
+make setup_nginx
+make sync
+make start
+```
+
+- Create a webhook on the github repo:
+  - Will need to set the payload URL to https://SERVER/webhook/pull-can-scrapers
+  - Keep content type as `applicatoin/x-www-form-urlencoded`
+  - Set the Secret field to the password you created above
+  - keep SSL verification
+  - Only send `push` event
+  - Make sure it is active
+  - Submit
+
+
+Now any time a push is made to the master branch of the repo, a push event will be sent to the server and the webhook will cause a git pull
 
 **Notes**:
 

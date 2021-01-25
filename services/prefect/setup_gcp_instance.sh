@@ -81,3 +81,8 @@ sudo snap install core
 sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
+# install go
+sudo snap install --classic go
+go get github.com/adnanh/webhook
+go build github.com/adnanh/webhook
