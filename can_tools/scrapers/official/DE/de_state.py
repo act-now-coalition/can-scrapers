@@ -19,7 +19,7 @@ class DelawareData(StateDashboard):
         ["state", "state", 0],
         ["county", "kent", 1],
         ["county", "new-castle", 3],
-        ["county", "sussex", 5]
+        ["county", "sussex", 5],
     ]
 
     def fetch(self):
@@ -105,13 +105,12 @@ class DelawareData(StateDashboard):
         }
 
         out = (
-            df.rename(
-                columns={"StatUnit": "variable", "Value": "value"}
-            ).assign(
+            df.rename(columns={"StatUnit": "variable", "Value": "value"})
+            .assign(
                 dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            ).query(
-                "variable in @crename.keys()"
-            ).dropna()
+            )
+            .query("variable in @crename.keys()")
+            .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
         # Extract category information and add other variable context

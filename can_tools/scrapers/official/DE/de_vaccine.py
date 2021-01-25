@@ -44,7 +44,9 @@ class DelawareStateVaccine(StateDashboard):
             if srs["name"] == "Daily Count":
                 data = srs["data"]
                 idx = pd.date_range(startDate, periods=len(data), freq="d")
-                df1 = pd.DataFrame(data=data, columns=["NewVaccineAdminstrd"], index=idx)
+                df1 = pd.DataFrame(
+                    data=data, columns=["NewVaccineAdminstrd"], index=idx
+                )
 
         # Cumulative vaccines administered
         tdata2 = json.loads(
@@ -59,7 +61,9 @@ class DelawareStateVaccine(StateDashboard):
             if srs["name"] == "State of Delaware":
                 data = srs["data"]
                 idx = pd.date_range(startDate, periods=len(data), freq="d")
-                df2 = pd.DataFrame(data=data, columns=["CumVaccineAdminstrd"], index=idx)
+                df2 = pd.DataFrame(
+                    data=data, columns=["CumVaccineAdminstrd"], index=idx
+                )
 
         # Vaccine deliveries
         url = "https://myhealthycommunity.dhss.delaware.gov/locations/state/covid19_vaccine_deliveries"
@@ -82,12 +86,10 @@ class DelawareStateVaccine(StateDashboard):
                 df3["CumVaccineDelivrd"] = df3["NewVaccineDelivrd"].cumsum()
 
         # End of vaccine data grab
-        df = df1.merge(
-            df2, left_index=True, right_index=True
-        ).merge(
-            df3, left_index=True, right_index=True
-        ).assign(
-            location=self.state_fips
+        df = (
+            df1.merge(df2, left_index=True, right_index=True)
+            .merge(df3, left_index=True, right_index=True)
+            .assign(location=self.state_fips)
         )
         df.index = df.index.set_names("dt")
         df = df.reset_index()
@@ -116,9 +118,7 @@ class DelawareStateVaccine(StateDashboard):
 
         out = (
             df.melt(id_vars=["location", "dt"], value_vars=crename.keys())
-            .assign(
-                vintage=self._retrieve_vintage()
-            )
+            .assign(vintage=self._retrieve_vintage())
             .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
