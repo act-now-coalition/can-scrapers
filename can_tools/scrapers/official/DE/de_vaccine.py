@@ -1,129 +1,102 @@
+import datetime as dt
+import json
+
 import us
 import requests
-import json
 import pandas as pd
+
 from bs4 import BeautifulSoup
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class DelawareStateData(StateDashboard):
+class DelawareStateVaccine(StateDashboard):
     """
     Fetch state level covid data from Delaware's database
     """
 
     # Initialize
-    source = "https://myhealthycommunity.dhss.delaware.gov/locations/state/download_covid_19_data"
-    # source = 'https://myhealthycommunity.dhss.delaware.gov/locations/county-new-castle/download_covid_19_data'
+    source = "https://myhealthycommunity.dhss.delaware.gov"
     has_location = True
     location_type = "state"
     state_fips = int(us.states.lookup("Delaware").fips)
 
     def fetch(self):
-        data = pd.read_csv(self.source)
-        data["Date"] = pd.to_datetime(data[["Year", "Month", "Day"]])
-        data = data[data["Date"] == data["Date"].max()]
-        data = data[data["Age adjusted"] == False]
-        data["StatUnit"] = data["Statistic"] + "_" + data["Unit"]
-        data.drop(
-            columns=[
-                "Year",
-                "Month",
-                "Day",
-                "Location",
-                "Age adjusted",
-                "Date used",
-                "Statistic",
-                "Unit",
-                "County",
-            ],
-            inplace=True,
-        )
-        data["location"] = self.state_fips
-        data.reset_index(inplace=True, drop=True)
-        data = pd.pivot_table(
-            data,
-            values="Value",
-            index=["location", "Date"],
-            columns="StatUnit",
-            aggfunc="first",
-        ).reset_index()
-
         # Mini-breakout for vaccine data, currently stored in embedded html
         # Recommend waiting till they have robust vaccine reporting before
         #   porting this into some sort of more robust parent class
-
         url = "https://myhealthycommunity.dhss.delaware.gov/locations/state/covid19_vaccine_administrations"
         r = requests.get(url)
         suppe = BeautifulSoup(r.text, features="lxml")
+
+        # New Vaccines administered
         tdata = json.loads(
             suppe.find(
                 "div",
                 {"aria-labelledby": "chart-covid-vaccine-administrations-daily-label"},
             )["data-charts--covid-vaccine-administrations-daily-config-value"]
         )
+
+        sd = tdata["startDate"]
+        startDate = dt.datetime(sd[0], sd[1], sd[2])
         for srs in tdata["series"]:
             if srs["name"] == "Daily Count":
-                data["NewVaccineAdminstrd"] = srs["data"][-1]
+                data = srs["data"]
+                idx = pd.date_range(startDate, periods=len(data), freq="d")
+                df1 = pd.DataFrame(data=data, columns=["NewVaccineAdminstrd"], index=idx)
+
+        # Cumulative vaccines administered
         tdata2 = json.loads(
             suppe.find("div", {"aria-labelledby": "chart-line-chart-label"})[
                 "data-charts--line-chart-config-value"
             ]
         )
+
+        sd = tdata2["startDate"]
+        startDate = dt.datetime(sd[0], sd[1], sd[2])
         for srs in tdata2["series"]:
             if srs["name"] == "State of Delaware":
-                data["CumVaccineAdminstrd"] = srs["data"][-1]
+                data = srs["data"]
+                idx = pd.date_range(startDate, periods=len(data), freq="d")
+                df2 = pd.DataFrame(data=data, columns=["CumVaccineAdminstrd"], index=idx)
 
+        # Vaccine deliveries
         url = "https://myhealthycommunity.dhss.delaware.gov/locations/state/covid19_vaccine_deliveries"
         r = requests.get(url)
         suppe = BeautifulSoup(r.text, features="lxml")
+
         tdata = json.loads(
             suppe.find("div", {"aria-labelledby": "chart-line-chart-label"})[
                 "data-charts--line-chart-config-value"
             ]
         )
+
+        sd = tdata["startDate"]
+        startDate = dt.datetime(sd[0], sd[1], sd[2])
         for srs in tdata["series"]:
             if srs["name"] == "State of Delaware":
-                data["NewVaccineDelivrd"] = srs["data"][-1]
-                data["CumVaccineDelivrd"] = sum(srs["data"])
+                data = srs["data"]
+                idx = pd.date_range(startDate, periods=len(data), freq="d")
+                df3 = pd.DataFrame(data=data, columns=["NewVaccineDelivrd"], index=idx)
+                df3["CumVaccineDelivrd"] = df3["NewVaccineDelivrd"].cumsum()
 
         # End of vaccine data grab
+        df = df1.merge(
+            df2, left_index=True, right_index=True
+        ).merge(
+            df3, left_index=True, right_index=True
+        ).assign(
+            location=self.state_fips
+        )
+        df.index = df.index.set_names("dt")
+        df = df.reset_index()
 
-        return data
+        return df
 
     def normalize(self, data):
         df = data
         crename = {
-            "New Positive Cases_people": CMU(
-                category="cases", measurement="new", unit="people"
-            ),
-            "Deaths_people": CMU(
-                category="deaths", measurement="cumulative", unit="people"
-            ),
-            "Total Tests_tests": CMU(
-                category="unspecified_tests_total",
-                measurement="cumulative",
-                unit="specimens",
-            ),
-            "Positive Tests_tests": CMU(
-                category="unspecified_tests_positive",
-                measurement="cumulative",
-                unit="specimens",
-            ),
-            "Cumulative Number of Positive Cases_people": CMU(
-                category="cases", measurement="cumulative", unit="people"
-            ),
-            "Persons Tested Negative_people": CMU(
-                category="unspecified_tests_negative",
-                measurement="cumulative",
-                unit="unique_people",
-            ),
-            "Total Persons Tested_people": CMU(
-                category="unspecified_tests_total",
-                measurement="cumulative",
-                unit="unique_people",
-            ),
             "NewVaccineAdminstrd": CMU(
                 category="total_vaccine_doses_administered",
                 measurement="new",
@@ -135,21 +108,21 @@ class DelawareStateData(StateDashboard):
                 unit="doses",
             ),
             "CumVaccineDelivrd": CMU(
-                category="total_vaccine_allocated",
+                category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
         }
 
         out = (
-            df.melt(id_vars=["location"], value_vars=crename.keys())
+            df.melt(id_vars=["location", "dt"], value_vars=crename.keys())
             .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
+                vintage=self._retrieve_vintage()
             )
             .dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out.rename(columns={"StatUnit": "variable"}, inplace=True)
+
         # Extract category information and add other variable context
         out = self.extract_CMU(out, crename)
 

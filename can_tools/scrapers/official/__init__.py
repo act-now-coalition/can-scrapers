@@ -3,8 +3,8 @@ from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHosp
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
 
 from can_tools.scrapers.official.DE import (
-    DelawareCountyData,
-    DelawareStateData,
+    DelawareData,
+    DelawareStateVaccine,
 )
 
 from can_tools.scrapers.official.federal import (

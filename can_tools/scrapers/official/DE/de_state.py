@@ -5,27 +5,45 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class DelawareCountyData(StateDashboard):
+class DelawareData(StateDashboard):
     """
     Fetch county-level covid data from Delaware's database
     """
 
     # Initialize
-    source = "https://myhealthycommunity.dhss.delaware.gov/locations/county-"
+    source = "https://myhealthycommunity.dhss.delaware.gov"
     has_location = True
-    location_type = "county"
+    location_type = ""
     state_fips = int(us.states.lookup("Delaware").fips)
-    cntys = [["kent", 1], ["new-castle", 3], ["sussex", 5]]
+    locs = [
+        ["state", "state", 0],
+        ["county", "kent", 1],
+        ["county", "new-castle", 3],
+        ["county", "sussex", 5]
+    ]
 
     def fetch(self):
-        outDf = pd.DataFrame()
-        for county in self.cntys:
-            data = pd.read_csv(self.source + county[0] + "/download_covid_19_data")
+        dfs = []
+        for loc in self.locs:
+            if loc[0] == "county":
+                url = self.source + f"/locations/county-{loc[1]}/download_covid_19_data"
+                _locnumber = (self.state_fips * 1000) + loc[-1]
+            else:
+                url = self.source + f"/locations/state/download_covid_19_data"
+                _locnumber = self.state_fips
+            _loctype = loc[0]
+            data = pd.read_csv(url)
+
+            # Set date
             data["Date"] = pd.to_datetime(data[["Year", "Month", "Day"]])
-            data = data[data["Date"] == data["Date"].max()]
+
+            # Only keep non-age-adjusted, no rates per number of people
             data = data[data["Age adjusted"] == False]
+            data = data[~data["Unit"].str.contains("rate")]
+
+            # Mix statistic column and unit column and drop extra information
             data["StatUnit"] = data["Statistic"] + "_" + data["Unit"]
-            data.drop(
+            data = data.drop(
                 columns=[
                     "Year",
                     "Month",
@@ -36,27 +54,27 @@ class DelawareCountyData(StateDashboard):
                     "Statistic",
                     "Unit",
                     "County",
-                ],
-                inplace=True,
+                ]
             )
-            data["location"] = (self.state_fips * 1000) + county[1]
-            data.reset_index(inplace=True, drop=True)
-            data = pd.pivot_table(
-                data,
-                values="Value",
-                index=["location", "Date"],
-                columns="StatUnit",
-                aggfunc="first",
-            ).reset_index()
-            # County-level vaccine data not currently available (Jan22,2021)
-            outDf = pd.concat([outDf, data], sort=True, ignore_index=True)
-            outDf.fillna(0, inplace=True)
+            data["location"] = _locnumber
+            data["location_type"] = _loctype
+
+            # Reshape as desired
+            dfs.append(data)
+            # County-level vaccine data not currently available (Jan 22, 2021)
+
+        outDf = pd.concat(dfs, axis=0, ignore_index=True, sort=True)
+        outDf = outDf.fillna(0)
 
         return outDf
 
     def normalize(self, data):
-        df = data
+        df = data.copy()
+
         crename = {
+            "Cumulative Number of Positive Cases_people": CMU(
+                category="cases", measurement="cumulative", unit="people"
+            ),
             "New Positive Cases_people": CMU(
                 category="cases", measurement="new", unit="people"
             ),
@@ -73,9 +91,6 @@ class DelawareCountyData(StateDashboard):
                 measurement="cumulative",
                 unit="specimens",
             ),
-            "Cumulative Number of Positive Cases_people": CMU(
-                category="cases", measurement="cumulative", unit="people"
-            ),
             "Persons Tested Negative_people": CMU(
                 category="unspecified_tests_negative",
                 measurement="cumulative",
@@ -86,17 +101,19 @@ class DelawareCountyData(StateDashboard):
                 measurement="cumulative",
                 unit="unique_people",
             ),
+            # TODO: Add demographic information from county data
         }
 
         out = (
-            df.melt(id_vars=["location"], value_vars=crename.keys())
-            .assign(
+            df.rename(
+                columns={"StatUnit": "variable", "Value": "value"}
+            ).assign(
                 dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            )
-            .dropna()
+            ).query(
+                "variable in @crename.keys()"
+            ).dropna()
         )
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out.rename(columns={"StatUnit": "variable"}, inplace=True)
         # Extract category information and add other variable context
         out = self.extract_CMU(out, crename)
 
@@ -104,6 +121,7 @@ class DelawareCountyData(StateDashboard):
             "vintage",
             "dt",
             "location",
+            "location_type",
             "category",
             "measurement",
             "unit",

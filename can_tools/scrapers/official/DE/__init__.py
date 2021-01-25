@@ -1,2 +1,2 @@
-from can_tools.scrapers.official.DE.DE_county import DelawareCountyData
-from can_tools.scrapers.official.DE.DE_state import DelawareStateData
+from can_tools.scrapers.official.DE.de_state import DelawareData
+from can_tools.scrapers.official.DE.de_vaccine import DelawareStateVaccine
