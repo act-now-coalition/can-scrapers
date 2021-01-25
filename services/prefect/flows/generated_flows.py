@@ -17,27 +17,25 @@ def create_scraper(cls: Type[DatasetBase], dt: pd.Timestamp) -> DatasetBase:
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
-def fetch(d: DatasetBase) -> Tuple[Any, DatasetBase]:
-    return d.fetch()
+def fetch(d: DatasetBase):
+    d._fetch()
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
-def normalize(d: DatasetBase, data: Any) -> pd.DataFrame:
-    return d.normalize(data)
+def normalize(d: DatasetBase):
+    d._normalize()
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
-def validate(d: DatasetBase, df: pd.DataFrame) -> bool:
-    if d.validate(df, None):
-        return True
-    else:
+def validate(d: DatasetBase):
+    if not d._validate():
         raise ValueError("failed validation")
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
-def put(d: DatasetBase, df: pd.DataFrame, connstr: str) -> bool:
+def put(d: DatasetBase, connstr: str):
     engine = sa.create_engine(connstr)
-    success = d.put(engine, df)
+    success = d._put(engine)
 
     # do something with success
     return success
