@@ -7,6 +7,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     DCCases,
     DCDeaths,
     DCGeneral,
+    DelawareData,
+    DelawareStateVaccine,
     Florida,
     FloridaHospitalCovid,
     FloridaHospitalUsage,

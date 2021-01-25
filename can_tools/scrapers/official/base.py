@@ -472,8 +472,6 @@ class StateQueryAPI(StateDashboard, ABC):
 class MicrosoftBIDashboard(StateDashboard, ABC):
     powerbi_url: str
 
-
-
     def __init__(self, *a, **kw):
         super(MicrosoftBIDashboard, self).__init__(*a, **kw)
         self._sess = None
