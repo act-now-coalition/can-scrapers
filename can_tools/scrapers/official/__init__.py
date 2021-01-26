@@ -2,6 +2,11 @@ from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHosp
 
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
 
+from can_tools.scrapers.official.DE import (
+    DelawareData,
+    DelawareStateVaccine,
+)
+
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
     CDCStateVaccine,
@@ -13,6 +18,7 @@ from can_tools.scrapers.official.FL import (
     FloridaHospitalCovid,
     FloridaHospitalUsage,
     FloridaICUUsage,
+    FloridaCountyVaccine,
 )
 
 from can_tools.scrapers.official.PA import (
@@ -26,6 +32,7 @@ from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineState,
     IllinoisVaccineCounty,
 )
+from can_tools.scrapers.official.MI import MichiganVaccineCounty
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
     MarylandState,
