@@ -130,9 +130,8 @@ class ArizonaData(TableauMapClick, StateDashboard):
         }
 
         out = (
-            df.melt(
-                id_vars=["location", "location_type"], value_vars=crename.keys()
-            ).assign(
+            df.melt(id_vars=["location", "location_type"], value_vars=crename.keys())
+            .assign(
                 dt=self._retrieve_dt("US/Arizona"), vintage=self._retrieve_vintage()
             )
             .dropna()
