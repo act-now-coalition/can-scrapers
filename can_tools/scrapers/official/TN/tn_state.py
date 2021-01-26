@@ -34,7 +34,6 @@ class TennesseeBase(StateDashboard):
         return df
 
 
-
 class TennesseeState(TennesseeBase):
     """
     Fetch state level Covid-19 data from official state of Tennessee spreadsheet
@@ -68,15 +67,11 @@ class TennesseeState(TennesseeBase):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "NEW_CONFIRMED": CMU(
-                category="cases", measurement="new", unit="people"
-            ),
+            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
             "TOTAL_DEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
-            "NEW_DEATHS": CMU(
-                category="deaths", measurement="new", unit="people"
-            ),
+            "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
@@ -166,9 +161,7 @@ class TennesseeCounty(TennesseeBase):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "NEW_CONFIRMED": CMU(
-                category="cases", measurement="new", unit="people"
-            ),
+            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
@@ -184,16 +177,12 @@ class TennesseeCounty(TennesseeBase):
                 measurement="cumulative",
                 unit="specimens",
             ),
-            "NEW_DEATHS": CMU(
-                category="deaths", measurement="new", unit="people"
-            ),
+            "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
             "TOTAL_DEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
             "NEW_HOSPITALIZED": CMU(
-                category="hospital_beds_in_use_covid",
-                measurement="new",
-                unit="beds"
+                category="hospital_beds_in_use_covid", measurement="new", unit="beds"
             ),
             "TOTAL_HOSPITALIZED": CMU(
                 category="hospital_beds_in_use_covid",
@@ -290,9 +279,7 @@ class TennesseeAge(TennesseeBase):
         }
 
         # Move things into long format
-        df = df.melt(
-            id_vars=["dt", "age"], value_vars=crename.keys()
-        ).dropna()
+        df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(
@@ -450,7 +437,7 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
         # Translate race, ethnicity, and gender (sex) to standard names
         cat_detail_replace = {
-            "American Indian or Alaska Native" :"ai_an",
+            "American Indian or Alaska Native": "ai_an",
             "Asian": "asian",
             "Black or African American": "black",
             "White": "white",
