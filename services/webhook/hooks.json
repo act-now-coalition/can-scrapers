@@ -1,21 +1,7 @@
 [
     {
       "id": "pull-can-scrapers",
-      "execute-command": "git",
-      "pass-arguments-to-command": [
-        {
-          "source": "string",
-          "name": "pull"
-        },
-        {
-          "source": "string",
-          "name": "origin"
-        },
-        {
-          "source": "string",
-          "name": "main"
-        }
-      ],
+      "execute-command": "./update_flows.sh",
       "command-working-directory": "/home/sglyon/can-scrapers",
       "trigger-rule": {
         "and": [
