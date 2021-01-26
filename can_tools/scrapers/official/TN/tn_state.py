@@ -15,15 +15,24 @@ class TennesseeBase(StateDashboard):
         self.session = requests_retry_session()
 
     def translate_age(self, df: pd.DataFrame):
-        df.loc[df["age"] == "0-10 years", "age"] = "0-10"
-        df.loc[df["age"] == "11-20 years", "age"] = "11-20"
-        df.loc[df["age"] == "21-30 years", "age"] = "21-30"
-        df.loc[df["age"] == "31-40 years", "age"] = "31-40"
-        df.loc[df["age"] == "41-50 years", "age"] = "41-50"
-        df.loc[df["age"] == "51-60 years", "age"] = "51-60"
-        df.loc[df["age"] == "61-70 years", "age"] = "61-70"
-        df.loc[df["age"] == "71-80 years", "age"] = "71-80"
-        df.loc[df["age"] == "81+ years", "age"] = "81_plus"
+        df = df.replace(
+            {
+                "age": {
+                    "0-10 years": "0-10",
+                    "11-20 years": "11-20",
+                    "21-30 years": "21-30",
+                    "31-40 years": "31-40",
+                    "41-50 years": "41-50",
+                    "51-60 years": "51-60",
+                    "61-70 years": "61-70",
+                    "71-80 years": "71-80",
+                    "81+ years": "81_plus",
+                }
+            }
+        )
+
+        return df
+
 
 
 class TennesseeState(TennesseeBase):
@@ -59,11 +68,15 @@ class TennesseeState(TennesseeBase):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
+            "NEW_CONFIRMED": CMU(
+                category="cases", measurement="new", unit="people"
+            ),
             "TOTAL_DEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
-            "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
+            "NEW_DEATHS": CMU(
+                category="deaths", measurement="new", unit="people"
+            ),
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
@@ -138,11 +151,12 @@ class TennesseeCounty(TennesseeBase):
             "novel-coronavirus/datasets/Public-Dataset-County-New.XLSX"
         )
         request = self.session.get(url)
-        return request.content
+
+        return request
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data, parse_dates=["DATE"])
+        df = pd.read_excel(data.content, parse_dates=["DATE"])
 
         # Rename columns
         df = df.rename(columns={"DATE": "dt", "COUNTY": "location_name"})
@@ -152,7 +166,9 @@ class TennesseeCounty(TennesseeBase):
             "TOTAL_CONFIRMED": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "NEW_CONFIRMED": CMU(category="cases", measurement="new", unit="people"),
+            "NEW_CONFIRMED": CMU(
+                category="cases", measurement="new", unit="people"
+            ),
             "POS_TESTS": CMU(
                 category="pcr_tests_positive",
                 measurement="cumulative",
@@ -168,12 +184,16 @@ class TennesseeCounty(TennesseeBase):
                 measurement="cumulative",
                 unit="specimens",
             ),
-            "NEW_DEATHS": CMU(category="deaths", measurement="new", unit="people"),
+            "NEW_DEATHS": CMU(
+                category="deaths", measurement="new", unit="people"
+            ),
             "TOTAL_DEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
             "NEW_HOSPITALIZED": CMU(
-                category="hospital_beds_in_use_covid", measurement="new", unit="beds"
+                category="hospital_beds_in_use_covid",
+                measurement="new",
+                unit="beds"
             ),
             "TOTAL_HOSPITALIZED": CMU(
                 category="hospital_beds_in_use_covid",
@@ -209,10 +229,11 @@ class TennesseeCounty(TennesseeBase):
 
         # Drop the information that we won't be keeping track of
         loc_not_keep = ["Out of State", "Pending"]
-        out = out.loc[~out["location_name"].isin(loc_not_keep), :]
+        out = out.query("location_name not in @loc_not_keep")
 
         # Fix incorrectly spelled county names
-        out.loc[out["location_name"] == "Dekalb", "location_name"] = "DeKalb"
+        loc_replacer = {"Dekalb": "DeKalb"}
+        out = out.replace({"location_name": loc_replacer})
 
         # Convert value columns
         out["value"] = out["value"].astype(int)
@@ -246,17 +267,17 @@ class TennesseeAge(TennesseeBase):
             "novel-coronavirus/datasets/Public-Dataset-Age.XLSX"
         )
         request = self.session.get(url)
-        return request.content
+        return request
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data, parse_dates=["DATE"])
+        df = pd.read_excel(data.content, parse_dates=["DATE"])
 
         # Rename columns
         df = df.rename(columns={"DATE": "dt", "AGE_RANGE": "age"})
 
         # Translate age column
-        self.translate_age(df)
+        df = self.translate_age(df)
 
         # Create dictionary for columns to map
         crename = {
@@ -269,7 +290,9 @@ class TennesseeAge(TennesseeBase):
         }
 
         # Move things into long format
-        df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
+        df = df.melt(
+            id_vars=["dt", "age"], value_vars=crename.keys()
+        ).dropna()
 
         # Determine the category of each observation
         df = self.extract_CMU(
@@ -313,11 +336,12 @@ class TennesseeAgeByCounty(TennesseeBase):
             "novel-coronavirus/datasets/Public-Dataset-Daily-County-Age-Group.XLSX"
         )
         request = self.session.get(url)
-        return request.content
+
+        return request
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data, parse_dates=["DATE"])
+        df = pd.read_excel(data.content, parse_dates=["DATE"])
 
         # Rename columns
         df = df.rename(
@@ -326,15 +350,17 @@ class TennesseeAgeByCounty(TennesseeBase):
 
         # Drop the information that we won't be keeping track of
         age_not_keep = ["Pending"]
-        df = df.loc[~df["age"].isin(age_not_keep), :]
         loc_not_keep = ["Out of State", "Pending"]
-        df = df.loc[~df["location_name"].isin(loc_not_keep), :]
+        df = df.query(
+            "(age not in @age_not_keep) & (location_name not in @loc_not_keep)"
+        )
 
         # Fix incorrectly spelled county names
-        df.loc[df["location_name"] == "Dekalb", "location_name"] = "DeKalb"
+        loc_replacer = {"Dekalb": "DeKalb"}
+        df = df.replace({"location_name": loc_replacer})
 
         # Translate age column
-        self.translate_age(df)
+        df = self.translate_age(df)
 
         # Create dictionary for columns to map
         crename = {
@@ -402,11 +428,12 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
             "novel-coronavirus/datasets/Public-Dataset-RaceEthSex.XLSX"
         )
         request = self.session.get(url)
-        return request.content
+
+        return request
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data, parse_dates=["Date"])
+        df = pd.read_excel(data.content, parse_dates=["Date"])
 
         # Rename columns
         df = df.rename(
@@ -419,34 +446,23 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
         # Drop the information that we won't be keeping track of
         cat_detail_not_keep = ["Pending"]
-        df = df.loc[~df["category_detail"].isin(cat_detail_not_keep), :]
+        df = df.query("category_detail not in @cat_detail_not_keep")
 
         # Translate race, ethnicity, and gender (sex) to standard names
-        df.loc[
-            df["category_detail"] == "American Indian or Alaska Native",
-            "category_detail",
-        ] = "ai_an"
-        df.loc[df["category_detail"] == "Asian", "category_detail"] = "asian"
-        df.loc[
-            df["category_detail"] == "Black or African American", "category_detail"
-        ] = "black"
-        df.loc[df["category_detail"] == "White", "category_detail"] = "white"
-        df.loc[
-            df["category_detail"] == "Native Hawaiian or Other Pacific Islander",
-            "category_detail",
-        ] = "pacific_islander"
-        df.loc[
-            df["category_detail"] == "Other/ Multiracial", "category_detail"
-        ] = "multiple_other"
-        df.loc[
-            df["category_detail"] == "Other/Multiracial", "category_detail"
-        ] = "multiple_other"
-        df.loc[df["category_detail"] == "Hispanic", "category_detail"] = "hispanic"
-        df.loc[
-            df["category_detail"] == "Not Hispanic or Latino", "category_detail"
-        ] = "non-hispanic"
-        df.loc[df["category_detail"] == "Female", "category_detail"] = "female"
-        df.loc[df["category_detail"] == "Male", "category_detail"] = "male"
+        cat_detail_replace = {
+            "American Indian or Alaska Native" :"ai_an",
+            "Asian": "asian",
+            "Black or African American": "black",
+            "White": "white",
+            "Native Hawaiian or Other Pacific Islander": "pacific_islander",
+            "Other/ Multiracial": "multiple_other",
+            "Other/Multiracial": "multiple_other",
+            "Hispanic": "hispanic",
+            "Not Hispanic or Latino": "non-hispanic",
+            "Female": "female",
+            "Male": "male",
+        }
+        df = df.replace({"category_detail": cat_detail_replace})
 
         # Split data packed into category_name and category_detail into race, ethnicity, and gender (sex) columns
         df.loc[df["category_name"] == "RACE", "race"] = df["category_detail"]
