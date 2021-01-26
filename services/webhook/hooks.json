@@ -1,7 +1,7 @@
 [
     {
       "id": "pull-can-scrapers",
-      "execute-command": "./update_flows.sh",
+      "execute-command": "./services/webhook/update_flows.sh",
       "command-working-directory": "/home/sglyon/can-scrapers",
       "trigger-rule": {
         "and": [
