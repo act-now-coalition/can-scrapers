@@ -13,7 +13,7 @@ class ArizonaData(TableauMapClick, StateDashboard):
     # Initlze
     source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
     has_location = True
-    location_type = "county"
+    location_type = ""
     state_fips = int(us.states.lookup("Arizona").fips)
     cntys = [
         ["APACHE", 4001],
@@ -35,25 +35,36 @@ class ArizonaData(TableauMapClick, StateDashboard):
 
     def fetch(self):
         # Initialize
-        outDf = pd.DataFrame()
+        dfs = []
         reqParams = {":embed": "y", ":display_count": "no"}
         url = "https://tableau.azdhs.gov/views/COVID-19Summary/Overview2"
         tbsroot = "https://tableau.azdhs.gov"
 
         info, fdat = self.getRawTbluPageData(url, tbsroot, reqParams)
 
+        # Get the state data
+        _df = self.extractTbluData(fdat, self.state_fips)
+        _df["location_type"] = "state"
+        dfs.append(_df)
+
         # Get the county filter url params
         cntFltr = self.getTbluMapFilter(info)
 
-        if cntFltr and self.location_type == "county":
+        if cntFltr:
             for county in self.cntys:
                 cntyReqParam = reqParams
                 for li in cntFltr:
                     cntyReqParam[li] = county[0]
                 info, fdat = self.getRawTbluPageData(url, tbsroot, cntyReqParam)
+
                 # Get county data
-                cy = self.extractTbluData(fdat, county[1])
-                outDf = outDf.append(cy, ignore_index=True)
+                _df = self.extractTbluData(fdat, county[1])
+                _df["location_type"] = "county"
+
+                dfs.append(_df)
+
+            # Concat the dfs
+            outDf = pd.concat(dfs, axis=0, ignore_index=True)
 
         outDf["CumPosTests"] = outDf["PercentPositive"] * outDf["Number of tests"]
         outDf["CumDiagPosTests"] = (
@@ -67,7 +78,7 @@ class ArizonaData(TableauMapClick, StateDashboard):
         return outDf
 
     def normalize(self, data):
-        df = data
+        df = data.copy()
         crename = {
             "New Cases": CMU(category="cases", measurement="new", unit="people"),
             "New Deaths": CMU(category="deaths", measurement="new", unit="people"),
@@ -134,11 +145,13 @@ class ArizonaData(TableauMapClick, StateDashboard):
             "vintage",
             "dt",
             "location",
+            "location_type",
             "category",
             "measurement",
             "unit",
             "age",
             "race",
+            "ethnicity",
             "sex",
             "value",
         ]
