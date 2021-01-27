@@ -2,7 +2,10 @@ from can_tools.scrapers.official.AZ import (
     ArizonaData,
 )
 
-from can_tools.scrapers.official.CA import CaliforniaCasesDeaths, CaliforniaHospitals
+from can_tools.scrapers.official.CA import (
+    CaliforniaCasesDeaths, CaliforniaHospitals,
+    CASanDiegoVaccine
+)
 
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
 
