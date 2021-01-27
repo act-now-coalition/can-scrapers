@@ -16,8 +16,6 @@ import urllib.parse
 from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
-from bs4 import BeautifulSoup
-import json, re, requests
 
 from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
