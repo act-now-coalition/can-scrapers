@@ -3,8 +3,9 @@ from can_tools.scrapers.official.AZ import (
 )
 
 from can_tools.scrapers.official.CA import (
-    CaliforniaCasesDeaths, CaliforniaHospitals,
-    CASanDiegoVaccine
+    CaliforniaCasesDeaths,
+    CaliforniaHospitals,
+    CASanDiegoVaccine,
 )
 
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
