@@ -173,9 +173,12 @@ moderna_vaccine_completed,cumulative,people
 pfizer_vaccine_allocated,cumulative,doses
 pfizer_vaccine_distributed,cumulative,doses
 pfizer_vaccine_initiated,cumulative,people
+total_vaccine_initiated,new,people
 pfizer_vaccine_completed,cumulative,people
 total_vaccine_allocated,cumulative,doses
 total_vaccine_distributed,cumulative,doses
 total_vaccine_initiated,cumulative,people
 total_vaccine_completed,cumulative,people
+total_vaccine_completed,new,people
 total_vaccine_doses_administered,cumulative,doses
+total_vaccine_doses_administered,new,doses

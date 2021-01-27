@@ -1,11 +1,19 @@
+import json
 import uuid
-from abc import ABC
+import re
+
+from abc import ABC, abstractmethod
+from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from numpy.core.numeric import full
+from urllib.parse import urlparse, parse_qs
 
 import pandas as pd
 import requests
+import urllib.parse
+
+from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 from bs4 import BeautifulSoup
@@ -597,3 +605,328 @@ class TableauDashboard(StateDashboard, ABC):
             scrapedData[metric] = df
 
         return scrapedData
+
+        
+class TableauMapClick(StateDashboard, ABC):
+    """
+    Defines a few commonly-used helper methods for snagging Tableau data
+    from mapclick-driven dashboard pages specifically
+    """
+
+    def getTbluMapFilter(self, htmDump) -> List:
+        """
+        Extracts the onMapClick background data filter function from a raw tableau HTML bootstrap return
+
+        Parameters
+        ----------
+        htmdump : json
+            The raw json-ized output of the info field from getRawTbluPageData
+
+        Returns
+        -------
+        _ : List
+            The Tableau-view-specific json filter function called onMapClick
+        """
+        urlFltr = []
+        # Grab the map filter function guts:
+        for fn in htmDump["worldUpdate"]["applicationPresModel"]["workbookPresModel"][
+            "dashboardPresModel"
+        ]["userActions"]:
+            if fn.get("name") == "Map filter":
+                urlFltr = (
+                    urllib.parse.unquote(fn.get("linkSpec").get("url"))
+                    .split("?")[1]
+                    .replace("=<Countynm1~na>", "")
+                    .split("&")
+                )
+        return urlFltr
+
+    def extractTbluData(self, htmdump, area) -> pd.DataFrame:
+        """
+        Extracts data from raw tableau HTML bootstrap return
+
+        Parameters
+        ----------
+        htmdump : json
+            The raw json-ized output of the fdat data field from getRawTbluPageData
+
+        area : the FIPS code of the htmdump
+
+        Returns
+        -------
+        _ : pd.DataFrame
+            Already-pivoted covid data with column names extracted from tableau
+            'location' column will contain the proveded 'area' data
+        """
+        valF = []  # Initialize placeholder array
+        # Grab the raw data loaded into the current tableau view
+        lsUpdt = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
+            "presModelHolder"
+        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][2][
+            "dataValues"
+        ][
+            -1
+        ]
+        intDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
+            "presModelHolder"
+        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][0][
+            "dataValues"
+        ]
+        rlDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
+            "presModelHolder"
+        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][1][
+            "dataValues"
+        ]
+        # First extract the datatype and indices:
+        for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"][
+            "genPresModelMapPresModel"
+        ]["presModelMap"]:
+            dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
+                "presModelHolder"
+            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
+                "genVizDataPresModel"
+            ][
+                "paneColumnsData"
+            ][
+                "vizDataColumns"
+            ][
+                1
+            ].get(
+                "dataType"
+            )
+            indx = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
+                "presModelHolder"
+            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
+                "genVizDataPresModel"
+            ][
+                "paneColumnsData"
+            ][
+                "paneColumnsList"
+            ][
+                0
+            ][
+                "vizPaneColumns"
+            ][
+                1
+            ].get(
+                "aliasIndices"
+            )[
+                0
+            ]
+            if dtyp == "integer":
+                valF.append([area, i, intDat[indx]])
+            elif dtyp == "real":
+                valF.append([area, i, rlDat[indx]])
+        valF.append([area, "Last update", lsUpdt])
+        if valF:
+            val = pd.DataFrame(valF, columns=["location", "Name", "Value"])
+            val = pd.pivot_table(
+                val,
+                values="Value",
+                index=["location"],
+                columns="Name",
+                aggfunc="first",
+            ).reset_index()
+            return val
+        else:
+            return None
+
+    def getRawTbluPageData(self, url, bsRt, reqParams) -> (json, json):
+        """
+        Extracts and parses htm data from a tableau dashboard page
+
+        Parameters
+        ----------
+        url : str
+            The root of the Tableau dashboard
+
+        bsRt : str
+            The bootstrap root url.
+            Typically everything before the first '/' delimiter in 'url'
+
+        reqParams : dict
+            Dictionary of request parameters useable by 'requests' library
+
+        Returns
+        -------
+        info, fdat : (json, json)
+            'info' is the header section of the Tableau dashboard page (as json)
+            'fdat' is the data section of the Tableau dashboard page (as json)
+        """
+        # Initialize main page: grab session ID key, sheet ID key, root directory string
+        r = requests.get(url, params=reqParams)
+
+        # Parse the output, return a json so we can build a bootstrap call
+        suppe = BeautifulSoup(r.text, features="lxml")
+        tdata = json.loads(suppe.find("textarea", {"id": "tsConfigContainer"}).text)
+
+        # Call the bootstrapper: grab the state data, map selection update function
+        dataUrl = f'{bsRt}{tdata["vizql_root"]}/bootstrapSession/sessions/{tdata["sessionid"]}'
+        r = requests.post(
+            dataUrl,
+            data={"sheet_id": tdata["sheetId"], "showParams": tdata["showParams"]},
+        )
+
+        # Regex the non-json output
+        dat = re.search("\d+;({.*})\d+;({.*})", r.text, re.MULTILINE)
+
+        # load info head and data group separately
+        info = json.loads(dat.group(1))
+        fdat = json.loads(dat.group(2))
+
+        return (info, fdat)
+
+
+class MicrosoftBIDashboard(StateDashboard, ABC):
+    powerbi_url: str
+
+    def __init__(self, *a, **kw):
+        super(MicrosoftBIDashboard, self).__init__(*a, **kw)
+        self._sess = None
+
+    @property
+    def sess(self):
+        if self._sess is not None:
+            return self._sess
+        else:
+            self._setup_sess()
+
+    def _setup_sess(self):
+
+        self._sess = requests.Session()
+        self._sess.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)",
+            }
+        )
+        self.source_res = self._sess.get(self.source)
+        self.source_soup = BeautifulSoup(self.source_res.content, features="lxml")
+
+    def powerbi_models_url(self, rk):
+        return (
+            self.powerbi_url
+            + f"/public/reports/{rk}/modelsAndExploration?preferReadOnlySession=true"
+        )
+
+    def powerbi_query_url(self):
+        return self.powerbi_url + "/public/reports/querydata?synchronous=true"
+
+    def get_dashboard_iframe(self):
+        "This method assumes that there is only one PowerBI iframe..."
+        source_iframes = self.source_soup.find_all("iframe")
+        dashboard_frame = [f for f in source_iframes if "powerbi" in f["src"]][0]
+
+        return dashboard_frame
+
+    def get_resource_key(self, dashboard_frame):
+        "Decodes the resource key using the dashboard iframe (and it's link)"
+        # The resource key is base64 encoded in the argument to the url...
+        parsed_url = urlparse(dashboard_frame["src"])
+        args = parse_qs(parsed_url.query)
+        resource_key = json.loads(b64decode(args["r"][0]))["k"]
+
+        return resource_key
+
+    def get_model_data(self, resource_key):
+        # Get headers
+        headers = self.construct_headers(resource_key)
+
+        # Create the model url and make GET request
+        model_url = self.powerbi_models_url(resource_key)
+        model_res = self.sess.get(model_url, headers=headers)
+        model_data = json.loads(model_res.content)
+
+        # Extract relevant info
+        ds_id = model_data["models"][0]["dbName"]
+        model_id = model_data["models"][0]["id"]
+        report_id = model_data["exploration"]["report"]["objectId"]
+
+        return ds_id, model_id, report_id
+
+    def construct_headers(self, resource_key):
+        # Dictionary to fill
+        headers = {}
+
+        # Get the activity id
+        # activity_id = self.source_res.headers["request-id"]
+        # headers["RequestId"] = activity_id
+
+        # Get the resource key
+        headers["X-PowerBI-ResourceKey"] = resource_key
+
+        return headers
+
+    def construct_from(self, nets):
+        """
+        Constructs the from component of the PowerBI query
+
+        Parameters
+        ----------
+        nets : list(tuple)
+            A list of tuples containing "Name", "Entity", and "Type"
+            information for each source
+        """
+        # Must have at least one source
+        assert len(nets) >= 1
+
+        out = []
+        for (n, e, t) in nets:
+            out.append({"Name": n, "Entity": e, "Type": t})
+
+        return out
+
+    def construct_select(self, sels, aggs):
+        """
+        Constructs the select component of the PowerBI query
+
+        Parameters
+        ----------
+        sels : list(tuple)
+            A list of tuples containing information on the "Source" (should
+            match "Name" from the `construct_from` method), "Property", and
+            "Name". This is for columns that are directly selected rather
+            than aggregated
+        aggs : list(tuple)
+            A list of tuples containing information on the "Source" (should
+            match "Name" from the `construct_from` method), "Property",
+            "Function", and "Name". This is for columns that are aggregated
+        """
+        assert len
+        out = []
+
+        for (s, p, n) in sels:
+            out.append(
+                {
+                    "Column": {
+                        "Expression": {"SourceRef": {"Source": s}},
+                        "Property": p,
+                    },
+                    "Name": n,
+                }
+            )
+
+        for (s, p, f, n) in aggs:
+            out.append(
+                {
+                    "Aggregation": {
+                        "Expression": {
+                            "Column": {
+                                "Expression": {"SourceRef": {"Source": s}},
+                                "Property": p,
+                            }
+                        },
+                        "Function": f,
+                    },
+                    "Name": n,
+                }
+            )
+
+        return out
+
+    def construct_application_context(self, ds_id, report_id):
+        out = {"DatasetId": ds_id, "Sources": [{"ReportId": report_id}]}
+        return out
+
+    @abstractmethod
+    def construct_body(self):
+        pass

@@ -95,6 +95,10 @@ class DatasetBase(ABC):
 
         return out
 
+    def _retrieve_dtm1d(self, tz: str = "US/Eastern") -> pd.Timestamp:
+        """Get the datetime of one day ago in a specific timezone """
+        return self._retrieve_dt(tz) - pd.Timedelta(days=1)
+
     def _retrieve_vintage(self) -> pd.Timestamp:
         """Get the current UTC timestamp, at hourly resolution. Used as "vintage" in db"""
         return pd.Timestamp.utcnow().floor("h")
