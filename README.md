@@ -89,3 +89,14 @@ The two core ABCs are `DatasetBaseDate` and `DatasetBaseNoDate`. The key
 difference between these two ABCs is that the `get` method for `DatasetBaseDate`
 expects to receive an argument `date` to it's `get` method whereas
 `DatasetBaseNoDate` does not expect any arguments to the `get` method.
+
+## Triggering the integration
+
+When creating a pull request various tests are performed on the code.
+Occasionally, you might need to trigger a re-test without actually changing code
+on your scraper.  To achieve that goal, you can make an empty commit and then
+push it, causing the `on: pull requests` checks to be run.
+
+```git commit --allow-empty -m "Trigger GitHub actions"
+git push
+```
