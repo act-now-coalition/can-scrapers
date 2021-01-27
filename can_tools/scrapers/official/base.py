@@ -606,7 +606,7 @@ class TableauDashboard(StateDashboard, ABC):
 
         return scrapedData
 
-        
+
 class TableauMapClick(StateDashboard, ABC):
     """
     Defines a few commonly-used helper methods for snagging Tableau data
