@@ -45,21 +45,23 @@ class NorthCarolinaVaccineCounty(StateDashboard):
             "Vaccine Status": "variable",
             "Total Doses": "value",
         }
-        df = data.iloc[(colnames_ix + 1):, :].rename(
-            columns=col_renamer
-        ).loc[:, col_renamer.values()]
+        df = (
+            data.iloc[(colnames_ix + 1) :, :]
+            .rename(columns=col_renamer)
+            .loc[:, col_renamer.values()]
+        )
 
         # Drop missing
-        df = df.dropna().replace(
-            {"value": {" ": np.nan}}
-        ).query(
-            "location_name != 'Missing'"
+        df = (
+            df.dropna()
+            .replace({"value": {" ": np.nan}})
+            .query("location_name != 'Missing'")
         )
 
         df = df.assign(
-                value=lambda x: pd.to_numeric(x.loc[:, "value"]),
-                vintage=self._retrieve_vintage(),
-                dt=dt,
+            value=lambda x: pd.to_numeric(x.loc[:, "value"]),
+            vintage=self._retrieve_vintage(),
+            dt=dt,
         )
 
         out = self.extract_CMU(df, cmus).drop(["variable"], axis="columns")
