@@ -25,7 +25,7 @@ class NorthCarolinaVaccineCounty(StateDashboard):
 
         # find row with column labels
         colnames_ix = (data.iloc[:, 0] == "County").idxmax()
-        data.columns = data.iloc[colnames_ix, :]
+        data.columns = pd.Index(data=data.iloc[colnames_ix, :], name="")
         cmus = {
             "Dose 1 Administered": CMU(
                 category="total_vaccine_initiated",
@@ -38,23 +38,30 @@ class NorthCarolinaVaccineCounty(StateDashboard):
                 unit="people",
             ),
         }
-        return (
-            data.iloc[(colnames_ix + 1) :, :]
-            .rename(
-                columns={
-                    "County": "location_name",
-                    "Vaccine Status": "variable",
-                    "Total Doses": "value",
-                }
-            )
-            .replace({"value": {" ": np.nan}})
-            .pipe(lambda x: x.loc[x["location_name"] != "Missing"])
-            .assign(
+
+        # Reformat
+        col_renamer = {
+            "County": "location_name",
+            "Vaccine Status": "variable",
+            "Total Doses": "value",
+        }
+        df = data.iloc[(colnames_ix + 1):, :].rename(
+            columns=col_renamer
+        ).loc[:, col_renamer.values()]
+
+        # Drop missing
+        df = df.dropna().replace(
+            {"value": {" ": np.nan}}
+        ).query(
+            "location_name != 'Missing'"
+        )
+
+        df = df.assign(
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
                 dt=dt,
-            )
-            .dropna()
-            .pipe(self.extract_CMU, cmu=cmus)
-            .drop(["variable"], axis=1)
         )
+
+        out = self.extract_CMU(df, cmus).drop(["variable"], axis="columns")
+
+        return out
