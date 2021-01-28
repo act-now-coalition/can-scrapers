@@ -18,6 +18,11 @@ def requests_retry_session(backoff_factor=0.1, **kw):
     http = requests.Session()
     http.mount("https://", adapter)
     http.mount("http://", adapter)
+    http.headers.update(
+        {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0"
+        }
+    )
 
     return http
 

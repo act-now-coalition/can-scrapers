@@ -183,3 +183,5 @@ total_vaccine_completed,new,people
 total_vaccine_doses_administered,cumulative,doses
 total_vaccine_doses_administered,new,doses
 pcr_tests_positive,rolling_average_14_day,percentage
+total_vaccine_initiated,current,percentage
+total_vaccine_completed,current,percentage
