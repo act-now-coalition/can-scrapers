@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
-from numpy.core.numeric import full
 from urllib.parse import urlparse, parse_qs
 
 import pandas as pd
