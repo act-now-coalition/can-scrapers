@@ -35,11 +35,14 @@ class DelawareData(StateDashboard):
             data = pd.read_csv(url)
 
             # Set date
-            data["Date"] = pd.to_datetime(data[["Year", "Month", "Day"]])
+            data["dt"] = pd.to_datetime(data[["Year", "Month", "Day"]])
 
             # Only keep non-age-adjusted, no rates per number of people
             data = data[data["Age adjusted"] == False]
             data = data[~data["Unit"].str.contains("rate")]
+
+            # Filter to the maximum date so we don't pull all historic data with each run
+            data = data[data["dt"] == data["dt"].max()]
 
             # Mix statistic column and unit column and drop extra information
             data["StatUnit"] = data["Statistic"] + "_" + data["Unit"]
@@ -106,9 +109,7 @@ class DelawareData(StateDashboard):
 
         out = (
             df.rename(columns={"StatUnit": "variable", "Value": "value"})
-            .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            )
+            .assign(vintage=self._retrieve_vintage())
             .query("variable in @crename.keys()")
             .dropna()
         )
