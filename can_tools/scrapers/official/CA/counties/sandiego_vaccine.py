@@ -138,6 +138,10 @@ class CASanDiegoVaccine(ArcGIS):
         ).dropna()
         out["vintage"] = self._retrieve_vintage()
 
+        # Fix random date error...
+        out = out.replace(
+            {"dt": {pd.to_datetime("2020-01-19"): pd.to_datetime("2021-01-19")}}
+        )
         cols_to_keep = [
             "vintage",
             "dt",
