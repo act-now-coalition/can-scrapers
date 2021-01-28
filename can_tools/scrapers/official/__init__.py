@@ -48,7 +48,9 @@ from can_tools.scrapers.official.NJ import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NY import NewYorkTests
 from can_tools.scrapers.official.TN import (
     TennesseeAge,
+    TennesseeAgeByCounty,
     TennesseeCounty,
+    TennesseeRaceEthnicitySex,
     TennesseeState,
 )
 from can_tools.scrapers.official.TX import (
