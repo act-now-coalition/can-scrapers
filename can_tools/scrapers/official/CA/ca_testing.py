@@ -80,7 +80,7 @@ class CaliforniaTesting(TableauDashboard):
     ]
 
     def fetch(self, test=False) -> Any:
-        df = DataFrame()
+        to_cat = []
         for countyName in self.counties:
             self.filterFunctionValue = countyName
             countyData = self.get_tableau_view()
@@ -90,33 +90,16 @@ class CaliforniaTesting(TableauDashboard):
                 [countyTestCounts, countyTestPositivity], axis=0
             ).sort_values(["dt"])
             currentCounty["location_name"] = countyName
-            df = pd.concat([df, currentCounty], axis=0).sort_values(
-                ["dt", "location_name"]
-            )
+            to_cat.append(currentCounty)
             if test and countyName == "Contra Costa":
                 # If test, only use first 7 counties
                 break
-        return df
+        return pd.concat(to_cat, axis=0).sort_values(["dt", "location_name"])
 
     def normalize(self, data) -> pd.DataFrame:
         data.loc[:, "value"] = pd.to_numeric(data["value"])
         data["vintage"] = self._retrieve_vintage()
-
-        cols_to_keep = [
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-            "vintage",
-        ]
-
-        return data.loc[:, cols_to_keep]
+        return data.drop(["variable"], axis="columns")
 
     def _get_test_counts(self, countyData):
         df = countyData["6.3 County Test - Line (2)"]

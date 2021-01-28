@@ -25,6 +25,7 @@ from can_tools.models import (
     build_insert_from_temp,
 )
 from can_tools.scrapers.base import DatasetBase
+from can_tools.scrapers.util import requests_retry_session
 
 
 class StateDashboard(DatasetBase, ABC):
@@ -495,20 +496,14 @@ class TableauDashboard(StateDashboard, ABC):
 
     baseurl: str
     viewPath: str
-    filterFunctionName: str
-    filterFunctionValue: str
-
-    def __init__(
-        self,
-        execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
-    ):
-        super().__init__(execution_dt)
+    filterFunctionName: Optional[str]
+    filterFunctionValue: Optional[str]
 
     def get_tableau_view(self):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
-        req = requests.Session()
+        req = requests_retry_session()
         fullURL = self.baseurl + "/views/" + self.viewPath
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
