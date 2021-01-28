@@ -25,6 +25,7 @@ from can_tools.models import (
     build_insert_from_temp,
 )
 from can_tools.scrapers.base import DatasetBase
+from can_tools.scrapers.util import requests_retry_session
 
 
 class StateDashboard(DatasetBase, ABC):
@@ -471,6 +472,131 @@ class StateQueryAPI(StateDashboard, ABC):
             axis=0,
             ignore_index=True,
         )
+
+
+class TableauDashboard(StateDashboard, ABC):
+    """
+    Fetch data from a Tableau dashboard
+
+    Must define class variables:
+
+    * `baseurl`
+    * `viewPath`
+
+    in order to use this class.
+
+    If the dashboard requires a filter, define:
+
+    * `filterFunctionName`
+    * `filterFunctionValue`
+
+    to drill down on values like counties, dates, etc.
+
+    """
+
+    baseurl: str
+    viewPath: str
+    filterFunctionName: Optional[str]
+    filterFunctionValue: Optional[str]
+
+    def get_tableau_view(self):
+        def onAlias(it, value, cstring):
+            return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
+
+        req = requests_retry_session()
+        fullURL = self.baseurl + "/views/" + self.viewPath
+        if self.filterFunctionName is not None:
+            params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
+            params += self.filterFunctionName + "=" + self.filterFunctionValue
+            reqg = req.get(fullURL, params=params)
+        else:
+            reqg = req.get(
+                fullURL,
+                params={
+                    ":language": "en",
+                    ":display_count": "y",
+                    ":origin": "viz_share_link",
+                    ":embed": "y",
+                    ":showVizHome": "n",
+                    ":jsdebug": "y",
+                    ":apiID": "host4",
+                    "#navType": "1",
+                    "navSrc": "Parse",
+                },
+            )
+        soup = BeautifulSoup(reqg.text, "html.parser")
+        tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
+        tableauData = json.loads(tableauTag.text)
+        dataUrl = f'{self.baseurl}/{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+
+        resp = requests.post(
+            dataUrl,
+            data={
+                "sheet_id": tableauData["sheetId"],
+                "showParams": tableauData["showParams"],
+            },
+        )
+        # Parse the response.
+        # The response contains multiple chuncks of the form
+        # `<size>;<json>` where `<size>` is the number of bytes in `<json>`
+        resp_text = resp.text
+        data = []
+        while len(resp_text) != 0:
+            size, rest = resp_text.split(";", 1)
+            chunck = json.loads(rest[: int(size)])
+            data.append(chunck)
+            resp_text = rest[int(size) :]
+
+        # The following section (to the end of the method) uses code from
+        # https://stackoverflow.com/questions/64094560/how-do-i-scrape-tableau-data-from-website-into-r
+        presModel = data[1]["secondaryInfo"]["presModelMap"]
+        metricInfo = presModel["vizData"]["presModelHolder"]
+        metricInfo = metricInfo["genPresModelMapPresModel"]["presModelMap"]
+        data = presModel["dataDictionary"]["presModelHolder"]
+        data = data["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"]
+
+        scrapedData = {}
+
+        for metric in metricInfo:
+            metricsDict = metricInfo[metric]["presModelHolder"]["genVizDataPresModel"]
+            columnsData = metricsDict["paneColumnsData"]
+
+            result = [
+                {
+                    "fieldCaption": t.get("fieldCaption", ""),
+                    "valueIndices": columnsData["paneColumnsList"][t["paneIndices"][0]][
+                        "vizPaneColumns"
+                    ][t["columnIndices"][0]]["valueIndices"],
+                    "aliasIndices": columnsData["paneColumnsList"][t["paneIndices"][0]][
+                        "vizPaneColumns"
+                    ][t["columnIndices"][0]]["aliasIndices"],
+                    "dataType": t.get("dataType"),
+                    "paneIndices": t["paneIndices"][0],
+                    "columnIndices": t["columnIndices"][0],
+                }
+                for t in columnsData["vizDataColumns"]
+                if t.get("fieldCaption")
+            ]
+            frameData = {}
+            cstring = [t for t in data if t["dataType"] == "cstring"][0]
+            for t in data:
+                for index in result:
+                    if t["dataType"] == index["dataType"]:
+                        if len(index["valueIndices"]) > 0:
+                            frameData[f'{index["fieldCaption"]}-value'] = [
+                                t["dataValues"][abs(it)] for it in index["valueIndices"]
+                            ]
+                        if len(index["aliasIndices"]) > 0:
+                            frameData[f'{index["fieldCaption"]}-alias'] = [
+                                onAlias(it, t["dataValues"], cstring)
+                                for it in index["aliasIndices"]
+                            ]
+
+            df = pd.DataFrame.from_dict(frameData, orient="index").fillna(0).T
+
+            scrapedData[metric] = df
+
+        return scrapedData
 
 
 class TableauMapClick(StateDashboard, ABC):
