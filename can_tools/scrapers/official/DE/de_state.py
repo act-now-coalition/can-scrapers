@@ -41,9 +41,6 @@ class DelawareData(StateDashboard):
             data = data[data["Age adjusted"] == False]
             data = data[~data["Unit"].str.contains("rate")]
 
-            # Filter to the maximum date so we don't pull all historic data with each run
-            data = data[data["dt"] == data["dt"].max()]
-
             # Mix statistic column and unit column and drop extra information
             data["StatUnit"] = data["Statistic"] + "_" + data["Unit"]
             data = data.drop(
