@@ -3,6 +3,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     ArizonaData,
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
+    CaliforniaTesting,
     CDCCovidDataTracker,
     CDCStateVaccine,
     DCCases,
