@@ -5,6 +5,7 @@ from can_tools.scrapers.official.AZ import (
 from can_tools.scrapers.official.CA import (
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
+    CASanDiegoVaccine,
     CaliforniaTesting,
 )
 
