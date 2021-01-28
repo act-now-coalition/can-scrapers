@@ -73,3 +73,5 @@ from can_tools.scrapers.official.CT import (
 )
 
 from can_tools.scrapers.official.OH import OhioVaccineCounty
+
+from can_tools.scrapers.official.VT import VermontCountyVaccine, VermontStateVaccine
