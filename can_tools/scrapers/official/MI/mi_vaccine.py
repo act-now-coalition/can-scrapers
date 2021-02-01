@@ -45,7 +45,7 @@ class MichiganVaccineCounty(StateDashboard):
                 unit="doses",
             ),
         }
-        not_counties = ["No County", "Detroit"]  # noqa
+        not_counties = ["No County", "Detroit", "Non-Michigan Resident"]  # noqa
 
         # need to sum over all the possible facility types for distribution
         df = (
