@@ -20,7 +20,7 @@ class VermontCountyVaccine(ArcGIS):
         "dose_2_male",
         "dose_2_female",
         "dose_2_sex_unknown",
-    ]  # variables to track
+    ]
 
     def fetch(self):
         return self.get_all_jsons("VT_COVID_Vaccine_Data", 0, "")
@@ -34,24 +34,25 @@ class VermontCountyVaccine(ArcGIS):
         data = self._get_clean_data(data)
         newest_date = data["dt"].max()
 
-        """
-        get cumulative data
-        """
+        # get cumulative data
         df = data.melt(
             id_vars=["dt", "location_name"], value_vars=self.var_columns
         ).dropna()
 
         # sum total values by county for first and second dose
+        # NOTE: This currently uses a sum to get the total number of
+        #       vaccines administered -- This depends on the fact
+        #       that we're only working with sex for now
         df1 = (
             df.query('variable.str.contains("dose_1")')
-            .groupby("location_name", as_index=False)
-            .sum("value")
+            .groupby("location_name", as_index=False)["value"]
+            .sum()
         )
         df1["category"] = "total_vaccine_initiated"
         df2 = (
             df.query('variable.str.contains("dose_2")')
-            .groupby("location_name", as_index=False)
-            .sum("value")
+            .groupby("location_name", as_index=False)["value"]
+            .sum()
         )
         df2["category"] = "total_vaccine_completed"
 
@@ -61,13 +62,12 @@ class VermontCountyVaccine(ArcGIS):
                 df1,
                 df2,
             ],
+            axis=0,
             ignore_index=True,
         )
         cumulative_df = self._populate_cols(df, newest_date)
 
-        """
-        get weekly snapshots
-        """
+        # get weekly snapshots
         # create "total" 1st and 2nd dose columns by week
         weekly_df = self._get_clean_data(data)
         weekly_df["dose_1"] = (
@@ -151,10 +151,11 @@ class VermontCountyVaccine(ArcGIS):
         """
         data.columns = [x.lower() for x in list(data)]
         data = data.query("location_name != 'Unknown/Other'")
-        data["dt"] = (
-            data["dates"].str.split("-").str[0]
-        )  # keep first date (can change to second)
+
+        # keep second date
+        data["dt"] = data["dates"].str.split("-").str[1]
         data["dt"] = pd.to_datetime(data["dt"], errors="coerce")
+
         return data
 
     def _populate_cols(self, data, dt):
@@ -164,19 +165,19 @@ class VermontCountyVaccine(ArcGIS):
         accepts: pandas.Dataframe
         returns: pandas.Dataframe
         """
-        df = data
-        df[["measurement", "unit", "age", "race", "ethnicity", "sex"]] = [
-            "cumulative",
-            "people",
-            "all",
-            "all",
-            "all",
-            "all",
-        ]  # add columns and values
+        df = data.assign(
+            measurement="cumulative",
+            unit="people",
+            age="all",
+            race="all",
+            ethnicity="all",
+            sex="all",
+        )
 
         df["dt"] = dt
         df["vintage"] = self._retrieve_vintage()
         df.loc[:, "value"] = pd.to_numeric(df["value"])
+
         return df
 
 
