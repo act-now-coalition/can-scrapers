@@ -44,7 +44,9 @@ class TennesseeVaccineCountyFirstDose(TableauDashboard):
             data[val_col + county_col]
             .rename(columns={val_col[0]: "value", county_col[0]: "location_name"})
             .assign(
-                location_name=lambda x: x["location_name"].str.title().replace(odd_cap_counties),
+                location_name=lambda x: x["location_name"]
+                .str.title()
+                .replace(odd_cap_counties),
                 variable=variable_colname,
                 dt=self._retrieve_dt(tz="US/Central"),
                 vintage=self._retrieve_vintage(),
