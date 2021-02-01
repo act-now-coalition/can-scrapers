@@ -43,6 +43,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TexasStateVaccine,
     # TexasVaccineDemographics,
     TexasTests,
+    VermontCountyVaccine,
+    VermontStateVaccine,
     WisconsinCounties,
     WisconsinState,
 )
