@@ -496,8 +496,8 @@ class TableauDashboard(StateDashboard, ABC):
 
     baseurl: str
     viewPath: str
-    filterFunctionName: Optional[str]
-    filterFunctionValue: Optional[str]
+    filterFunctionName: Optional[str] = None
+    filterFunctionValue: Optional[str] = None
 
     def get_tableau_view(self):
         def onAlias(it, value, cstring):
@@ -523,18 +523,29 @@ class TableauDashboard(StateDashboard, ABC):
                     "#navType": "1",
                     "navSrc": "Parse",
                 },
+                headers={"Accept": "text/javascript"},
             )
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
-        dataUrl = f'{self.baseurl}/{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+        parsed_url = urllib.parse.urlparse(fullURL)
+        dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
 
-        resp = requests.post(
+        # copy over some additional headers from tableauData
+        form_data = {}
+        form_map = {
+            "sheetId": "sheet_id",
+            "showParams": "showParams",
+            "stickySessionKey": "stickySessionKey",
+        }
+        for k, v in form_map.items():
+            if k in tableauData:
+                form_data[v] = tableauData[k]
+
+        resp = req.post(
             dataUrl,
-            data={
-                "sheet_id": tableauData["sheetId"],
-                "showParams": tableauData["showParams"],
-            },
+            data=form_data,
+            headers={"Accept": "text/javascript"},
         )
         # Parse the response.
         # The response contains multiple chuncks of the form

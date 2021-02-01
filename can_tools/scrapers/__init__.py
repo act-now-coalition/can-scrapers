@@ -36,6 +36,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TennesseeCounty,
     TennesseeRaceEthnicitySex,
     TennesseeState,
+    TennesseeVaccineCountyFirstDose,
+    TennesseeVaccineCountySecondDose,
     TexasCasesDeaths,
     TexasCountyVaccine,
     TexasStateVaccine,
