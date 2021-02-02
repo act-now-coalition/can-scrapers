@@ -122,7 +122,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
             data_rows.append(row)
 
         # Dump records into a DataFrame
-        df = pd.DataFrame.from_records(data_rows)
+        df = pd.DataFrame.from_records(data_rows).dropna()
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
 
         # Make sure McKean follows capitalization in db
