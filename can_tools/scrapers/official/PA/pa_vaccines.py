@@ -114,8 +114,10 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
             row = {}
             for k in col_keys:
-                flat_record_key = [frk for frk in flat_record.keys() if k in frk][0]
-                row[col_mapping[k]] = flat_record[flat_record_key]
+                flat_record_key = [frk for frk in flat_record.keys() if k in frk]
+
+                if len(flat_record_key) > 0:
+                    row[col_mapping[k]] = flat_record[flat_record_key[0]]
 
             data_rows.append(row)
 
