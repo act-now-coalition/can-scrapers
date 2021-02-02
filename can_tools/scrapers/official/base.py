@@ -566,7 +566,13 @@ class TableauDashboard(StateDashboard, ABC):
         data = presModel["dataDictionary"]["presModelHolder"]
         data = data["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"]
 
-        scrapedData = {}
+        scrapedData = {
+            "meta": {
+                "dataUrl": dataUrl,
+                "form_data": form_data,
+                "sessionID": tableauData["sessionid"],
+            }
+        }
 
         for metric in metricInfo:
             metricsDict = metricInfo[metric]["presModelHolder"]["genVizDataPresModel"]
