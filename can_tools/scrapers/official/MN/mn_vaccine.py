@@ -45,11 +45,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
                                                 "MODEL_Joined_Counties",
                                                 0,
                                             ),
-                                            (
-                                                "_",
-                                                "_Measures_Used",
-                                                0
-                                            )
+                                            ("_", "_Measures_Used", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -65,12 +61,12 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
                                             (
                                                 "_",
                                                 "_displayCaseIncomplete",
-                                                "total_vaccine_initiated_display"
+                                                "total_vaccine_initiated_display",
                                             ),
                                             (
                                                 "_",
                                                 "_displayCaseComplete",
-                                                "total_vaccine_completed_display"
+                                                "total_vaccine_completed_display",
                                             ),
                                         ],
                                     ),
@@ -129,7 +125,9 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows, columns=row_names)
 
         # Title case and remove the word county
-        df["location_name"] = df["county"].str.title().str.replace("County", "").str.strip()
+        df["location_name"] = (
+            df["county"].str.title().str.replace("County", "").str.strip()
+        )
         df = df.query("~location_name.str.contains('Unknown')")
 
         # Rename certain counties

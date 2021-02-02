@@ -935,7 +935,7 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
                         "Expression": {"SourceRef": {"Source": s}},
                         "Property": p,
                     },
-                    "Name": n
+                    "Name": n,
                 }
             )
 
