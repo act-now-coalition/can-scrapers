@@ -45,6 +45,7 @@ from can_tools.scrapers.official.MI import MichiganVaccineCounty
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
     MarylandState,
+    MarylandCountyVaccines,
 )
 
 # from can_tools.scrapers.official.MA import Massachusetts
