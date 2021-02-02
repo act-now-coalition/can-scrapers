@@ -35,13 +35,14 @@ class MissouriVaccineCounty(TableauDashboard):
             .loc[:, ["value", "variable", "location_name"]]
             .pipe(lambda x: x.loc[x.variable.isin(cmus.keys()), :])
             .assign(
-                dt=self._retrieve_dt("US/Central"), 
+                dt=self._retrieve_dt("US/Central"),
                 vintage=self._retrieve_vintage(),
                 value=lambda x: x["value"].astype(str).str.replace(",", "").astype(int),
-                location_name=lambda x: x["location_name"].replace({"NewMadrid": "New Madrid"})
+                location_name=lambda x: x["location_name"].replace(
+                    {"NewMadrid": "New Madrid"}
+                ),
             )
             .query("location_name not in @non_counties")
             .pipe(self.extract_CMU, cmu=cmus)
             .drop(["variable"], axis="columns")
         )
-        
