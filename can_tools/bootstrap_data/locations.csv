@@ -238,7 +238,7 @@ iso1:us#iso2:us-mt#fips:30015,30015,30,30,Chouteau,3972.6726,47.886833,-110.4362
 iso1:us#iso2:us-ne#fips:31017,31017,31,31,Brown,1221.3971,42.359562,-99.92392,Brown County,county
 iso1:us#iso2:us-tn#fips:47013,47013,47,47,Campbell,480.2059,36.401592,-84.15925,Campbell County,county
 iso1:us#iso2:us-nc#fips:37069,37069,37,37,Franklin,491.8171,36.08824,-78.28309,Franklin County,county
-iso1:us#iso2:us-md#fips:24510,24510,24,24,Baltimore city,80.94945,39.300034000000004,-76.61046999999999,Baltimore city,county
+iso1:us#iso2:us-md#fips:24510,24510,24,24,Baltimore City,80.94945,39.300034000000004,-76.61046999999999,Baltimore City,county
 iso1:us#iso2:us-ks#fips:20111,20111,20,20,Lyon,847.5147,38.455402,-96.161644,Lyon County,county
 iso1:us#iso2:us-ia#fips:19027,19027,19,19,Carroll,569.45636,42.039494,-94.867645,Carroll County,county
 iso1:us#iso2:us-la#fips:22107,22107,22,22,Tensas Parish,602.80493,32.001488,-91.342575,Tensas Parish,county
