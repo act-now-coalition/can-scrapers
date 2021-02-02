@@ -30,6 +30,8 @@ from can_tools.scrapers.official.FL import (
     FloridaCountyVaccine,
 )
 
+from can_tools.scrapers.official.MO import MissouriVaccineCounty
+
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
