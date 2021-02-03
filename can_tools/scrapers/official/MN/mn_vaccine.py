@@ -1,5 +1,3 @@
-import json
-
 from typing import Any
 
 import pandas as pd
@@ -105,7 +103,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
 
         return res.json()
 
-    def normalize(self, resjson):
+    def normalize(self, resjson: dict) -> pd.DataFrame:
         # Extract components we care about from json
         foo = resjson["results"][0]["result"]["data"]
         descriptor = foo["descriptor"]["Select"]
