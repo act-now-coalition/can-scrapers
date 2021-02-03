@@ -878,7 +878,7 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
 
         return out
 
-    def construct_select(self, sels, aggs):
+    def construct_select(self, sels, aggs, meas):
         """
         Constructs the select component of the PowerBI query
 
@@ -893,6 +893,10 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
             A list of tuples containing information on the "Source" (should
             match "Name" from the `construct_from` method), "Property",
             "Function", and "Name". This is for columns that are aggregated
+        meas : list(tuple)
+            A list of tuples containing information on the "Source", "Property",
+            and "Name". I don't know exactly the difference between `sels` and
+            `meas` but they differ slightly
         """
         assert len
         out = []
@@ -919,6 +923,17 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
                             }
                         },
                         "Function": f,
+                    },
+                    "Name": n,
+                }
+            )
+
+        for (s, p, n) in meas:
+            out.append(
+                {
+                    "Measure": {
+                        "Expression": {"SourceRef": {"Source": s}},
+                        "Property": p,
                     },
                     "Name": n,
                 }
