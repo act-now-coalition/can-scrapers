@@ -29,14 +29,14 @@ class WashingtonVaccine(StateDashboard):
         return asyncio.get_event_loop().run_until_complete(self._get_from_browser())
 
     def normalize(self, data: str) -> pd.DataFrame:
-        _cmu = lambda c: CMU(category=c, measurement="cumulative", unit="pepole")
+        _cmu = lambda c: CMU(category=c, measurement="cumulative", unit="people")
         cmus = {
             "People Initiating Vaccination": _cmu("total_vaccine_initiated"),
             "People Fully Vaccinated": _cmu("total_vaccine_completed"),
         }
-        df = (
+        return (
             pd.read_html(data)[0]
-            .query("County != 'Total'")
+            .query("County != 'Total' and County != 'Unassigned'")
             .rename(columns={"County": "location_name"})
             .melt(id_vars=["location_name"], value_vars=cmus.keys())
             .assign(
