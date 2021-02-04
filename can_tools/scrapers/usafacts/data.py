@@ -20,6 +20,7 @@ class USAFactsCases(FederalDashboard):
     data_type = "covid"
     source = "https://usafacts.org/issues/coronavirus/"
     has_location = True
+    location_type = ""
 
     provider: str = "usafacts"
 
