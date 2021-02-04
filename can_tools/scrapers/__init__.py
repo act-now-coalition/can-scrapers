@@ -57,4 +57,6 @@ from can_tools.scrapers.ctp import (
     CovidTrackingProjectDemographics,
 )
 
+from can_tools.scrapers.usafacts import USAFactsDeaths, USAFactsCases
+
 from can_tools.scrapers import util
