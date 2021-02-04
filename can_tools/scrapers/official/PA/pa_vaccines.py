@@ -62,6 +62,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                                             ),
                                         ],
                                         [],
+                                        [],
                                     ),
                                 }
                             }
