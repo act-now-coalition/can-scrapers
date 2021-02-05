@@ -12,50 +12,28 @@ class FloridaCountyVaccine(StateDashboard):
     source = "https://floridahealthcovid19.gov/#latest-stats"
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
-    fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
-
-    def __fetch(self):
-        fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
-        """ area is the location of table in pdf by distance from [top, left, top + height, left + width] in units of pixels (inches*72)
-            see https://stackoverflow.com/a/61097723/14034347
-        """
-        return read_pdf(
-            fetch_url,
-            pages=2,
-            # area=[134, 77, 1172.16, 792],
-            lattice=True,
-            guess=True,
-            pandas_options={"dtype": str},
-        )
+    # fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
+    fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_20210125.pdf"
 
     def fetch(self):
-        return camelot.read_pdf(self.fetch_url, pages="2", flavor="stream")
-
+        return camelot.read_pdf(self.fetch_url, pages='2-end', flavor="stream")
+    
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
-        if len(data) > 1:
-            raise ValueError("more tables returned than expected value")
-
-        df = data[0].df
-        df.columns = [
-            "location_name",
-            "first_dose_new",
-            "series_complete_new",
-            "total_people_vaccinated_new",
-            "first_dose_total",
-            "series_complete_total",
-            "total_people_vaccinated_total",
-        ]
-        df = df.iloc[6:].reset_index(drop=True)
+        df = self._truncate_data(data[0].df)
+        
+        #if the table overflows onto next page, retrieve the data in the same way and append
+        if len(data) == 2:
+            append_df = self._truncate_data(data[1].df)
+            df = pd.concat([df, append_df])
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
-        df = df[
-            (df["location_name"] != "Unknown")
-            & (df["location_name"] != "Out-Of-State")
-            & (df["location_name"] != "Total")
-        ]
-        df.loc[df["location_name"] == "Desoto", "location_name"] = "DeSoto"
-        df.loc[df["location_name"] == "Dade", "location_name"] = "Miami-Dade"
+        df = df.query(
+            "location_name != 'Unknown' &"
+            "location_name != 'Out-Of-State' &"
+            "location_name != 'Total'"
+        )
+        df = df.replace({"location_name": {"Desoto": "DeSoto", "Dade": "Miami-Dade"}})
 
         crename = {
             "first_dose_new": CMU(
@@ -125,3 +103,20 @@ class FloridaCountyVaccine(StateDashboard):
                 res.headers["Last-Modified"], format="%a, %d %b %Y %H:%M:%S GMT"
             ) - pd.Timedelta(days=1)
         return dt.date()
+
+    def _truncate_data(self,data):
+        """
+        fix the column names and remove all the gibberesh data before the first county/real entry in the table
+        this method feels like a band-aid fix, but it has worked for the past two weeks and im not sure of a better way 
+        """
+        data.columns = [
+            "location_name",
+            "first_dose_new",
+            "series_complete_new",
+            "total_people_vaccinated_new",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated_total",
+        ]
+    
+        return data[data.query("location_name == 'County of residence'").index[0]+2:]
