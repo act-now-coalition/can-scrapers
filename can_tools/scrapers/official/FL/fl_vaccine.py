@@ -15,13 +15,13 @@ class FloridaCountyVaccine(StateDashboard):
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
 
     def fetch(self):
-        return camelot.read_pdf(self.fetch_url, pages='2-end', flavor="stream")
-    
+        return camelot.read_pdf(self.fetch_url, pages="2-end", flavor="stream")
+
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
         df = self._truncate_data(data[0].df)
-        
-        #if the table overflows onto next page, retrieve the data in the same way and append
+
+        # if the table overflows onto next page, retrieve the data in the same way and append
         if len(data) == 2:
             append_df = self._truncate_data(data[1].df)
             df = pd.concat([df, append_df])
@@ -103,10 +103,10 @@ class FloridaCountyVaccine(StateDashboard):
             ) - pd.Timedelta(days=1)
         return dt.date()
 
-    def _truncate_data(self,data):
+    def _truncate_data(self, data):
         """
-        fix the column names and remove all the gibberesh data before the first county/real entry in the table
-        this method feels like a band-aid fix, but it has worked for the past two weeks and im not sure of a better way 
+        fix the column names and remove all the gibberesh data before the first county/real entry in the table.
+        **this method feels like a band-aid fix, but it has worked for the past two weeks and im not sure of a better way**
         """
         data.columns = [
             "location_name",
@@ -117,5 +117,6 @@ class FloridaCountyVaccine(StateDashboard):
             "series_complete_total",
             "total_people_vaccinated_total",
         ]
-    
-        return data[data.query("location_name == 'County of residence'").index[0]+2:]
+
+        # the data/table starts two lines after 'County of residence' appears in the location column
+        return data[data.query("location_name == 'County of residence'").index[0] + 2 :]
