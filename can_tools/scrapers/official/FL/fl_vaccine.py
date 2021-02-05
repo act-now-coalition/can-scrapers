@@ -12,8 +12,7 @@ class FloridaCountyVaccine(StateDashboard):
     source = "https://floridahealthcovid19.gov/#latest-stats"
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
-    # fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
-    fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_20210125.pdf"
+    fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
 
     def fetch(self):
         return camelot.read_pdf(self.fetch_url, pages='2-end', flavor="stream")

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.DC.dc_base import DCBase
@@ -147,4 +148,11 @@ class DCDeaths(DCBase):
             .append(df_race, ignore_index=True)
         )
 
-        return df
+        # we have two dt that are pretty much identical
+        # they are:
+        #   numpy.datetime64('2020-06-07T00:00:00.100000000')
+        #   numpy.datetime64('2020-06-07T00:00:00.000000000')
+        # We drop one of them
+        bad = df["dt"] == np.datetime64("2020-06-07T00:00:00.100000000")
+
+        return df.loc[~bad, :]

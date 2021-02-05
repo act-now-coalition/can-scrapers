@@ -1,0 +1,1 @@
+from can_tools.scrapers.official.CA.counties.sandiego_vaccine import CASanDiegoVaccine
