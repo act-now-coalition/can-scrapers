@@ -27,11 +27,6 @@ class MontanaCountyVaccine(ArcGIS):
             measurement="cumulative",
             unit="doses",
         ),
-        "Doses_per_1000": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses_per_1k",
-        ),
     }
 
     def fetch(self):
@@ -44,19 +39,17 @@ class MontanaCountyVaccine(ArcGIS):
             .rename(columns={"NAME": "location_name", "Date_Reported": "dt"})
         )
 
-        df["location_name"] = df[
-            "location_name"
-        ].str.title()  # capitalize start of words
+        # Capitalize start of words and replace wrong names
+        df.loc[:, "location_name"] = (
+            df.loc[:, "location_name"]
+            .str.title()
+            .replace({"Lewis & Clark": "Lewis and Clark", "Mccone": "McCone"})
+        )
 
-        df["location_name"] = df["location_name"].replace(
-            {"Lewis & Clark": "Lewis and Clark", "Mccone": "McCone"}
-        )  # rename mismatching names
+        df["dt"] = df["dt"].map(self._esri_ts_to_dt)
 
-        df["dt"] = pd.to_datetime(df["dt"], unit="ms").dt.date
-
-        df["total_doses_admin"] = (
-            df["Dose_1"] + df["Dose_2"]
-        )  # this matches the values in the dashboard
+        # this matches the values in the dashboard
+        df["total_doses_admin"] = df["Dose_1"] + df["Dose_2"]
 
         return self._transform_df(df)
 
@@ -120,7 +113,7 @@ class MontanaStateVaccine(MontanaCountyVaccine):
             .fillna(0)
             .rename(columns={"Report_Date": "dt"})
         )
-        df["dt"] = pd.to_datetime(df["dt"], unit="ms").dt.date
+        df["dt"] = df["dt"].map(self._esri_ts_to_dt)
         df["location"] = self.state_fips
 
         return self._transform_df(df)
