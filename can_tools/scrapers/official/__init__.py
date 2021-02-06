@@ -52,6 +52,8 @@ from can_tools.scrapers.official.MD import (
 )
 from can_tools.scrapers.official.MN import MinnesotaCountyVaccines
 
+from can_tools.scrapers.official.MT import MontanaCountyVaccine, MontanaStateVaccine
+
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NC import NorthCarolinaVaccineCounty
 from can_tools.scrapers.official.NJ import NewJerseyVaccineCounty
