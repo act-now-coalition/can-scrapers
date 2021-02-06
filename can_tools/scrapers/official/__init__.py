@@ -32,7 +32,7 @@ from can_tools.scrapers.official.FL import (
 
 from can_tools.scrapers.official.MO import MissouriVaccineCounty
 
-from can_tools.scrapers.official.NM import NewMexicoVaccineCountyFirstDose
+from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
 
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,

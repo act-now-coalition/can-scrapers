@@ -29,7 +29,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     NewJerseyVaccineCounty,
     MichiganVaccineCounty,
     MissouriVaccineCounty,
-    NewMexicoVaccineCountyFirstDose,
+    NewMexicoVaccineCounty,
     NewYorkTests,
     NorthCarolinaVaccineCounty,
     OhioVaccineCounty,

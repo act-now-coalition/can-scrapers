@@ -15,7 +15,7 @@ class NewMexicoBase(StateDashboard):
         self.session = requests_retry_session()
 
 
-class NewMexicoVaccineCountyFirstDose(NewMexicoBase):
+class NewMexicoVaccineCounty(NewMexicoBase):
     """
     Fetch county level Covid-19 vaccination data from official state of New Mexico REST APIs
     """
