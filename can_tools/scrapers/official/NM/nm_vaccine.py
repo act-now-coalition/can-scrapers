@@ -75,9 +75,9 @@ class NewMexicoVaccineCounty(NewMexicoBase):
                 unit="doses",
             ),
             "dosesAdministered": CMU(
-                category="total_vaccine_doses_administered",
+                category="total_vaccine_initiated",
                 measurement="cumulative",
-                unit="doses",
+                unit="people",
             ),
             "totalShipped": CMU(
                 category="total_vaccine_distributed",
@@ -115,14 +115,6 @@ class NewMexicoVaccineCounty(NewMexicoBase):
 
         # Drop extraneous columns
         out = df.loc[:, cols_to_keep]
-
-        # Drop the information that we won't be keeping track of
-        # loc_not_keep = ["Out of State", "Pending"]
-        # out = out.query("location_name not in @loc_not_keep")
-
-        # Fix incorrectly spelled county names
-        # loc_replacer = {"Dekalb": "DeKalb"}
-        # out = out.replace({"location_name": loc_replacer})
 
         # Convert value columns
         out["value"] = out["value"].astype(int)
