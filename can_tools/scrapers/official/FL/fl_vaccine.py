@@ -15,24 +15,16 @@ class FloridaCountyVaccine(StateDashboard):
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
 
     def fetch(self):
-        return camelot.read_pdf(self.fetch_url, pages="2", flavor="stream")
+        return camelot.read_pdf(self.fetch_url, pages="2-end", flavor="stream")
 
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
-        if len(data) > 1:
-            raise ValueError("more tables returned than expected value")
+        df = self._truncate_data(data[0].df)
 
-        df = data[0].df
-        df = df.iloc[6:].reset_index(drop=True)
-        df.columns = [
-            "location_name",
-            "first_dose_new",
-            "series_complete_new",
-            "total_people_vaccinated_new",
-            "first_dose_total",
-            "series_complete_total",
-            "total_people_vaccinated_total",
-        ]
+        # if the table overflows onto next page, retrieve the data in the same way and append
+        if len(data) == 2:
+            append_df = self._truncate_data(data[1].df)
+            df = pd.concat([df, append_df])
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
         df = df.query(
@@ -110,3 +102,21 @@ class FloridaCountyVaccine(StateDashboard):
                 res.headers["Last-Modified"], format="%a, %d %b %Y %H:%M:%S GMT"
             ) - pd.Timedelta(days=1)
         return dt.date()
+
+    def _truncate_data(self, data):
+        """
+        fix the column names and remove all the gibberesh data before the first county/real entry in the table.
+        **this method feels like a band-aid fix, but it has worked for the past two weeks and im not sure of a better way**
+        """
+        data.columns = [
+            "location_name",
+            "first_dose_new",
+            "series_complete_new",
+            "total_people_vaccinated_new",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated_total",
+        ]
+
+        # the data/table starts two lines after 'County of residence' appears in the location column
+        return data[data.query("location_name == 'County of residence'").index[0] + 2 :]
