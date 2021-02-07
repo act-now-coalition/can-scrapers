@@ -1,5 +1,6 @@
 from can_tools.scrapers.official.AZ import (
     ArizonaData,
+    ArizonaMaricopaVaccine,
     ArizonaVaccineCounty,
 )
 
