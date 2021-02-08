@@ -6,34 +6,45 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 
 
-class TennesseeVaccineCountyFirstDose(TableauDashboard):
+class TennesseeVaccineCounty(TableauDashboard):
     has_location = False
     source = "https://www.tn.gov/health/cedep/ncov/covid-19-vaccine-information.html"
     state_fips = int(us.states.lookup("Tennessee").fips)
     location_type = "county"
     baseurl = "https://data.tn.gov/t/Public"
-    viewPath = "TennIISCOVID-19VaccineReporting/1STDOSE"
-    dataset_key: str = r"% PART VACC MAP"
-    value_column: str = r"only one dose %"
+    viewPath = "TennIISCOVID-19VaccineReporting/SUMMARY"
     category: str = "total_vaccine_initiated"
 
     def fetch(self) -> pd.DataFrame:
-        return self.get_tableau_view()[self.dataset_key]
+        return self.get_tableau_view()["REPORTING"]
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        val_col = [k for k in list(data) if self.value_column in k.lower()]
-        assert len(val_col) == 1
+        value_columns = [r"sum(% only one dose %)-alias", r"sum(% two doses %)-alias"]
+        val_col = [k for k in list(data) if k.lower() in value_columns]
+        assert len(val_col) == 2
+
+        dose1_ix1 = "only one dose" in val_col[1].lower()
 
         county_col = [k for k in list(data) if "patient county-value" in k.lower()]
         assert len(county_col) == 1
 
-        variable_colname = "vaccine_pct"
+        col_map = {
+            val_col[dose1_ix1]: "first",
+            val_col[~dose1_ix1]: "second",
+            county_col[0]: "location_name",
+        }
+
         cmus = {
-            variable_colname: CMU(
-                category=self.category,
+            "first": CMU(
+                category="total_vaccine_initiated",
                 measurement="current",
                 unit="percentage",
-            )
+            ),
+            "second": CMU(
+                category="total_vaccine_completed",
+                measurement="current",
+                unit="percentage",
+            ),
         }
         odd_cap_counties = {
             "Mcnairy": "McNairy",
@@ -42,12 +53,12 @@ class TennesseeVaccineCountyFirstDose(TableauDashboard):
         }
         df = (
             data[val_col + county_col]
-            .rename(columns={val_col[0]: "value", county_col[0]: "location_name"})
+            .rename(columns=col_map)
+            .melt(id_vars=["location_name"])
             .assign(
                 location_name=lambda x: x["location_name"]
                 .str.title()
                 .replace(odd_cap_counties),
-                variable=variable_colname,
                 dt=self._retrieve_dt(tz="US/Central"),
                 vintage=self._retrieve_vintage(),
             )
@@ -55,10 +66,3 @@ class TennesseeVaccineCountyFirstDose(TableauDashboard):
             .drop(["variable"], axis="columns")
         )
         return df
-
-
-class TennesseeVaccineCountySecondDose(TennesseeVaccineCountyFirstDose):
-    viewPath = "TennIISCOVID-19VaccineReporting/2NDDOSE"
-    dataset_key: str = r"% FULL VACC MAP"
-    value_column: str = r"two doses %"
-    category: str = "total_vaccine_completed"
