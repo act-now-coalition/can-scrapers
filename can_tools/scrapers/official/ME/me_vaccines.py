@@ -147,6 +147,10 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
         # Title case and remove the word county
         df["location_name"] = df["county"].str.replace("County, ME", "").str.strip()
 
+        # Change into percentage
+        for col in ["total_vaccine_initiated_percent", "total_vaccine_completed_percent"]:
+            df.loc[:, col] = 100*df.loc[:, col]
+
         # Reshape
         crename = {
             "total_vaccine_administered": CMU(
@@ -175,7 +179,9 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                 unit="percentage",
             ),
         }
-        out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
+        out = df.melt(
+            id_vars=["location_name"], value_vars=crename.keys()
+        ).dropna()
 
         # Add CMU, dt, vintage
         out = self.extract_CMU(out, crename)
