@@ -65,6 +65,7 @@ class DatasetBase(ABC):
     table: Type[Base]
     location_type: Optional[str]
     base_path: Path
+    source: str
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         # Set execution date information
