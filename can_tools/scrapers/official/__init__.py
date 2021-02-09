@@ -66,8 +66,7 @@ from can_tools.scrapers.official.TN import (
     TennesseeCounty,
     TennesseeRaceEthnicitySex,
     TennesseeState,
-    TennesseeVaccineCountyFirstDose,
-    TennesseeVaccineCountySecondDose,
+    TennesseeVaccineCounty,
 )
 from can_tools.scrapers.official.TX import (
     TexasCasesDeaths,

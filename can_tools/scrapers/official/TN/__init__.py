@@ -7,6 +7,5 @@ from can_tools.scrapers.official.TN.tn_state import (
 )
 
 from can_tools.scrapers.official.TN.tn_vaccine import (
-    TennesseeVaccineCountyFirstDose,
-    TennesseeVaccineCountySecondDose,
+    TennesseeVaccineCounty,
 )
