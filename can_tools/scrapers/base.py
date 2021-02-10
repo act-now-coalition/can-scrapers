@@ -241,7 +241,8 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
+        filename : string
+            The path to the file where the data was written
         """
         filename = self._filepath(raw=False)
         df.to_parquet(filename)
@@ -259,8 +260,8 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
-            Whether the data was successfully stored at the filepath
+        filename : string
+            The path to the file where the data was written
         """
         filename = self._filepath(raw=True)
 
@@ -292,9 +293,8 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success: bool
-            Takes the value `True` if it successfully downloads and
-            stores the data
+        filename : string
+            The path to the file where the data was written
         """
         data = self.fetch()
         return self._store_raw(data)
@@ -325,9 +325,8 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
-            A boolean indicating whether the data was successfully
-            cleaned
+        filename : string
+            The path to the file where the data was written
         """
         # Ingest the data
         data = self._read_raw()
@@ -389,6 +388,12 @@ class DatasetBase(ABC):
         -------
         success : bool
             Did the insert succeed. Always True if function completes
+
+        rows_inserted: int
+            How many rows were inserted into the database
+
+        rows_deleted: int
+            How many rows were deleted from the temp table
         """
         return self._put_exec(engine, df)
 
@@ -406,6 +411,12 @@ class DatasetBase(ABC):
         -------
         success : bool
             Did the insert succeed. Always True if function completes
+
+        rows_inserted: int
+            How many rows were inserted into the database
+
+        rows_deleted: int
+            How many rows were deleted from the temp table
         """
         df = self._read_clean()
         return self.put(engine, df)
