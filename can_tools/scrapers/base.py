@@ -418,4 +418,3 @@ class DatasetBase(ABC):
     def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:
         "Internal _put method for dumping data using TempTable class"
         pass
-

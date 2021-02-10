@@ -321,8 +321,9 @@ class SODA(StateDashboard, ABC):
     baseurl: str
 
     def __init__(
-        self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow(),
-        params: Optional[Dict[str, Any]] = None
+        self,
+        execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
+        params: Optional[Dict[str, Any]] = None,
     ):
         super(SODA, self).__init__(execution_dt)
         self.params = params
