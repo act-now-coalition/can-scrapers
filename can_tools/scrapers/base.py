@@ -243,8 +243,9 @@ class DatasetBase(ABC):
         -------
         success : bool
         """
-        df.to_parquet(self._filepath(raw=False))
-        return True
+        filename = self._filepath(raw=False)
+        df.to_parquet(filename)
+        return filename
 
     def _store_raw(self, data: Any) -> bool:
         """
@@ -261,10 +262,12 @@ class DatasetBase(ABC):
         success : bool
             Whether the data was successfully stored at the filepath
         """
-        with open(self._filepath(raw=True), "wb") as f:
+        filename = self._filepath(raw=True)
+
+        with open(filename, "wb") as f:
             pickle.dump(data, f)
 
-        return True
+        return filename
 
     @abstractmethod
     def fetch(self) -> Any:
@@ -294,9 +297,7 @@ class DatasetBase(ABC):
             stores the data
         """
         data = self.fetch()
-        success = self._store_raw(data)
-
-        return success
+        return self._store_raw(data)
 
     @abstractmethod
     def normalize(self, data: Any) -> pd.DataFrame:
@@ -333,9 +334,7 @@ class DatasetBase(ABC):
 
         # Clean data using `_normalize`
         df = self.normalize(data)
-        success = self._store_clean(df)
-
-        return success
+        return self._store_clean(df)
 
     def validate(self, df, df_hist):
         """
@@ -374,9 +373,7 @@ class DatasetBase(ABC):
         df_hist = None
 
         # Validate data
-        validated = self.validate(df, df_hist)
-
-        return validated
+        return self.validate(df, df_hist)
 
     def put(self, engine: Engine, df: pd.DataFrame) -> bool:
         """
@@ -411,8 +408,7 @@ class DatasetBase(ABC):
             Did the insert succeed. Always True if function completes
         """
         df = self._read_clean()
-        success = self.put(engine, df)
-        return success
+        return self.put(engine, df)
 
     @abstractmethod
     def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:

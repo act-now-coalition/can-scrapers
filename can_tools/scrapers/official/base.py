@@ -85,6 +85,8 @@ class StateDashboard(DatasetBase, ABC):
         )
 
         worked = False
+        rows_inserted = 0
+        rows_deleted = 0
         with closing(sessionmaker(engine)()) as sess:
             try:
                 fast_append_to_sql(to_ins, engine, table)
@@ -94,15 +96,17 @@ class StateDashboard(DatasetBase, ABC):
                 ins = build_insert_from_temp(insert_op, table, engine)
                 res = sess.execute(ins)
                 sess.commit()
-                print("Inserted {} rows".format(res.rowcount))
+                rows_inserted = res.rowcount
+                print("Inserted {} rows".format(rows_inserted))
                 worked = True
             finally:
                 deleter = table.__table__.delete().where(table.insert_op == insert_op)
                 res_delete = sess.execute(deleter)
                 sess.commit()
-                print("Removed the {} rows from temp table".format(res_delete.rowcount))
+                rows_deleted = res_delete.rowcount
+                print("Removed the {} rows from temp table".format(rows_deleted))
 
-        return worked
+        return worked, rows_inserted, rows_deleted
 
 
 class CountyDashboard(StateDashboard, ABC):
