@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 
+import prefect
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
