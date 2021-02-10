@@ -26,9 +26,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     )
 
     def get_dashboard_iframe(self):
-        fumn = {
-            "src": self.powerbi_dashboard_link
-        }
+        fumn = {"src": self.powerbi_dashboard_link}
 
         return fumn
 
