@@ -30,16 +30,19 @@ class USAFactsCases(FederalDashboard):
         return pd.read_csv(BASEURL + self.filename)
 
     def normalize(self, data: Any) -> pd.DataFrame:
+        # Make lowercase so they can't change capitalization on us
+        data.columns = [c.lower() for c in data.columns]
+
         # Load data from site and move dates from column names to
         # a new variable
-        cols = ["countyFIPS", "County Name", "State", "stateFIPS"]
-        cols = cols + [c for c in data.columns if c[-2:] in ("20", "21")]
+        cols = ["countyfips", "county name", "state", "statefips"]
+        cols = cols + [c for c in data.columns if ("2020" in c) or ("2021" in c)]
 
         df = (
             data.loc[:, cols]
-            .drop(["County Name", "State"], axis=1)
+            .drop(["county name", "state"], axis=1)
             .melt(
-                id_vars=["countyFIPS", "stateFIPS"], var_name="dt", value_name="value"
+                id_vars=["countyfips", "statefips"], var_name="dt", value_name="value"
             )
         )
         df["dt"] = pd.to_datetime(df["dt"])
@@ -47,7 +50,7 @@ class USAFactsCases(FederalDashboard):
         # Drop Wade Hampton Census Area (2270) since it was renamed to
         # Kusilvak and Kusilvak is already included in the data. Also
         # drop Grand Princess Cruise ship (6000)
-        df = df.query("(countyFIPS != 2270) & (countyFIPS != 6000)")
+        df = df.query("(countyfips != 2270) & (countyfips != 6000)")
 
         df["value"] = df["value"].astype(str).str.replace(",", "").astype(int)
 
@@ -55,16 +58,16 @@ class USAFactsCases(FederalDashboard):
         # we will group by state fips and then sum... We will then
         # ignore unallocated cases
         df_county = (
-            df.query("countyFIPS > 1000")
-            .drop("stateFIPS", axis=1)
-            .rename(columns={"countyFIPS": "location"})
+            df.query("countyfips > 1000")
+            .drop("statefips", axis=1)
+            .rename(columns={"countyfips": "location"})
             .assign(location_type="county")
         )
         df_state = (
-            df.groupby(["stateFIPS", "dt"])["value"]
+            df.groupby(["statefips", "dt"])["value"]
             .sum()
             .reset_index()
-            .rename(columns={"stateFIPS": "location"})
+            .rename(columns={"statefips": "location"})
             .assign(location_type="state")
         )
 
@@ -74,6 +77,7 @@ class USAFactsCases(FederalDashboard):
 
         out["variable"] = "replaceme"
         cmu = CMU(category=self.category, measurement="cumulative", unit="people")
+
         return out.pipe(self.extract_CMU, cmu={"replaceme": cmu}).drop(
             ["variable"], axis="columns"
         )

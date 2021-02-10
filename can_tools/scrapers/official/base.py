@@ -136,6 +136,9 @@ class FederalDashboard(StateDashboard, ABC):
         if "location_type" not in list(to_ins):
             to_ins["location_type"] = self.location_type
 
+        if "source_url" not in list(to_ins):
+            to_ins["source_url"] = self.source
+
         return to_ins, insert_op
 
 
