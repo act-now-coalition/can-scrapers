@@ -54,6 +54,7 @@ class StateDashboard(DatasetBase, ABC):
     has_location: bool
     state_fips: int
     location_type: str
+    source: str
 
     def _prep_df(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
         """
@@ -66,6 +67,9 @@ class StateDashboard(DatasetBase, ABC):
         )
         if "location_type" not in list(to_ins):
             to_ins["location_type"] = self.location_type
+
+        if "source_url" not in list(to_ins):
+            to_ins["source_url"] = self.source
 
         return to_ins, insert_op
 
@@ -131,6 +135,9 @@ class FederalDashboard(StateDashboard, ABC):
         )
         if "location_type" not in list(to_ins):
             to_ins["location_type"] = self.location_type
+
+        if "source_url" not in list(to_ins):
+            to_ins["source_url"] = self.source
 
         return to_ins, insert_op
 
@@ -317,9 +324,11 @@ class SODA(StateDashboard, ABC):
     baseurl: str
 
     def __init__(
-        self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Any]] = None
+        self,
+        execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
+        params: Optional[Dict[str, Any]] = None,
     ):
-        super(SODA, self).__init__()
+        super(SODA, self).__init__(execution_dt)
         self.params = params
 
     def soda_query_url(

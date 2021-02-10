@@ -65,10 +65,11 @@ class DatasetBase(ABC):
     table: Type[Base]
     location_type: Optional[str]
     base_path: Path
+    source: str
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         # Set execution date information
-        self.execution_dt = pd.to_datetime(execution_dt)
+        self.execution_dt = pd.to_datetime(execution_dt, utc=True)
 
         # Set storage path
         if "DATAPATH" in os.environ.keys():
@@ -91,7 +92,7 @@ class DatasetBase(ABC):
 
     def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the current datetime in a specific timezone"""
-        out = pd.Timestamp.utcnow().tz_convert(tz).normalize().tz_localize(None)
+        out = self.execution_dt.tz_convert(tz).normalize().tz_localize(None)
 
         return out
 
@@ -101,7 +102,7 @@ class DatasetBase(ABC):
 
     def _retrieve_vintage(self) -> pd.Timestamp:
         """Get the current UTC timestamp, at hourly resolution. Used as "vintage" in db"""
-        return pd.Timestamp.utcnow().floor("h")
+        return self.execution_dt.floor("h")
 
     def extract_CMU(
         self,

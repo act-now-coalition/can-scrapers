@@ -9,6 +9,12 @@ from can_tools.scrapers.official.CA import (
     CaliforniaTesting,
 )
 
+from can_tools.scrapers.official.CT import (
+    CTCountyDeathHospitalizations,
+    CTCountyTests,
+    CTState,
+)
+
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
 
 from can_tools.scrapers.official.DE import (
