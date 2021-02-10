@@ -19,6 +19,18 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
 
     source = "https://mn.gov/covid19/vaccine/data/index.jsp"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
+    powerbi_dashboard_link = (
+        "https://app.powerbigov.us/view?r=eyJrIjoiOWRiYTI2ZjUtYWVhMS00"
+        "OWZkLWI5ZTEtM2UzNDg1NWM4MGFjIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS"
+        "04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    )
+
+    def get_dashboard_iframe(self):
+        fumn = {
+            "src": self.powerbi_dashboard_link
+        }
+
+        return fumn
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):
         body = {}
