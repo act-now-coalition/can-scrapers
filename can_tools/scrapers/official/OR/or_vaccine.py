@@ -41,7 +41,7 @@ class OregonVaccineCounty(TableauDashboard):
         value_cols = list(set(df.columns) & set(self.cmus.keys()))
         assert len(value_cols) == 2
 
-        out = (
+        return (
             df.melt(id_vars=["location_name"], value_vars=value_cols)
             .dropna()
             .assign(
@@ -52,19 +52,3 @@ class OregonVaccineCounty(TableauDashboard):
             .pipe(self.extract_CMU, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
-
-        print(out)
-
-        return out
-
-        # return (
-        #     data.melt(id_vars=["location_name"], value_vars=value_cols)
-        #     .dropna()
-        #     .assign(
-        #         dt=self._retrieve_dt("US/Pacific"),
-        #         vintage=self._retrieve_vintage(),
-        #         value=lambda x: pd.to_numeric(x.loc[:, "value"]),
-        #     )
-        #     .pipe(self.extract_CMU, cmu=self.cmus)
-        #     .drop(["variable"], axis=1)
-        # )
