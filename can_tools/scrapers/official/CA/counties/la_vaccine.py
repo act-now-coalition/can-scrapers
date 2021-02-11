@@ -30,21 +30,27 @@ class LACaliforniaCountyVaccine(CountyDashboard):
         assert len(texts) == 4, "expected 4 paragraphs in vaccine box"
         assert "doses administered" in texts[0]
         dt = pd.to_datetime(texts[1], format=f"as of %m/%d/%Y")
-        dose1 = int(texts[2].replace(",", ""))
+        total_dose = int(texts[2].replace(",", ""))
 
         prefix = "second doses:"
         assert texts[3].startswith(prefix)
         dose2 = texts[3][len(prefix) :].strip().replace(",", "")
 
         df = pd.DataFrame(
-            {"variable": ["dose1", "dose2"], "value": [dose1, dose2]}
+            {"variable": ["total_dose", "dose2"], "value": [total_dose, dose2]}
         ).assign(dt=dt, vintage=self._retrieve_vintage(), location=self.location)
 
-        _cmu = lambda c: CMU(category=c, measurement="cumulative", unit="people")
-
         cmus = {
-            "dose1": _cmu("total_vaccine_initiated"),
-            "dose2": _cmu("total_vaccine_completed"),
+            "total_dose": CMU(
+                category="total_vaccine_doses_administered",
+                measurement="cumulative",
+                unit="doses",
+            ),
+            "dose2": CMU(
+                category="total_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
         }
 
         return df.pipe(self.extract_CMU, cmu=cmus).drop(["variable"], axis="columns")
