@@ -5,6 +5,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
     CaliforniaTesting,
+    CaliforniaVaccineCounty,
     CDCCovidDataTracker,
     CDCStateVaccine,
     CTCountyDeathHospitalizations,
