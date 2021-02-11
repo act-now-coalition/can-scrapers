@@ -34,7 +34,7 @@ class LACaliforniaCountyVaccine(CountyDashboard):
 
         prefix = "second doses:"
         assert texts[3].startswith(prefix)
-        dose2 = texts[3][len(prefix) :].strip().replace(",", "")
+        dose2 = int(texts[3][len(prefix) :].strip().replace(",", ""))
 
         df = pd.DataFrame(
             {"variable": ["total_dose", "dose2"], "value": [total_dose, dose2]}
