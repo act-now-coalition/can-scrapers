@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 
+import prefect
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
@@ -18,12 +19,20 @@ def create_scraper(cls: Type[DatasetBase], dt: pd.Timestamp) -> DatasetBase:
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def fetch(d: DatasetBase):
-    d._fetch()
+    logger = prefect.context.get("logger")
+    logger.info("About to run {}._fetch".format(d.__class__.__name__))
+    fn = d._fetch()
+    logger.info("{}._fetch success".format(d.__class__.__name__))
+    logger.info("Saved raw data to: {}".format(fn))
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def normalize(d: DatasetBase):
-    d._normalize()
+    logger = prefect.context.get("logger")
+    logger.info("About to run {}._normalize".format(d.__class__.__name__))
+    fn = d._normalize()
+    logger.info("{}._normalize success".format(d.__class__.__name__))
+    logger.info("Saved clean data to: {}".format(fn))
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
@@ -34,14 +43,22 @@ def validate(d: DatasetBase):
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def put(d: DatasetBase, connstr: str):
+    logger = prefect.context.get("logger")
+
     engine = sa.create_engine(connstr)
-    success = d._put(engine)
+
+    logger.info("About to run {}._put".format(d.__class__.__name__))
+    success, rows_in, rows_out = d._put(engine)
+
+    logger.info("{}._put success".format(d.__class__.__name__))
+    logger.info("Inserted {} rows".format(rows_in))
+    logger.info("Deleted {} rows from temp table".format(rows_out))
 
     # do something with success
     return success
 
 
-def create_flow_for_scraper(ix:int, d: Type[DatasetBase]):
+def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
     sched = CronSchedule(f"{ix} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
@@ -56,8 +73,6 @@ def create_flow_for_scraper(ix:int, d: Type[DatasetBase]):
         normalized.set_upstream(fetched)
         validated.set_upstream(normalized)
         done.set_upstream(validated)
-
-
 
     return flow
 

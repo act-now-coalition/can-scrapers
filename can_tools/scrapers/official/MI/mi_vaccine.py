@@ -51,7 +51,7 @@ class MichiganVaccineCounty(StateDashboard):
         df = (
             data.rename(columns=colnames)
             .loc[:, ["location_name", "dt", "variable", "value"]]
-            .query("location_name not in  @not_counties")
+            .query("location_name not in @not_counties")
             .pivot_table(
                 index=["dt", "location_name"],
                 columns="variable",
@@ -69,6 +69,7 @@ class MichiganVaccineCounty(StateDashboard):
             .assign(
                 total=lambda x: x.eval("total_initiated + total_completed"),
             )
+            .loc[:, cmus.keys()]
         )
 
         # now we need to reindex to fill in all dates -- fill missing with 0

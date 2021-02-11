@@ -65,10 +65,11 @@ class DatasetBase(ABC):
     table: Type[Base]
     location_type: Optional[str]
     base_path: Path
+    source: str
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         # Set execution date information
-        self.execution_dt = pd.to_datetime(execution_dt)
+        self.execution_dt = pd.to_datetime(execution_dt, utc=True)
 
         # Set storage path
         if "DATAPATH" in os.environ.keys():
@@ -91,7 +92,7 @@ class DatasetBase(ABC):
 
     def _retrieve_dt(self, tz: str = "US/Eastern") -> pd.Timestamp:
         """Get the current datetime in a specific timezone"""
-        out = pd.Timestamp.utcnow().tz_convert(tz).normalize().tz_localize(None)
+        out = self.execution_dt.tz_convert(tz).normalize().tz_localize(None)
 
         return out
 
@@ -101,7 +102,7 @@ class DatasetBase(ABC):
 
     def _retrieve_vintage(self) -> pd.Timestamp:
         """Get the current UTC timestamp, at hourly resolution. Used as "vintage" in db"""
-        return pd.Timestamp.utcnow().floor("h")
+        return self.execution_dt.floor("h")
 
     def extract_CMU(
         self,
@@ -240,10 +241,12 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
+        filename : string
+            The path to the file where the data was written
         """
-        df.to_parquet(self._filepath(raw=False))
-        return True
+        filename = self._filepath(raw=False)
+        df.to_parquet(filename)
+        return filename
 
     def _store_raw(self, data: Any) -> bool:
         """
@@ -257,13 +260,15 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
-            Whether the data was successfully stored at the filepath
+        filename : string
+            The path to the file where the data was written
         """
-        with open(self._filepath(raw=True), "wb") as f:
+        filename = self._filepath(raw=True)
+
+        with open(filename, "wb") as f:
             pickle.dump(data, f)
 
-        return True
+        return filename
 
     @abstractmethod
     def fetch(self) -> Any:
@@ -288,14 +293,11 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success: bool
-            Takes the value `True` if it successfully downloads and
-            stores the data
+        filename : string
+            The path to the file where the data was written
         """
         data = self.fetch()
-        success = self._store_raw(data)
-
-        return success
+        return self._store_raw(data)
 
     @abstractmethod
     def normalize(self, data: Any) -> pd.DataFrame:
@@ -323,18 +325,15 @@ class DatasetBase(ABC):
 
         Returns
         -------
-        success : bool
-            A boolean indicating whether the data was successfully
-            cleaned
+        filename : string
+            The path to the file where the data was written
         """
         # Ingest the data
         data = self._read_raw()
 
         # Clean data using `_normalize`
         df = self.normalize(data)
-        success = self._store_clean(df)
-
-        return success
+        return self._store_clean(df)
 
     def validate(self, df, df_hist):
         """
@@ -373,9 +372,7 @@ class DatasetBase(ABC):
         df_hist = None
 
         # Validate data
-        validated = self.validate(df, df_hist)
-
-        return validated
+        return self.validate(df, df_hist)
 
     def put(self, engine: Engine, df: pd.DataFrame) -> bool:
         """
@@ -391,6 +388,12 @@ class DatasetBase(ABC):
         -------
         success : bool
             Did the insert succeed. Always True if function completes
+
+        rows_inserted: int
+            How many rows were inserted into the database
+
+        rows_deleted: int
+            How many rows were deleted from the temp table
         """
         return self._put_exec(engine, df)
 
@@ -408,10 +411,15 @@ class DatasetBase(ABC):
         -------
         success : bool
             Did the insert succeed. Always True if function completes
+
+        rows_inserted: int
+            How many rows were inserted into the database
+
+        rows_deleted: int
+            How many rows were deleted from the temp table
         """
         df = self._read_clean()
-        success = self.put(engine, df)
-        return success
+        return self.put(engine, df)
 
     @abstractmethod
     def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:

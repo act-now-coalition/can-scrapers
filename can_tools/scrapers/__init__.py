@@ -7,6 +7,9 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CaliforniaTesting,
     CDCCovidDataTracker,
     CDCStateVaccine,
+    CTCountyDeathHospitalizations,
+    CTCountyTests,
+    CTState,
     DCCases,
     DCDeaths,
     DCGeneral,
@@ -22,13 +25,21 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     IllinoisVaccineCounty,
     IllinoisVaccineState,
     LACaliforniaCountyVaccine,
+    MaineCountyVaccines,
     MarylandCounties,
+    MarylandCountyVaccines,
     MarylandState,
+    MinnesotaCountyVaccines,
+    MontanaCountyVaccine,
+    MontanaStateVaccine,
     NewJerseyVaccineCounty,
     MichiganVaccineCounty,
+    MissouriVaccineCounty,
+    NewMexicoVaccineCounty,
     NewYorkTests,
     NorthCarolinaVaccineCounty,
     OhioVaccineCounty,
+    OregonVaccineCounty,
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
@@ -37,8 +48,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TennesseeCounty,
     TennesseeRaceEthnicitySex,
     TennesseeState,
-    TennesseeVaccineCountyFirstDose,
-    TennesseeVaccineCountySecondDose,
+    TennesseeVaccineCounty,
     TexasCasesDeaths,
     TexasCountyVaccine,
     TexasStateVaccine,
@@ -46,6 +56,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TexasTests,
     VermontCountyVaccine,
     VermontStateVaccine,
+    WashingtonVaccine,
     WisconsinCounties,
     WisconsinState,
 )
@@ -54,5 +65,7 @@ from can_tools.scrapers.ctp import (
     CovidTrackingProject,
     CovidTrackingProjectDemographics,
 )
+
+from can_tools.scrapers.usafacts import USAFactsDeaths, USAFactsCases
 
 from can_tools.scrapers import util

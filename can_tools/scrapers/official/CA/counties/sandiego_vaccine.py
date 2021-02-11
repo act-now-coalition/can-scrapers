@@ -90,11 +90,17 @@ class CASanDiegoVaccine(ArcGIS):
             "Other Race": "other",
             "White": "white",
         }
-        race_col = [c for c in df["Category"].unique() if "race" in c.lower()][0]
+        race_col = [
+            c for c in df["Category"].unique() if c is not None and "race" in c.lower()
+        ][0]
         race_df = self.normalize_group(df, race_col, "race", race_replace, crename)
 
         ethnicity_replace = {"Hispanic or Latino": "hispanic"}
-        eth_col = [c for c in df["Category"].unique() if "ethnicity" in c.lower()][0]
+        eth_col = [
+            c
+            for c in df["Category"].unique()
+            if c is not None and "ethnicity" in c.lower()
+        ][0]
         eth_df = self.normalize_group(
             df, eth_col, "ethnicity", ethnicity_replace, crename
         )
