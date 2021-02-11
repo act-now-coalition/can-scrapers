@@ -61,11 +61,9 @@ class MichiganVaccineCounty(StateDashboard):
             .fillna(0)
             .astype(int)
             .assign(
-                total_initiated=lambda x: x.eval(
-                    "ModernaFirstDose + PfizerFirstDose + UnspecifiedFirstDose"
-                ),
+                total_initiated=lambda x: x.eval("ModernaFirstDose + PfizerFirstDose"),
                 total_completed=lambda x: x.eval(
-                    "ModernaSecondDose + PfizerSecondDose + UnspecifiedSecondDose"
+                    "ModernaSecondDose + PfizerSecondDose"
                 ),
             )
             .assign(
