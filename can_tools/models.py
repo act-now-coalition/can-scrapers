@@ -223,6 +223,7 @@ class CovidObservation(Base):
     provider_id = Column(Integer, FKCascade(CovidProvider.id))
     value = Column(Numeric)
     last_updated = Column(DateTime, nullable=False, default=func.now())
+    source_url = Column(String)
     __table_args__ = (
         PrimaryKeyConstraint(
             "dt",
@@ -251,6 +252,7 @@ api_covid_us_statement = select(
         CovidDemographic.ethnicity,
         CovidDemographic.sex,
         CovidObservation.last_updated,
+        CovidObservation.source_url,
         CovidObservation.value,
     ]
 ).select_from(
@@ -280,6 +282,7 @@ class _TempOfficial:
     ethnicity = Column(String, nullable=False)
     sex = Column(String, nullable=False)
     last_updated = Column(DateTime, nullable=False, default=func.now())
+    source_url = Column(String)
 
     @declared_attr
     def provider(cls):
@@ -362,6 +365,7 @@ def build_insert_from_temp(
         cls.value,
         CovidProvider.id.label("provider_id"),
         cls.last_updated,
+        cls.source_url,
     ]
     selector = (
         select(columns)

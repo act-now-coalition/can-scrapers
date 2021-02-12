@@ -174,12 +174,16 @@ pfizer_vaccine_allocated,cumulative,doses
 pfizer_vaccine_distributed,cumulative,doses
 pfizer_vaccine_initiated,cumulative,people
 total_vaccine_initiated,new,people
+total_vaccine_initiated,new_7_day,people
 pfizer_vaccine_completed,cumulative,people
 total_vaccine_allocated,cumulative,doses
 total_vaccine_distributed,cumulative,doses
 total_vaccine_initiated,cumulative,people
 total_vaccine_completed,cumulative,people
 total_vaccine_completed,new,people
+total_vaccine_completed,new_7_day,people
 total_vaccine_doses_administered,cumulative,doses
 total_vaccine_doses_administered,new,doses
 pcr_tests_positive,rolling_average_14_day,percentage
+total_vaccine_initiated,current,percentage
+total_vaccine_completed,current,percentage

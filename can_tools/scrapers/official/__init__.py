@@ -7,6 +7,13 @@ from can_tools.scrapers.official.CA import (
     CaliforniaHospitals,
     CASanDiegoVaccine,
     CaliforniaTesting,
+    LACaliforniaCountyVaccine,
+)
+
+from can_tools.scrapers.official.CT import (
+    CTCountyDeathHospitalizations,
+    CTCountyTests,
+    CTState,
 )
 
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths
@@ -30,6 +37,10 @@ from can_tools.scrapers.official.FL import (
     FloridaCountyVaccine,
 )
 
+from can_tools.scrapers.official.MO import MissouriVaccineCounty
+
+from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
+
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
@@ -41,11 +52,16 @@ from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineState,
     IllinoisVaccineCounty,
 )
+from can_tools.scrapers.official.ME import MaineCountyVaccines
 from can_tools.scrapers.official.MI import MichiganVaccineCounty
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
     MarylandState,
+    MarylandCountyVaccines,
 )
+from can_tools.scrapers.official.MN import MinnesotaCountyVaccines
+
+from can_tools.scrapers.official.MT import MontanaCountyVaccine, MontanaStateVaccine
 
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NC import NorthCarolinaVaccineCounty
@@ -57,6 +73,7 @@ from can_tools.scrapers.official.TN import (
     TennesseeCounty,
     TennesseeRaceEthnicitySex,
     TennesseeState,
+    TennesseeVaccineCounty,
 )
 from can_tools.scrapers.official.TX import (
     TexasCasesDeaths,
@@ -65,6 +82,7 @@ from can_tools.scrapers.official.TX import (
     TexasStateVaccine,
     # TexasVaccineDemographics,
 )
+from can_tools.scrapers.official.WA import WashingtonVaccine
 from can_tools.scrapers.official.WI import WisconsinCounties, WisconsinState
 
 from can_tools.scrapers.official.CT import (
@@ -74,3 +92,7 @@ from can_tools.scrapers.official.CT import (
 )
 
 from can_tools.scrapers.official.OH import OhioVaccineCounty
+
+from can_tools.scrapers.official.OR import OregonVaccineCounty
+
+from can_tools.scrapers.official.VT import VermontCountyVaccine, VermontStateVaccine

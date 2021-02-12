@@ -51,6 +51,11 @@ class NorthCarolinaVaccineCounty(StateDashboard):
             .loc[:, col_renamer.values()]
         )
 
+        # Fix names of counties...
+        df.loc[:, "location_name"] = (
+            df.loc[:, "location_name"].str.strip().replace({"Mcdowell": "McDowell"})
+        )
+
         # Drop missing
         df = (
             df.dropna()

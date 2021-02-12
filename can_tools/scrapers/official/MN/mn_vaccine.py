@@ -1,5 +1,3 @@
-import json
-
 from typing import Any
 
 import pandas as pd
@@ -10,17 +8,27 @@ from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 
 
-class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
+class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     """
     Fetch county level vaccine data from Pennsylvania's PowerBI dashboard
     """
 
     has_location = False
     location_type = "county"
-    state_fips = int(us.states.lookup("Pennsylvania").fips)
+    state_fips = int(us.states.lookup("Minnesota").fips)
 
-    source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Vaccine.aspx"
+    source = "https://mn.gov/covid19/vaccine/data/index.jsp"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
+    powerbi_dashboard_link = (
+        "https://app.powerbigov.us/view?r=eyJrIjoiOWRiYTI2ZjUtYWVhMS00"
+        "OWZkLWI5ZTEtM2UzNDg1NWM4MGFjIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS"
+        "04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    )
+
+    def get_dashboard_iframe(self):
+        fumn = {"src": self.powerbi_dashboard_link}
+
+        return fumn
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):
         body = {}
@@ -41,28 +49,34 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                                     "From": self.construct_from(
                                         [
                                             (
-                                                "c",
-                                                "Counts of People by County",
+                                                "m",
+                                                "MODEL_Joined_Counties",
                                                 0,
-                                            )
+                                            ),
+                                            ("_", "_Measures_Used", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
                                         [
-                                            ("c", "County", "location_name"),
                                             (
-                                                "c",
-                                                "PartiallyCovered",
-                                                "total_vaccine_initiated",
-                                            ),
-                                            (
-                                                "c",
-                                                "FullyCovered",
-                                                "total_vaccine_completed",
+                                                "m",
+                                                "Client_County",
+                                                "county",
                                             ),
                                         ],
                                         [],
-                                        [],
+                                        [
+                                            (
+                                                "_",
+                                                "_displayCaseIncomplete",
+                                                "total_vaccine_initiated_display",
+                                            ),
+                                            (
+                                                "_",
+                                                "_displayCaseComplete",
+                                                "total_vaccine_completed_display",
+                                            ),
+                                        ],
                                     ),
                                 }
                             }
@@ -79,6 +93,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         return body
 
     def fetch(self):
+
         # Get general information
         self._setup_sess()
         dashboard_frame = self.get_dashboard_iframe()
@@ -98,11 +113,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
         return res.json()
 
-    def normalize(self, resjson):
+    def normalize(self, resjson: dict) -> pd.DataFrame:
         # Extract components we care about from json
         foo = resjson["results"][0]["result"]["data"]
         descriptor = foo["descriptor"]["Select"]
-        data = foo["dsr"]["DS"][0]["PH"][0]["DM0"]
+        data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
 
         # Build dict of dicts with relevant info
         col_mapping = {x["Value"]: x["Name"] for x in descriptor}
@@ -110,24 +125,37 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
+        row_names = [col_mapping[desc["N"]] for desc in data[0]["S"]]
         for record in data:
-            flat_record = flatten_dict(record)
-
-            row = {}
-            for k in col_keys:
-                flat_record_key = [frk for frk in flat_record.keys() if k in frk]
-
-                if len(flat_record_key) > 0:
-                    row[col_mapping[k]] = flat_record[flat_record_key[0]]
-
-            data_rows.append(row)
+            data_rows.append(record["C"])
 
         # Dump records into a DataFrame
-        df = pd.DataFrame.from_records(data_rows).dropna()
-        df = df.query("location_name != '' & location_name != 'Out-of-State'")
+        df = pd.DataFrame.from_records(data_rows, columns=row_names)
 
-        # Make sure McKean follows capitalization in db
-        df = df.replace({"location_name": {"Mckean": "McKean"}})
+        # Title case and remove the word county
+        df["location_name"] = (
+            df["county"].str.title().str.replace("County", "").str.strip()
+        )
+        df = df.query("~location_name.str.contains('Unknown')")
+
+        # Rename certain counties
+        df = df.replace(
+            {
+                "location_name": {
+                    "Lac Qui Parle": "Lac qui Parle",
+                    "Mcleod": "McLeod",
+                    "Lake Of The Woods": "Lake of the Woods",
+                }
+            }
+        )
+
+        # Turn strings into numbers
+        df["total_vaccine_initiated"] = pd.to_numeric(
+            df["total_vaccine_initiated_display"].str.replace("L", "")
+        )
+        df["total_vaccine_completed"] = pd.to_numeric(
+            df["total_vaccine_completed_display"].str.replace("L", "")
+        )
 
         # Reshape
         crename = {
@@ -142,11 +170,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                 unit="people",
             ),
         }
-        out = df.melt(id_vars=["location_name"])
+        out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
 
         # Add CMU, dt, vintage
         out = self.extract_CMU(out, crename)
-        out["dt"] = self._retrieve_dt("US/Eastern")
+        out["dt"] = self._retrieve_dt("US/Central")
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [

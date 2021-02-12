@@ -54,6 +54,7 @@ class StateDashboard(DatasetBase, ABC):
     has_location: bool
     state_fips: int
     location_type: str
+    source: str
 
     def _prep_df(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
         """
@@ -66,6 +67,9 @@ class StateDashboard(DatasetBase, ABC):
         )
         if "location_type" not in list(to_ins):
             to_ins["location_type"] = self.location_type
+
+        if "source_url" not in list(to_ins):
+            to_ins["source_url"] = self.source
 
         return to_ins, insert_op
 
@@ -81,6 +85,8 @@ class StateDashboard(DatasetBase, ABC):
         )
 
         worked = False
+        rows_inserted = 0
+        rows_deleted = 0
         with closing(sessionmaker(engine)()) as sess:
             try:
                 fast_append_to_sql(to_ins, engine, table)
@@ -90,15 +96,17 @@ class StateDashboard(DatasetBase, ABC):
                 ins = build_insert_from_temp(insert_op, table, engine)
                 res = sess.execute(ins)
                 sess.commit()
-                print("Inserted {} rows".format(res.rowcount))
+                rows_inserted = res.rowcount
+                print("Inserted {} rows".format(rows_inserted))
                 worked = True
             finally:
                 deleter = table.__table__.delete().where(table.insert_op == insert_op)
                 res_delete = sess.execute(deleter)
                 sess.commit()
-                print("Removed the {} rows from temp table".format(res_delete.rowcount))
+                rows_deleted = res_delete.rowcount
+                print("Removed the {} rows from temp table".format(rows_deleted))
 
-        return worked
+        return worked, rows_inserted, rows_deleted
 
 
 class CountyDashboard(StateDashboard, ABC):
@@ -131,6 +139,9 @@ class FederalDashboard(StateDashboard, ABC):
         )
         if "location_type" not in list(to_ins):
             to_ins["location_type"] = self.location_type
+
+        if "source_url" not in list(to_ins):
+            to_ins["source_url"] = self.source
 
         return to_ins, insert_op
 
@@ -317,9 +328,11 @@ class SODA(StateDashboard, ABC):
     baseurl: str
 
     def __init__(
-        self, execution_dt: pd.Timestamp, params: Optional[Dict[str, Any]] = None
+        self,
+        execution_dt: pd.Timestamp = pd.Timestamp.utcnow(),
+        params: Optional[Dict[str, Any]] = None,
     ):
-        super(SODA, self).__init__()
+        super(SODA, self).__init__(execution_dt)
         self.params = params
 
     def soda_query_url(
@@ -496,8 +509,8 @@ class TableauDashboard(StateDashboard, ABC):
 
     baseurl: str
     viewPath: str
-    filterFunctionName: Optional[str]
-    filterFunctionValue: Optional[str]
+    filterFunctionName: Optional[str] = None
+    filterFunctionValue: Optional[str] = None
 
     def get_tableau_view(self):
         def onAlias(it, value, cstring):
@@ -523,18 +536,29 @@ class TableauDashboard(StateDashboard, ABC):
                     "#navType": "1",
                     "navSrc": "Parse",
                 },
+                headers={"Accept": "text/javascript"},
             )
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
-        dataUrl = f'{self.baseurl}/{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+        parsed_url = urllib.parse.urlparse(fullURL)
+        dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
 
-        resp = requests.post(
+        # copy over some additional headers from tableauData
+        form_data = {}
+        form_map = {
+            "sheetId": "sheet_id",
+            "showParams": "showParams",
+            "stickySessionKey": "stickySessionKey",
+        }
+        for k, v in form_map.items():
+            if k in tableauData:
+                form_data[v] = tableauData[k]
+
+        resp = req.post(
             dataUrl,
-            data={
-                "sheet_id": tableauData["sheetId"],
-                "showParams": tableauData["showParams"],
-            },
+            data=form_data,
+            headers={"Accept": "text/javascript"},
         )
         # Parse the response.
         # The response contains multiple chuncks of the form
@@ -867,7 +891,7 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
 
         return out
 
-    def construct_select(self, sels, aggs):
+    def construct_select(self, sels, aggs, meas):
         """
         Constructs the select component of the PowerBI query
 
@@ -882,6 +906,10 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
             A list of tuples containing information on the "Source" (should
             match "Name" from the `construct_from` method), "Property",
             "Function", and "Name". This is for columns that are aggregated
+        meas : list(tuple)
+            A list of tuples containing information on the "Source", "Property",
+            and "Name". I don't know exactly the difference between `sels` and
+            `meas` but they differ slightly
         """
         assert len
         out = []
@@ -908,6 +936,17 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
                             }
                         },
                         "Function": f,
+                    },
+                    "Name": n,
+                }
+            )
+
+        for (s, p, n) in meas:
+            out.append(
+                {
+                    "Measure": {
+                        "Expression": {"SourceRef": {"Source": s}},
+                        "Property": p,
                     },
                     "Name": n,
                 }
