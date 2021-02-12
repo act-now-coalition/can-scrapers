@@ -1,0 +1,1 @@
+from can_tools.scrapers.official.SD.sd_vaccines import SouthDakotaCountyVaccine
