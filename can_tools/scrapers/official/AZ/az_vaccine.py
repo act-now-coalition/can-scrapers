@@ -20,46 +20,27 @@ class ArizonaVaccineCounty(StateDashboard):
         # Set url of downloadable dataset
         url = "https://azdhs.gov/documents/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/novel-coronavirus/vaccine-phases.pdf"
 
-        return camelot.read_pdf(url, pages="2-4", flavor="stream")
+        return camelot.read_pdf(url, pages="2", flavor="stream")
 
     def normalize(self, data) -> pd.DataFrame:
+        # Sanity check how many tables we got back
+        if len(data) > 1:
+            raise ValueError("more tables returned than expected value")
+
         # Read data into data frames
-        table1 = data[0].df
-        table2 = data[1].df
-        table3 = data[2].df
+        df = data[0].df
 
         # Remove extra header and footer columns
-        table1 = table1.iloc[4:-2].reset_index(drop=True)
-        table2 = table2.iloc[4:-2].reset_index(drop=True)
-        table3 = table3.iloc[6:-7].reset_index(drop=True)
+        df = df.iloc[6:-7].reset_index(drop=True)
 
         # Use this if we want to include State PODs, Tribes, CDC Pharmacy Partnership, and ADHS
-        # table1 = table1.iloc[4:-1].reset_index(drop=True)
-        # table2 = table2.iloc[4:-1].reset_index(drop=True)
-        # table3 = table3.iloc[6:-1].reset_index(drop=True)
         # loc_replacer = {"State PODs**": "State PODs", "ADHS‡": "ADHS"}
-        # table1 = table1.replace({"location_name": loc_replacer})
-        # table3 = table3.replace({"location_name": loc_replacer})
-        # table3 = table3.drop([16, 18])
-        # table3.at[17, 0] = "CDC Pharmacy Partnership"
+        # df = df.replace({"location_name": loc_replacer})
+        # df = df.drop([16, 18])
+        # df.at[17, 0] = "CDC Pharmacy Partnership"
 
         # Rename column names
-        table1.columns = [
-            "location_name",
-            "phase",
-            "total_vaccine_doses_administered",
-            "ordered",
-            "percent_utilized",
-            "vaccination_rate",
-        ]
-        table2.columns = [
-            "location_name",
-            "phase",
-            "ordered",
-            "total_vaccine_initiated",
-            "total_vaccine_completed",
-        ]
-        table3.columns = [
+        df.columns = [
             "location_name",
             "pfizer_vaccine_allocated_new_doses",
             "pfizer_vaccine_allocated",
@@ -69,16 +50,7 @@ class ArizonaVaccineCounty(StateDashboard):
         ]
 
         # Determine what columns to keep
-        table1_cols_to_keep = [
-            "location_name",
-            "total_vaccine_doses_administered",
-        ]
-        table2_cols_to_keep = [
-            "location_name",
-            "total_vaccine_initiated",
-            "total_vaccine_completed",
-        ]
-        table3_cols_to_keep = [
+        cols_to_keep = [
             "location_name",
             "pfizer_vaccine_allocated",
             "moderna_vaccine_allocated",
@@ -86,31 +58,10 @@ class ArizonaVaccineCounty(StateDashboard):
         ]
 
         # Drop extraneous columns
-        table1 = table1.loc[:, table1_cols_to_keep]
-        table2 = table2.loc[:, table2_cols_to_keep]
-        table3 = table3.loc[:, table3_cols_to_keep]
-
-        # Merge tables
-        table1_table2 = pd.merge(table1, table2, how="outer", on="location_name")
-        df = pd.merge(table1_table2, table3, how="outer", on="location_name")
+        df = df.loc[:, cols_to_keep]
 
         # Create dictionary for columns to map
         crename = {
-            "total_vaccine_doses_administered": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
             "moderna_vaccine_allocated": CMU(
                 category="moderna_vaccine_allocated",
                 measurement="cumulative",
