@@ -17,7 +17,8 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
     resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = True
     location_type = "state"
-
+    #These Jsons are big, and very messy. I have not taken the time to go through and see what exactly in here is
+    #necessary and what is 'fluff.' That is on my to do list
     bodyDose1 = '{"dataRequest":[{"requestContext":{"reportContext":{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f"' \
                 ',"pageId":"26374700","mode":"VIEW","componentId":"cd-kv0749i1fc","displayType":"simple-linechart"}},' \
                 '"datasetSpec":{"dataset":[{"datasourceId":"a51cf808-9bf3-44a0-bd26-4337aa9f8700","revisionNumber":0,' \
@@ -65,10 +66,16 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
     ] = datetime.now().strftime("%Y%m%d")
 
     def fetch(self):
+        """
+        Pulls Wyoming state vaccine data, cleans and up the Json Strig that is returned before returning that object as
+        a list of dictionaries
+        """
+
         WYVacDataDose1 = self.get_dataset(self.bodyDose1, url=self.baseUrl)
         WYVacDataDose1 = json.loads(WYVacDataDose1[10 : len(WYVacDataDose1) - 1])
         WYVacDataDose2 = self.get_dataset(self.bodyDose2, url=self.baseUrl)
         WYVacDataDose2 = json.loads(WYVacDataDose2[10 : len(WYVacDataDose2) - 1])
+        #add data from the dose 2 request to our list of dictionaries
         df = WYVacDataDose1["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
             "tableDataset"
         ]["column"]
@@ -91,12 +98,16 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         return df
 
     def normalize(self, data) -> pd.DataFrame:
-        # takes data in the form of a string
+        """
+        Cleans and normalizes the data we recieve from the Google api
+        """
         datesListVac1 = data[0]["dateColumn"]["values"]
         nullValuesSupplyListVac1 = data[1]["nullIndex"]
         valuesSupplyListVac1 = data[1]["doubleColumn"]["values"]
         nullValuesAdminListVac1 = data[2]["nullIndex"]
         valuesAdminListVac1 = data[2]["doubleColumn"]["values"]
+
+        #sorts the Null Values index lists so we dont get an out of bounds error when we insert values of 0 in their places
         nullValuesAdminListVac1.sort()
         nullValuesSupplyListVac1.sort()
         for value in nullValuesSupplyListVac1:
@@ -104,6 +115,7 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         for value in nullValuesAdminListVac1:
             valuesAdminListVac1.insert(value, 0)
 
+        #creating dataframe for dose 1 county level data
         stateVaccineDataFrameVac1 = pd.DataFrame(
             {
                 "dt": datesListVac1,
@@ -111,7 +123,6 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
                 "administeredVac1": valuesAdminListVac1,
             }
         )
-        # stateVaccineDataFrame["location"] = self.state_fips
 
         datesListVac2 = data[3]["dateColumn"]["values"]
         nullValuesSupplyListVac2 = data[4]["nullIndex"]
@@ -124,6 +135,8 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
             valuesSupplyListVac2.insert(value, 0)
         for value in nullValuesAdminListVac2:
             valuesAdminListVac2.insert(value, 0)
+
+        #creating data frame for second dose of vaccines
         stateVaccineDataFrameVac2 = pd.DataFrame(
             {
                 "dt": datesListVac2,
@@ -131,21 +144,22 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
                 "administeredVac2": valuesAdminListVac2,
             }
         )
+
+        #merges two data frames together
         stateVaccineDataFrame = stateVaccineDataFrameVac1.merge(
             stateVaccineDataFrameVac2, on="dt", how="outer"
         )
+        #sums the first dose allocation and the second dose allocations together
         stateVaccineDataFrame["supplyTotal"] = (
             stateVaccineDataFrame["supplyVac2"] + stateVaccineDataFrame["supplyVac1"]
         )
+        #create cumulative vaccine supply variable
         stateVaccineDataFrame["supplyCumulative"] = [
             stateVaccineDataFrame["supplyTotal"].loc[0:x].sum()
             for x in range(len(stateVaccineDataFrame["supplyTotal"]))
         ]
         stateVaccineDataFrame["location"] = self.state_fips
         stateVaccineDataFrame["dt"] = pd.to_datetime(stateVaccineDataFrame["dt"])
-        # del stateVaccineDataFrame["supplyVac2"]
-        # del stateVaccineDataFrame["supplyVac1"]
-        # del stateVaccineDataFrame["supplyTotal"]
         print(stateVaccineDataFrame.columns)
         crename = {
             "supplyCumulative": CMU(
@@ -170,6 +184,12 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
 
 
 class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
+    """
+     Pulls Wyoming state vaccine data, cleans and up the Json Strig that is returned before returning that object as
+     a dictionary
+     """
+
+    #JSONs to pass to API to get county level vaccine dosage informtation
     bodyDose1 = '{"dataRequest":[{"requestContext":{"reportContext":' \
                 '{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f","pageId":"26374700","mode":"VIEW","componentId"' \
                 ':"cd-7lx3egj1fc","displayType":"simple-barchart"}},"datasetSpec":{"dataset":[{"datasourceId":' \
@@ -221,6 +241,10 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
     location_type = "county"
 
     def fetch(self):
+        """
+         Pulls Wyoming county vaccine data, cleans and up the Json Strig that is returned before returning that object as
+         a dictionary
+         """
         WYVacDataDose1 = self.get_dataset(json.loads(self.bodyDose1), url=self.baseUrl)
         parsedVacDataDose1 = json.loads(WYVacDataDose1[10 : len(WYVacDataDose1) - 1])
         WYVacDataDose2 = self.get_dataset(json.loads(self.bodyDose2), url=self.baseUrl)
@@ -252,15 +276,22 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
         countiesSupplyNullIndexVac1 = data[1]["nullIndex"]
         countiesAllocVac1 = data[2]["doubleColumn"]["values"]
         countiesAllocNullIndexVac1 = data[2]["nullIndex"]
+
+        #sorting null index lists so there is no chance of an index out of bounds error when we insert 0 values for
+        #null indexes
         countiesNullIndexVac1.sort()
         countiesAllocNullIndexVac1.sort()
         countiesSupplyNullIndexVac1.sort()
+
+        #inserting values of 0 for the indexes corresponding with the null value indexes
         for value in countiesNullIndexVac1:
             countiesVac1.insert(value, 0)
         for value in countiesSupplyNullIndexVac1:
             countiesSupplyVac1.insert(value, 0)
         for value in countiesAllocNullIndexVac1:
             countiesAllocVac1.insert(value, 0)
+
+        #create dose 1 data frame
         countyVaccineDataFrameVac1 = pd.DataFrame(
             {
                 "location_name": countiesVac1,
@@ -275,15 +306,21 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
         countiesSupplyNullIndexVac2 = data[4]["nullIndex"]
         countiesAllocVac2 = data[5]["doubleColumn"]["values"]
         countiesAllocNullIndexVac2 = data[5]["nullIndex"]
+
+        #sorting null index lists so there is no chance of an index out of bounds error when we insert 0 values
         countiesNullIndexVac2.sort()
         countiesAllocNullIndexVac2.sort()
         countiesSupplyNullIndexVac2.sort()
+
+        #inserting values of 0 for the indexes corresponding with the null value indexes
         for value in countiesNullIndexVac2:
             countiesVac2.insert(value, 0)
         for value in countiesSupplyNullIndexVac2:
             countiesSupplyVac2.insert(value, 0)
         for value in countiesAllocNullIndexVac2:
             countiesAllocVac2.insert(value, 0)
+
+        #create dose 2 dataframe
         countyVaccineDataFrameVac2 = pd.DataFrame(
             {
                 "location_name": countiesVac2,
@@ -291,6 +328,8 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
                 "administeredVac2": countiesAllocVac2,
             }
         )
+
+        #merge dose 1 data frame with dose 2 dataframe
         countyVaccineDataFrame = countyVaccineDataFrameVac1.merge(
             countyVaccineDataFrameVac2, on="location_name", how="outer"
         )
