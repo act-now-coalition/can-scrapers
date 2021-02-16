@@ -19,11 +19,16 @@ class TennesseeVaccineCounty(TableauDashboard):
         return self.get_tableau_view()["REPORTING"]
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        value_columns = [r"sum(% only one dose %)-alias", r"sum(% two doses %)-alias"]
+        df = data.copy()
+
+        df.columns = [x.lower() for x in df]
+        value_columns = [
+            x for x in df.columns if ("at least one" in x) or ("two doses" in x)
+        ]
         val_col = [k for k in list(data) if k.lower() in value_columns]
         assert len(val_col) == 2
 
-        dose1_ix1 = "only one dose" in val_col[1].lower()
+        dose1_ix1 = "at least one" in val_col[1].lower()
 
         county_col = [k for k in list(data) if "patient county-value" in k.lower()]
         assert len(county_col) == 1

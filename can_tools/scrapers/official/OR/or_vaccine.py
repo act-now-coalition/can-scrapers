@@ -15,7 +15,7 @@ class OregonVaccineCounty(TableauDashboard):
     viewPath = "OregonCOVID-19VaccinationTrends/OregonCountyVaccinationTrends"
 
     cmus = {
-        "sum(metric - in progress)-alias": CMU(
+        "sum(metric - total people)-alias": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -32,7 +32,10 @@ class OregonVaccineCounty(TableauDashboard):
     def fetch(self) -> pd.DataFrame:
         return pd.concat(self.get_tableau_view())
 
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        # Don't do any operations in place
+        df = data.copy().loc["County Map Per Capita new", :]
+
         # county names (converted to title case)
         df["location_name"] = df[self.county_column].str.title()
 
