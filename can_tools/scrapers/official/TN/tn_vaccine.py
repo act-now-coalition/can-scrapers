@@ -22,7 +22,9 @@ class TennesseeVaccineCounty(TableauDashboard):
         df = data.copy()
 
         df.columns = [x.lower() for x in df]
-        value_columns = [x for x in df.columns if ("at least one" in x) or ("two doses" in x)]
+        value_columns = [
+            x for x in df.columns if ("at least one" in x) or ("two doses" in x)
+        ]
         val_col = [k for k in list(data) if k.lower() in value_columns]
         assert len(val_col) == 2
 
