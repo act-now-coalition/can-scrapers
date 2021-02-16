@@ -126,6 +126,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows).dropna()
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
 
+        # Initiated is not at least one dose for PA
+        df["total_vaccine_initiated"] = df.eval(
+            "total_vaccine_initiated + total_vaccine_completed"
+        )
+
         # Make sure McKean follows capitalization in db
         df = df.replace({"location_name": {"Mckean": "McKean"}})
 
