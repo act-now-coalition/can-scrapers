@@ -14,6 +14,8 @@ from prefect.tasks.secrets import EnvVarSecret
 
 @task
 def create_scraper(cls: Type[DatasetBase], dt: pd.Timestamp) -> DatasetBase:
+    logger = prefect.context.get("logger")
+    logger.info("Creating class {} with dt = {}".format(cls, dt))
     return cls(execution_dt=dt)
 
 
@@ -21,6 +23,7 @@ def create_scraper(cls: Type[DatasetBase], dt: pd.Timestamp) -> DatasetBase:
 def fetch(d: DatasetBase):
     logger = prefect.context.get("logger")
     logger.info("About to run {}._fetch".format(d.__class__.__name__))
+    logger.info("In fetch and have execution_dt = {}".format(d.execution_dt))
     fn = d._fetch()
     logger.info("{}._fetch success".format(d.__class__.__name__))
     logger.info("Saved raw data to: {}".format(fn))
@@ -30,6 +33,7 @@ def fetch(d: DatasetBase):
 def normalize(d: DatasetBase):
     logger = prefect.context.get("logger")
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
+    logger.info("In _normalize and have execution_dt = {}".format(d.execution_dt))
     fn = d._normalize()
     logger.info("{}._normalize success".format(d.__class__.__name__))
     logger.info("Saved clean data to: {}".format(fn))
@@ -48,6 +52,7 @@ def put(d: DatasetBase, connstr: str):
     engine = sa.create_engine(connstr)
 
     logger.info("About to run {}._put".format(d.__class__.__name__))
+    logger.info("In _put and have execution_dt = {}".format(d.execution_dt))
     success, rows_in, rows_out = d._put(engine)
 
     logger.info("{}._put success".format(d.__class__.__name__))
