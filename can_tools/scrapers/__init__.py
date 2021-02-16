@@ -1,6 +1,8 @@
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHistorical,; Massachusetts,
     ArizonaData,
+    ArizonaMaricopaVaccine,
+    ArizonaVaccineCounty,
     CASanDiegoVaccine,
     CaliforniaCasesDeaths,
     CaliforniaHospitals,
