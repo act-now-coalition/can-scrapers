@@ -64,7 +64,7 @@ def put(d: DatasetBase, connstr: str):
 
 
 def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
-    sched = CronSchedule(f"{ix} */4 * * *")
+    sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
         ts = pd.Timestamp.utcnow()
