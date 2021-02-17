@@ -45,6 +45,8 @@ from can_tools.scrapers.official.MO import MissouriVaccineCounty
 
 from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
 
+from can_tools.scrapers.official.NV import NevadaCountyVaccines
+
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
