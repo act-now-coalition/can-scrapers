@@ -15,7 +15,7 @@ from prefect.tasks.secrets import EnvVarSecret
 @task
 def create_scraper(cls: Type[DatasetBase]) -> DatasetBase:
     logger = prefect.context.get("logger")
-    dt = pd.Timestamp.utcnow()
+    dt = prefect.context.get("scheduled_start_time")
     logger.info("Creating class {} with dt = {}".format(cls, dt))
     return cls(execution_dt=dt)
 
