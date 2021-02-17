@@ -29,6 +29,7 @@ from can_tools.scrapers.official.DE import (
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
     CDCStateVaccine,
+    CDCVariantTracker,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
 )
