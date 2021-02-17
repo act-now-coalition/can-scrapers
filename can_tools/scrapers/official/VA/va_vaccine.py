@@ -68,6 +68,7 @@ class VirginiaVaccine(TableauDashboard):
         df = self.extract_CMU(df, crename)
 
         df.loc[:, "value"] = pd.to_numeric(df["value"])
+        df.loc[:, "location"] = df["location"].astype(int)
         df["dt"] = self._retrieve_dt()
         df["vintage"] = self._retrieve_vintage()
         return df.drop(["variable"], axis="columns")
