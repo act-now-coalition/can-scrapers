@@ -8,3 +8,5 @@ from can_tools.scrapers.official.CA.counties import (
     LACaliforniaCountyVaccine,
 )
 from can_tools.scrapers.official.CA.ca_testing import CaliforniaTesting
+
+from can_tools.scrapers.official.CA.ca_vaccine import CaliforniaVaccineCounty

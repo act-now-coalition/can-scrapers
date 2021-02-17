@@ -10,6 +10,7 @@ from can_tools.scrapers.official.CA import (
     CASanDiegoVaccine,
     CaliforniaTesting,
     LACaliforniaCountyVaccine,
+    CaliforniaVaccineCounty,
 )
 
 from can_tools.scrapers.official.CT import (
