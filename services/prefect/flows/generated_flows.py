@@ -13,8 +13,9 @@ from prefect.tasks.secrets import EnvVarSecret
 
 
 @task
-def create_scraper(cls: Type[DatasetBase], dt: pd.Timestamp) -> DatasetBase:
+def create_scraper(cls: Type[DatasetBase]) -> DatasetBase:
     logger = prefect.context.get("logger")
+    dt = pd.Timestamp.utcnow()
     logger.info("Creating class {} with dt = {}".format(cls, dt))
     return cls(execution_dt=dt)
 
@@ -67,9 +68,8 @@ def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
     sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
-        ts = pd.Timestamp.utcnow()
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
-        d = create_scraper(cls, ts)
+        d = create_scraper(cls)
         fetched = fetch(d)
         normalized = normalize(d)
         validated = validate(d)
