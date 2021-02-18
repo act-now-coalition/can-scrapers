@@ -15,6 +15,7 @@ class LACaliforniaCountyVaccine(CountyDashboard):
     location = 6037
     state_fips = int(us.states.lookup("California").fips)
     source = "http://publichealth.lacounty.gov/media/Coronavirus/vaccine/vaccine-dashboard.htm"
+    source_name = "County of Los Angeles Public Health"
 
     def fetch(self) -> str:
         res = requests.get(self.source)

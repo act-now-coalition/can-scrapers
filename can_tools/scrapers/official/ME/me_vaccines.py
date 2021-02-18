@@ -18,6 +18,7 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
     state_fips = int(us.states.lookup("Maine").fips)
 
     source = "https://www.maine.gov/covid19/vaccines/dashboard"
+    source_name = "Covid-19 Response Office of the Governor"
     powerbi_url = "https://wabi-us-east-a-primary-api.analysis.windows.net"
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):

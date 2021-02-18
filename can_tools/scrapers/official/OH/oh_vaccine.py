@@ -8,6 +8,7 @@ from can_tools.scrapers.official.base import StateDashboard
 class OhioVaccineCounty(StateDashboard):
     has_location = False
     source = "https://coronavirus.ohio.gov/wps/portal/gov/covid-19/dashboards/covid-19-vaccine/covid-19-vaccination-dashboard"
+    source_name = "Ohio Department of Health"
     state_fips = int(us.states.lookup("Ohio").fips)
     url = "https://coronavirus.ohio.gov/static/dashboards/vaccine_data.csv"
     location_type = "county"

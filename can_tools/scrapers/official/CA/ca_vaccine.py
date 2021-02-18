@@ -10,7 +10,8 @@ from can_tools.scrapers.official.base import TableauDashboard
 
 class CaliforniaVaccineCounty(TableauDashboard):
     has_location = False
-    source = "https://covidvaccine.oregon.gov/"
+    source = "https://covid19.ca.gov/vaccines/#California-vaccines-dashboard"
+    source_name = "Official California State Government Website"
     state_fips = int(us.states.lookup("California").fips)
     location_type = "county"
 

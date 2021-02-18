@@ -19,6 +19,7 @@ class USAFactsCases(FederalDashboard):
     pk = "(vintage, dt, fips, variable_id)"
     data_type = "covid"
     source = "https://usafacts.org/issues/coronavirus/"
+    source_name = "USAFacts"
     has_location = True
     location_type = ""
 

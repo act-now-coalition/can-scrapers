@@ -12,6 +12,7 @@ class ArizonaData(TableauMapClick, StateDashboard):
 
     # Initlze
     source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
+    source_name = "Arizona Department Of Health Services"
     has_location = True
     location_type = ""
     state_fips = int(us.states.lookup("Arizona").fips)

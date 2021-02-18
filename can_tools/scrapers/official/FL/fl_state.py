@@ -15,6 +15,7 @@ class Florida(ArcGIS):
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
     source = "https://experience.arcgis.com/experience/96dd742462124fa0b38ddedb9b25e429"
+    source_name = "Florida Department of Health"
 
     def fetch(self):
         return self.get_all_jsons("Florida_COVID19_Cases", 0, 1)

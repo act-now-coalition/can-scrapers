@@ -13,6 +13,7 @@ class VermontCountyVaccine(ArcGIS):
     location_type = "county"
     state_fips = int(us.states.lookup("Vermont").fips)
     source = "https://www.healthvermont.gov/covid-19/vaccine/covid-19-vaccine-dashboard"
+    source_name = "Vermont Department of Health"
     var_columns = [
         "dose_1_male",
         "dose_1_female",

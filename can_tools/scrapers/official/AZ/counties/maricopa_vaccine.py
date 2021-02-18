@@ -13,6 +13,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
     """
 
     source = "https://www.maricopa.gov/5641/COVID-19-Vaccine"
+    source_name = "Maricopa County"
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)

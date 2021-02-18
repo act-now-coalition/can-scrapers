@@ -12,6 +12,7 @@ class CDCStateVaccine(FederalDashboard):
     has_location = True
     location_type = "state"
     source = "https://covid.cdc.gov/covid-data-tracker/#vaccinations"
+    source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
 
     def fetch(self, test=False):

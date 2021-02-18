@@ -21,6 +21,7 @@ class NewMexicoVaccineCounty(NewMexicoBase):
     """
 
     source = "https://cvvaccine.nmhealth.org/public-dashboard.html"
+    source_name = "New Mexico Department of Health"
     has_location = False
     location_type = "county"
 

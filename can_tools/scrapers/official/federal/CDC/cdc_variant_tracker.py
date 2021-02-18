@@ -14,6 +14,7 @@ class CDCVariantTracker(FederalDashboard):
     has_location = True
     location_type = "state"
     source = "https://www.cdc.gov/coronavirus/2019-ncov/transmission/variant-cases.html"
+    source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
 
     def fetch(self):

@@ -24,6 +24,7 @@ class NewYorkTests(StateDashboard):
         "https://covid19tracker.health.ny.gov/views/NYS-COVID19-Tracker"
         "/NYSDOHCOVID-19Tracker-Map"
     )
+    source_name = "New York State Department of Health COVID-19 Tracker"
 
     def fetch(self) -> pd.DataFrame:
         """

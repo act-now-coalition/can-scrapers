@@ -21,6 +21,7 @@ class GeorgiaCountyVaccine(ArcGIS):
     source = (
         "https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/"
     )
+    source_name = "Georgia Department of Public Health"
 
     def fetch(self):
         return self.get_all_jsons("Georgia_DPH_COVID19_Vaccination_PUBLIC_v1", 4, 6)
