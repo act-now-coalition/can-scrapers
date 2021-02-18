@@ -139,7 +139,7 @@ class CASanDiegoVaccine(ArcGIS):
             total_temp, total_crename, var_name="Join_Name"
         ).drop(["Category", "Join_Name", "variable"], axis="columns")
 
-        out = pd.concat(
+        out: pd.DataFrame = pd.concat(
             [age_df, gender_df, race_df, eth_df, total_df], axis=0, ignore_index=True
         ).dropna()
         out["vintage"] = self._retrieve_vintage()
@@ -162,4 +162,8 @@ class CASanDiegoVaccine(ArcGIS):
             "value",
         ]
 
-        return out.loc[:, cols_to_keep]
+        non_dup_cols = [k for k in cols_to_keep if k != "value"]
+        out = out.loc[:, cols_to_keep]
+
+        # data on 2021-01-31 is duplicated. We'll keep "latest" observation
+        return out.drop_duplicates(non_dup_cols, keep="last")
