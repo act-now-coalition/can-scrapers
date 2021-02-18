@@ -983,3 +983,12 @@ class MicrosoftBIDashboard(StateDashboard, ABC):
     @abstractmethod
     def construct_body(self):
         pass
+
+
+class GoogleDataStudioDashboard(StateDashboard, ABC):
+    # TODO add method that constructs body json given certain parameters
+
+    def get_dataset(self, body, url) -> str:
+        """Accepts JSON body, and a url to post to the data studio batched URL"""
+        rawJson = str(requests.post(url, json=body).content)
+        return rawJson

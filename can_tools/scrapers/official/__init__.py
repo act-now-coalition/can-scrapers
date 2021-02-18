@@ -105,3 +105,5 @@ from can_tools.scrapers.official.OR import OregonVaccineCounty
 
 from can_tools.scrapers.official.VA import VirginiaVaccine
 from can_tools.scrapers.official.VT import VermontCountyVaccine, VermontStateVaccine
+
+from can_tools.scrapers.official.WY import WYCountyVaccinations, WYStateVaccinations
