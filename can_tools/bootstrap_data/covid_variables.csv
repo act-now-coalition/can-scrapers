@@ -3,6 +3,9 @@ cases,cumulative,people
 cases,cumulative,unique_people
 cases,new,people
 cases,rolling_average_7_day,people
+b117_cases,cumulative,people
+p1_cases,cumulative,people
+b1351_cases,cumulative,people
 deaths,cumulative,people
 deaths,new,people
 deaths,rolling_average_7_day,people
