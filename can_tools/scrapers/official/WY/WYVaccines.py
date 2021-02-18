@@ -15,6 +15,7 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         "https://health.wyo.gov/publichealth/immunization/wyoming-covid-19-vaccine-information/covid-19-"
         "vaccine-distribution-data/"
     )
+    source_name = "Wyoming Department of Health"
     baseUrl = "https://datastudio.google.com/batchedDataV2"
     resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = True
@@ -166,7 +167,6 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         ]
         stateVaccineDataFrame["location"] = self.state_fips
         stateVaccineDataFrame["dt"] = pd.to_datetime(stateVaccineDataFrame["dt"])
-        print(stateVaccineDataFrame.columns)
         crename = {
             "supplyCumulative": CMU(
                 category="total_vaccine_allocated",
@@ -183,10 +183,10 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         out = stateVaccineDataFrame.melt(
             id_vars=["dt", "location"], value_vars=crename.keys()
         ).dropna()
-        out["value"] = pd.to_numeric(out.loc[:, "value"])
+        out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
-        return out
+        return out.drop(["variable"], axis="columns")
 
 
 class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
@@ -247,6 +247,7 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
         "https://health.wyo.gov/publichealth/immunization/wyoming-covid-19-vaccine-information/"
         "covid-19-vaccine-distribution-data/"
     )
+    source_name = "Wyoming Department of Health"
     baseUrl = "https://datastudio.google.com/batchedDataV2"
     resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = False
@@ -372,7 +373,7 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
 
-        out["value"] = pd.to_numeric(out.loc[:, "value"])
+        out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
         df = self.extract_CMU(out, crename)
-        return df
+        return df.drop(["variable"], axis="columns")

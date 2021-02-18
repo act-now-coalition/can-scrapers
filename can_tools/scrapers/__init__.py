@@ -54,6 +54,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WashingtonVaccine,
     WisconsinCounties,
     WisconsinState,
+    WYCountyVaccinations,
+    WYStateVaccinations,
 )
 
 from can_tools.scrapers.ctp import (
