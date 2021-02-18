@@ -18,6 +18,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     state_fips = int(us.states.lookup("Minnesota").fips)
 
     source = "https://mn.gov/covid19/vaccine/data/index.jsp"
+    source_name = "Minnesota Covid-19 Response"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
     powerbi_dashboard_link = (
         "https://app.powerbigov.us/view?r=eyJrIjoiOWRiYTI2ZjUtYWVhMS00"

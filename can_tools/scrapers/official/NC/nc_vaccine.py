@@ -9,6 +9,9 @@ from can_tools.scrapers.official.base import StateDashboard
 class NorthCarolinaVaccineCounty(StateDashboard):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
+    source_name = (
+        "North Carolina Department of Health and Human Services Covid-19 Response"
+    )
     state_fips = int(us.states.lookup("North Carolina").fips)
     url = "https://files.nc.gov/covid/documents/dashboard/Vaccinations_Dashboard_Data.xlsx"
     location_type = "county"

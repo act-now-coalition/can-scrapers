@@ -20,6 +20,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
     state_fips = int(us.states.lookup("Pennsylvania").fips)
 
     source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Vaccine.aspx"
+    source_name = "Pennsylvania Department of Health"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):

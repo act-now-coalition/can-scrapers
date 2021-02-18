@@ -17,6 +17,7 @@ class TexasCasesDeaths(ArcGIS):
         "https://txdshs.maps.arcgis.com/apps/opsdashboard/index.html"
         "#/ed483ecd702b4298ab01e8b9cafc8b83"
     )
+    source_name = "Texas Department of State Health Services"
     state_fips = int(us.states.lookup("Texas").fips)
     has_location = False
     service: str = "DSHS_COVID19_Cases_Service"

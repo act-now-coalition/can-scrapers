@@ -60,6 +60,9 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
     state_fips = int(us.states.lookup("Nevada").fips)
 
     source = "https://nvhealthresponse.nv.gov/"
+    source_name = (
+        "Nevada Governor's Office & Nevada Department of Health and Human Services"
+    )
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):

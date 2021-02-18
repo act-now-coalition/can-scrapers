@@ -15,6 +15,7 @@ class MarylandState(ArcGIS, DatasetBase):
     location_type = "state"
     state_fips = int(us.states.lookup("Maryland").fips)
     source = "https://coronavirus.maryland.gov/"
+    source_name = "Maryland Department of Health"
 
     def fetch(self):
         return self.get_all_jsons("MASTERCaseTracker", 0, "")

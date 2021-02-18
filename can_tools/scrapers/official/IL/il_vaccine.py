@@ -9,6 +9,7 @@ from can_tools.scrapers.official.base import StateDashboard
 class IllinoisVaccineCounty(StateDashboard):
     has_location = False
     source = "https://www.dph.illinois.gov/covid19/vaccinedata"
+    source_name = "Illinois Department of Public Health"
     state_fips = int(us.states.lookup("Illinois").fips)
     url = "https://idph.illinois.gov/DPHPublicInformation/api/covidVaccine/getVaccineAdministrationCurrent"
     location_type = "county"

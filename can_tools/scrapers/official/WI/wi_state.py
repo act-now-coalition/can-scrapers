@@ -26,6 +26,7 @@ class WisconsinArcGIS(ArcGIS, ABC):
     has_location = True
     state_fips = int(us.states.lookup("Wisconsin").fips)
     source = "https://www.dhs.wisconsin.gov/covid-19/data.htm"
+    source_name = "Wisconsin Department of Health Services"
 
     location_type: str
     SERVICE: str = "DHS_COVID19/COVID19_WI"

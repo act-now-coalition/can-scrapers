@@ -9,6 +9,7 @@ from can_tools.scrapers.official.base import StateDashboard
 class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
     has_location = False
     source = "https://www.dph.illinois.gov/covid19/covid19-statistics"
+    source_name = "Illinois Department of Public Health"
     state_fips = int(us.states.lookup("Illinois").fips)
 
     def _get_js(self, url: str) -> dict:

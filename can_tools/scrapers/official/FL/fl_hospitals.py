@@ -15,6 +15,7 @@ class FloridaHospitalBase(
     ABC,
 ):
     source = "https://bi.ahca.myflorida.com/t/ABICC/views/Public/HospitalBedsCounty"
+    source_name = "Florida Department of Health"
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)

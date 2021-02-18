@@ -12,6 +12,7 @@ class ArizonaVaccineCounty(StateDashboard):
     """
 
     source = "https://directorsblog.health.azdhs.gov/covid-19-vaccine-surveillance/"
+    source_name = "Arizona Department Of Health Services"
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)

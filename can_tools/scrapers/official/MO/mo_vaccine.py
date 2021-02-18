@@ -9,6 +9,7 @@ from can_tools.scrapers.official.base import TableauDashboard
 class MissouriVaccineCounty(TableauDashboard):
     has_location = False
     source = "https://results.mo.gov/t/COVID19/views/VaccinationsDashboard/Vaccinations"
+    source_name = "Missouri Department of Health & Senior Services"
     state_fips = int(us.states.lookup("Missouri").fips)
     location_type = "county"
     baseurl = "https://results.mo.gov/t/COVID19"

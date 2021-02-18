@@ -11,6 +11,7 @@ class MontanaCountyVaccine(ArcGIS):
     location_type = "county"
     state_fips = int(us.states.lookup("Montana").fips)
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
+    source_name = "Montana Department of Health & Human Services"
     crename = {
         "Dose_1": CMU(
             category="total_vaccine_initiated",

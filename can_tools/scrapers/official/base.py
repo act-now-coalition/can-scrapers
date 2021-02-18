@@ -55,6 +55,7 @@ class StateDashboard(DatasetBase, ABC):
     state_fips: int
     location_type: str
     source: str
+    source_name: str
 
     def _prep_df(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
         """
@@ -70,6 +71,9 @@ class StateDashboard(DatasetBase, ABC):
 
         if "source_url" not in list(to_ins):
             to_ins["source_url"] = self.source
+
+        if "source_name" not in list(to_ins):
+            to_ins["source_name"] = self.source_name
 
         return to_ins, insert_op
 
@@ -142,6 +146,9 @@ class FederalDashboard(StateDashboard, ABC):
 
         if "source_url" not in list(to_ins):
             to_ins["source_url"] = self.source
+
+        if "source_name" not in list(to_ins):
+            to_ins["source_name"] = self.source_name
 
         return to_ins, insert_op
 

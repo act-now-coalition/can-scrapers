@@ -13,6 +13,7 @@ class WashingtonVaccine(StateDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Washington").fips)
     source = "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard"
+    source_name = "Washington State Department of Health"
 
     async def _get_from_browser(self):
         async with with_page(headless=True) as page:

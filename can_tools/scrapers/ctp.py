@@ -14,6 +14,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
     location_type: str = "state"
     has_location: bool = True
     source: str = "https://covidtracking.com/race/dashboard"
+    source_name = "The COVID Tracking Project"
 
     def fetch(self):
         url = (
@@ -133,6 +134,7 @@ class CovidTrackingProject(FederalDashboard):
     location_type: str = "state"
     has_location: bool = True
     source: str = "https://api.covidtracking.com/v1/states/daily.csv"
+    source_name = "The COVID Tracking Project"
 
     def fetch(self):
         return pd.read_csv(self.source, parse_dates=["date"])

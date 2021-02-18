@@ -13,8 +13,12 @@ class CASanDiegoVaccine(ArcGIS):
     state_fips = int(us.states.lookup("California").fips)
     county_fips = 73
     source = (
-        "https://sdcounty.maps.arcgis.com/apps/opsdashboard/index.html"
-        "#/c0f4b16356b840478dfdd50d1630ff2a"
+        "https://sdcounty.maps.arcgis.com/apps/opsdashboard"
+        "/index.html#/c0f4b16356b840478dfdd50d1630ff2a"
+    )
+    source_name = (
+        "County of San Diego, Health and Human Services Agency"
+        "Public Health Services, Epidemiology and Immunization Services Branch"
     )
 
     def fetch(self):
