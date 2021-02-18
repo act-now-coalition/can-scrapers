@@ -69,6 +69,8 @@ class VirginiaVaccine(TableauDashboard):
 
         df.loc[:, "value"] = pd.to_numeric(df["value"])
         df.loc[:, "location"] = df["location"].astype(int)
+        df["location_type"] = "county"
+        df.loc[df["location"] == 51, "location_type"] = "state"
         df["dt"] = self._retrieve_dt()
         df["vintage"] = self._retrieve_vintage()
         return df.drop(["variable"], axis="columns")
