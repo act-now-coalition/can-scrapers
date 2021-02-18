@@ -12,6 +12,7 @@ class VirginiaVaccine(TableauDashboard):
     baseurl = "https://vdhpublicdata.vdh.virginia.gov"
     provider = "state"
     has_location = True
+    location_type = ""
 
     def fetch(self):
         self.filterFunctionName = None
