@@ -7,48 +7,29 @@ from can_tools.scrapers.official.base import TableauDashboard
 
 class NewYorkVaccineCounty(TableauDashboard):
     has_location = False
-    source = "https://covidvaccine.oregon.gov/"
-    state_fips = int(us.states.lookup("Oregon").fips)
+    source = "https://covid19vaccine.health.ny.gov/covid-19-vaccine-tracker"
+    source_name = "New York State Department of Health"
+    state_fips = int(us.states.lookup("New York").fips)
     location_type = "county"
     baseurl = "https://covid19tracker.health.ny.gov"
+    viewPath = "Vaccine_County_Public/NYSCountyVaccinations"
 
-    viewPath1 = "HCW_Vaccinated_Public/HospitalHCVaccinations"
-    viewPath2 = "Vaccine_Management_public/NYSVaccinations"
-    viewPath = "NH_Vaccinated_Public/NHVaccinations"
+    data_tableau_table = "Vaccinated by County"
+    location_name_col = "County-alias"
+    timezone = "US/Eastern"
 
     cmus = {
-        "sum(metric - in progress)-alias": CMU(
+        "SUM(First Dose)-alias": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "sum(metric - fully vaccinated)-alias": CMU(
+        "SUM(Second Dose)-alias": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
         ),
+        "AGG(% People Vaccinated with at least one vaccine dose)-alias": CMU(
+            category="total_vaccine_initiated", measurement="current", unit="percentage"
+        ),
     }
-
-    def fetch(self) -> pd.DataFrame:
-        return self.get_tableau_view()
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        # county names (converted to title case)
-        df["location_name"] = df[self.county_column].str.title()
-
-        # parse out 1st/2nd dose columns
-        df.columns = [x.lower() for x in list(df)]
-        value_cols = list(set(df.columns) & set(self.cmus.keys()))
-        assert len(value_cols) == 2
-
-        return (
-            df.melt(id_vars=["location_name"], value_vars=value_cols)
-            .dropna()
-            .assign(
-                dt=self._retrieve_dt("US/Pacific"),
-                vintage=self._retrieve_vintage(),
-                value=lambda x: pd.to_numeric(x.loc[:, "value"]),
-            )
-            .pipe(self.extract_CMU, cmu=self.cmus)
-            .drop(["variable"], axis=1)
-        )

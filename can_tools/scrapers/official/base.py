@@ -24,7 +24,7 @@ from can_tools.models import (
     TemptableOfficialNoLocation,
     build_insert_from_temp,
 )
-from can_tools.scrapers.base import DatasetBase
+from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
 
 
@@ -511,6 +511,35 @@ class TableauDashboard(StateDashboard, ABC):
     viewPath: str
     filterFunctionName: Optional[str] = None
     filterFunctionValue: Optional[str] = None
+    timezone: str
+    data_tableau_table: str
+    location_name_col: str
+    cmus: Dict[str, CMU]
+
+    def fetch(self) -> pd.DataFrame:
+        return self.get_tableau_view()[self.data_tableau_table]
+
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+        # county names (converted to title case)
+        df["location_name"] = df[self.location_name_col].str.title()
+
+        # parse out data columns
+        value_cols = list(set(df.columns) & set(self.cmus.keys()))
+        assert len(value_cols) == len(self.cmus)
+
+        return (
+            df.melt(id_vars=["location_name"], value_vars=value_cols)
+            .dropna()
+            .assign(
+                dt=self._retrieve_dt(self.timezone),
+                vintage=self._retrieve_vintage(),
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .pipe(self.extract_CMU, cmu=self.cmus)
+            .drop(["variable"], axis=1)
+        )
 
     def get_tableau_view(self):
         def onAlias(it, value, cstring):
