@@ -28,8 +28,5 @@ class NewYorkVaccineCounty(TableauDashboard):
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
-        ),
-        "AGG(% People Vaccinated with at least one vaccine dose)-alias": CMU(
-            category="total_vaccine_initiated", measurement="current", unit="percentage"
-        ),
+        )
     }
