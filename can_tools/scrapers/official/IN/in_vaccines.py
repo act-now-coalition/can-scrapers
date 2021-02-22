@@ -89,4 +89,4 @@ class IndianaCountyVaccinations(StateQueryAPI):
         ]
         out["vintage"] = self._retrieve_vintage()
 
-        return out
+        return out.loc[:, cols_to_keep]
