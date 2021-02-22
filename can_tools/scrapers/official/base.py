@@ -519,7 +519,7 @@ class TableauDashboard(StateDashboard, ABC):
     def fetch(self) -> pd.DataFrame:
         return self.get_tableau_view()[self.data_tableau_table]
 
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+    def __normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         # county names (converted to title case)
         df["location_name"] = df[self.location_name_col].str.title()
 
@@ -540,6 +540,9 @@ class TableauDashboard(StateDashboard, ABC):
             .pipe(self.extract_CMU, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
+
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self.__normalize(df)
 
     def get_tableau_view(self):
         def onAlias(it, value, cstring):
