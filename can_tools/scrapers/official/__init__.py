@@ -43,6 +43,8 @@ from can_tools.scrapers.official.FL import (
 
 from can_tools.scrapers.official.GA import GeorgiaCountyVaccine
 
+from can_tools.scrapers.official.IN import IndianaCountyVaccinations
+
 from can_tools.scrapers.official.MO import MissouriVaccineCounty
 
 from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
