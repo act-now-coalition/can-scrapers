@@ -18,6 +18,7 @@ class DelawareStateVaccine(StateDashboard):
 
     # Initialize
     source = "https://myhealthycommunity.dhss.delaware.gov"
+    source_name = "Delaware Health and Social Services"
     has_location = True
     location_type = "state"
     state_fips = int(us.states.lookup("Delaware").fips)

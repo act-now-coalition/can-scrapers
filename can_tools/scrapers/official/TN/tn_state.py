@@ -9,6 +9,7 @@ from can_tools.scrapers.util import requests_retry_session
 
 class TennesseeBase(StateDashboard):
     state_fips = int(us.states.lookup("Tennessee").fips)
+    source_name = "Tennessee Department of Health"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

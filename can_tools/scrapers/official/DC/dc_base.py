@@ -11,6 +11,7 @@ class DCBase(StateDashboard):
     state_fips = us.states.lookup("DC").fips
     location_type = "state"
     source = "https://coronavirus.dc.gov/page/coronavirus-data"
+    source_name = "Government of the District of Columbia"
 
     def _make_dt_date_and_drop(self, df):
         df["dt"] = pd.to_datetime(df["dt"], errors="coerce")

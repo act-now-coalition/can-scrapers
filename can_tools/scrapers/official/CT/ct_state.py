@@ -15,6 +15,7 @@ class CTCountyDeathHospitalizations(SODA, DatasetBase):
     cdh_id = "bfnu-rgqt"
     state_fips = int(us.states.lookup("Connecticut").fips)
     source = "https://data.ct.gov/resource/bfnu-rgqt.json"
+    source_name = "Official Connecticut State Government Website"
 
     def fetch(self):
         cdh = self.get_dataset(self.cdh_id)
@@ -55,6 +56,7 @@ class CTCountyTests(SODA, DatasetBase):
     has_location = False
     location_type = "county"
     source = "https://data.ct.gov/resource/qfkt-uahj.json"
+    source_name = "Official Connecticut State Government Website"
 
     def fetch(self):
         tests = self.get_dataset(self.test_id)
@@ -112,6 +114,7 @@ class CTState(SODA, DatasetBase):
     location_type = "state"
     state_fips = int(us.states.lookup("Connecticut").fips)
     source = "https://data.ct.gov/resource/rf3k-f8fg.json"
+    source_name = "Official Connecticut State Government Website"
 
     def fetch(self):
         stateCaseTests = self.get_dataset(self.resource_id)

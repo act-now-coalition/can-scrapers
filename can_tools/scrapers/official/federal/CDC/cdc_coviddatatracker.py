@@ -11,6 +11,7 @@ class CDCCovidDataTracker(FederalDashboard):
     has_location = True
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
+    source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
 
     def fetch(self, test=False):

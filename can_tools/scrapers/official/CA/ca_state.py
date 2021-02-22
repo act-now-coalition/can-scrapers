@@ -14,6 +14,7 @@ class CaliforniaCasesDeaths(StateQueryAPI):
 
     apiurl = "https://data.ca.gov/api/3/action/datastore_search"
     source = "https://covid19.ca.gov/state-dashboard"
+    source_name = "Official California State Government Website"
     state_fips = int(us.states.lookup("California").fips)
     has_location = False
     location_type = "county"

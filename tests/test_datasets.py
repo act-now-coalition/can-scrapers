@@ -89,3 +89,8 @@ def test_covid_dataset_has_source(cls):
     if getattr(cls, "data_type", False) == "covid":
         assert hasattr(cls, "source")
         assert hasattr(cls, "state_fips") or getattr(cls, "has_location", False)
+
+
+@pytest.mark.parametrize("cls", ALL_SCRAPERS)
+def test_all_datasets_has_source_name(cls):
+    assert hasattr(cls, "source_name")

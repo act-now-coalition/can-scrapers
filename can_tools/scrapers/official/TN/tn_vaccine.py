@@ -9,6 +9,7 @@ from can_tools.scrapers.official.base import TableauDashboard
 class TennesseeVaccineCounty(TableauDashboard):
     has_location = False
     source = "https://www.tn.gov/health/cedep/ncov/covid-19-vaccine-information.html"
+    source_name = "Tennessee Department of Health"
     state_fips = int(us.states.lookup("Tennessee").fips)
     location_type = "county"
     baseurl = "https://data.tn.gov/t/Public"

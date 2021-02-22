@@ -13,8 +13,12 @@ class CASanDiegoVaccine(ArcGIS):
     state_fips = int(us.states.lookup("California").fips)
     county_fips = 73
     source = (
-        "https://sdcounty.maps.arcgis.com/apps/opsdashboard/index.html"
-        "#/c0f4b16356b840478dfdd50d1630ff2a"
+        "https://sdcounty.maps.arcgis.com/apps/opsdashboard"
+        "/index.html#/c0f4b16356b840478dfdd50d1630ff2a"
+    )
+    source_name = (
+        "County of San Diego, Health and Human Services Agency"
+        "Public Health Services, Epidemiology and Immunization Services Branch"
     )
 
     def fetch(self):
@@ -139,7 +143,7 @@ class CASanDiegoVaccine(ArcGIS):
             total_temp, total_crename, var_name="Join_Name"
         ).drop(["Category", "Join_Name", "variable"], axis="columns")
 
-        out = pd.concat(
+        out: pd.DataFrame = pd.concat(
             [age_df, gender_df, race_df, eth_df, total_df], axis=0, ignore_index=True
         ).dropna()
         out["vintage"] = self._retrieve_vintage()
@@ -162,4 +166,8 @@ class CASanDiegoVaccine(ArcGIS):
             "value",
         ]
 
-        return out.loc[:, cols_to_keep]
+        non_dup_cols = [k for k in cols_to_keep if k != "value"]
+        out = out.loc[:, cols_to_keep]
+
+        # data on 2021-01-31 is duplicated. We'll keep "latest" observation
+        return out.drop_duplicates(non_dup_cols, keep="last")

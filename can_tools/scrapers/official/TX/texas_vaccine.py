@@ -17,6 +17,7 @@ from .tx_vaccine_crenames import crename_demographics, crename
 class TexasVaccineParent(StateDashboard, ABC):
     state_fips = us.states.lookup("Texas").fips
     source = "https://www.dshs.state.tx.us/coronavirus/immunize/vaccine.aspx"
+    source_name = "Texas Department of State Health Services"
 
     def fetch(self) -> requests.models.Response:
         fetch_url = "https://www.dshs.state.tx.us/immunize/covid19/COVID-19-Vaccine-Data-by-County.xls"

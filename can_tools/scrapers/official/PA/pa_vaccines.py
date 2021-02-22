@@ -20,6 +20,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
     state_fips = int(us.states.lookup("Pennsylvania").fips)
 
     source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Vaccine.aspx"
+    source_name = "Pennsylvania Department of Health"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):
@@ -125,6 +126,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows).dropna()
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
+
+        # Initiated is not at least one dose for PA
+        df["total_vaccine_initiated"] = df.eval(
+            "total_vaccine_initiated + total_vaccine_completed"
+        )
 
         # Make sure McKean follows capitalization in db
         df = df.replace({"location_name": {"Mckean": "McKean"}})

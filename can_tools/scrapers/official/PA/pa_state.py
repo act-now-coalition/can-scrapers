@@ -17,6 +17,7 @@ class PennsylvaniaCasesDeaths(ArcGIS):
     location_type = "county"
     state_fips = int(us.states.lookup("Pennsylvania").fips)
     source = "https://experience.arcgis.com/experience/ed2def13f9b045eda9f7d22dbc9b500e"
+    source_name = "Pennsylvania Department of Health"
     service: str = "COVID_PA_Counties"
 
     cols_to_keep = [

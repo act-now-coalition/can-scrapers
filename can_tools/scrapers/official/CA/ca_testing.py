@@ -11,6 +11,7 @@ import us
 class CaliforniaTesting(TableauDashboard):
 
     source = "https://covid19.ca.gov/state-dashboard/"
+    source_name = "Official California State Government Website"
     location_type = "county"
     state_fips = int(us.states.lookup("California").fips)
     has_location = False

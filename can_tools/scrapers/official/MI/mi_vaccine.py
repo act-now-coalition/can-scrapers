@@ -8,6 +8,7 @@ from can_tools.scrapers.official.base import StateDashboard
 class MichiganVaccineCounty(StateDashboard):
     has_location = False
     source = "https://www.michigan.gov/coronavirus/0,9753,7-406-98178_103214_103272-547150--,00.html"
+    source_name = "State of Michican Official Website"
     state_fips = int(us.states.lookup("Michigan").fips)
     url = "https://www.michigan.gov/documents/flu/Covid_Vaccine_Doses_Administered_710815_7.xlsx"
     location_type = "county"

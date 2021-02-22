@@ -181,7 +181,7 @@ class DatasetBase(ABC):
         # Set file path pieces
         rc, ft = ("raw", "pickle") if raw else ("clean", "parquet")
         cn = self.__class__.__name__
-        ed = self.execution_dt.strftime("%Y-%m-%d_%H")
+        ed = self.execution_dt.strftime(r"%Y-%m-%d_%H")
 
         # Set filepath using its components
         fp = self.base_path / rc / cn

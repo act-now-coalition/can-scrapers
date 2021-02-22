@@ -1,5 +1,7 @@
 from can_tools.scrapers.official.AZ import (
     ArizonaData,
+    ArizonaMaricopaVaccine,
+    ArizonaVaccineCounty,
 )
 
 from can_tools.scrapers.official.CA import (
@@ -8,6 +10,7 @@ from can_tools.scrapers.official.CA import (
     CASanDiegoVaccine,
     CaliforniaTesting,
     LACaliforniaCountyVaccine,
+    CaliforniaVaccineCounty,
 )
 
 from can_tools.scrapers.official.CT import (
@@ -26,6 +29,7 @@ from can_tools.scrapers.official.DE import (
 from can_tools.scrapers.official.federal import (
     CDCCovidDataTracker,
     CDCStateVaccine,
+    CDCVariantTracker,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
 )
@@ -37,9 +41,13 @@ from can_tools.scrapers.official.FL import (
     FloridaCountyVaccine,
 )
 
+from can_tools.scrapers.official.GA import GeorgiaCountyVaccine
+
 from can_tools.scrapers.official.MO import MissouriVaccineCounty
 
 from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
+
+from can_tools.scrapers.official.NV import NevadaCountyVaccines
 
 from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
@@ -95,4 +103,7 @@ from can_tools.scrapers.official.OH import OhioVaccineCounty
 
 from can_tools.scrapers.official.OR import OregonVaccineCounty
 
+from can_tools.scrapers.official.VA import VirginiaVaccine
 from can_tools.scrapers.official.VT import VermontCountyVaccine, VermontStateVaccine
+
+from can_tools.scrapers.official.WY import WYCountyVaccinations, WYStateVaccinations

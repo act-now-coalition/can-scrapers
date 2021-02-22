@@ -13,18 +13,17 @@ class FloridaCountyVaccine(StateDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
+    source_name = "Florida Department of Health"
 
     def fetch(self):
         return camelot.read_pdf(self.fetch_url, pages="2-end", flavor="stream")
 
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
-        df = self._truncate_data(data[0].df)
-
-        # if the table overflows onto next page, retrieve the data in the same way and append
-        if len(data) == 2:
-            append_df = self._truncate_data(data[1].df)
-            df = pd.concat([df, append_df])
+        dfs = []
+        for el in data:
+            dfs.append(self._truncate_data(el.df))
+        df = pd.concat(dfs)
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
         df = df.query(
@@ -33,6 +32,18 @@ class FloridaCountyVaccine(StateDashboard):
             "location_name != 'Total'"
         )
         df = df.replace({"location_name": {"Desoto": "DeSoto", "Dade": "Miami-Dade"}})
+
+        # Make all columns (except location) numeric
+        for col in df.columns:
+            if col == "location_name":
+                continue
+            else:
+                df.loc[:, col] = pd.to_numeric(df.loc[:, col].str.replace(",", ""))
+
+        # First dose and second dose need to be added together to get at least one vaccinated
+        df.loc[:, "first_dose_total"] = df.eval(
+            "first_dose_total + series_complete_total"
+        )
 
         crename = {
             "first_dose_new": CMU(
@@ -69,7 +80,6 @@ class FloridaCountyVaccine(StateDashboard):
 
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
         out = self.extract_CMU(out, crename)
-        out.loc[:, "value"] = pd.to_numeric(out["value"].str.replace(",", ""))
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
 
