@@ -73,8 +73,8 @@ class VirginiaVaccine(TableauDashboard):
             "totalDoses": CMU(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="doses"
-            )
+                unit="doses",
+            ),
         }
         df = df.melt(id_vars=["location"], value_vars=crename.keys()).dropna()
         df = self.extract_CMU(df, crename)
