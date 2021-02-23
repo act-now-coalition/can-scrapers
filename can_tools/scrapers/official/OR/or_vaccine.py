@@ -16,7 +16,7 @@ class OregonVaccineCounty(TableauDashboard):
     viewPath = "OregonCOVID-19VaccinationTrends/OregonCountyVaccinationTrends"
 
     cmus = {
-        "SUM(Metric - In Progress)-alias": CMU(
+        "SUM(Metric - Total People)-alias": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -31,4 +31,3 @@ class OregonVaccineCounty(TableauDashboard):
     data_tableau_table = "County Map Per Capita new"
     location_name_col = "Recip Address County-alias"
     timezone = "US/Pacific"
-
