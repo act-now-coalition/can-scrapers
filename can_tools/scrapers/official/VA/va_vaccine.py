@@ -29,6 +29,7 @@ class VirginiaVaccine(TableauDashboard):
                 data["Vaccine Fully Vacinated (2)"][
                     "SUM(Fully Vaccinated (1))-alias"
                 ].iloc[0],
+                data["Vaccine Total Doses"]["SUM(Vaccine Count)-alias"].iloc[0],
                 self.state_fips,
                 "Virginia",
             )
@@ -38,6 +39,7 @@ class VirginiaVaccine(TableauDashboard):
             columns=[
                 "totalHadFirstDose",
                 "totalHadSecondDose",
+                "totalDoses",
                 "location",
                 "location_name",
             ],
@@ -45,11 +47,14 @@ class VirginiaVaccine(TableauDashboard):
 
         county_df = data["Doses Administered by Administration FIPS"].rename(
             columns={
-                "SUM(Vaccine Count)-alias": "totalHadFirstDose",
                 "SUM(Fully Vaccinated (1))-alias": "totalHadSecondDose",
+                "SUM(Vaccine Count)-alias": "totalDoses",
                 "Recipient FIPS-alias": "location",
                 "ATTR(CityCounty)-alias": "location_name",
             }
+        )
+        county_df["totalHadFirstDose"] = county_df.eval(
+            "totalDoses - totalHadSecondDose"
         )
 
         df = pd.concat([state_df, county_df], axis=0)
@@ -64,6 +69,11 @@ class VirginiaVaccine(TableauDashboard):
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
+            ),
+            "totalDoses": CMU(
+                category="total_vaccine_doses_administered",
+                measurement="cumulative",
+                unit="doses",
             ),
         }
         df = df.melt(id_vars=["location"], value_vars=crename.keys()).dropna()
