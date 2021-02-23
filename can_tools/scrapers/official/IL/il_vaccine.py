@@ -59,8 +59,8 @@ class IllinoisVaccineCounty(StateDashboard):
         # Reorganize so we can add Chicago to Cook county
         for cmu_key in cmus.keys():
             df.loc[pd.IndexSlice["Cook", :], cmu_key] = (
-                df.loc[pd.IndexSlice["Cook", :], cmu_key].values +
-                df.loc[pd.IndexSlice["Chicago", :], cmu_key].values
+                df.loc[pd.IndexSlice["Cook", :], cmu_key].values
+                + df.loc[pd.IndexSlice["Chicago", :], cmu_key].values
             )
 
         return (
