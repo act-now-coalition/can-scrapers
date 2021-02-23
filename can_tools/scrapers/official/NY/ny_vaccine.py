@@ -28,5 +28,5 @@ class NewYorkVaccineCounty(TableauDashboard):
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
-        )
+        ),
     }
