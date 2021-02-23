@@ -27,7 +27,7 @@ class OregonVaccineCounty(TableauDashboard):
             unit="people",
         ),
     }
-    
+
     data_tableau_table = "County Map Per Capita new"
     location_name_col = "Recip Address County-alias"
     timezone = "US/Pacific"
