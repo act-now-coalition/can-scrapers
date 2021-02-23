@@ -30,9 +30,6 @@ class GeorgiaCountyVaccine(ArcGIS):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [c.lower() for c in df.columns]
 
-        # Ensure that dose_1 is "at least one dose"
-        df.loc[:, "dose_1"] = df.eval("dose_1 + dose_2")
-
         # Fix location names and drop state data
         df.loc[:, "location_name"] = (
             df["county_name"].str.title().str.replace("County", "").str.strip()
