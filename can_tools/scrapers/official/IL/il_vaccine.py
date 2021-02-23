@@ -34,8 +34,10 @@ class IllinoisVaccineCounty(StateDashboard):
             pd.DataFrame(data[k])
             .rename(columns=new_names)
             .assign(dt=lambda x: pd.to_datetime(x["dt"]))
+            .set_index(["location_name", "dt"])
         )
 
+        # Select certain columns
         cmus = {
             "AdministeredCount": CMU(
                 category="total_vaccine_doses_administered",
@@ -53,8 +55,17 @@ class IllinoisVaccineCounty(StateDashboard):
                 unit="people",
             ),
         }
+
+        # Reorganize so we can add Chicago to Cook county
+        for cmu_key in cmus.keys():
+            df.loc[pd.IndexSlice["Cook", :], cmu_key] = (
+                df.loc[pd.IndexSlice["Cook", :], cmu_key].values +
+                df.loc[pd.IndexSlice["Chicago", :], cmu_key].values
+            )
+
         return (
-            df.melt(id_vars=["location_name", "dt"], value_vars=cmus.keys())
+            df.reset_index()
+            .melt(id_vars=["location_name", "dt"], value_vars=cmus.keys())
             .dropna()
             .assign(
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
