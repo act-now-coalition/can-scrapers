@@ -21,8 +21,8 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     source_name = "Minnesota Covid-19 Response"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
     powerbi_dashboard_link = (
-        "https://app.powerbigov.us/view?r=eyJrIjoiOTAzOTNkOTQtMTkxNi00"
-        "NTlhLTg0NTgtNDRlMjVlZTM1ZjE3IiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxO"
+        "https://app.powerbigov.us/view?r=eyJrIjoiZDI0YzAwOTgtZDVmOS00"
+        "NTA3LTlmNjQtZTdkODNmYTAwZWJhIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxO"
         "S04ZjI2LWI4OWMyMTU5ODI4YyJ9"
     )
 
