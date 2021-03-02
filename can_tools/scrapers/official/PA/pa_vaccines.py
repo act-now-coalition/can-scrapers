@@ -201,22 +201,16 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
                         self.powerbi_table,
                         0,
                     ),
-                    (
-                        "v",
-                        "Vaccinations_County_ID",
-                        0
-                    )
+                    ("v", "Vaccinations_County_ID", 0),
                 ]
             ),
             "Select": self.construct_select(
                 [
                     ("v", "County", "county"),
                     ("vg", "Coverage", "coverage"),
-                    ("vg", self.powerbi_dem_column,  self.demographic)
+                    ("vg", self.powerbi_dem_column, self.demographic),
                 ],
-                [
-                    ("vg", "Total Count", 0, "count")
-                ],
+                [("vg", "Total Count", 0, "count")],
                 [],
             ),
         }
@@ -238,19 +232,15 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
                                 "Binding": {
                                     "DataReduction": {
                                         "DataVolume": 4,
-                                        "Primary": {
-                                            "Window": {
-                                                "Count": 5000
-                                            }
-                                        },
+                                        "Primary": {"Window": {"Count": 5000}},
                                     },
                                     "Primary": {
                                         "Groupings": [
-                                            {"Projections": [0, 1 ,2, 3]},
+                                            {"Projections": [0, 1, 2, 3]},
                                         ]
-                                    }
+                                    },
                                 },
-                                "Query": self._query()
+                                "Query": self._query(),
                             }
                         }
                     ]
@@ -285,17 +275,11 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         return res.json()
 
     def clean_pa_location_names(self, df):
-        return (
-            df.query(
-                "location_name != '' & "
-                "location_name != 'Out-Of-State' & "
-                "location_name != 'Out-of-State'"
-            ).replace(
-                {
-                    "location_name": {"Mckean": "McKean"}
-                }
-            )
-        )
+        return df.query(
+            "location_name != '' & "
+            "location_name != 'Out-Of-State' & "
+            "location_name != 'Out-of-State'"
+        ).replace({"location_name": {"Mckean": "McKean"}})
 
     def normalize_preprocess(self, resjson):
         # Extract components we care about from json
@@ -323,11 +307,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
             data_rows.append(row_dict.copy())
 
         # Dump records into a DataFrame
-        df = (
-            pd.DataFrame.from_records(data_rows)
-            .dropna()
-            .rename(columns=col_mapping)
-        )
+        df = pd.DataFrame.from_records(data_rows).dropna().rename(columns=col_mapping)
 
         return df, value_dicts
 
@@ -337,8 +317,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         out["vintage"] = self._retrieve_vintage()
         out.loc[:, "location_type"] = "county"
         out.loc[:, "location_type"] = out.loc[:, "location_type"].where(
-            out.loc[:, "location_name"] != "Pennsylvania",
-            "state"
+            out.loc[:, "location_name"] != "Pennsylvania", "state"
         )
         cols_to_keep = [
             "vintage",
@@ -364,33 +343,38 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         county_replacer = {i: vd for i, vd in enumerate(vds["D0"])}
         coverage_replacer = {i: vd for i, vd in enumerate(vds["D1"])}
         dem_replacer = {i: vd for i, vd in enumerate(vds["D2"])}
-        df = df.query(
-            "coverage < 2"
-        ).replace(
-            {
-                "county": county_replacer,
-                "coverage": coverage_replacer,
-                self.demographic: dem_replacer
-            }
-        ).rename(
-            columns={
-                "county": "location_name",
-                "coverage": "variable",
-                "count": "value"
-            }
-        ).replace(
-            {
-                "variable": {
-                    "Partially Covered": "total_vaccine_initiated",
-                    "Fully Covered": "total_vaccine_completed"
-                },
-                self.demographic: self.value_renamer
-            }
-        ).pivot_table(
-            index=["location_name", self.demographic],
-            columns="variable",
-            values="value"
-        ).reset_index()
+        df = (
+            df.query("coverage < 2")
+            .replace(
+                {
+                    "county": county_replacer,
+                    "coverage": coverage_replacer,
+                    self.demographic: dem_replacer,
+                }
+            )
+            .rename(
+                columns={
+                    "county": "location_name",
+                    "coverage": "variable",
+                    "count": "value",
+                }
+            )
+            .replace(
+                {
+                    "variable": {
+                        "Partially Covered": "total_vaccine_initiated",
+                        "Fully Covered": "total_vaccine_completed",
+                    },
+                    self.demographic: self.value_renamer,
+                }
+            )
+            .pivot_table(
+                index=["location_name", self.demographic],
+                columns="variable",
+                values="value",
+            )
+            .reset_index()
+        )
         df = self.clean_pa_location_names(df)
 
         # Initiated is not at least one dose for PA
@@ -420,7 +404,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
             "age",
             "sex",
             "race",
-            "ethnicity"
+            "ethnicity",
         ]
         categories.remove(self.demographic)
         return self.normalize_postprocess(df, categories, crename)
@@ -441,7 +425,7 @@ class PennsylvaniaVaccineEthnicity(PennsylvaniaVaccineDemographics):
     value_renamer = {
         "Hispanic": "hispanic",
         "Not Hispanic": "non-hispanic",
-        "Unknown": "unknown"
+        "Unknown": "unknown",
     }
 
 
@@ -456,7 +440,7 @@ class PennsylvaniaVaccineRace(PennsylvaniaVaccineDemographics):
         "Pacific Islander": "pacific_islander",
         "Native American": "ai_an",
         "Multiple/Other": "multiple_other",
-        "Unknown": "unknown"
+        "Unknown": "unknown",
     }
 
 
@@ -464,8 +448,4 @@ class PennsylvaniaVaccineSex(PennsylvaniaVaccineDemographics):
     powerbi_table = "Vaccinations by Gender"
     powerbi_dem_column = "Gender"
     demographic = "sex"
-    value_renamer = {
-        "Male": "male",
-        "Female": "female",
-        "Unknown": "unknown"
-    }
+    value_renamer = {"Male": "male", "Female": "female", "Unknown": "unknown"}
