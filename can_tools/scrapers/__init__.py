@@ -44,7 +44,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     NewMexicoVaccineCounty,
     NewYorkTests,
     NewYorkVaccineCounty,
-    NorthCarolinaVaccineCounty,
+    NCVaccine,
     OhioVaccineCounty,
     OregonVaccineCounty,
     PennsylvaniaCasesDeaths,
