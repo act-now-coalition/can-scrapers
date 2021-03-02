@@ -187,7 +187,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
 
     powerbi_table: str
-    powerbi_column: str
+    powerbi_dem_column: str
     demographic: str
     value_renamer: dict
 
@@ -198,7 +198,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
                 [
                     (
                         "vg",
-                        f"Vaccinations by {self.powerbi_table}",
+                        self.powerbi_table,
                         0,
                     ),
                     (
@@ -212,7 +212,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
                 [
                     ("v", "County", "county"),
                     ("vg", "Coverage", "coverage"),
-                    ("vg", self.powerbi_column,  self.demographic)
+                    ("vg", self.powerbi_dem_column,  self.demographic)
                 ],
                 [
                     ("vg", "Total Count", 0, "count")
@@ -422,315 +422,50 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
             "race",
             "ethnicity"
         ]
-        categories.remove(demographic)
-        return self.normalize_postprocess(df, untracked_cats, crename)
+        categories.remove(self.demographic)
+        return self.normalize_postprocess(df, categories, crename)
 
 
 class PennsylvaniaVaccineAge(PennsylvaniaVaccineDemographics):
+    powerbi_table = "Vaccinations by Age_Group"
+    powerbi_dem_column = "Age_Group"
+    demographic = "age"
+    value_renamer = {"105+": "105_plus"}
 
 
 class PennsylvaniaVaccineEthnicity(PennsylvaniaVaccineDemographics):
-    def _query(self):
-        return {
-            "Version": 2,
-            "From": self.construct_from(
-                [
-                    (
-                        "vg",
-                        "Vaccinations by Ethnicity",
-                        0,
-                    ),
-                    (
-                        "v",
-                        "Vaccinations_County_ID",
-                        0
-                    )
-                ]
-            ),
-            "Select": self.construct_select(
-                [
-                    ("v", "County", "county"),
-                    ("vg", "Coverage", "coverage"),
-                    ("vg", "Ethnicity",  "ethnicity")
-                ],
-                [
-                    ("vg", "Total Count", 0, "count")
-                ],
-                [],
-            ),
-        }
 
-    def normalize(self, resjson):
-        df, vds = self.normalize_preprocess(resjson)
-
-        # Replace indexes with values
-        county_replacer = {i: vd for i, vd in enumerate(vds["D0"])}
-        coverage_replacer = {i: vd for i, vd in enumerate(vds["D1"])}
-        ethnicity_replacer = {i: vd for i, vd in enumerate(vds["D2"])}
-        df = df.replace(
-            {
-                "county": county_replacer,
-                "coverage": coverage_replacer,
-                "ethnicity": ethnicity_replacer
-            }
-        ).rename(
-            columns={
-                "county": "location_name",
-                "coverage": "variable",
-                "ethnicity": "ethnicity",
-                "count": "value"
-            }
-
-        ).replace(
-            {
-                "ethnicity": {
-                    "Unknown": "unknown"
-                },
-                "variable": {
-                    "Partially Covered": "total_vaccine_initiated",
-                    "Fully Covered": "total_vaccine_completed"
-                }
-            }
-        ).pivot_table(
-            index=["location_name", "ethnicity"],
-            columns="variable",
-            values="value"
-        ).reset_index()
-        df = self.clean_pa_location_names(df)
-
-        # Initiated is not at least one dose for PA
-        df["total_vaccine_initiated"] = df.eval(
-            "total_vaccine_initiated + total_vaccine_completed"
-        )
-        df = df.melt(id_vars=["location_name", "ethnicity"])
-
-        # Reshape
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-
-        # Add CMU, dt, vintage
-        untracked_cats = [
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "sex",
-            "ethnicity"
-        ]
-        return self.normalize_postprocess(df, untracked_cats, crename)
+    powerbi_table = "Vaccinations by Ethnicity"
+    powerbi_dem_column = "Ethnicity"
+    demographic = "ethnicity"
+    value_renamer = {
+        "Hispanic": "hispanic",
+        "Not Hispanic": "non-hispanic",
+        "Unknown": "unknown"
+    }
 
 
 class PennsylvaniaVaccineRace(PennsylvaniaVaccineDemographics):
-    def _query(self):
-        return {
-            "Version": 2,
-            "From": self.construct_from(
-                [
-                    (
-                        "vg",
-                        "Vaccinations by Race",
-                        0,
-                    ),
-                    (
-                        "v",
-                        "Vaccinations_County_ID",
-                        0
-                    )
-                ]
-            ),
-            "Select": self.construct_select(
-                [
-                    ("v", "County", "county"),
-                    ("vg", "Coverage", "coverage"),
-                    ("vg", "Race",  "race")
-                ],
-                [
-                    ("vg", "Total Count", 0, "count")
-                ],
-                [],
-            ),
-        }
-
-    def normalize(self, resjson):
-        df, vds = self.normalize_preprocess(resjson)
-
-        # Replace indexes with values
-        county_replacer = {i: vd for i, vd in enumerate(vds["D0"])}
-        coverage_replacer = {i: vd for i, vd in enumerate(vds["D1"])}
-        race_replacer = {i: vd for i, vd in enumerate(vds["D2"])}
-        df = df.replace(
-            {
-                "county": county_replacer,
-                "coverage": coverage_replacer,
-                "race": race_replacer
-            }
-        ).rename(
-            columns={
-                "county": "location_name",
-                "coverage": "variable",
-                "gender": "sex",
-                "count": "value"
-            }
-
-        ).replace(
-            {
-                "race": {
-                    "White": "white",
-                    "African American": "black",
-                    "Asian": "asian",
-                    "Pacific Islander": "pacific_islander",
-                    "Native American": "ai_an",
-                    "Multiple/Other": "multiple_other",
-                    "Unknown": "unknown"
-                },
-                "variable": {
-                    "Partially Covered": "total_vaccine_initiated",
-                    "Fully Covered": "total_vaccine_completed"
-                }
-            }
-        ).pivot_table(
-            index=["location_name", "race"],
-            columns="variable",
-            values="value"
-        ).reset_index()
-        df = self.clean_pa_location_names(df)
-
-        # Initiated is not at least one dose for PA
-        df["total_vaccine_initiated"] = df.eval(
-            "total_vaccine_initiated + total_vaccine_completed"
-        )
-        df = df.melt(id_vars=["location_name", "race"])
-
-        # Reshape
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-
-        # Add CMU, dt, vintage
-        untracked_cats = [
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "sex",
-            "ethnicity"
-        ]
-        return self.normalize_postprocess(df, untracked_cats, crename)
+    powerbi_table = "Vaccinations by Race"
+    powerbi_dem_column = "Race"
+    demographic = "race"
+    value_renamer = {
+        "White": "white",
+        "African American": "black",
+        "Asian": "asian",
+        "Pacific Islander": "pacific_islander",
+        "Native American": "ai_an",
+        "Multiple/Other": "multiple_other",
+        "Unknown": "unknown"
+    }
 
 
 class PennsylvaniaVaccineSex(PennsylvaniaVaccineDemographics):
-    def _query(self):
-        return {
-            "Version": 2,
-            "From": self.construct_from(
-                [
-                    (
-                        "vg",
-                        "Vaccinations by Gender",
-                        0,
-                    ),
-                    (
-                        "v",
-                        "Vaccinations_County_ID",
-                        0
-                    )
-                ]
-            ),
-            "Select": self.construct_select(
-                [
-                    ("v", "County", "county"),
-                    ("vg", "Coverage", "coverage"),
-                    ("vg", "Gender",  "gender")
-                ],
-                [
-                    ("vg", "Total Count", 0, "count")
-                ],
-                [],
-            ),
-        }
-
-    def normalize(self, resjson):
-        df, vds = self.normalize_preprocess(resjson)
-
-        # Replace indexes with values
-        county_replacer = {i: vd for i, vd in enumerate(vds["D0"])}
-        coverage_replacer = {i: vd for i, vd in enumerate(vds["D1"])}
-        gender_replacer = {i: vd for i, vd in enumerate(vds["D2"])}
-        df = df.replace(
-            {
-                "county": county_replacer,
-                "coverage": coverage_replacer,
-                "gender": gender_replacer
-            }
-        ).rename(
-            columns={
-                "county": "location_name",
-                "coverage": "variable",
-                "gender": "sex",
-                "count": "value"
-            }
-
-        ).replace(
-            {
-                "sex": {"Male": "male", "Female": "female", "Unknown": "unknown"},
-                "variable": {
-                    "Partially Covered": "total_vaccine_initiated",
-                    "Fully Covered": "total_vaccine_completed"
-                }
-            }
-        ).pivot_table(
-            index=["location_name", "sex"],
-            columns="variable",
-            values="value"
-        ).reset_index()
-        df = self.clean_pa_location_names(df)
-
-        # Initiated is not at least one dose for PA
-        df["total_vaccine_initiated"] = df.eval(
-            "total_vaccine_initiated + total_vaccine_completed"
-        )
-        df = df.melt(id_vars=["location_name", "sex"])
-
-        # Reshape
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-
-        # Add CMU, dt, vintage
-        untracked_cats = [
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity"
-        ]
-        return self.normalize_postprocess(df, untracked_cats, crename)
+    powerbi_table = "Vaccinations by Gender"
+    powerbi_dem_column = "Gender"
+    demographic = "sex"
+    value_renamer = {
+        "Male": "male",
+        "Female": "female",
+        "Unknown": "unknown"
+    }
