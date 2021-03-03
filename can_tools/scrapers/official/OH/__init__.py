@@ -1,1 +1,2 @@
 from can_tools.scrapers.official.OH.oh_vaccine import OhioVaccineCounty
+from can_tools.scrapers.official.OH.oh_vaccine_demographics import OHVaccineDemographics

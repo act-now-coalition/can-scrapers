@@ -523,12 +523,19 @@ class TableauDashboard(StateDashboard, ABC):
     location_name_col: str
     cmus: Dict[str, CMU]
 
+    def __init__(self, *args,execution_dt: pd.Timestamp = pd.Timestamp.utcnow(), **kwargs):
+        super().__init__(*args, execution_dt=execution_dt, **kwargs)
+        self.sess = None
+        self.initial_response = None
+        self.vizql_url = None
+        self.full_url = None
+
     def fetch(self) -> pd.DataFrame:
         return self.get_tableau_view()[self.data_tableau_table]
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         # county names (converted to title case)
-        df["location_name"] = df[self.location_name_col].str.title()
+        df["location_name"] = df[self.location_name_col].str.title().str.strip()
 
         # parse out data columns
         value_cols = list(set(df.columns) & set(self.cmus.keys()))
@@ -548,19 +555,16 @@ class TableauDashboard(StateDashboard, ABC):
             .drop(["variable"], axis=1)
         )
 
-    def get_tableau_view(self):
-        def onAlias(it, value, cstring):
-            return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
-
-        req = requests_retry_session()
-        fullURL = self.baseurl + "/views/" + self.viewPath
+    def setup_tableau_session(self):
+        self.sess = req = requests_retry_session()
+        self.full_url = full_url = self.baseurl + "/views/" + self.viewPath
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
             params += self.filterFunctionName + "=" + self.filterFunctionValue
-            reqg = req.get(fullURL, params=params)
+            reqg = req.get(full_url, params=params)
         else:
             reqg = req.get(
-                fullURL,
+                full_url,
                 params={
                     ":language": "en",
                     ":display_count": "y",
@@ -575,12 +579,23 @@ class TableauDashboard(StateDashboard, ABC):
                 headers={"Accept": "text/javascript"},
             )
         soup = BeautifulSoup(reqg.text, "html.parser")
-        tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
-        tableauData = json.loads(tableauTag.text)
-        parsed_url = urllib.parse.urlparse(fullURL)
-        dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+        tableau_tag = soup.find("textarea", {"id": "tsConfigContainer"})
+        self.initial_response = tableau_data = json.loads(tableau_tag.text)
+        parsed_url = urllib.parse.urlparse(full_url)
+        self.vizql_url = f'{parsed_url.scheme}://{parsed_url.hostname}{tableau_data["vizql_root"]}'
 
-        # copy over some additional headers from tableauData
+    def get_tableau_view(self):
+        def on_alias(it, value, cstring):
+            return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
+
+        if self.sess is None or self.initial_response is None or self.vizql_url is None:
+            self.setup_tableau_session()
+        req = self.sess
+        tableau_data = self.initial_response
+
+        data_url = f'{self.vizql_url}/bootstrapSession/sessions/{tableau_data["sessionid"]}'
+
+        # copy over some additional headers from tableau_data
         form_data = {}
         form_map = {
             "sheetId": "sheet_id",
@@ -588,11 +603,11 @@ class TableauDashboard(StateDashboard, ABC):
             "stickySessionKey": "stickySessionKey",
         }
         for k, v in form_map.items():
-            if k in tableauData:
-                form_data[v] = tableauData[k]
+            if k in tableau_data:
+                form_data[v] = tableau_data[k]
 
         resp = req.post(
-            dataUrl,
+            data_url,
             data=form_data,
             headers={"Accept": "text/javascript"},
         )
@@ -603,60 +618,60 @@ class TableauDashboard(StateDashboard, ABC):
         data = []
         while len(resp_text) != 0:
             size, rest = resp_text.split(";", 1)
-            chunck = json.loads(rest[: int(size)])
-            data.append(chunck)
-            resp_text = rest[int(size) :]
+            chunk = json.loads(rest[: int(size)])
+            data.append(chunk)
+            resp_text = rest[int(size):]
 
         # The following section (to the end of the method) uses code from
         # https://stackoverflow.com/questions/64094560/how-do-i-scrape-tableau-data-from-website-into-r
-        presModel = data[1]["secondaryInfo"]["presModelMap"]
-        metricInfo = presModel["vizData"]["presModelHolder"]
-        metricInfo = metricInfo["genPresModelMapPresModel"]["presModelMap"]
-        data = presModel["dataDictionary"]["presModelHolder"]
+        pres_model = data[1]["secondaryInfo"]["presModelMap"]
+        metric_info = pres_model["vizData"]["presModelHolder"]
+        metric_info = metric_info["genPresModelMapPresModel"]["presModelMap"]
+        data = pres_model["dataDictionary"]["presModelHolder"]
         data = data["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"]
 
-        scrapedData = {}
+        scraped_data = {}
 
-        for metric in metricInfo:
-            metricsDict = metricInfo[metric]["presModelHolder"]["genVizDataPresModel"]
-            columnsData = metricsDict["paneColumnsData"]
+        for metric in metric_info:
+            metrics_dict = metric_info[metric]["presModelHolder"]["genVizDataPresModel"]
+            columns_data = metrics_dict["paneColumnsData"]
 
             result = [
                 {
                     "fieldCaption": t.get("fieldCaption", ""),
-                    "valueIndices": columnsData["paneColumnsList"][t["paneIndices"][0]][
+                    "valueIndices": columns_data["paneColumnsList"][t["paneIndices"][0]][
                         "vizPaneColumns"
                     ][t["columnIndices"][0]]["valueIndices"],
-                    "aliasIndices": columnsData["paneColumnsList"][t["paneIndices"][0]][
+                    "aliasIndices": columns_data["paneColumnsList"][t["paneIndices"][0]][
                         "vizPaneColumns"
                     ][t["columnIndices"][0]]["aliasIndices"],
                     "dataType": t.get("dataType"),
                     "paneIndices": t["paneIndices"][0],
                     "columnIndices": t["columnIndices"][0],
                 }
-                for t in columnsData["vizDataColumns"]
+                for t in columns_data["vizDataColumns"]
                 if t.get("fieldCaption")
             ]
-            frameData = {}
+            frame_data = {}
             cstring = [t for t in data if t["dataType"] == "cstring"][0]
             for t in data:
                 for index in result:
                     if t["dataType"] == index["dataType"]:
                         if len(index["valueIndices"]) > 0:
-                            frameData[f'{index["fieldCaption"]}-value'] = [
+                            frame_data[f'{index["fieldCaption"]}-value'] = [
                                 t["dataValues"][abs(it)] for it in index["valueIndices"]
                             ]
                         if len(index["aliasIndices"]) > 0:
-                            frameData[f'{index["fieldCaption"]}-alias'] = [
-                                onAlias(it, t["dataValues"], cstring)
+                            frame_data[f'{index["fieldCaption"]}-alias'] = [
+                                on_alias(it, t["dataValues"], cstring)
                                 for it in index["aliasIndices"]
                             ]
 
-            df = pd.DataFrame.from_dict(frameData, orient="index").fillna(0).T
+            df = pd.DataFrame.from_dict(frame_data, orient="index").fillna(0).T
 
-            scrapedData[metric] = df
+            scraped_data[metric] = df
 
-        return scrapedData
+        return scraped_data
 
 
 class TableauMapClick(StateDashboard, ABC):

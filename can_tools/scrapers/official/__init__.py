@@ -103,7 +103,7 @@ from can_tools.scrapers.official.CT import (
     CTState,
 )
 
-from can_tools.scrapers.official.OH import OhioVaccineCounty
+from can_tools.scrapers.official.OH import OhioVaccineCounty, OHVaccineDemographics
 
 from can_tools.scrapers.official.OR import OregonVaccineCounty
 
