@@ -53,6 +53,10 @@ from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
+    PennsylvaniaVaccineAge,
+    PennsylvaniaVaccineEthnicity,
+    PennsylvaniaVaccineRace,
+    PennsylvaniaVaccineSex,
 )
 
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
