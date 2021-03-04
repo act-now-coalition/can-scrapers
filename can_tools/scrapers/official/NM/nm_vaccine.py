@@ -53,18 +53,12 @@ class NewMexicoVaccineCounty(NewMexicoBase):
             "totalShipped",
             "partiallyVaccinated",
             "fullyVaccinated",
-            "percentVaccinated",
-            "percentFullyVaccinated"
+            "percentPartiallyVaccinated",
+            "percentFullyVaccinated",
         ]
 
         # Drop extraneous columns
         df = df.loc[:, cols_to_keep]
-
-        # Make sure partiallyVaccinated reflects the number of people with "at
-        # least" one vaccine
-        df.loc[:, "partiallyVaccinated"] = df.eval(
-            "partiallyVaccinated + fullyVaccinated"
-        )
 
         # Rename columns
         df = df.rename(columns={"date": "dt", "county": "location_name"})
@@ -85,9 +79,9 @@ class NewMexicoVaccineCounty(NewMexicoBase):
                 unit="doses",
             ),
             "dosesAdministered": CMU(
-                category="total_vaccine_initiated",
+                category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="people",
+                unit="doses",
             ),
             "totalShipped": CMU(
                 category="total_vaccine_distributed",
@@ -97,14 +91,14 @@ class NewMexicoVaccineCounty(NewMexicoBase):
             "partiallyVaccinated": CMU(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
-                unit="people"
+                unit="people",
             ),
             "fullyVaccinated": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
-                unit="people"
+                unit="people",
             ),
-            "percentVaccinated": CMU(
+            "percentPartiallyVaccinated": CMU(
                 category="total_vaccine_initiated",
                 measurement="current",
                 unit="percentage",
