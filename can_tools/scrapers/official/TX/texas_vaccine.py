@@ -11,7 +11,9 @@ from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 # the crename keys became long so I store them in another file
-from .tx_vaccine_crenames import crename_demographics, crename
+from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
+    crename,
+)
 
 
 class TexasVaccineParent(StateDashboard, ABC):
@@ -115,101 +117,99 @@ class TexasStateVaccine(TexasCountyVaccine):
         return df.loc[:, cols_to_keep]
 
 
-# class TexasVaccineDemographics(TexasVaccineParent):
-#     location_type = "state"
-#     has_location = True
-#
-#     def compute_new_groups(self, df, cols_to_combine):
-#         return df.groupby(cols_to_combine)["value"].sum()
-#
-#     def normalize(self, data) -> pd.DataFrame:
-#         # Read in data, set location, and drop totals
-#         df = self.excel_to_dataframe(data, "By Age, Gender, Race")
-#         df["location"] = self.state_fips
-#         df.query("Gender != 'Texas'")
-#
-#         # Data is now stored long-form -- We can simply rename columns and their
-#         # values to get what we want
-#         df = df.rename(columns={
-#             "Gender": "sex",
-#             "Age Group": "age",
-#             "Race": "race",
-#             "Ethnicity": "ethnicity",
-#         })
-#         out = df.melt(id_vars=["dt", "location", "age", "race", "ethnicity", "sex"])
-#         out = out.replace({
-#             "age": {
-#                 "16-49 years": "16-49",
-#                 "50-64 years": "50-64",
-#                 "65-79 years": "65-79",
-#                 "80+ years": "80+",
-#                 "Unknown": "unknown",
-#                 "Total": "all"
-#             },
-#             "race": {
-#                 "American Indian/Alaskan Native": "ai_an",
-#                 "Asian": "asian",
-#                 "Black": "black",
-#                 "Multiple Races": "multiple",
-#                 "Native Hawaiian/Other Pacific Islander": "pacific_islander",
-#                 "Other": "other",
-#                 "Unknown Race": "unknown",
-#                 "White": "white"
-#             },
-#             "ethnicity": {
-#                 "Hispanic": "hispanic",
-#                 "Not Hispanic": "non-hispanic",
-#                 "Unknown": "unknown"
-#             },
-#             "sex": {
-#                 "Female": "female",
-#                 "Male": "male",
-#                 "Unknown": "unknown",
-#             }
-#         })
-#
-#         # Set category, measurement, unit -- demographics already set
-#         out = self.extract_CMU(
-#             out, crename_demographics,
-#             columns=["category", "measurement", "unit"]
-#         )
-#
-#         # Create combinations of variables
-#         base_cols = ["dt", "location", "category", "measurement", "unit"]
-#
-#         all_age = self.compute_new_groups(
-#             out, base_cols + ["sex", "race", "ethnicity"]
-#         )
-#         all_age["age"] = "all"
-#
-#         all_eth = self.compute_new_groups(
-#             out, base_cols + ["age", "sex", "race"]
-#         )
-#         all_eth["ethnicity"] = "all"
-#
-#         all_race = self.compute_new_groups(
-#             out, base_cols + ["age", "sex", "ethnicity"]
-#         )
-#         all_race["race"] = "all"
-#
-#         all_sex = self.compute_new_groups(
-#             out, base_cols + ["age", "race", "ethnicity"]
-#         )
-#         all_sex["sex"] = "all"
-#
-#         out = pd.concat([out, all_age, all_eth, all_race, all_sex])
-#         out["vintage"] = self._retrieve_vintage()
-#         cols_to_keep = [
-#             "vintage",
-#             "dt",
-#             "location",
-#             "category",
-#             "measurement",
-#             "unit",
-#             "age",
-#             "race",
-#             "ethnicity",
-#             "sex",
-#             "value",
-#         ]
-#         return out.loc[:, cols_to_keep]
+class TXVaccineCountyAge(TexasVaccineParent):
+    location_type = "county"
+    has_location = False
+    cmus = {
+        "Doses Administered": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+        ),
+        "People Vaccinated with at least One Dose": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+        ),
+        "People Fully Vaccinated": CMU(
+            category="total_vaccine_completed",
+            measurement="cumulative",
+            unit="people",
+        ),
+    }
+    cmu_id_vars = ["age"]
+    sheet_name = "By County, Age"
+    replacers = {
+        "age": {
+            "16-49 years": "16-49",
+            "50-64 years": "50-64",
+            "65-79 years": "65-79",
+            "80+ years": "80_plus",
+            "Unknown": "unknown",
+            "Total": "all",
+        },
+        "race": {
+            "American Indian/Alaskan Native": "ai_an",
+            "Asian": "asian",
+            "Black": "black",
+            "Multiple Races": "multiple",
+            "Native Hawaiian/Other Pacific Islander": "pacific_islander",
+            "Other": "other",
+            "Unknown Race": "unknown",
+            "Unknown": "unknown",
+            "White": "white",
+        },
+        "ethnicity": {
+            "Hispanic": "hispanic",
+            "Not Hispanic": "non-hispanic",
+            "Unknown": "unknown",
+        },
+        "sex": {
+            "Female": "female",
+            "Male": "male",
+            "Unknown": "unknown",
+        },
+    }
+
+    @property
+    def cmu_columns(self):
+        return list(
+            set(["category", "measurement", "unit", "age", "race", "sex", "ethnicity"])
+            - set(self.cmu_id_vars)
+        )
+
+    def normalize(self, data) -> pd.DataFrame:
+        # Read in data, set location, and drop totals
+        df = (
+            self.excel_to_dataframe(data, self.sheet_name)
+            .rename(
+                columns={
+                    "Age Group": "age",
+                    "Race/Ethnicity": "race",
+                    "County Name": "location_name",
+                }
+            )
+            .melt(
+                id_vars=["dt", "location_name"] + self.cmu_id_vars,
+                value_vars=list(self.cmus.keys()),
+            )
+            .replace(self.replacers)
+            .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
+            .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
+            .assign(vintage=self._retrieve_vintage())
+        )
+
+        return df
+
+
+class TXVaccineCountyRace(TXVaccineCountyAge):
+    cmu_id_vars = ["race"]
+    sheet_name = "By County, Race"
+
+    def normalize(self, data) -> pd.DataFrame:
+        df = super().normalize(data)
+        hisp_rows = df["race"] == "Hispanic"
+        df.loc[hisp_rows, "ethnicity"] = "hispanic"
+        df.loc[hisp_rows, "race"] = "unknown"
+
+        return df
