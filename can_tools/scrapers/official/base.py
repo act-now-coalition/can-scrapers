@@ -529,6 +529,7 @@ class TableauDashboard(StateDashboard, ABC):
         self.initial_response = None
         self.vizql_url = None
         self.full_url = None
+        self.view_data = None
 
     def fetch(self) -> pd.DataFrame:
         return self.get_tableau_view()[self.data_tableau_table]
@@ -621,6 +622,8 @@ class TableauDashboard(StateDashboard, ABC):
             chunk = json.loads(rest[: int(size)])
             data.append(chunk)
             resp_text = rest[int(size):]
+
+        self.view_data = data
 
         # The following section (to the end of the method) uses code from
         # https://stackoverflow.com/questions/64094560/how-do-i-scrape-tableau-data-from-website-into-r
