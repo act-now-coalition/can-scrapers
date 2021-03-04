@@ -25,7 +25,7 @@ class OHVaccineDemographics(TableauDashboard):
 
     def fetch(self):
         self.setup_tableau_session()
-        self.get_tableau_view()
+        return self.get_tableau_view()
         self.sess.headers["referer"] = self.full_url
 
         url = self.vizql_url + f"/sessions/{self.initial_response['sessionid']}/commands/tabdoc/set-parameter-value"
