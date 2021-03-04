@@ -92,7 +92,8 @@ from can_tools.scrapers.official.TX import (
     TexasTests,
     TexasCountyVaccine,
     TexasStateVaccine,
-    # TexasVaccineDemographics,
+    TXVaccineCountyAge,
+    TXVaccineCountyRace,
 )
 from can_tools.scrapers.official.WA import WashingtonVaccine
 from can_tools.scrapers.official.WI import WisconsinCounties, WisconsinState
