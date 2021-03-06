@@ -25,7 +25,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
     ) -> pd.DataFrame:
         """
         description: a general "normalize" function to avoid extra/copied code
-                     each demographic uses this in its respective normalize function
+                     each demographic uses this in its respective normalize
 
         params:
             demo: the demographic as labeled according to CMU (age,sex,race, etc...)
