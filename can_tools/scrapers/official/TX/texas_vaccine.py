@@ -68,9 +68,10 @@ class TexasCountyVaccine(TexasVaccineParent):
         # Read excel file and set date
         df = self.excel_to_dataframe(data, "By County")
         df = self._rename_and_reshape(df)
-
+        non_counties = ['Texas', 'Federal Pharmacy Retail Vaccination Program', 'Other']
         # Drop state data which we retrieve with another scraper
-        df = df.query("location_name != 'Texas'")
+        # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
+        df = df.query("location_name not in @non_counties")
 
         cols_to_keep = [
             "vintage",
