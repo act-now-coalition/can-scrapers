@@ -17,7 +17,7 @@ from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
 
 
 class TexasVaccineParent(StateDashboard, ABC):
-    state_fips = us.states.lookup("Texas").fips
+    state_fips = int(us.states.lookup("Texas").fips)
     source = "https://www.dshs.state.tx.us/coronavirus/immunize/vaccine.aspx"
     source_name = "Texas Department of State Health Services"
 
@@ -127,7 +127,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             measurement="cumulative",
             unit="doses",
         ),
-        "People Vaccinated with at least One Dose": CMU(
+        "People Vaccinated with at Least One Dose": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -187,7 +187,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 columns={
                     "Age Group": "age",
                     "Race/Ethnicity": "race",
-                    "County Name": "location_name",
+                    "County": "location_name",
                 }
             )
             .melt(
@@ -198,6 +198,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
+            .query("location_name != 'Other'")
         )
 
         return df
