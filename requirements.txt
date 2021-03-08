@@ -14,3 +14,4 @@ camelot-py[cv]==0.8.2
 us==2.0.2
 xlrd==1.2.0
 lxml==4.6.2
+sentry-sdk==1.0.0
