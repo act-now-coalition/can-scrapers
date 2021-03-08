@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Tuple, Type
-
+import sentry_sdk
 import pandas as pd
 import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
@@ -64,17 +64,27 @@ def put(d: DatasetBase, connstr: str):
     return success
 
 
-def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
-    sched = CronSchedule(f"{ix % 60} */4 * * *")
+@task()
+def initialize_sentry(sentry_dsn):
 
-    with Flow(cls.__name__, sched) as flow:
+    sentry_sdk.init(sentry_dsn)
+    sentry_sdk.set_tag("flow", prefect.context.flow_name)
+
+
+def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
+
+    with Flow(cls.__name__) as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
+        sentry_dsn = EnvVarSecret("SENTRY_DSN")
+        sentry_sdk_task = initialize_sentry(sentry_dsn)
+
         d = create_scraper(cls)
         fetched = fetch(d)
         normalized = normalize(d)
         validated = validate(d)
         done = put(d, connstr)
 
+        d.set_upstream(sentry_sdk_task)
         normalized.set_upstream(fetched)
         validated.set_upstream(normalized)
         done.set_upstream(validated)
