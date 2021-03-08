@@ -38,5 +38,6 @@ class NCVaccine(TableauDashboard):
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = super().normalize(df)
+        df.location_name = df.location_name.str.strip() # Strip whitespace
         df.loc[df["location_name"] == "Mcdowell", "location_name"] = "McDowell"
         return df
