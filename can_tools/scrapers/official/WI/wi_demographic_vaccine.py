@@ -20,7 +20,6 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
         )
     }
 
-
     def _get_demographic(
         self, df: pd.DataFrame, demo: str, demo_col_name: str
     ) -> pd.DataFrame:

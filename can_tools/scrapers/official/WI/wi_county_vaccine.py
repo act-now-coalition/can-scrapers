@@ -37,7 +37,9 @@ class WisconsinVaccineCounty(TableauDashboard):
         # county names (converted to title case)
         df["location_name"] = df[self.location_name_col].str.title()
         # remove "County" from location_name if it is included
-        df["location_name"] = df["location_name"].apply(lambda s: s[:-7] if s.endswith("County") else s)
+        df["location_name"] = df["location_name"].apply(
+            lambda s: s[:-7] if s.endswith("County") else s
+        )
         df = df.replace(
             {"location_name": {"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"}}
         )  # fix incorrect formatting
