@@ -20,6 +20,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
         )
     }
 
+
     def _get_demographic(
         self, df: pd.DataFrame, demo: str, demo_col_name: str
     ) -> pd.DataFrame:
@@ -36,8 +37,6 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
 
         # county names (converted to title case)
         df["location_name"] = df[self.location_name_col].str.title()
-        # remove "county" from end of name
-        df["location_name"] = df["location_name"].str.rsplit(" ", 1).str[0]
         # fix county names
         df = df.replace(
             {"location_name": {"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"}}
@@ -64,13 +63,11 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "age", "Age-value")
-        df = df.replace({"age": {"65+": "65_plus"}})
-        return df
+        return df.replace({"age": {"65+": "65_plus"}})
 
 
 class WisconsinVaccineRace(WisconsinVaccineAge):
     data_tableau_table = "Race vax/unvax county"
-    location_name_col = "AGG(Geography TT)-alias"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "race", "Race-value")
@@ -80,7 +77,6 @@ class WisconsinVaccineRace(WisconsinVaccineAge):
 
 class WisconsinVaccineSex(WisconsinVaccineAge):
     data_tableau_table = "Sex vax/unvax county"
-    location_name_col = "AGG(Geography TT)-alias"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "sex", "Sex-value")
@@ -90,7 +86,6 @@ class WisconsinVaccineSex(WisconsinVaccineAge):
 
 class WisconsinVaccineEthnicity(WisconsinVaccineAge):
     data_tableau_table = "Ethnicity vax/unvax county"
-    location_name_col = "AGG(Geography TT)-alias"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "ethnicity", "Ethnicity-value")

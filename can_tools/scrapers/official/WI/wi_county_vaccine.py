@@ -1,5 +1,6 @@
 import pandas as pd
 import us
+import numpy as np
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
@@ -35,9 +36,8 @@ class WisconsinVaccineCounty(TableauDashboard):
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         # county names (converted to title case)
         df["location_name"] = df[self.location_name_col].str.title()
-        df["location_name"] = (
-            df["location_name"].str.rsplit(" ", 1).str[0]
-        )  # remove "county" from end of name
+        # remove "County" from location_name if it is included
+        df["location_name"] = df["location_name"].apply(lambda s: s[:-7] if s.endswith("County") else s)
         df = df.replace(
             {"location_name": {"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"}}
         )  # fix incorrect formatting
