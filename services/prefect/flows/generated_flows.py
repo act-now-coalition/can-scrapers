@@ -65,8 +65,8 @@ def put(d: DatasetBase, connstr: str):
 
 
 @task()
-def initialize_sentry(sentry_dsn):
-
+def initialize_sentry(sentry_dsn: str):
+    """Initialize sentry SDK for Flow. """
     sentry_sdk.init(sentry_dsn)
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
