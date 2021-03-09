@@ -30,7 +30,7 @@ def fetch(d: DatasetBase):
     logger.info("Saved raw data to: {}".format(fn))
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task()
 def normalize(d: DatasetBase):
     logger = prefect.context.get("logger")
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
@@ -40,7 +40,7 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task()
 def validate(d: DatasetBase):
     if not d._validate():
         raise ValueError("failed validation")
