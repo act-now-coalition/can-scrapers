@@ -23,13 +23,15 @@ class GeorgiaCountyVaccine(ArcGIS):
     )
     source_name = "Georgia Department of Public Health"
 
+    # TODO: Check the resource is correct
     def fetch(self):
-        return self.get_all_jsons("Georgia_DPH_COVID19_Vaccination_PUBLIC_v1", 4, 6)
+        return self.get_all_jsons(
+            "Georgia_DPH_COVID19_Vaccination_public_v2_VIEW", 7, 6
+        )
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [c.lower() for c in df.columns]
-
         # Fix location names and drop state data
         df.loc[:, "location_name"] = (
             df["county_name"].str.title().str.replace("County", "").str.strip()
@@ -70,7 +72,6 @@ class GeorgiaCountyVaccine(ArcGIS):
         # Add date and vintage
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
-
         cols_to_keep = [
             "vintage",
             "dt",
