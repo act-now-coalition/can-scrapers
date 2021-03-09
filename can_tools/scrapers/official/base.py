@@ -548,12 +548,14 @@ class TableauDashboard(StateDashboard, ABC):
             .drop(["variable"], axis=1)
         )
 
-    def get_tableau_view(self):
+    def get_tableau_view(self, url=None):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
         req = requests_retry_session()
         fullURL = self.baseurl + "/views/" + self.viewPath
+        if url is not None:
+            fullURL = url
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
             params += self.filterFunctionName + "=" + self.filterFunctionValue

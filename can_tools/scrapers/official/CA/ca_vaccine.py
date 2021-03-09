@@ -14,13 +14,18 @@ class CaliforniaVaccineCounty(TableauDashboard):
     source_name = "Official California State Government Website"
     state_fips = int(us.states.lookup("California").fips)
     location_type = "county"
-
+    source_url = (
+        "https://public.tableau.com/interactive/views/"
+        "COVID-19VaccineDashboardPublic/Vaccine"
+        "?:embed=y&:showVizHome=no&:display_count=y&:display_static_image=y"
+        "&:bootstrapWhenNotified=true&:language=en&:embed=y&:showVizHome=n&:apiID=host0"
+    )
     baseurl = "https://public.tableau.com"
 
     viewPath = "COVID-19VaccineDashboardPublic/Vaccine"
 
     cmus = {
-        "AGG(Total Doses Administered)-alias": CMU(
+        "SUM(Dose Administered)-alias": CMU(
             category="total_vaccine_doses_administered",
             measurement="cumulative",
             unit="doses",
@@ -30,7 +35,7 @@ class CaliforniaVaccineCounty(TableauDashboard):
     county_column = "County-value"
 
     def fetch(self) -> pd.DataFrame:
-        return self.get_tableau_view()["County Map"]
+        return self.get_tableau_view(self.source_url)["County Map"]
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         # county names (converted to title case)
