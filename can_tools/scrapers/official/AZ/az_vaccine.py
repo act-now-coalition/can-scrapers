@@ -24,9 +24,9 @@ class ArizonaVaccineCounty(StateDashboard):
         return camelot.read_pdf(url, pages="2", flavor="stream")
 
     def normalize(self, data) -> pd.DataFrame:
-        # adding values to this array will cause all rows where location_name is 
+        # adding values to this array will cause all rows where location_name is
         # in this array to be removed
-        non_counties = ['Tribes']
+        non_counties = ["Tribes"]
         # Sanity check how many tables we got back
         if len(data) > 1:
             raise ValueError("more tables returned than expected value")

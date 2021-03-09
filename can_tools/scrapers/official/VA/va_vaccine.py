@@ -26,9 +26,7 @@ class VirginiaVaccine(TableauDashboard):
         rows = [
             (
                 data["Vaccine One Dose"]["SUM(At Least One Dose)-alias"].iloc[0],
-                data["Vaccine Fully Vacinated"][
-                    "SUM(Fully Vaccinated)-alias"
-                ].iloc[0],
+                data["Vaccine Fully Vacinated"]["SUM(Fully Vaccinated)-alias"].iloc[0],
                 data["Vaccine Total Doses"]["SUM(Vaccine Count)-alias"].iloc[0],
                 self.state_fips,
                 "Virginia",

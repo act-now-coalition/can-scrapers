@@ -107,7 +107,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
             # "Tests_Ethnicity_Unknown",
         }
         # Fill `#REF!` entries with NaN
-        data.Cases_Black = pd.to_numeric(data.Cases_Black, errors='coerce')
+        data.Cases_Black = pd.to_numeric(data.Cases_Black, errors="coerce")
 
         return (
             data.assign(
