@@ -70,7 +70,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
                     # page 6
                     # Virginia, 2013: Bedford (independent) city (FIPS 51515) was changed to
                     # town status and added to Bedford County (FIPS 51019) effective July 1st, 2013
-                    51515: 51019
+                    51515: 51019,
                 }
             )
         )
