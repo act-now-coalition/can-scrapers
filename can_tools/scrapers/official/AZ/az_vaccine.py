@@ -50,6 +50,8 @@ class ArizonaVaccineCounty(StateDashboard):
             "pfizer_vaccine_allocated",
             "moderna_vaccine_allocated_new_doses",
             "moderna_vaccine_allocated",
+            "janssen_vaccine_new_doses",
+            "janssen_vaccine_allocated",
             "total_vaccine_allocated",
         ]
 
@@ -58,6 +60,7 @@ class ArizonaVaccineCounty(StateDashboard):
             "location_name",
             "pfizer_vaccine_allocated",
             "moderna_vaccine_allocated",
+            'janssen_vaccine_allocated',
             "total_vaccine_allocated",
         ]
 
@@ -75,6 +78,11 @@ class ArizonaVaccineCounty(StateDashboard):
                 category="pfizer_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
+            ),
+            "janssen_vaccine_allocated": CMU(
+                category="janssen_vaccine_allocated",
+                measurement="cumulative",
+                unit="doses"
             ),
             "total_vaccine_allocated": CMU(
                 category="total_vaccine_allocated",
