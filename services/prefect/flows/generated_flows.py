@@ -72,8 +72,9 @@ def initialize_sentry(sentry_dsn: str):
 
 
 def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
+    sched = CronSchedule(f"{ix % 60} */4 * * *")
 
-    with Flow(cls.__name__) as flow:
+    with Flow(cls.__name__, sched) as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
         sentry_dsn = EnvVarSecret("SENTRY_DSN")
         sentry_sdk_task = initialize_sentry(sentry_dsn)
