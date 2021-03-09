@@ -66,6 +66,11 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
                     # ended up in after the split...
                     # https://en.wikipedia.org/wiki/Cordova,_Alaska
                     2080: 2261,
+                    # Source of change: https://www.cdc.gov/nchs/nvss/bridged_race/county_geography-_changes2015.pdf
+                    # page 6
+                    # Virginia, 2013: Bedford (independent) city (FIPS 51515) was changed to
+                    # town status and added to Bedford County (FIPS 51019) effective July 1st, 2013
+                    51515: 51019
                 }
             )
         )
