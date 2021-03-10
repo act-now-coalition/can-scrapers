@@ -425,3 +425,21 @@ class DatasetBase(ABC):
     def _put_exec(self, engine: Engine, df: pd.DataFrame) -> None:
         "Internal _put method for dumping data using TempTable class"
         pass
+
+    def find_unknown_variable_id(self, engine: Engine, df: pd.DataFrame):
+        variables = pd.read_sql("select * from covid_variables", engine)
+        merged = df.merge(variables, on=["category", "measurement", "unit"], how="left")
+        bad = merged["id"].isna()
+        return df.loc[bad, :]
+
+    def find_unknown_location_id(self, engine: Engine, df: pd.DataFrame):
+        locs = pd.read_sql("select * from locations", engine)
+        good_rows = df.location_name.isin(
+            locs.loc[locs.state_fips == self.state_fips, :].name
+        )
+        return df.loc[~good_rows, :]
+
+    def fetch_normalize(self):
+        "Call `self.normalize(self.fetch())`"
+        data = self.fetch()
+        return self.normalize(data)
