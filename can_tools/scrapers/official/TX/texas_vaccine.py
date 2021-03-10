@@ -199,6 +199,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
             .query("location_name != 'Other'")
+            .dropna(subset=["value"])
         )
 
         return df
