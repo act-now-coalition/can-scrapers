@@ -8,6 +8,8 @@ from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCou
 
 class WisconsinVaccineAge(WisconsinVaccineCounty):
     data_tableau_table = "Age vax/unvax County"
+    # age does not report missing/unknown entries
+    missing_tableau_table = ""
     location_name_col = "AGG(Geography TT)-alias"
     location_type = "state"
 
@@ -60,6 +62,17 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
         df[demo] = df[demo_col_name]
         return df.drop(["variable", demo_col_name], axis=1)
 
+    def fetch(self) -> pd.DataFrame:
+        if self.missing_tableau_table:
+            # extract both data table and missing data table
+            dfs = [
+                self.get_tableau_view().get(table)
+                for table in [self.data_tableau_table, self.missing_tableau_table]
+            ]
+            return pd.concat(dfs)
+        else:
+            return self.get_tableau_view()[self.data_tableau_table]
+
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "age", "Age-value")
         return df.replace({"age": {"65+": "65_plus"}})
@@ -67,15 +80,24 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
 
 class WisconsinVaccineRace(WisconsinVaccineAge):
     data_tableau_table = "Race vax/unvax county"
+    missing_tableau_table = "Race missing county"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "race", "Race-value")
-        rm = {"1": "white", "2": "black", "3": "native_american", "4": "asian"}
+        rm = {
+            "1": "white",
+            "2": "black",
+            "3": "native_american",
+            "4": "asian",
+            "5": "other",
+            "U": "unknown",
+        }
         return df.replace({"race": rm})
 
 
 class WisconsinVaccineSex(WisconsinVaccineAge):
     data_tableau_table = "Sex vax/unvax county"
+    missing_tableau_table = "Sex missing county"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "sex", "Sex-value")
@@ -85,6 +107,7 @@ class WisconsinVaccineSex(WisconsinVaccineAge):
 
 class WisconsinVaccineEthnicity(WisconsinVaccineAge):
     data_tableau_table = "Ethnicity vax/unvax county"
+    missing_tableau_table = "Ethnicity missing county"
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "ethnicity", "Ethnicity-value")
