@@ -127,7 +127,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             measurement="cumulative",
             unit="doses",
         ),
-        "People Vaccinated with at Least One Dose": CMU(
+        "People Vaccinated with at least One Dose": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
