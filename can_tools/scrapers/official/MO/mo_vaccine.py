@@ -18,16 +18,16 @@ class MissouriVaccineCounty(TableauDashboard):
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         _make_cmu = lambda c: CMU(category=c, measurement="cumulative", unit="people")
         cmus = {
-            "First COVID-19 Dose Administered": _make_cmu("total_vaccine_initiated"),
-            "Second COVID-19 Dose Administered": _make_cmu("total_vaccine_completed"),
+            "COVID-19 Vaccine Regimen Initiated": _make_cmu("total_vaccine_initiated"),
+            "COVID-19 Vaccine Regimen Completed": _make_cmu("total_vaccine_completed"),
         }
-        non_counties = ["St. Louis City"]  # noqa
+        non_counties = ["St. Louis City", "Kansas City", "Joplin"]  # noqa
         return (
             data.rename(
                 columns={
                     "Measure Values-alias": "value",
                     "Measure Names-alias": "variable",
-                    "County Name-value": "location_name",
+                    "Jurisdiction-value": "location_name",
                 }
             )
             .loc[:, ["value", "variable", "location_name"]]

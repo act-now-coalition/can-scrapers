@@ -17,7 +17,7 @@ from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
 
 
 class TexasVaccineParent(StateDashboard, ABC):
-    state_fips = us.states.lookup("Texas").fips
+    state_fips = int(us.states.lookup("Texas").fips)
     source = "https://www.dshs.state.tx.us/coronavirus/immunize/vaccine.aspx"
     source_name = "Texas Department of State Health Services"
 
@@ -68,9 +68,10 @@ class TexasCountyVaccine(TexasVaccineParent):
         # Read excel file and set date
         df = self.excel_to_dataframe(data, "By County")
         df = self._rename_and_reshape(df)
-
+        non_counties = ["Texas", "Federal Pharmacy Retail Vaccination Program", "Other"]
         # Drop state data which we retrieve with another scraper
-        df = df.query("location_name != 'Texas'")
+        # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
+        df = df.query("location_name not in @non_counties")
 
         cols_to_keep = [
             "vintage",
@@ -186,7 +187,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 columns={
                     "Age Group": "age",
                     "Race/Ethnicity": "race",
-                    "County Name": "location_name",
+                    "County": "location_name",
                 }
             )
             .melt(
@@ -197,6 +198,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
+            .query("location_name != 'Other'")
         )
 
         return df

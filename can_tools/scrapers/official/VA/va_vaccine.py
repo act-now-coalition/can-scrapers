@@ -25,10 +25,8 @@ class VirginiaVaccine(TableauDashboard):
     def normalize(self, data) -> pd.DataFrame:
         rows = [
             (
-                data["Vaccine One Dose (3)"]["SUM(Vaccine Count)-alias"].iloc[0],
-                data["Vaccine Fully Vacinated (2)"][
-                    "SUM(Fully Vaccinated (1))-alias"
-                ].iloc[0],
+                data["Vaccine One Dose"]["SUM(At Least One Dose)-alias"].iloc[0],
+                data["Vaccine Fully Vacinated"]["SUM(Fully Vaccinated)-alias"].iloc[0],
                 data["Vaccine Total Doses"]["SUM(Vaccine Count)-alias"].iloc[0],
                 self.state_fips,
                 "Virginia",
@@ -47,7 +45,7 @@ class VirginiaVaccine(TableauDashboard):
 
         county_df = data["Doses Administered by Administration FIPS"].rename(
             columns={
-                "SUM(Fully Vaccinated (1))-alias": "totalHadSecondDose",
+                "SUM(Fully Vaccinated)-alias": "totalHadSecondDose",
                 "SUM(Vaccine Count)-alias": "totalDoses",
                 "Recipient FIPS-alias": "location",
                 "ATTR(CityCounty)-alias": "location_name",

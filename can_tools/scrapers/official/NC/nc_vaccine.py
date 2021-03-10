@@ -14,22 +14,20 @@ class NCVaccine(TableauDashboard):
     state_fips = int(us.states.lookup("North Carolina").fips)
     location_type = "county"
     baseurl = "https://public.tableau.com"
-    viewPath = (
-        "NCDHHS_COVID-19_Dashboard_Vaccinations/NCDHHS_DASHBOARD_PEOPLE_VACCINATIONS"
-    )
+    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
 
-    data_tableau_table = "COUNTY MAP"
+    data_tableau_table = "County Map"
     location_name_col = "County -alias"
     timezone = "US/Eastern"
 
     # map wide form column names into CMUs
     cmus = {
-        "SUM(Dose 1 Administered)-alias": CMU(
+        "SUM(Partially Vaccinated)-alias": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "SUM(Dose 2 Administered)-alias": CMU(
+        "SUM(Fully Vaccinated)-alias": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
@@ -38,5 +36,8 @@ class NCVaccine(TableauDashboard):
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = super().normalize(df)
+        df.location_name = df.location_name.str.replace(
+            " County", ""
+        ).str.strip()  # Strip whitespace
         df.loc[df["location_name"] == "Mcdowell", "location_name"] = "McDowell"
         return df

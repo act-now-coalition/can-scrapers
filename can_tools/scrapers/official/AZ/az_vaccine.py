@@ -24,6 +24,9 @@ class ArizonaVaccineCounty(StateDashboard):
         return camelot.read_pdf(url, pages="2", flavor="stream")
 
     def normalize(self, data) -> pd.DataFrame:
+        # adding values to this array will cause all rows where location_name is
+        # in this array to be removed
+        non_counties = ["Tribes"]
         # Sanity check how many tables we got back
         if len(data) > 1:
             raise ValueError("more tables returned than expected value")
@@ -47,6 +50,8 @@ class ArizonaVaccineCounty(StateDashboard):
             "pfizer_vaccine_allocated",
             "moderna_vaccine_allocated_new_doses",
             "moderna_vaccine_allocated",
+            "janssen_vaccine_new_doses",
+            "janssen_vaccine_allocated",
             "total_vaccine_allocated",
         ]
 
@@ -55,6 +60,7 @@ class ArizonaVaccineCounty(StateDashboard):
             "location_name",
             "pfizer_vaccine_allocated",
             "moderna_vaccine_allocated",
+            "janssen_vaccine_allocated",
             "total_vaccine_allocated",
         ]
 
@@ -70,6 +76,11 @@ class ArizonaVaccineCounty(StateDashboard):
             ),
             "pfizer_vaccine_allocated": CMU(
                 category="pfizer_vaccine_allocated",
+                measurement="cumulative",
+                unit="doses",
+            ),
+            "janssen_vaccine_allocated": CMU(
+                category="janssen_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
@@ -93,7 +104,7 @@ class ArizonaVaccineCounty(StateDashboard):
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._retrieve_dt("US/Arizona")
 
-        return out
+        return out.query("location_name not in @non_counties")
 
     def validate(self, df, df_hist) -> bool:
         "Quality is free, but only to those who are willing to pay heavily for it. - DeMarco and Lister"
