@@ -1,3 +1,8 @@
+"""
+Utility functions for performing scraper maintenance such as
+re-running scraper functions for multiple vintages.
+"""
+
 from typing import Type, Optional
 
 import logging
@@ -14,7 +19,12 @@ from can_tools import ALL_SCRAPERS
 _logger = logging.getLogger(__name__)
 
 
-@click.command()
+@click.group()
+def main():
+    pass
+
+
+@main.command()
 @click.argument(
     "scraper_name", type=click.Choice(sorted([cls.__name__ for cls in ALL_SCRAPERS]))
 )
@@ -61,4 +71,4 @@ def rerun_scraper(
 
 
 if __name__ == "__main__":
-    rerun_scraper()
+    main()
