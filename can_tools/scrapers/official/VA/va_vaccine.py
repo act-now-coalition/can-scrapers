@@ -42,17 +42,14 @@ class VirginiaVaccine(TableauDashboard):
                 "location_name",
             ],
         )
-
         county_df = data["Doses Administered by Administration FIPS"].rename(
             columns={
                 "SUM(Fully Vaccinated)-alias": "totalHadSecondDose",
+                "SUM(At Least One Dose)-alias": "totalHadFirstDose",
                 "SUM(Vaccine Count)-alias": "totalDoses",
-                "Recipient FIPS-alias": "location",
-                "ATTR(CityCounty)-alias": "location_name",
+                "Recipient FIPS - Manassas Fix-alias": "location",
+                "ATTR(Locality Name)-alias": "location_name",
             }
-        )
-        county_df["totalHadFirstDose"] = county_df.eval(
-            "totalDoses - totalHadSecondDose"
         )
 
         df = pd.concat([state_df, county_df], axis=0)
