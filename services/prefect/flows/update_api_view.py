@@ -42,6 +42,7 @@ def create_parquet(_success):
     df.to_parquet(DATA_PATH / fn, index=False)
     return vintage_fn, fn
 
+
 @task
 def get_gcs_cmd(fn):
     return f"gsutil acl ch -u AllUsers:R gs://can-scrape-outputs/final/{fn}"
