@@ -25,7 +25,7 @@ class GeorgiaCountyVaccine(ArcGIS):
 
     def fetch(self):
         return self.get_all_jsons(
-            "Georgia_DPH_COVID19_Vaccination_public_v2_VIEW", 7, 6
+            "Georgia_DPH_COVID19_Vaccination_public_v2_VIEW", 6, 6
         )
 
     def normalize(self, data):
