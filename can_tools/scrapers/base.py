@@ -115,9 +115,9 @@ class DatasetBase(ABC):
         vintages = [
             path.stem for path in scraper_fetch_path.iterdir() if path.is_file()
         ]
-        timestamps = sorted([
-            pd.to_datetime(vintage, format="%Y-%m-%d_%H") for vintage in vintages
-        ])
+        timestamps = sorted(
+            [pd.to_datetime(vintage, format="%Y-%m-%d_%H") for vintage in vintages]
+        )
 
         # Filter timestamps based on input arguments.
         if start_date:
