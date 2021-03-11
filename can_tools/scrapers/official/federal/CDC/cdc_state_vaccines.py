@@ -49,7 +49,7 @@ class CDCStateVaccine(FederalDashboard):
                 measurement="cumulative",
                 unit="people",
             ),
-            "Administered_Dose2_Recip": CMU(
+            "Series_Complete_Yes": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
