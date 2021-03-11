@@ -24,7 +24,7 @@ class NewYorkVaccineCounty(TableauDashboard):
             measurement="cumulative",
             unit="people",
         ),
-        "SUM(Second Dose)-alias": CMU(
+        "SUM(People with completed Vaccine Series )-alias": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
