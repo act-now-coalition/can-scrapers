@@ -17,7 +17,6 @@ DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}"
 
 
-
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def export_to_csv(connstr: str):
     db = sa.create_engine(connstr)
