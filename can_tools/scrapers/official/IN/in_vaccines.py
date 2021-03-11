@@ -86,6 +86,7 @@ class IndianaCountyVaccinations(StateQueryAPI):
             "ethnicity",
             "sex",
             "value",
+            "vintage"
         ]
         out["vintage"] = self._retrieve_vintage()
 
