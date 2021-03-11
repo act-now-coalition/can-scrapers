@@ -91,7 +91,9 @@ class DCBase(StateDashboard):
         out = data.melt(
             id_vars=["dt", "location_name"], value_vars=_map.keys()
         ).dropna()
-        out.loc[:, "value"] = pd.to_numeric(out["value"])
+        out["value"] = pd.to_numeric(
+            out["value"].astype(str).str.replace(",", "").str.replace(" ", "")
+        )
 
         out = self.extract_CMU(out, _map)
         out["vintage"] = self._retrieve_vintage()

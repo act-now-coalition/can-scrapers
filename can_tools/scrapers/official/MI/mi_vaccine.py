@@ -10,11 +10,11 @@ class MichiganVaccineCounty(StateDashboard):
     source = "https://www.michigan.gov/coronavirus/0,9753,7-406-98178_103214_103272-547150--,00.html"
     source_name = "State of Michican Official Website"
     state_fips = int(us.states.lookup("Michigan").fips)
-    url = "https://www.michigan.gov/documents/flu/Covid_Vaccine_Doses_Administered_710815_7.xlsx"
+    url = "https://www.michigan.gov/documents/coronavirus/Covid_Vaccine_Doses_Administered_718468_7.xlsx"
     location_type = "county"
 
     def fetch(self):
-        return pd.read_excel(self.url, sheet_name="Doses Administered")
+        return pd.read_excel(self.url, sheet_name="Doses Administered", engine="xlrd")
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         # date is written out in first column name

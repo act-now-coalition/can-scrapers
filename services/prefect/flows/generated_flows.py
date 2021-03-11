@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Tuple, Type
-
+import sentry_sdk
 import pandas as pd
 import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
@@ -30,7 +30,7 @@ def fetch(d: DatasetBase):
     logger.info("Saved raw data to: {}".format(fn))
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task()
 def normalize(d: DatasetBase):
     logger = prefect.context.get("logger")
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
@@ -40,7 +40,7 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task()
 def validate(d: DatasetBase):
     if not d._validate():
         raise ValueError("failed validation")
@@ -64,17 +64,28 @@ def put(d: DatasetBase, connstr: str):
     return success
 
 
+@task()
+def initialize_sentry(sentry_dsn: str):
+    """Initialize sentry SDK for Flow. """
+    sentry_sdk.init(sentry_dsn)
+    sentry_sdk.set_tag("flow", prefect.context.flow_name)
+
+
 def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
     sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
+        sentry_dsn = EnvVarSecret("SENTRY_DSN")
+        sentry_sdk_task = initialize_sentry(sentry_dsn)
+
         d = create_scraper(cls)
         fetched = fetch(d)
         normalized = normalize(d)
         validated = validate(d)
         done = put(d, connstr)
 
+        d.set_upstream(sentry_sdk_task)
         normalized.set_upstream(fetched)
         validated.set_upstream(normalized)
         done.set_upstream(validated)

@@ -24,7 +24,7 @@ from can_tools.models import (
     TemptableOfficialNoLocation,
     build_insert_from_temp,
 )
-from can_tools.scrapers.base import DatasetBase
+from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
 
 
@@ -518,13 +518,44 @@ class TableauDashboard(StateDashboard, ABC):
     viewPath: str
     filterFunctionName: Optional[str] = None
     filterFunctionValue: Optional[str] = None
+    timezone: str
+    data_tableau_table: str
+    location_name_col: str
+    cmus: Dict[str, CMU]
 
-    def get_tableau_view(self):
+    def fetch(self) -> pd.DataFrame:
+        return self.get_tableau_view()[self.data_tableau_table]
+
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+        # county names (converted to title case)
+        df["location_name"] = df[self.location_name_col].str.title()
+
+        # parse out data columns
+        value_cols = list(set(df.columns) & set(self.cmus.keys()))
+        assert len(value_cols) == len(self.cmus)
+
+        return (
+            df.melt(id_vars=["location_name"], value_vars=value_cols)
+            .dropna()
+            .assign(
+                dt=self._retrieve_dt(self.timezone),
+                vintage=self._retrieve_vintage(),
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .pipe(self.extract_CMU, cmu=self.cmus)
+            .drop(["variable"], axis=1)
+        )
+
+    def get_tableau_view(self, url=None):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
         req = requests_retry_session()
         fullURL = self.baseurl + "/views/" + self.viewPath
+        if url is not None:
+            fullURL = url
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
             params += self.filterFunctionName + "=" + self.filterFunctionValue
@@ -802,10 +833,6 @@ class TableauMapClick(StateDashboard, ABC):
 
 class MicrosoftBIDashboard(StateDashboard, ABC):
     powerbi_url: str
-
-    def __init__(self, *a, **kw):
-        super(MicrosoftBIDashboard, self).__init__(*a, **kw)
-        self._sess = None
 
     @property
     def sess(self):

@@ -53,4 +53,5 @@ class NewJerseyVaccineCounty(ArcGIS):
             .pipe(self.extract_CMU, cmu=cmus)
             .drop(["variable"], axis=1)
             .query("location_name not in @non_counties")
+            .dropna()
         )

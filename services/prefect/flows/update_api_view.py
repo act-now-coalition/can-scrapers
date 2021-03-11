@@ -17,7 +17,6 @@ DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}"
 
 
-
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def export_to_csv(connstr: str):
     db = sa.create_engine(connstr)
@@ -42,6 +41,7 @@ def create_parquet(_success):
     df.to_parquet(DATA_PATH / vintage_fn, index=False)
     df.to_parquet(DATA_PATH / fn, index=False)
     return vintage_fn, fn
+
 
 @task
 def get_gcs_cmd(fn):

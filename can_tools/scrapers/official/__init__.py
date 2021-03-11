@@ -55,6 +55,10 @@ from can_tools.scrapers.official.PA import (
     PennsylvaniaCasesDeaths,
     PennsylvaniaCountyVaccines,
     PennsylvaniaHospitals,
+    PennsylvaniaVaccineAge,
+    PennsylvaniaVaccineEthnicity,
+    PennsylvaniaVaccineRace,
+    PennsylvaniaVaccineSex,
 )
 
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
@@ -74,9 +78,9 @@ from can_tools.scrapers.official.MN import MinnesotaCountyVaccines
 from can_tools.scrapers.official.MT import MontanaCountyVaccine, MontanaStateVaccine
 
 # from can_tools.scrapers.official.MA import Massachusetts
-from can_tools.scrapers.official.NC import NorthCarolinaVaccineCounty
+from can_tools.scrapers.official.NC import NCVaccine
 from can_tools.scrapers.official.NJ import NewJerseyVaccineCounty
-from can_tools.scrapers.official.NY import NewYorkTests
+from can_tools.scrapers.official.NY import NewYorkTests, NewYorkVaccineCounty
 from can_tools.scrapers.official.TN import (
     TennesseeAge,
     TennesseeAgeByCounty,
@@ -90,7 +94,8 @@ from can_tools.scrapers.official.TX import (
     TexasTests,
     TexasCountyVaccine,
     TexasStateVaccine,
-    # TexasVaccineDemographics,
+    TXVaccineCountyAge,
+    TXVaccineCountyRace,
 )
 from can_tools.scrapers.official.WA import WashingtonVaccine
 from can_tools.scrapers.official.WI import WisconsinCounties, WisconsinState

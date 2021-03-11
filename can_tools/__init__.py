@@ -36,7 +36,17 @@ def all_subclasses(cls):
 
 
 def non_abc_subclasses(cls):
-    return list(x for x in all_subclasses(cls) if not inspect.isabstract(x))
+    out = list(x for x in all_subclasses(cls) if not inspect.isabstract(x))
+
+    # need to specifically remove some classes :(
+    from can_tools.scrapers.official.base import TableauDashboard
+    from can_tools.scrapers.official.PA.pa_vaccines import (
+        PennsylvaniaVaccineDemographics,
+    )
+
+    bad = [TableauDashboard, PennsylvaniaVaccineDemographics]
+
+    return [x for x in out if x not in bad]
 
 
 ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = non_abc_subclasses(

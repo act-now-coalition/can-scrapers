@@ -51,7 +51,10 @@ class NewMexicoVaccineCounty(NewMexicoBase):
             "pfizerShipped",
             "dosesAdministered",
             "totalShipped",
-            "percentVaccinated",
+            "partiallyVaccinated",
+            "fullyVaccinated",
+            "percentPartiallyVaccinated",
+            "percentFullyVaccinated",
         ]
 
         # Drop extraneous columns
@@ -76,17 +79,32 @@ class NewMexicoVaccineCounty(NewMexicoBase):
                 unit="doses",
             ),
             "dosesAdministered": CMU(
-                category="total_vaccine_initiated",
+                category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="people",
+                unit="doses",
             ),
             "totalShipped": CMU(
                 category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "percentVaccinated": CMU(
+            "partiallyVaccinated": CMU(
                 category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "fullyVaccinated": CMU(
+                category="total_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "percentPartiallyVaccinated": CMU(
+                category="total_vaccine_initiated",
+                measurement="current",
+                unit="percentage",
+            ),
+            "percentFullyVaccinated": CMU(
+                category="total_vaccine_completed",
                 measurement="current",
                 unit="percentage",
             ),
