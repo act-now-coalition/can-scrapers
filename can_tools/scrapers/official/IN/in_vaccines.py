@@ -39,22 +39,16 @@ class IndianaCountyVaccinations(StateQueryAPI):
             A DataFrame with the normalized data
         """
         # Map current column names to CMU elements
-        crename = {
-            "first_dose_administered": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+        cmus = {
             "fully_vaccinated": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "new_first_dose_administered": CMU(
-                category="total_vaccine_initiated", measurement="new", unit="people"
-            ),
-            "new_fully_vaccinated": CMU(
-                category="total_vaccine_completed", measurement="new", unit="people"
+            "at_least_one_dose": CMU(
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
             ),
         }
 
@@ -64,30 +58,27 @@ class IndianaCountyVaccinations(StateQueryAPI):
         # Drop unwanted locations
         unwanted_loc = ["Unknown", "Out of State"]
         df = df.query("fips not in @unwanted_loc")
-
-        # Set date and convert fips to int
         df["dt"] = pd.to_datetime(df["date"])
-        df["location"] = pd.to_numeric(df["fips"])
+        df["location"] = df["fips"].astype(int)
 
-        # Move things into long format
-        df = df.melt(id_vars=["location", "dt"], value_vars=crename.keys()).dropna()
-
-        # Determine the category of each observation
-        out = self.extract_CMU(df, crename)
-
-        cols_to_keep = [
-            "dt",
-            "location",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-            "vintage"
-        ]
-        out["vintage"] = self._retrieve_vintage()
-
-        return out.loc[:, cols_to_keep]
+        return (
+            df.set_index(["dt", "location"])
+            .loc[:, ["first_dose_administered", "fully_vaccinated"]]
+            .unstack(level="location")
+            .sort_index()
+            .cumsum()
+            .stack(level="location")
+            .assign(
+                at_least_one_dose=lambda x: x.eval(
+                    "first_dose_administered + fully_vaccinated"
+                )
+            )
+            .drop("first_dose_administered", axis="columns")
+            .astype(int)
+            .rename_axis(columns=["variable"])
+            .stack()
+            .rename("value")
+            .reset_index()
+            .pipe(self.extract_CMU, cmu=cmus)
+            .assign(vintage=self._retrieve_vintage())
+        )
