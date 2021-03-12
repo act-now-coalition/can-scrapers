@@ -11,7 +11,7 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
     has_location = True
     location_type = "state"
     source = (
-        "https://healthdata.gov/dataset/"
+        "https://legacy.healthdata.gov/dataset/"
         "covid-19-reported-patient-impact-and-hospital-capacity-state-timeseries/"
     )
     dsid = "83b4a668-9321-4d8c-bc4f-2bef66c49050"

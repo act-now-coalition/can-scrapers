@@ -13,7 +13,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
     has_location = True
     location_type = "multiple"
     source = (
-        "https://healthdata.gov/dataset/"
+        "https://legacy.healthdata.gov/dataset/"
         "covid-19-reported-patient-impact-and-hospital-capacity-facility"
     )
     dsid = "d475cc4e-83cd-4c16-be57-9105f300e0bc"
