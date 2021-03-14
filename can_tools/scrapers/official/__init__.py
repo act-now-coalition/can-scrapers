@@ -77,6 +77,12 @@ from can_tools.scrapers.official.MT import MontanaCountyVaccine, MontanaStateVac
 
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NC import NCVaccine
+from can_tools.scrapers.official.NE import (
+    NebraskaVaccineSex,
+    NebraskaVaccineRace,
+    NebraskaVaccineEthnicity,
+    NebraskaVaccineAge,
+)
 from can_tools.scrapers.official.NJ import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NY import NewYorkTests, NewYorkVaccineCounty
 from can_tools.scrapers.official.TN import (

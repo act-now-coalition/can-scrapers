@@ -74,6 +74,10 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WisconsinState,
     WYCountyVaccinations,
     WYStateVaccinations,
+    NebraskaVaccineSex,
+    NebraskaVaccineRace,
+    NebraskaVaccineEthnicity,
+    NebraskaVaccineAge,
 )
 
 from can_tools.scrapers.ctp import (
