@@ -6,7 +6,7 @@ re-running scraper functions for multiple vintages.
 from typing import Type, Optional
 
 import logging
-
+import datetime
 from sqlalchemy.engine.base import Engine
 import sqlalchemy
 import pandas as pd
@@ -22,6 +22,13 @@ _logger = logging.getLogger(__name__)
 @click.group()
 def main():
     pass
+
+
+def _choose_scraper(scraper_name) -> Type[base.DatasetBase]:
+    matching_scrapers = [cls for cls in ALL_SCRAPERS if cls.__name__ == scraper_name]
+
+    # Must match because scraper_name must be a choice of all existing scrapers.
+    return matching_scrapers[-1]
 
 
 @main.command()
@@ -42,11 +49,7 @@ def rerun_scraper(
     db_connection_str,
 ):
 
-    matching_scrapers = [cls for cls in ALL_SCRAPERS if cls.__name__ == scraper_name]
-
-    # Must match because scraper_name must be a choice of all existing scrapers.
-    scraper_cls = matching_scrapers[-1]
-
+    scraper_cls = _choose_scraper(scraper_name)
     times = scraper_cls.find_previous_fetch_execution_dates(
         start_date=start, end_date=end, only_last=latest
     )
@@ -68,6 +71,49 @@ def rerun_scraper(
                 continue
             else:
                 raise
+
+
+@main.command()
+@click.argument(
+    "scraper_name", type=click.Choice(sorted([cls.__name__ for cls in ALL_SCRAPERS]))
+)
+@click.option("--fips", "-f", type=int)
+@click.option("--location-type", "-l", type=click.Choice(["state", "county"]))
+@click.option("--days-back", "-d", type=int, default=7)
+def latest_vaccine_data(
+    scraper_name: str, fips: Optional[str], location_type: Optional[str], days_back: int
+):
+    """Prints out latest vaccination data for a given scraper"""
+    scraper_cls = _choose_scraper(scraper_name)
+    scraper = scraper_cls()
+    normalized_data = scraper.fetch_normalize()
+    vaccine_variables = ["total_vaccine_initiated", "total_vaccine_completed"]
+    start_date = pd.Timestamp(
+        normalized_data.dt.max() - datetime.timedelta(days=days_back)
+    )
+    params = [
+        "category == @vaccine_variables ",
+        "race == 'all'",
+        "age == 'all'",
+        "ethnicity == 'all'",
+        "sex == 'all'",
+        "dt > @start_date",
+    ]
+    if fips:
+        params.append("location == @fips")
+    if location_type:
+        params.append("location_type == @location_type")
+
+    query_string = " & ".join(params)
+
+    subset = normalized_data.query(query_string)
+
+    subset = (
+        subset.loc[:, ["dt", "location", "variable", "value"]]
+        .set_index(["dt", "location", "variable"])
+        .unstack(level=-1)
+    )
+    print(subset)
 
 
 if __name__ == "__main__":
