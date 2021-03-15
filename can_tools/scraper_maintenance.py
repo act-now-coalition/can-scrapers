@@ -107,12 +107,20 @@ def latest_vaccine_data(
     query_string = " & ".join(params)
 
     subset = normalized_data.query(query_string)
+    columns = ["dt", "category", "value"]
+    index = ["dt"]
 
-    subset = (
-        subset.loc[:, ["dt", "location", "category", "value"]]
-        .set_index(["dt", "location", "category"])
-        .unstack(level=-1)
-    )
+    # Only adding location or location name if they actually exist.
+    if "location" in subset.columns:
+        columns.append("location")
+        index.append("location")
+    if "location_name" in subset.columns:
+        columns.append("location_name")
+        index.append("location_name")
+
+    index.append("category")
+
+    subset = subset.loc[:, columns].set_index(index).unstack(level=-1)
     print(subset)
 
 
