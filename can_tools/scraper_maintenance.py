@@ -109,8 +109,8 @@ def latest_vaccine_data(
     subset = normalized_data.query(query_string)
 
     subset = (
-        subset.loc[:, ["dt", "location", "variable", "value"]]
-        .set_index(["dt", "location", "variable"])
+        subset.loc[:, ["dt", "location", "category", "value"]]
+        .set_index(["dt", "location", "category"])
         .unstack(level=-1)
     )
     print(subset)
