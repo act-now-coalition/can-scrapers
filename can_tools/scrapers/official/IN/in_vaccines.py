@@ -61,9 +61,14 @@ class IndianaCountyVaccinations(StateQueryAPI):
         df["dt"] = pd.to_datetime(df["date"])
         df["location"] = df["fips"].astype(int)
 
+        column_subset = [
+            "first_dose_administered",
+            "fully_vaccinated",
+            "second_dose_administered",
+        ]
         return (
             df.set_index(["dt", "location"])
-            .loc[:, ["first_dose_administered", "fully_vaccinated", "second_dose_administered"]]
+            .loc[:, column_subset]
             .unstack(level="location")
             .sort_index()
             .cumsum()
@@ -73,7 +78,9 @@ class IndianaCountyVaccinations(StateQueryAPI):
                     "first_dose_administered + (fully_vaccinated - second_dose_administered)"
                 )
             )
-            .drop(["first_dose_administered", "second_dose_administered"], axis="columns")
+            .drop(
+                ["first_dose_administered", "second_dose_administered"], axis="columns"
+            )
             .astype(int)
             .rename_axis(columns=["variable"])
             .stack()
