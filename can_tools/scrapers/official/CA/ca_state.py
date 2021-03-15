@@ -6,19 +6,23 @@ import us
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateQueryAPI
 
+# https://data.chhs.ca.gov/api/3/action/datastore_search?resource_id=046cdd2b-31e5-4d34-9ed3-b48cdbc4be7a&limit=5
+# https://data.ca.gov/api/3/action/datastore_search?resource_id=0545b878-90a8-4b26-a16a-84978354f1a3&limit=5
 
+# https://data.chhs.ca.gov/api/3/action/datastore_search?resource_id=046cdd2b-31e5-4d34-9ed3-b48cdbc4be7a&limit=5
 class CaliforniaCasesDeaths(StateQueryAPI):
     """
     Fetch county level covid data from California state dashbaord
     """
 
-    apiurl = "https://data.ca.gov/api/3/action/datastore_search"
+    apiurl = "https://data.chhs.ca.gov/api/3/action/datastore_search"
+    # apiurl = "https://data.ca.gov/api/3/action/datastore_search"
     source = "https://covid19.ca.gov/state-dashboard"
     source_name = "Official California State Government Website"
     state_fips = int(us.states.lookup("California").fips)
     has_location = False
     location_type = "county"
-    resource_id = "926fd08f-cc91-4828-af38-bd45de97f8c3"
+    resource_id = "046cdd2b-31e5-4d34-9ed3-b48cdbc4be7a"
 
     def fetch(self) -> Any:
         return self.raw_from_api(self.resource_id, limit=1000)
@@ -84,14 +88,15 @@ class CaliforniaCasesDeaths(StateQueryAPI):
         out["vintage"] = self._retrieve_vintage()
 
         # Drop the information that we won't be keeping track of
-        loc_not_keep = ["Out Of Country", "Unassigned"]
+        loc_not_keep = ["Out Of Country", "Unassigned", "Unknown"]
         out = out.loc[~out["location_name"].isin(loc_not_keep), :]
 
         return out
 
 
 class CaliforniaHospitals(CaliforniaCasesDeaths):
-    resource_id = "42d33765-20fd-44b8-a978-b083b7542225"
+    resource_id = "0d9be83b-5027-41ff-97b2-6ca70238d778"
+    apiurl = "https://data.ca.gov/api/3/action/datastore_search"
 
     def pre_normalize(self, data) -> pd.DataFrame:
         """
