@@ -388,7 +388,7 @@ class SODA(StateDashboard, ABC):
 
 class StateQueryAPI(StateDashboard, ABC):
     """
-    Fetch data from OpenDataCali service
+    Fetch data from State API service (CKAN?)
     """
 
     apiurl: str
