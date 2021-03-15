@@ -139,6 +139,9 @@ class CASanDiegoVaccine(ArcGIS):
             "AdministeredDoses",
         ]
         total_temp = df.query("(Category in @total_cols) & (variable == 'Count_')")
+        total_temp["Join_Name"] = total_temp.Join_Name.replace(
+            {"Doses administered": "AdministeredDoses"}
+        )
         total_df = self.extract_CMU(
             total_temp, total_crename, var_name="Join_Name"
         ).drop(["Category", "Join_Name", "variable"], axis="columns")
