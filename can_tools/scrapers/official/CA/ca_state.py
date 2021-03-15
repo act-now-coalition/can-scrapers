@@ -5,6 +5,8 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateQueryAPI
+
+
 class CaliforniaHospitals(StateQueryAPI):
     resource_id = "0d9be83b-5027-41ff-97b2-6ca70238d778"
     apiurl = "https://data.ca.gov/api/3/action/datastore_search"
