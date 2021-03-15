@@ -4,7 +4,6 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     ArizonaMaricopaVaccine,
     ArizonaVaccineCounty,
     CASanDiegoVaccine,
-    CaliforniaCasesDeaths,
     CaliforniaHospitals,
     CaliforniaTesting,
     CaliforniaVaccineCounty,
