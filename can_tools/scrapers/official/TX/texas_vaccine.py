@@ -30,13 +30,9 @@ class TexasVaccineParent(StateDashboard, ABC):
 
     def excel_to_dataframe(self, data, sheet) -> pd.DataFrame:
         # Read data from excel file and parse specified sheet
-        data = pd.ExcelFile(io.BytesIO(data.content))
-        df = data.parse(sheet, na_values="--")
-
-        # Set date to yesterday
-        df["dt"] = self._retrieve_dtm1d("US/Eastern")
-
-        return df
+        return pd.read_excel(
+            data.content, sheet_name=sheet, engine="openpyxl", na_values="--"
+        ).assign(dt=self._retrieve_dtm1d("US/Eastern"))
 
 
 class TexasCountyVaccine(TexasVaccineParent):
@@ -66,7 +62,7 @@ class TexasCountyVaccine(TexasVaccineParent):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read excel file and set date
-        df = self.excel_to_dataframe(data, "By County")
+        df = self.excel_to_dataframe(data, "By County", engine="")
         df = self._rename_and_reshape(df)
         non_counties = [
             "Texas",
