@@ -63,17 +63,17 @@ class IndianaCountyVaccinations(StateQueryAPI):
 
         return (
             df.set_index(["dt", "location"])
-            .loc[:, ["first_dose_administered", "fully_vaccinated"]]
+            .loc[:, ["first_dose_administered", "fully_vaccinated", "second_dose_administered"]]
             .unstack(level="location")
             .sort_index()
             .cumsum()
             .stack(level="location")
             .assign(
                 at_least_one_dose=lambda x: x.eval(
-                    "first_dose_administered + fully_vaccinated"
+                    "first_dose_administered + (fully_vaccinated - second_dose_administered)"
                 )
             )
-            .drop("first_dose_administered", axis="columns")
+            .drop(["first_dose_administered", "second_dose_administered"], axis="columns")
             .astype(int)
             .rename_axis(columns=["variable"])
             .stack()
