@@ -62,7 +62,7 @@ class TexasCountyVaccine(TexasVaccineParent):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read excel file and set date
-        df = self.excel_to_dataframe(data, "By County", engine="")
+        df = self.excel_to_dataframe(data, "By County")
         df = self._rename_and_reshape(df)
         non_counties = [
             "Texas",
