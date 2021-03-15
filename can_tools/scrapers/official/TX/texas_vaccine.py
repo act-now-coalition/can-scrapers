@@ -68,7 +68,12 @@ class TexasCountyVaccine(TexasVaccineParent):
         # Read excel file and set date
         df = self.excel_to_dataframe(data, "By County")
         df = self._rename_and_reshape(df)
-        non_counties = ["Texas", "Federal Pharmacy Retail Vaccination Program", "Other", "Grand Total"]
+        non_counties = [
+            "Texas",
+            "Federal Pharmacy Retail Vaccination Program",
+            "Other",
+            "Grand Total",
+        ]
         # Drop state data which we retrieve with another scraper
         # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
         df = df.query("location_name not in @non_counties")
@@ -181,7 +186,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read in data, set location, and drop totals
-        non_counties = ['Other', 'Grand Total']
+        non_counties = ["Other", "Grand Total"]
         df = (
             self.excel_to_dataframe(data, self.sheet_name)
             .rename(
