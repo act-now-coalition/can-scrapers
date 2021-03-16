@@ -3,17 +3,20 @@ import pandas as pd
 import us
 
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import StateDashboard, TableauMapClick
+from can_tools.scrapers.official.base import StateDashboard, TableauDashboard
 
 
 class NoTableauMapFiltersFoundError(Exception):
     """Raised if no Tableau Map Filters are found."""
 
 
-class ArizonaVaccineCounty(TableauMapClick, StateDashboard):
+class ArizonaVaccineCounty(TableauDashboard):
     """
     Fetch county level covid data from Arizona's Tableau dashboard
     """
+
+    baseurl = "https://tableau.azdhs.gov"
+    viewPath = "VaccineDashboard/Vaccineadministrationdata"
 
     # Initlze
     source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
@@ -21,6 +24,12 @@ class ArizonaVaccineCounty(TableauMapClick, StateDashboard):
     has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)
+    location_name_col = "location_name"
+    timezone = "US/Mountain"
+
+    filterFunctionName = (
+        "[federated.1rsrm840sp0wgc11a5yw61x1aht3].[Calculation_624592978064752643]~s0"
+    )
     counties = [
         ["APACHE", 4001],
         ["COCHISE", 4003],
@@ -39,89 +48,48 @@ class ArizonaVaccineCounty(TableauMapClick, StateDashboard):
         ["YUMA", 4027],
     ]
 
+    cmus = {
+        "total_vaccine_initiated": CMU(
+            category="total_vaccine_initiated", measurement="cumulative", unit="people",
+        ),
+        "total_vaccine_completed": CMU(
+            category="total_vaccine_completed", measurement="cumulative", unit="people",
+        ),
+        "total_doses_administered": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+        ),
+    }
+
     def fetch(self):
-        # Initialize
         dfs = []
-        reqParams = {":embed": "y", ":display_count": "no"}
-        url = (
-            "https://tableau.azdhs.gov/views/VaccineDashboard/Vaccineadministrationdata"
-        )
-        tableau_root = "https://tableau.azdhs.gov"
-
-        info, fdat = self.getRawTbluPageData(url, tableau_root, reqParams)
-        # Get the county filter url params
-        county_filter_keys = self.getTbluMapFilter(info)
-        if not county_filter_keys:
-            raise NoTableauMapFiltersFoundError()
-
         for county_name, fips in self.counties:
-            county_request_param = reqParams
-            for key in county_filter_keys:
-                county_request_param[key] = county_name
-
-            info, fdat = self.getRawTbluPageData(
-                url, tableau_root, county_request_param
-            )
-
-            # Get county data
-            county_df = self.extractTbluData(fdat, fips)
-            county_df["location_type"] = "county"
-
-            dfs.append(county_df)
+            self.filterFunctionValue = county_name
+            county_data = self.get_tableau_view()
+            data = {
+                "total_doses_administered": self._get_doses_administered(county_data),
+                "total_vaccine_initiated": self._get_vaccines_initiated(county_data),
+                "total_vaccine_completed": self._get_vaccines_completed(county_data),
+                "location": fips,
+                "location_name": county_name,
+            }
+            dfs.append(pd.DataFrame(data))
 
         # Concat the dfs
         output_df = pd.concat(dfs, axis=0, ignore_index=True)
-
         return output_df
 
-    def normalize(self, data):
-        df = data.rename(columns={"Last update": "dt"})
-        df["dt"] = pd.to_datetime(df["dt"])
+    def _get_doses_administered(self, data):
+        return data["Number of Doses"]["AGG(Number of Doses)-alias"]
 
-        crename = {
-            "Complete Vaccine Series": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "Number of People": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "Number of Doses": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-        }
-        out = (
-            df.melt(
-                id_vars=["dt", "location", "location_type"], value_vars=crename.keys()
-            )
-            .assign(vintage=self._retrieve_vintage())
-            .dropna()
-        )
-        out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out.rename(columns={"Name": "variable"}, inplace=True)
-
-        out = self.extract_CMU(out, crename)
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location",
-            "location_type",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
+    def _get_vaccines_completed(self, data):
+        return data["Complete Vaccine Series"][
+            "AGG(Total number of people (LOD))-alias"
         ]
-        return out.loc[:, cols_to_keep]
+
+    def _get_vaccines_initiated(self, data):
+        return data[" County using admin county"]["AGG(Number of People)-alias"]
 
 
 class ArizonaVaccineCountyAllocated(StateDashboard):
