@@ -61,6 +61,8 @@ from can_tools.scrapers.official.PA import (
     PennsylvaniaVaccineSex,
 )
 
+from can_tools.scrapers.official.HI import HawaiiVaccineCounty
+
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineState,
