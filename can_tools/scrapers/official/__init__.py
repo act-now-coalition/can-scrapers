@@ -2,6 +2,7 @@ from can_tools.scrapers.official.AZ import (
     ArizonaData,
     ArizonaMaricopaVaccine,
     ArizonaVaccineCounty,
+    ArizonaVaccineCountyAllocated,
 )
 
 from can_tools.scrapers.official.CA import (
@@ -68,6 +69,9 @@ from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineState,
     IllinoisVaccineCounty,
 )
+
+from can_tools.scrapers.official.LA.la_county import LAVaccineCounty
+
 from can_tools.scrapers.official.ME import MaineCountyVaccines
 from can_tools.scrapers.official.MI import MichiganVaccineCounty
 from can_tools.scrapers.official.MD import (

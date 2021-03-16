@@ -67,14 +67,9 @@ class ArizonaData(TableauMapClick, StateDashboard):
             # Concat the dfs
             outDf = pd.concat(dfs, axis=0, ignore_index=True)
 
-        outDf["CumPosTests"] = outDf["PercentPositive"] * outDf["Number of tests"]
-        outDf["CumDiagPosTests"] = (
-            outDf["Percent Positive Diagnostic tests"]
-            * outDf["Number of Diagnostic tests"]
+        outDf["CumPosTests"] = (
+            outDf["% Pos Tests"] * outDf["Number of Diagnostic Tests"]
         )
-
-        # NOTE: There is currently a bug in the AZDHS dashboard summary page. They do NOT show correct values for antibody positivity rate
-        outDf["CumSeroPosTests"] = outDf["CumPosTests"] - outDf["CumDiagPosTests"]
 
         return outDf
 
@@ -83,19 +78,13 @@ class ArizonaData(TableauMapClick, StateDashboard):
         crename = {
             "New Cases": CMU(category="cases", measurement="new", unit="people"),
             "New Deaths": CMU(category="deaths", measurement="new", unit="people"),
-            "New Tested": CMU(
-                category="unspecified_tests_total", measurement="new", unit="specimens"
-            ),
-            "New Tested PCR": CMU(
+            "New Tested Diagnostic": CMU(
                 category="antigen_pcr_tests_total", measurement="new", unit="specimens"
-            ),
-            "New Tested serology": CMU(
-                category="antibody_tests_total", measurement="new", unit="specimens"
             ),
             "Number of Cases": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "Number of Diagnostic tests": CMU(
+            "Number of Diagnostic Tests": CMU(
                 category="antigen_pcr_tests_total",
                 measurement="cumulative",
                 unit="specimens",
@@ -103,28 +92,13 @@ class ArizonaData(TableauMapClick, StateDashboard):
             "Number of deaths": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
-            "Number of tests": CMU(
-                category="unspecified_tests_total",
-                measurement="cumulative",
-                unit="specimens",
-            ),
-            "Number of tests serology": CMU(
-                category="antibody_tests_total",
+            "Number of Diagnostic Tests": CMU(
+                category="antigen_pcr_tests_total",
                 measurement="cumulative",
                 unit="specimens",
             ),
             "CumPosTests": CMU(
-                category="unspecified_tests_positive",
-                measurement="cumulative",
-                unit="specimens",
-            ),
-            "CumDiagPosTests": CMU(
                 category="antigen_pcr_tests_positive",
-                measurement="cumulative",
-                unit="specimens",
-            ),
-            "CumSeroPosTests": CMU(
-                category="antibody_tests_positive",
                 measurement="cumulative",
                 unit="specimens",
             ),
@@ -157,3 +131,9 @@ class ArizonaData(TableauMapClick, StateDashboard):
             "value",
         ]
         return out.loc[:, cols_to_keep]
+
+
+if __name__ == "__main__":
+    d = ArizonaData()
+    data = d.fetch()
+    df = d.normalize(data)
