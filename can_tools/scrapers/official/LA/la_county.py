@@ -47,4 +47,4 @@ class LAVaccineCounty(ArcGIS):
 
         result["vintage"] = self._retrieve_vintage()
 
-        return result
+        return result.drop(["variable"], axis="columns")
