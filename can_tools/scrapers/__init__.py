@@ -29,6 +29,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     IllinoisVaccineCounty,
     IllinoisVaccineState,
     LACaliforniaCountyVaccine,
+    LAVaccineCounty,
     MaineCountyVaccines,
     MarylandCounties,
     MarylandCountyVaccines,
