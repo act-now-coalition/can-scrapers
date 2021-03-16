@@ -14,6 +14,7 @@ import requests
 import urllib.parse
 
 from bs4 import BeautifulSoup
+import jmespath
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 
@@ -717,73 +718,42 @@ class TableauMapClick(StateDashboard, ABC):
             Already-pivoted covid data with column names extracted from tableau
             'location' column will contain the proveded 'area' data
         """
-        valF = []  # Initialize placeholder array
+        data_vals = []  # Initialize placeholder array
         # Grab the raw data loaded into the current tableau view
-        lsUpdt = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][2][
-            "dataValues"
-        ][
-            -1
-        ]
-        intDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][0][
-            "dataValues"
-        ]
-        rlDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][1][
-            "dataValues"
-        ]
+        data_segment = jmespath.search(
+            "secondaryInfo.presModelMap.dataDictionary.presModelHolder.genDataDictionaryPresModel.dataSegments",
+            htmdump,
+        )["0"]
+        last_updated = jmespath.search("dataColumns[2].dataValues[-1]", data_segment)
+        integer_data = jmespath.search("dataColumns[0].dataValues", data_segment)
+        real_data = jmespath.search("dataColumns[1].dataValues", data_segment)
+
+        pres_model_map = jmespath.search(
+            "secondaryInfo.presModelMap.vizData.presModelHolder.genPresModelMapPresModel.presModelMap",
+            htmdump,
+        )
+
         # First extract the datatype and indices:
-        for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"][
-            "genPresModelMapPresModel"
-        ]["presModelMap"]:
-            try:
-                dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                    "presModelHolder"
-                ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                    "genVizDataPresModel"
-                ][
-                    "paneColumnsData"
-                ][
-                    "vizDataColumns"
-                ][
-                    1
-                ].get(
-                    "dataType"
-                )
-                indx = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                    "presModelHolder"
-                ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                    "genVizDataPresModel"
-                ][
-                    "paneColumnsData"
-                ][
-                    "paneColumnsList"
-                ][
-                    0
-                ][
-                    "vizPaneColumns"
-                ][
-                    1
-                ].get(
-                    "aliasIndices"
-                )[
-                    0
-                ]
-            except IndexError:
-                _logger.warning(f"Failed to process {i}")
+        for name, col_map in pres_model_map.items():
+            pane_col_data = jmespath.search(
+                "presModelHolder.genVizDataPresModel.paneColumnsData", col_map
+            )
+            dtyp = jmespath.search("vizDataColumns[1].dataType", pane_col_data)
+            indx = jmespath.search(
+                "paneColumnsList[0].vizPaneColumns[1].aliasIndices[0]",
+                pane_col_data,
+            )
+            if dtyp is None or indx is None:
+                _logger.warning(f"Failed to process {name}")
                 continue
 
             if dtyp == "integer":
-                valF.append([area, i, intDat[indx]])
+                data_vals.append([area, name, integer_data[indx]])
             elif dtyp == "real":
-                valF.append([area, i, rlDat[indx]])
-        valF.append([area, "Last update", lsUpdt])
-        if valF:
-            val = pd.DataFrame(valF, columns=["location", "Name", "Value"])
+                data_vals.append([area, name, real_data[indx]])
+        data_vals.append([area, "Last update", last_updated])
+        if data_vals:
+            val = pd.DataFrame(data_vals, columns=["location", "Name", "Value"])
             val = pd.pivot_table(
                 val,
                 values="Value",
@@ -795,7 +765,7 @@ class TableauMapClick(StateDashboard, ABC):
         else:
             return None
 
-    def getRawTbluPageData(self, url, bsRt, reqParams) -> (json, json):
+    def getRawTbluPageData(self, url, bsRt, reqParams) -> (dict, dict):
         """
         Extracts and parses htm data from a tableau dashboard page
 
