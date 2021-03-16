@@ -21,7 +21,7 @@ class ArizonaVaccineCounty(TableauDashboard):
     # Initlze
     source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
     source_name = "Arizona Department Of Health Services"
-    has_location = True
+    has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)
     location_name_col = "location_name"
