@@ -47,4 +47,4 @@ class CTCountyVaccine(SODA, DatasetBase):
         out["value"] = pd.to_numeric(out.loc[:, "value"])
         out["vintage"] = self._retrieve_vintage()
         out = self.extract_CMU(out, crename)
-        return out
+        return out.drop(["variable"], axis="columns")
