@@ -110,6 +110,9 @@ def latest_vaccine_data(
     columns = ["dt", "category", "value"]
     index = ["dt"]
 
+    pd.options.display.max_rows = 1000
+    pd.options.display.max_columns = 100
+
     # Only adding location or location name if they actually exist.
     if "location" in subset.columns:
         columns.append("location")
