@@ -1,6 +1,7 @@
 import json
 import uuid
 import re
+import logging
 
 from abc import ABC, abstractmethod
 from base64 import b64decode
@@ -26,6 +27,8 @@ from can_tools.models import (
 )
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
+
+_logger = logging.getLogger(__name__)
 
 
 class StateDashboard(DatasetBase, ABC):
@@ -681,19 +684,21 @@ class TableauMapClick(StateDashboard, ABC):
         _ : List
             The Tableau-view-specific json filter function called onMapClick
         """
-        urlFltr = []
+        url_filter_keys = []
+
         # Grab the map filter function guts:
         for fn in htmDump["worldUpdate"]["applicationPresModel"]["workbookPresModel"][
             "dashboardPresModel"
         ]["userActions"]:
-            if fn.get("name") == "Map filter":
-                urlFltr = (
-                    urllib.parse.unquote(fn.get("linkSpec").get("url"))
-                    .split("?")[1]
-                    .replace("=<Countynm1~na>", "")
-                    .split("&")
+
+            if fn.get("name", "").lower().startswith("map filter"):
+                _, *rest = urllib.parse.unquote(fn.get("linkSpec").get("url")).split(
+                    "?"
                 )
-        return urlFltr
+                rest = "?".join(rest)
+                url_filter_keys = [param.split("=")[0] for param in rest.split("&")]
+
+        return url_filter_keys
 
     def extractTbluData(self, htmdump, area) -> pd.DataFrame:
         """
@@ -735,38 +740,43 @@ class TableauMapClick(StateDashboard, ABC):
         for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"][
             "genPresModelMapPresModel"
         ]["presModelMap"]:
-            dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                "presModelHolder"
-            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                "genVizDataPresModel"
-            ][
-                "paneColumnsData"
-            ][
-                "vizDataColumns"
-            ][
-                1
-            ].get(
-                "dataType"
-            )
-            indx = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                "presModelHolder"
-            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                "genVizDataPresModel"
-            ][
-                "paneColumnsData"
-            ][
-                "paneColumnsList"
-            ][
-                0
-            ][
-                "vizPaneColumns"
-            ][
-                1
-            ].get(
-                "aliasIndices"
-            )[
-                0
-            ]
+            try:
+                dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
+                    "presModelHolder"
+                ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
+                    "genVizDataPresModel"
+                ][
+                    "paneColumnsData"
+                ][
+                    "vizDataColumns"
+                ][
+                    1
+                ].get(
+                    "dataType"
+                )
+                indx = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
+                    "presModelHolder"
+                ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
+                    "genVizDataPresModel"
+                ][
+                    "paneColumnsData"
+                ][
+                    "paneColumnsList"
+                ][
+                    0
+                ][
+                    "vizPaneColumns"
+                ][
+                    1
+                ].get(
+                    "aliasIndices"
+                )[
+                    0
+                ]
+            except IndexError:
+                _logger.warning(f"Failed to process {i}")
+                continue
+
             if dtyp == "integer":
                 valF.append([area, i, intDat[indx]])
             elif dtyp == "real":
@@ -820,10 +830,8 @@ class TableauMapClick(StateDashboard, ABC):
             dataUrl,
             data={"sheet_id": tdata["sheetId"], "showParams": tdata["showParams"]},
         )
-
         # Regex the non-json output
         dat = re.search("\d+;({.*})\d+;({.*})", r.text, re.MULTILINE)
-
         # load info head and data group separately
         info = json.loads(dat.group(1))
         fdat = json.loads(dat.group(2))
