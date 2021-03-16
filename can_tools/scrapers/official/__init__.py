@@ -17,6 +17,7 @@ from can_tools.scrapers.official.CT import (
     CTCountyDeathHospitalizations,
     CTCountyTests,
     CTState,
+    CTCountyVaccine,
 )
 
 from can_tools.scrapers.official.DC import DCCases, DCGeneral, DCDeaths

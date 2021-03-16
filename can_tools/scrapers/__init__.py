@@ -13,6 +13,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     CDCVariantTracker,
     CTCountyDeathHospitalizations,
     CTCountyTests,
+    CTCountyVaccine,
     CTState,
     DCCases,
     DCDeaths,

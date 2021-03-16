@@ -3,3 +3,4 @@ from can_tools.scrapers.official.CT.ct_state import (
     CTCountyTests,
     CTState,
 )
+from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
