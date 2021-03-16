@@ -14,7 +14,9 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         "https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa"
         "/g62h-syeh"
     )
-    source_url = "https://healthdata.gov/api/views/g62h-syeh/rows.csv?accessType=DOWNLOAD"
+    source_url = (
+        "https://healthdata.gov/api/views/g62h-syeh/rows.csv?accessType=DOWNLOAD"
+    )
 
     def fetch(self):
         df = pd.read_csv(self.source_url)
