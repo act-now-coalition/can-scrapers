@@ -50,10 +50,14 @@ class ArizonaVaccineCounty(TableauDashboard):
 
     cmus = {
         "total_vaccine_initiated": CMU(
-            category="total_vaccine_initiated", measurement="cumulative", unit="people",
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
         ),
         "total_vaccine_completed": CMU(
-            category="total_vaccine_completed", measurement="cumulative", unit="people",
+            category="total_vaccine_completed",
+            measurement="cumulative",
+            unit="people",
         ),
         "total_doses_administered": CMU(
             category="total_vaccine_doses_administered",
