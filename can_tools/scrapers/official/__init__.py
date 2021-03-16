@@ -2,6 +2,7 @@ from can_tools.scrapers.official.AZ import (
     ArizonaData,
     ArizonaMaricopaVaccine,
     ArizonaVaccineCounty,
+    ArizonaVaccineCountyAllocated,
 )
 
 from can_tools.scrapers.official.CA import (
