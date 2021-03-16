@@ -3,10 +3,128 @@ import pandas as pd
 import us
 
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import StateDashboard
+from can_tools.scrapers.official.base import StateDashboard, TableauMapClick
 
 
-class ArizonaVaccineCounty(StateDashboard):
+class NoTableauMapFiltersFoundError(Exception):
+    """Raised if no Tableau Map Filters are found."""
+
+
+class ArizonaVaccineCounty(TableauMapClick, StateDashboard):
+    """
+    Fetch county level covid data from Arizona's Tableau dashboard
+    """
+
+    # Initlze
+    source = "https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/covid-19/dashboards/index.php"
+    source_name = "Arizona Department Of Health Services"
+    has_location = True
+    location_type = "county"
+    state_fips = int(us.states.lookup("Arizona").fips)
+    counties = [
+        ["APACHE", 4001],
+        ["COCHISE", 4003],
+        ["COCONINO", 4005],
+        ["GILA", 4007],
+        ["GRAHAM", 4009],
+        ["GREENLEE", 4011],
+        ["LA PAZ", 4012],
+        ["MARICOPA", 4013],
+        ["MOHAVE", 4015],
+        ["NAVAJO", 4017],
+        ["PIMA", 4019],
+        ["PINAL", 4021],
+        ["SANTA CRUZ", 4023],
+        ["YAVAPAI", 4025],
+        ["YUMA", 4027],
+    ]
+
+    def fetch(self):
+        # Initialize
+        dfs = []
+        reqParams = {":embed": "y", ":display_count": "no"}
+        url = (
+            "https://tableau.azdhs.gov/views/VaccineDashboard/Vaccineadministrationdata"
+        )
+        tableau_root = "https://tableau.azdhs.gov"
+
+        info, fdat = self.getRawTbluPageData(url, tableau_root, reqParams)
+        # Get the county filter url params
+        county_filter_keys = self.getTbluMapFilter(info)
+        if not county_filter_keys:
+            raise NoTableauMapFiltersFoundError()
+
+        for county_name, fips in self.counties:
+            county_request_param = reqParams
+            for key in county_filter_keys:
+                county_request_param[key] = county_name
+
+            info, fdat = self.getRawTbluPageData(
+                url, tableau_root, county_request_param
+            )
+
+            # Get county data
+            county_df = self.extractTbluData(fdat, fips)
+            county_df["location_type"] = "county"
+
+            dfs.append(county_df)
+
+        # Concat the dfs
+        output_df = pd.concat(dfs, axis=0, ignore_index=True)
+
+        return output_df
+
+    def normalize(self, data):
+        df = data.rename(columns={"Last update": "dt"})
+        df["dt"] = pd.to_datetime(df["dt"])
+
+        crename = {
+            "Complete Vaccine Series": CMU(
+                category="total_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "Number of People": CMU(
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "Number of Doses": CMU(
+                category="total_vaccine_doses_administered",
+                measurement="cumulative",
+                unit="doses",
+            ),
+        }
+        out = (
+            df.melt(
+                id_vars=["dt", "location", "location_type"], value_vars=crename.keys()
+            )
+            .assign(vintage=self._retrieve_vintage())
+            .dropna()
+        )
+        out.loc[:, "value"] = pd.to_numeric(out["value"])
+        out.rename(columns={"Name": "variable"}, inplace=True)
+
+        out = self.extract_CMU(out, crename)
+
+        cols_to_keep = [
+            "vintage",
+            "dt",
+            "location",
+            "location_type",
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "ethnicity",
+            "sex",
+            "value",
+        ]
+        return out.loc[:, cols_to_keep]
+
+
+class ArizonaVaccineCountyAllocated(StateDashboard):
     """
     Fetch county level Covid-19 vaccination data from official state of Arizona PDF
     """
