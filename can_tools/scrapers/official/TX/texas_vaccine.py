@@ -69,6 +69,7 @@ class TexasCountyVaccine(TexasVaccineParent):
             "Federal Pharmacy Retail Vaccination Program",
             "Other",
             "Grand Total",
+            "* Other",
         ]
         # Drop state data which we retrieve with another scraper
         # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
