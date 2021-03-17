@@ -57,10 +57,14 @@ class MSCountyVaccine(StateDashboard):
 
     variable_map = {
         "People Receiving at least One Dose": CMU(
-            category="total_vaccine_initiated", measurement="cumulative", unit="people",
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
         ),
         "People Fully Vaccinated": CMU(
-            category="total_vaccine_completed", measurement="cumulative", unit="people",
+            category="total_vaccine_completed",
+            measurement="cumulative",
+            unit="people",
         ),
         "Total Doses Administered": CMU(
             category="total_vaccine_doses_administered",
