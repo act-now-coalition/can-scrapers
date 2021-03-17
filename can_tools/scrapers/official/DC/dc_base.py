@@ -92,7 +92,7 @@ class DCBase(StateDashboard):
             id_vars=["dt", "location_name"], value_vars=_map.keys()
         ).dropna()
         out["value"] = pd.to_numeric(
-            out["value"].astype(str).str.replace(",", "").str.replace(" ", "")
+            out["value"].astype(str).str.replace(",", "").str.strip(),
         )
 
         out = self.extract_CMU(out, _map)
