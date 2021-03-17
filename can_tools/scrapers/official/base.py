@@ -209,7 +209,7 @@ class StateDashboard(DatasetBase, ABC):
         data = data.rename(columns=rename_columns)
 
         if date_column:
-            data.loc[:, "dt"] = data["dt"].apply(lambda x: pd.to_datetime(x))
+            data.loc[:, "dt"] = pd.to_datetime(data["dt"])
 
         if timezone:
             assert (

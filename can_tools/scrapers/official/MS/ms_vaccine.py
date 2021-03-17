@@ -1,50 +1,11 @@
 from typing import Dict, Optional
 
 
-import pandas as pd
 import camelot
-import requests
 import us
 
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
-
-
-def normalize_table(
-    df: pd.DataFrame,
-    variable_map: Dict[str, CMU],
-    vintage: pd.Timestamp,
-    location_name_column: str,
-    date: Optional[pd.Timestamp] = None,
-    date_column: Optional[str] = None,
-) -> pd.DataFrame:
-    # county names (converted to title case)
-    df = df.copy()
-    df["location_name"] = df[self.location_name_col].str.title()
-
-    if date_column:
-        df = df.rename(columns={date_column: "dt"})
-        df["dt"] = pd.to_datetime(df["dt"])
-    else:
-        assert date
-        df["dt"] = date
-
-    # parse out data columns
-    value_cols = list(set(df.columns) & set(self.cmus.keys()))
-    assert len(value_cols) == len(self.cmus)
-
-    output_df = (
-        df.melt(id_vars=["location_name"], value_vars=value_cols)
-        .dropna()
-        .assign(
-            vintage=vintage,
-            value=lambda x: pd.to_numeric(x["value"].astype(str).str.replace(",", "")),
-        )
-        .pipe(self.extract_CMU, cmu=self.cmus)
-        .drop(["variable"], axis=1)
-    )
-
-    return output_df
 
 
 class MSCountyVaccine(StateDashboard):

@@ -1,10 +1,5 @@
 from can_tools.scrapers.base import CMU, DatasetBase
 
-# Is there any reason to pipe the imports through all the different layers? seems
-# like it's just as easy to add the one import directly to the scraper here rather than
-# having to include in a couple different __init__.py's.
-from can_tools.scrapers.official.MS.ms_vaccine import MSCountyVaccine
-
 from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHistorical,; Massachusetts,
     ArizonaData,
     ArizonaMaricopaVaccine,
@@ -89,6 +84,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WYCountyVaccinations,
     WYStateVaccinations,
 )
+
+from can_tools.scrapers.official.MS.ms_vaccine import MSCountyVaccine
 
 from can_tools.scrapers.ctp import (
     CovidTrackingProject,
