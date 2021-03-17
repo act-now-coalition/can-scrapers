@@ -85,6 +85,8 @@ from can_tools.scrapers.official.MT import MontanaCountyVaccine, MontanaStateVac
 from can_tools.scrapers.official.NC import NCVaccine
 from can_tools.scrapers.official.NJ import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NY import NewYorkTests, NewYorkVaccineCounty
+
+from can_tools.scrapers.official.SC import SCVaccineCounty, SouthCarolinaTableauVaccineCounty
 from can_tools.scrapers.official.TN import (
     TennesseeAge,
     TennesseeAgeByCounty,

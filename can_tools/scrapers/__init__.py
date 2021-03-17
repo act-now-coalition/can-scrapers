@@ -57,6 +57,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     PennsylvaniaVaccineEthnicity,
     PennsylvaniaVaccineRace,
     PennsylvaniaVaccineSex,
+    SCVaccineCounty,
+    SouthCarolinaTableauVaccineCounty,
     TennesseeAge,
     TennesseeAgeByCounty,
     TennesseeCounty,
