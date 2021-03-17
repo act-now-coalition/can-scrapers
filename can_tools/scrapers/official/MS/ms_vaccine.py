@@ -57,14 +57,10 @@ class MSCountyVaccine(StateDashboard):
 
     variable_map = {
         "People Receiving at least One Dose": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
+            category="total_vaccine_initiated", measurement="cumulative", unit="people",
         ),
         "People Fully Vaccinated": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
+            category="total_vaccine_completed", measurement="cumulative", unit="people",
         ),
         "Total Doses Administered": CMU(
             category="total_vaccine_doses_administered",
@@ -90,5 +86,5 @@ class MSCountyVaccine(StateDashboard):
             timezone="US/Central",
         )
         data = self._reshape_variables(data, self.variable_map)
-
+        data = data.replace({"location_name": {"Desoto": "DeSoto"}})
         return data
