@@ -188,4 +188,4 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
             "value",
         ]
 
-        return out.loc[:, cols_to_keep]
+        return out.loc[:, cols_to_keep].dropna()
