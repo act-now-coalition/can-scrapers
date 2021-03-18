@@ -1,4 +1,5 @@
 from can_tools.scrapers.base import CMU, DatasetBase
+
 from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHistorical,; Massachusetts,
     ArizonaData,
     ArizonaMaricopaVaccine,
@@ -83,6 +84,8 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     WYCountyVaccinations,
     WYStateVaccinations,
 )
+
+from can_tools.scrapers.official.MS.ms_vaccine import MSCountyVaccine
 
 from can_tools.scrapers.ctp import (
     CovidTrackingProject,
