@@ -43,22 +43,18 @@ def prepare_comparison(df, column_names, elements1, elements2):
         "age",
         "sex",
         "race",
-        "ethnicity"
+        "ethnicity",
     ]
     for c in column_names:
         idx_cols.remove(c)
 
     # Subset the data for relevant subsets
-    df1 = df.query(
-        prepare_selector_query(column_names, elements1)
-    ).set_index(
-        idx_cols
-    )[["value"]]
-    df2 = df.query(
-        prepare_selector_query(column_names, elements2)
-    ).set_index(
-        idx_cols
-    )[["value"]]
+    df1 = df.query(prepare_selector_query(column_names, elements1)).set_index(idx_cols)[
+        ["value"]
+    ]
+    df2 = df.query(prepare_selector_query(column_names, elements2)).set_index(idx_cols)[
+        ["value"]
+    ]
 
     return df1, df2
 
