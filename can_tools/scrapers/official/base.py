@@ -223,7 +223,12 @@ class StateDashboard(DatasetBase, ABC):
         if location_names_to_drop:
             data = data.query("location_name != @location_names_to_drop")
 
-        data["location_name"] = data["location_name"].str.title()
+        if "location_name" in data.columns:
+            data["location_name"] = data["location_name"].str.title()
+
+        if "location" in data.columns:
+            data["location"] = pd.to_numeric(data["location"])
+
         return data
 
 
