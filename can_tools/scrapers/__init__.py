@@ -87,6 +87,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
 
 from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
 from can_tools.scrapers.official.MS.ms_vaccine import MSCountyVaccine
+from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 
 from can_tools.scrapers.ctp import (
     CovidTrackingProject,
