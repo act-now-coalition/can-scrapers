@@ -35,7 +35,6 @@ class CDCCovidDataTracker(FederalDashboard):
     }
 
     def __init__(self, *args, state=None, **kwargs):
-        state = "DC"
         self.state = us.states.lookup(state) if state else None
         super().__init__(*args, **kwargs)
 
