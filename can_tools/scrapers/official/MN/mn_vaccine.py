@@ -20,7 +20,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     source = "https://mn.gov/covid19/vaccine/data/index.jsp"
     source_name = "Minnesota Covid-19 Response"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiNDNjYTdhYmMtMzNlZi00MDM0LWI5NmEtODNkYWY0MmQzNmQyIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiMzEwMTQ2ZDktZjk4MS00ZmQ3LTgyODktNmJmZDYxMWFhNDhlIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
 
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}
@@ -95,8 +95,8 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
         self._setup_sess()
         dashboard_frame = self.get_dashboard_iframe()
         resource_key = self.get_resource_key(dashboard_frame)
-        ds_id, model_id, report_id = self.get_model_data(resource_key)
 
+        ds_id, model_id, report_id = self.get_model_data(resource_key)
         # Get the post url
         url = self.powerbi_query_url()
 
@@ -188,4 +188,4 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
             "value",
         ]
 
-        return out.loc[:, cols_to_keep]
+        return out.loc[:, cols_to_keep].dropna()
