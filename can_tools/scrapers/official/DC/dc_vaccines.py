@@ -57,7 +57,7 @@ class DCVaccineRace(TableauDashboard):
         # already in long form yay
         df = df.pipe(self.extract_CMU, cmu=self.cmus)
         df["value"] = df["value"].astype(int)
-        
+
         return df.assign(race=df["Cross-value"].str.lower()).drop(
             columns={"Cross-value", "variable"}
         )
