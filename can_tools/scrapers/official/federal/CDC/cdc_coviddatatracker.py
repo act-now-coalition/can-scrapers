@@ -1,5 +1,6 @@
-import random
+import pathlib
 import requests
+import us
 
 import pandas as pd
 
@@ -14,7 +15,39 @@ class CDCCovidDataTracker(FederalDashboard):
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
 
-    def fetch(self, test=False):
+    variables = {
+        "new_cases_7_day_rolling_average": CMU(
+            category="cases", measurement="rolling_average_7_day", unit="people"
+        ),
+        "new_deaths_7_day_rolling_average": CMU(
+            category="deaths", measurement="rolling_average_7_day", unit="people"
+        ),
+        "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
+            category="pcr_tests_positive",
+            measurement="rolling_average_7_day",
+            unit="percentage",
+        ),
+        "new_test_results_reported_7_day_rolling_average": CMU(
+            category="pcr_tests_total",
+            measurement="rolling_average_7_day",
+            unit="specimens",  # TODO: Need to ensure this is actually specimens!
+        ),
+    }
+
+    def __init__(self, *args, state=None, **kwargs):
+        self.state = us.states.lookup(state) if state else None
+        super().__init__(*args, **kwargs)
+
+    def _filepath(self, raw: bool) -> pathlib.Path:
+        # Overriding _filepath to support saving individual files for each state
+        path = super()._filepath(raw)
+        if not self.state:
+            return path
+
+        root = path.parent / f"{self.state.abbr}.{path.name}"
+        return root
+
+    def fetch(self):
         # reset exceptions
         self.exceptions = []
         fetcher_url = (
@@ -22,16 +55,15 @@ class CDCCovidDataTracker(FederalDashboard):
             "getAjaxData?id=integrated_county_timeseries_state_{}_external"
         )
 
-        # Iterate through the states collecting the time-series data
-        if test:
-            # When testing, choos random 3 states
-            urls = map(
-                lambda x: fetcher_url.format(x.abbr.lower()),
-                random.sample(ALL_STATES_PLUS_DC, 3),
-            )
+        if self.state:
+            states = [self.state]
         else:
-            urls = map(lambda x: fetcher_url.format(x.abbr.lower()), ALL_STATES_PLUS_DC)
-        responses = list(map(requests.get, urls))
+            states = ALL_STATES_PLUS_DC
+
+        urls = [fetcher_url.format(state.abbr.lower()) for state in states]
+
+        responses = [requests.get(url) for url in urls]
+
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
             bad_urls = "\n".join([urls[i] for i in bad_idx])
@@ -46,48 +78,11 @@ class CDCCovidDataTracker(FederalDashboard):
             [pd.DataFrame.from_records(x[data_key]) for x in data],
             axis=0,
             ignore_index=True,
-        ).rename(columns={"fips_code": "location"})
+        )
 
-        # Set datetime to the end of report window -- We'll be reporting
-        # backwards looking windows. "date" and "report_date_window" are
-        # the same value as of 2020-11-21
-        df["dt"] = pd.to_datetime(df["date"])
+        df = self._rename_or_add_date_and_location(
+            df, location_column="fips_code", date_column="date"
+        )
 
-        crename = {
-            "new_cases_7_day_rolling_average": CMU(
-                category="cases", measurement="rolling_average_7_day", unit="people"
-            ),
-            "new_deaths_7_day_rolling_average": CMU(
-                category="deaths", measurement="rolling_average_7_day", unit="people"
-            ),
-            "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
-                category="pcr_tests_positive",
-                measurement="rolling_average_7_day",
-                unit="percentage",
-            ),
-            "new_test_results_reported_7_day_rolling_average": CMU(
-                category="pcr_tests_total",
-                measurement="rolling_average_7_day",
-                unit="specimens",  # TODO: Need to ensure this is actually specimens!
-            ),
-        }
-
-        # Reshape and add variable information
-        out = df.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
-        out = self.extract_CMU(out, crename)
-        out["vintage"] = self._retrieve_vintage()
-
-        cols_2_keep = [
-            "vintage",
-            "dt",
-            "location",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-        return out.loc[:, cols_2_keep]
+        df = self._reshape_variables(df, self.variables)
+        return df
