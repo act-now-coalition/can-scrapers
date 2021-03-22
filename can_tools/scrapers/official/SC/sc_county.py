@@ -111,7 +111,7 @@ class SCVaccineCounty(StateDashboard):
 
         crename = {
             "First-Doses Administered": CMU(
-                category=f"{vaccine_name}_vaccine_initiated",
+                category=f"{vaccine_name}_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -129,7 +129,7 @@ class SCVaccineCounty(StateDashboard):
 
         out['dt'] = self._retrieve_dt()
         out['vintage'] = self._retrieve_vintage()
-        return out
+        return out.drop(['variable'], axis="columns")
             
 
     def _remove_duplicates(self, data):
@@ -171,7 +171,7 @@ class SCVaccineCounty(StateDashboard):
                 'City',
                 "location_name",
                 "First-Doses Received",
-                "First-Doses Distributed",
+                " First-Doses Distributed",
                 "First-Doses Administered",
                 "First-Doses Utlization",
                 "Second-Doses Received",
@@ -219,7 +219,7 @@ class SCVaccineCounty(StateDashboard):
         out = out.query('location_name not in @non_counties')
         out['dt'] = self._retrieve_dt()
         out['vintage'] = self._retrieve_vintage()
-        return out
+        return out.drop(['variable'], axis="columns")
 
     def normalize(self, data):
         print("Normalizing pfizer data")
