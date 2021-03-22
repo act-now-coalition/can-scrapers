@@ -5,7 +5,7 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 
 
-class DCVaccineRace(TableauDashboard):
+class DCVaccineSex(TableauDashboard):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
@@ -58,6 +58,8 @@ class DCVaccineRace(TableauDashboard):
         df = df.pipe(self.extract_CMU, cmu=self.cmus)
         df["value"] = df["value"].astype(int)
 
-        return df.assign(race=df["Cross-value"].str.lower()).drop(
+        out = df.assign(sex=df["Cross-value"].str.lower()).drop(
             columns={"Cross-value", "variable"}
         )
+
+        return out
