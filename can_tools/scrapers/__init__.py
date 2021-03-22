@@ -19,6 +19,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     DCCases,
     DCDeaths,
     DCGeneral,
+    DCVaccineRace,
     DelawareData,
     DelawareStateVaccine,
     Florida,
