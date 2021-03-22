@@ -172,6 +172,7 @@ class StateDashboard(DatasetBase, ABC):
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
         timezone: Optional[str] = None,
+        apply_title_case: bool = True
     ):
         """Renames or adds date and location columns.
 
@@ -189,6 +190,8 @@ class StateDashboard(DatasetBase, ABC):
             Date for data
         timezone:
             Timezone of data if date or date_column not supplied.
+        apply_title_case:
+            If True will make location name title case.
 
         Returns
         -------
@@ -223,7 +226,7 @@ class StateDashboard(DatasetBase, ABC):
         if location_names_to_drop:
             data = data.query("location_name != @location_names_to_drop")
 
-        if "location_name" in data.columns:
+        if "location_name" in data.columns and apply_title_case:
             data["location_name"] = data["location_name"].str.title()
 
         if "location" in data.columns:
