@@ -188,7 +188,10 @@ class WVCountyVaccine(MicrosoftBIDashboard):
         ).reset_index()
 
         data = self._rename_or_add_date_and_location(
-            data, location_name_column="location_name", timezone="US/Eastern", apply_title_case=False
+            data,
+            location_name_column="location_name",
+            timezone="US/Eastern",
+            apply_title_case=False,
         )
         data = self._reshape_variables(data, self.variables)
 
