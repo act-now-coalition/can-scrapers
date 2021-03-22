@@ -20,21 +20,6 @@ class SCVaccineCounty(StateDashboard):
     moderna_format = "Moderna-Vaccine-Allocation-%s.pdf"
     pfizer_format = "Pfzier-BioNTech-Vaccine-Allocation-%s.pdf"
 
-    def _uniquify(self, df_columns):
-        seen = set()
-      
-        for item in df_columns:
-            fudge = 1
-            newitem = item
-      
-            while newitem in seen:
-                fudge += 1
-                newitem = "{}_{}".format(item, fudge)
-        
-            yield newitem
-            seen.add(newitem)
-      
-
     def _url_for_vaccine_date(self, vaccine, soup):
         # Find the correct donwload link for vaccine and date
         url = soup.find(
@@ -56,7 +41,9 @@ class SCVaccineCounty(StateDashboard):
         url = self._url_for_vaccine_date(vaccine, soup)
         if url is None or requests.head(url).status_code != 200:
             return []
-        return camelot.read_pdf(url, pages="all", flavor="stream")
+        
+        print(f"getting {vaccine} data at url {url}")
+        return camelot.read_pdf(url, pages="all", flavor="lattice", process_background=True)
 
     def fetch(self):
         # First request the webpage with the download links
@@ -71,126 +58,53 @@ class SCVaccineCounty(StateDashboard):
             "janssen": self._fetch_vaccine("janssen", soup),
         }
 
-    def _rename_and_combine(self, old_df):
-        df = old_df
-        # df[0][first_valid_index] should either be "Providers" or "Providers\nCity"
-        data_start_row = df[0].first_valid_index()
+    def _extract_dfs(self, data):
+        dfs = []
+        for d in data:
+            dfs.append(d.df)
+        return dfs
 
-        headers = df.loc[0:data_start_row].fillna('').apply("".join).str.strip()
-        # verify first entry contains Providers
-        if not 'Providers' in headers[0]:
-            # This is a bad table. Skip formatting. Likely doesn't have data
-            # print(f"Skipped table number {count}. Bad format")
-            return pd.DataFrame()
-
-        df = df.iloc[data_start_row+1:]
-
-        empty_headers_count = headers.value_counts()['']
-        empty_indexes = []
-
-        if empty_headers_count > 1 :
-            empty_indexes = np.where(headers == "")[0]
-            headers = list(self._uniquify(headers))
-
-        # these are now unique 
-        df.columns = headers
-
-        # Check if we need to combine columns
-        # Check if any columns don't have a name
-        if empty_headers_count > 0:
-            cols_to_drop = []
-            for no_name_index in empty_indexes:
-                print(f"\t working on column {no_name_index}")
-                # Check if we need to combine columns
-                if df.iloc[:, no_name_index - 1].isna().all(): # Data is missing out of named column
-                    # ASSUMPTION: Data for this column must be in the no name column
-                    # Get column name
-                    col_name = df.columns[no_name_index - 1]
-                    empty_col_name = df.columns[no_name_index]
-                    # Create mask
-                    mask = ((~df[col_name].isna()) ^ df[empty_col_name].isna()) | ~df[col_name].isna()
-                    # Apply mask to create new column, combining other columns
-                    new_col = df[col_name].loc[mask].append(df[empty_col_name].loc[~mask])
-                    # Remove old columns and replace with new columns
-                    df[col_name] = new_col
-                    # Drop the no name column
-                    cols_to_drop.append(empty_col_name)
-                else:
-                    print("Found and empty column, but don't know what to do with it")
-            df = df.drop(cols_to_drop, axis=1)
-
-        return df
-
-    def _normalize_one_dose_df(self, df):
-        # print(f"working on table # {count}")
-
-        # Replace empty strings with NaN
-        df = df.replace("", np.nan)
-        # Replace "--" with 0
-        df = df.replace("--", 0)
-        
-        # Combine header rows, and set column names
-        df = self._rename_and_combine(df)
-
-        # Drop all rows that don't have a county name
-        # These are usually parent rows that sum up all rows below it
-        df = df.loc[~(df.County.isna()), :]
-
-        # drop empty columns
-        good_col_mask = ((df != 0) & ~df.isna()).any(axis=0)
-        df = df.loc[:, good_col_mask]   
-
-        # rename columns
-        county_col_loc = df.columns.get_loc('County')
-        cols = []
-        for i in range(county_col_loc):
-            cols.append(i)
-        for i in [
-            'location_name',
-            'First-Doses Received',
-            'First-Doses Distrubted',
-            'First-Doses Administered',
-            'First-Doses Utilization'
-        ]:
-            cols.append(i)
-        df.columns = cols
-
-        df["First-Doses Administered"] = pd.to_numeric(
-            df["First-Doses Administered"], errors="coerce"
-        )
-
-        df = df[[
-            'location_name',
-            'First-Doses Administered',
-        ]]
-        return df
 
     def _normalize_one_dose(self, vaccine_data, vaccine_name):
-        dfs = []
-        init_dfs = []
-        for d in vaccine_data:
-            init_dfs.append(d.df)
-        # remove duplicate dfs
-        init_dfs = [
-            init_dfs[x]
-            for x, _ in enumerate(init_dfs)
-            if init_dfs[x].equals(init_dfs[x - 1]) is False
-        ]
-        count = 0
-        for d in init_dfs:
-            print(f"working on df # {count}")
-            count = count + 1
-            df = self._normalize_one_dose_df(d)
-            if not df.empty:
-                dfs.append(df)
+        dfs = self._extract_dfs(vaccine_data)
+        res = []
+        for d in dfs:
+            # Clean data
+            df = d.replace("", np.nan).replace("--", 0)
+            # Remove first empty row
+            df = df[1:]
+            # Check if first column parsed correctly
+            if "Providers" != df[0][1]:
+                # TODO: Replace the rows were col 1 is NaN with the split/expand
+                continue
+            # Set first row as column names
+            df.columns = df.iloc[0]
+            # Remove first row
+            df = df[1:]
+            # Drop all rows where County == np.NaN
+            df = df.loc[~df.County.isna()]
+            # Drop all rows where county was changed from '--' to 0
+            df = df.loc[~(df.County == 0)]
 
-        if len(dfs) == 0:
+            df.columns = [
+                'Providers',
+                'City',
+                "location_name",
+                "First-Doses Received",
+                "First-Doses Distributed",
+                "First-Doses Administered",
+                "First-Doses Utlization"
+            ]
+
+            res.append(df)
+        if len(res) == 0:
             return pd.DataFrame()
-        df = pd.concat(dfs)
+        df = pd.concat(res)
         keep_cols = [
             "location_name",
             "First-Doses Administered",
         ]
+        df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
         # group by county
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
@@ -201,6 +115,7 @@ class SCVaccineCounty(StateDashboard):
                 measurement="cumulative",
                 unit="people",
             ),
+           
         }
 
         melted = df.reset_index().melt(
@@ -208,16 +123,18 @@ class SCVaccineCounty(StateDashboard):
         )
 
         out = self.extract_CMU(melted, crename)
-        out["vintage"] = self._retrieve_vintage()
-        out["dt"] = self._retrieve_dt("US/Eastern")
+
+        non_counties = ['Totals', 'Totals:']
+        out = out.query('location_name not in @non_counties')
+
+        out['dt'] = self._retrieve_dt()
+        out['vintage'] = self._retrieve_vintage()
         return out
+            
 
-
-
-    def _normalize_two_dose(self, vaccine_data, vaccine_name):
-        dfs = []
+    def _remove_duplicates(self, data):
         init_dfs = []
-        for d in vaccine_data:
+        for d in data:
             init_dfs.append(d.df)
         # remove duplicate dfs
         init_dfs = [
@@ -225,41 +142,33 @@ class SCVaccineCounty(StateDashboard):
             for x, _ in enumerate(init_dfs)
             if init_dfs[x].equals(init_dfs[x - 1]) is False
         ]
-        count = 0
-        for d in init_dfs:
-            count = count + 1
-            # Replace empty strings with NaN
-            df = d.replace("", np.nan)
 
-            # Replace "--" with 0
-            df = df.replace("--", 0)
-            
-            # df[0][first_valid_index] should either be "Providers" or "Providers\nCity"
-            data_start_row = df[0].first_valid_index()
-            first_valid_row = df.iloc[data_start_row]
-            # verify first entry contains Providers
-            if not 'Providers' in first_valid_row[0]:
-                # This is a bad table. Skip formatting
-                print(f"Skipped table number {count}. Bad format")
+        return init_dfs
+
+    def _normalize_two_dose(self, vaccine_data, vaccine_name):
+        dfs = self._extract_dfs(vaccine_data)
+        res = []
+        for d in dfs:
+            # Clean data
+            df = d.replace("", np.nan).replace("--", 0)
+            # Remove first empty row
+            df = df[1:]
+            # Check if first column parsed correctly
+            if "Providers" != df[0][1]:
+                # TODO: Replace the rows were col 1 is NaN with the split/expand
                 continue
-            # Find column number where df[col_index][first_valid_index] == 'County'
-            county_col_num = first_valid_row[first_valid_row == "County"].index[0]
+            # Set first row as column names
+            df.columns = df.iloc[0]
+            # Remove first row
+            df = df[1:]
+            # Drop all rows where County == np.NaN
+            df = df.loc[~df.County.isna()]
+            # Drop all rows where county was changed from '--' to 0
+            df = df.loc[~(df.County == 0)]
 
-            # Drop all rows that don't have a county name
-            # These are usually parent rows that sum up all rows below it
-            df = df.loc[~(df[county_col_num].isna()), :]
-
-            # drop empty columns
-            good_col_mask = ((df != 0) & ~df.isna()).any(axis=0)
-            df = df.loc[:, good_col_mask]
-
-            # Name columns
-            cols = []            
-            # fill cols up to county col
-            for i in range(county_col_num):
-                cols.append(i)
-            # add correct column names
-            cols_to_add = [
+            df.columns = [
+                'Providers',
+                'City',
                 "location_name",
                 "First-Doses Received",
                 "First-Doses Distributed",
@@ -270,37 +179,19 @@ class SCVaccineCounty(StateDashboard):
                 "Second-Doses Administered",
                 "Second-Doses Utlization",
             ]
-            for i in cols_to_add:
-                cols.append(i)
-            
-            # Ensure columns are correct
-            df.columns = cols
 
-            # remove rows before actual data
-            df = df.iloc[1:]       
-
-            df["First-Doses Administered"] = pd.to_numeric(
-                df["First-Doses Administered"], errors="coerce"
-            )
-            df["Second-Doses Administered"] = pd.to_numeric(
-                df["Second-Doses Administered"], errors="coerce"
-            )
-            df = df[[
-                'location_name',
-                'First-Doses Administered',
-                'Second-Doses Administered'
-            ]]
-            if not df.empty:
-                dfs.append(df)
-
-        if len(dfs) == 0:
+            res.append(df)
+        
+        if len(res) == 0:
             return pd.DataFrame()
-        df = pd.concat(dfs)
+        df = pd.concat(res)
         keep_cols = [
             "location_name",
             "First-Doses Administered",
             "Second-Doses Administered",
         ]
+        df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
+        df['Second-Doses Administered'] = pd.to_numeric( df['Second-Doses Administered'], errors='coerce')
         # group by county
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
@@ -323,13 +214,19 @@ class SCVaccineCounty(StateDashboard):
         )
 
         out = self.extract_CMU(melted, crename)
-        out["vintage"] = self._retrieve_vintage()
-        out["dt"] = self._retrieve_dt("US/Eastern")
+
+        non_counties = ['Totals', 'Totals:']
+        out = out.query('location_name not in @non_counties')
+        out['dt'] = self._retrieve_dt()
+        out['vintage'] = self._retrieve_vintage()
         return out
 
     def normalize(self, data):
+        print("Normalizing pfizer data")
         pfizer = self._normalize_two_dose(data["pfizer"], "pfizer")
+        print("Normalizing moderna data")
         moderna = self._normalize_two_dose(data["moderna"], "moderna")
+        print("Normalizing janssen data")
         janssen = self._normalize_one_dose(data["janssen"], "janssen")
 
         return pd.concat([pfizer, moderna, janssen])
@@ -351,4 +248,17 @@ class SouthCarolinaTableauVaccineCounty(TableauDashboard):
         return self.get_tableau_view()
 
     def normalize(self, data):
-        return
+        df = data['County Table People Sc Residents']
+        df = df.rename(columns={
+            'Measure Values-alias': 'value',
+            'Recipient County for maps-value': 'location_name',
+            'Measure Names-alias': "variable"
+            }
+        )
+        df = df[['value', 'location_name', 'variable']]
+        non_counties = ['Unknown', '%all%']
+        vars_to_keep = ['Count of Doses', 'Count of Vaccinated Residents']
+
+        df = df.query('location_name not in @non_counties').query('variable in @vars_to_keep')
+
+        return df
