@@ -73,7 +73,7 @@ def initialize_sentry(sentry_dsn: str):
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
 
-def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
+def create_flow_for_scraper(ix: int, cls: Type[DatasetBase]):
     sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
