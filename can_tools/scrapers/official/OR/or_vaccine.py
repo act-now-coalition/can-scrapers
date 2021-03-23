@@ -1,7 +1,9 @@
-import pandas as pd
+from can_tools.scrapers.variables import (
+    FULLY_VACCINATED_ALL,
+    INITIATING_VACCINATIONS_ALL,
+)
 import us
 
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -16,16 +18,8 @@ class OregonVaccineCounty(TableauDashboard):
     viewPath = "OregonCOVID-19VaccinationTrends/OregonCountyVaccinationTrends"
 
     cmus = {
-        "SUM(Metric - Total People)-alias": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "SUM(Metric - Fully Vaccinated)-alias": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
+        "SUM(Metric - Total People)-alias": INITIATING_VACCINATIONS_ALL,
+        "SUM(Metric - Fully Vaccinated)-alias": FULLY_VACCINATED_ALL,
     }
 
     data_tableau_table = "County Map Per Capita new"
