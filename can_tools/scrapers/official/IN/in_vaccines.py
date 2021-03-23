@@ -4,6 +4,10 @@ import pandas as pd
 import us
 
 from can_tools.scrapers.base import CMU
+from can_tools.scrapers.variables import (
+    INITIATING_VACCINATIONS_ALL,
+    FULLY_VACCINATED_ALL,
+)
 from can_tools.scrapers.official.base import StateQueryAPI
 
 
@@ -40,16 +44,8 @@ class IndianaCountyVaccinations(StateQueryAPI):
         """
         # Map current column names to CMU elements
         cmus = {
-            "fully_vaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "at_least_one_dose": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+            "fully_vaccinated": FULLY_VACCINATED_ALL,
+            "at_least_one_dose": INITIATING_VACCINATIONS_ALL,
         }
 
         # Read in data and convert to long format
@@ -64,6 +60,7 @@ class IndianaCountyVaccinations(StateQueryAPI):
         column_subset = [
             "first_dose_administered",
             "fully_vaccinated",
+            "single_dose_administered",
             "second_dose_administered",
         ]
         return (
@@ -75,11 +72,16 @@ class IndianaCountyVaccinations(StateQueryAPI):
             .stack(level="location")
             .assign(
                 at_least_one_dose=lambda x: x.eval(
-                    "first_dose_administered + (fully_vaccinated - second_dose_administered)"
+                    "first_dose_administered + single_dose_administered"
                 )
             )
             .drop(
-                ["first_dose_administered", "second_dose_administered"], axis="columns"
+                [
+                    "first_dose_administered",
+                    "second_dose_administered",
+                    "single_dose_administered",
+                ],
+                axis="columns",
             )
             .astype(int)
             .rename_axis(columns=["variable"])
