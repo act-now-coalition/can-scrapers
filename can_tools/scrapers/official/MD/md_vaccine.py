@@ -36,12 +36,12 @@ class MarylandCountyVaccines(ArcGIS, DatasetBase):
         if "singledose" in list(df):
             df["firstdose"] += df["singledose"]
 
-        out = pipe(
-            self._rename_or_add_date_and_location,
+        out = self._rename_or_add_date_and_location(
+            df,
             location_name_column="county",
             location_names_to_drop=["Unknown"],
             timezone="US/Eastern",
             apply_title_case=False,
         )
 
-        return out.pipe(self._reshape_variables, self.variables)
+        return self._reshape_variables(out, self.variables)
