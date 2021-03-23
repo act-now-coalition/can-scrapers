@@ -1,11 +1,12 @@
+import json
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
 import us
+
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
-import json
-from datetime import datetime
 
 
 class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):

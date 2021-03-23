@@ -3,18 +3,17 @@ Utility functions for performing scraper maintenance such as
 re-running scraper functions for multiple vintages.
 """
 
-from typing import Type, Optional
-
-import logging
 import datetime
-from sqlalchemy.engine.base import Engine
-import sqlalchemy
-import pandas as pd
+import logging
+from typing import Optional, Type
+
 import click
+import pandas as pd
+import sqlalchemy
+from sqlalchemy.engine.base import Engine
 
-from can_tools.scrapers import base
 from can_tools import ALL_SCRAPERS
-
+from can_tools.scrapers import base
 
 _logger = logging.getLogger(__name__)
 

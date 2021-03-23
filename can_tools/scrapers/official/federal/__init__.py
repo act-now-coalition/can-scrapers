@@ -3,7 +3,6 @@ from can_tools.scrapers.official.federal.CDC import (
     CDCStateVaccine,
     CDCVariantTracker,
 )
-
 from can_tools.scrapers.official.federal.HHS import (
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,

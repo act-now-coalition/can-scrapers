@@ -1,16 +1,14 @@
-from typing import Any, Dict, List, Optional, Type
-
 import os
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Type
 
-import us
 import pandas as pd
+import us
 from sqlalchemy.engine.base import Engine
 
 from can_tools.models import Base
-
 
 # `us` v2.0 removed DC from the `us.STATES` list, so we are creating
 # our own which includes DC. In v3.0, there will be an env option to

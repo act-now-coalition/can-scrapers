@@ -1,10 +1,11 @@
-from contextlib import closing
 import io
+from contextlib import closing
 from typing import List, Optional, Type, Union
-from sqlalchemy.engine.base import Engine
-import pandas as pd
 
-from can_tools.models import TemptableOfficialNoLocation, TemptableOfficialHasLocation
+import pandas as pd
+from sqlalchemy.engine.base import Engine
+
+from can_tools.models import TemptableOfficialHasLocation, TemptableOfficialNoLocation
 
 
 def fast_append_to_sql(

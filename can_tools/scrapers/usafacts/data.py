@@ -1,7 +1,8 @@
-from can_tools.scrapers.base import CMU
 from typing import Any
 
 import pandas as pd
+
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 BASEURL = "https://usafactsstatic.blob.core.windows.net/public/data/"

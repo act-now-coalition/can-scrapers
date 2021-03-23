@@ -1,20 +1,18 @@
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
 import json
-import uuid
-import re
 import logging
-
+import re
+import urllib.parse
+import uuid
 from abc import ABC, abstractmethod
 from base64 import b64decode
 from contextlib import closing
-from urllib.parse import urlparse, parse_qs
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from urllib.parse import parse_qs, urlparse
 
+import jmespath
 import pandas as pd
 import requests
-import urllib.parse
-
 from bs4 import BeautifulSoup
-import jmespath
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 

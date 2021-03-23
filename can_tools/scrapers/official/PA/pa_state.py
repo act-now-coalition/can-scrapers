@@ -1,10 +1,10 @@
-import pandas as pd
+from typing import Any
 
+import pandas as pd
 import us
+
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import ArcGIS
-
-from typing import Any
 
 
 class PennsylvaniaCasesDeaths(ArcGIS):

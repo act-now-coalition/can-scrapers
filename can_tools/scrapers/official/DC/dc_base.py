@@ -1,8 +1,10 @@
-import pandas as pd
-import us
-import lxml.html
-import requests
 from abc import abstractmethod
+
+import lxml.html
+import pandas as pd
+import requests
+import us
+
 from can_tools.scrapers.official.base import StateDashboard
 
 

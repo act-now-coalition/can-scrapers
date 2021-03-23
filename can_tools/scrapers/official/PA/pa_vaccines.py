@@ -1,14 +1,11 @@
-import json
-
 from abc import ABC
-from typing import Any
 
 import pandas as pd
 import us
 
 from can_tools.scrapers import CMU
-from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
+from can_tools.scrapers.util import flatten_dict
 
 
 class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
@@ -128,7 +125,8 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows).dropna()
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
 
-        # Initiated is not at least one dose for PA
+        # Initiated is not at least one dose for PA -- it is a count of
+        # individuals that are currently partially covered by a vaccine
         df["total_vaccine_initiated"] = df.eval(
             "total_vaccine_initiated + total_vaccine_completed"
         )
