@@ -1,9 +1,13 @@
+from can_tools.scrapers.variables import (
+    FULLY_VACCINATED_ALL,
+    INITIATING_VACCINATIONS_ALL,
+)
 from typing import Any
 
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import DatasetBase
 from can_tools.scrapers.official.base import SODA
 
 
@@ -30,16 +34,8 @@ class CTCountyVaccine(SODA, DatasetBase):
         data = data.query("location_name not in @unwanted_loc")
 
         crename = {
-            "fully_vaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "initiated_vaccination": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+            "fully_vaccinated": FULLY_VACCINATED_ALL,
+            "initiated_vaccination": INITIATING_VACCINATIONS_ALL,
         }
         out = data.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()
