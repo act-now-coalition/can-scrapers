@@ -6,6 +6,10 @@ import pandas as pd
 
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.puppet import with_page
+from can_tools.scrapers.variables import (
+    INITIATING_VACCINATIONS_ALL,
+    FULLY_VACCINATED_ALL,
+)
 
 
 class WashingtonVaccine(StateDashboard):
@@ -14,6 +18,11 @@ class WashingtonVaccine(StateDashboard):
     state_fips = int(us.states.lookup("Washington").fips)
     source = "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard"
     source_name = "Washington State Department of Health"
+
+    variables = {
+        "People Initiating Vaccination": INITIATING_VACCINATIONS_ALL,
+        "People Fully Vaccinated": FULLY_VACCINATED_ALL,
+    }
 
     async def _get_from_browser(self):
         async with with_page(headless=True) as page:
@@ -30,20 +39,15 @@ class WashingtonVaccine(StateDashboard):
         return asyncio.get_event_loop().run_until_complete(self._get_from_browser())
 
     def normalize(self, data: str) -> pd.DataFrame:
-        _cmu = lambda c: CMU(category=c, measurement="cumulative", unit="people")
-        cmus = {
-            "People Initiating Vaccination": _cmu("total_vaccine_initiated"),
-            "People Fully Vaccinated": _cmu("total_vaccine_completed"),
-        }
         return (
             pd.read_html(data)[0]
             .query("County != 'Total' and County != 'Unassigned'")
             .rename(columns={"County": "location_name"})
-            .melt(id_vars=["location_name"], value_vars=cmus.keys())
+            .melt(id_vars=["location_name"], value_vars=self.variables.keys())
             .assign(
                 dt=self._retrieve_dt("America/Los_Angeles"),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_CMU, cmu=cmus)
+            .pipe(self.extract_CMU, cmu=self.variables)
             .drop(["variable"], axis="columns")
         )
