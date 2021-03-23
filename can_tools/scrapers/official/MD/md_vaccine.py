@@ -29,13 +29,19 @@ class MarylandCountyVaccines(ArcGIS, DatasetBase):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
 
+        # singledose was added only after J&J vaccines started.
+        # If it appears it will only be reported in the fully vacinated
+        # column. We also wanted to include it in `firstdose` b/c we
+        # report "people with at least one dose"
         if "singledose" in list(df):
             df["firstdose"] += df["singledose"]
 
-        return df.pipe(
+        out = pipe(
             self._rename_or_add_date_and_location,
             location_name_column="county",
             location_names_to_drop=["Unknown"],
             timezone="US/Eastern",
             apply_title_case=False,
-        ).pipe(self._reshape_variables, self.variables)
+        )
+
+        return out.pipe(self._reshape_variables, self.variables)
