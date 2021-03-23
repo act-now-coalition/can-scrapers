@@ -1,11 +1,7 @@
-from can_tools.scrapers.variables import (
-    INITIATING_VACCINATIONS_ALL,
-    FULLY_VACCINATED_ALL,
-)
-from can_tools.scrapers.base import CMU
 import pandas as pd
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -18,8 +14,8 @@ class OhioVaccineCounty(StateDashboard):
     location_type = "county"
 
     variables = {
-        "vaccines_started": INITIATING_VACCINATIONS_ALL,
-        "vaccines_completed": FULLY_VACCINATED_ALL,
+        "vaccines_started": variables.INITIATING_VACCINATIONS_ALL,
+        "vaccines_completed": variables.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self):

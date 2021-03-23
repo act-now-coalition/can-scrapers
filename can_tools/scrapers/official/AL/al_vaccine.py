@@ -1,8 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
-from can_tools.scrapers import variables
+from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.official.base import ArcGIS
 
 pd.options.mode.chained_assignment = None  # Avoid unnessacary SettingWithCopy warning

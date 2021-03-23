@@ -1,10 +1,7 @@
-from can_tools.scrapers.variables import (
-    FULLY_VACCINATED_ALL,
-    INITIATING_VACCINATIONS_ALL,
-)
 import pandas as pd
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -20,8 +17,8 @@ class MissouriVaccineCounty(TableauDashboard):
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         cmus = {
-            "First COVID-19 Dose Administered": INITIATING_VACCINATIONS_ALL,
-            "Vax Complete": FULLY_VACCINATED_ALL,
+            "First COVID-19 Dose Administered": variables.INITIATING_VACCINATIONS_ALL,
+            "Vax Complete": variables.FULLY_VACCINATED_ALL,
         }
         non_counties = ["St. Louis City", "Kansas City", "Joplin"]  # noqa
         return (

@@ -1,5 +1,5 @@
-import us
 import pandas as pd
+import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard

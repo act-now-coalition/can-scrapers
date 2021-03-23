@@ -1,10 +1,10 @@
 """
 Utilities for getting geographical information from US census Bureau
 """
-from can_tools.models import Location
 import geopandas as gpd
 import pandas as pd
 
+from can_tools.models import Location
 from can_tools.scrapers.base import DatasetBaseNoDate, InsertWithTempTableMixin
 
 BASE_GEO_URL = "https://www2.census.gov/geo/tiger/"

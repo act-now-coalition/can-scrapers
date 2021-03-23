@@ -3,10 +3,9 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
-from can_tools.scrapers import variables
-from can_tools.scrapers.util import flatten_dict
+from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
+from can_tools.scrapers.util import flatten_dict
 
 
 class WVCountyVaccine(MicrosoftBIDashboard):

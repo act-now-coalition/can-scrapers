@@ -1,8 +1,8 @@
 from typing import Any
 
 import pandas as pd
-import us
 import requests
+import us
 
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official.base import SODA

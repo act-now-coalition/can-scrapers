@@ -3,11 +3,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
-from can_tools.scrapers.variables import (
-    INITIATING_VACCINATIONS_ALL,
-    FULLY_VACCINATED_ALL,
-)
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateQueryAPI
 
 
@@ -44,8 +40,8 @@ class IndianaCountyVaccinations(StateQueryAPI):
         """
         # Map current column names to CMU elements
         cmus = {
-            "fully_vaccinated": FULLY_VACCINATED_ALL,
-            "at_least_one_dose": INITIATING_VACCINATIONS_ALL,
+            "fully_vaccinated": variables.FULLY_VACCINATED_ALL,
+            "at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
         }
 
         # Read in data and convert to long format

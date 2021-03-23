@@ -1,15 +1,11 @@
 import asyncio
-from can_tools.scrapers.base import CMU
 
-import us
 import pandas as pd
+import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.puppet import with_page
-from can_tools.scrapers.variables import (
-    INITIATING_VACCINATIONS_ALL,
-    FULLY_VACCINATED_ALL,
-)
 
 
 class WashingtonVaccine(StateDashboard):
@@ -20,8 +16,8 @@ class WashingtonVaccine(StateDashboard):
     source_name = "Washington State Department of Health"
 
     variables = {
-        "People Initiating Vaccination": INITIATING_VACCINATIONS_ALL,
-        "People Fully Vaccinated": FULLY_VACCINATED_ALL,
+        "People Initiating Vaccination": variables.INITIATING_VACCINATIONS_ALL,
+        "People Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
     async def _get_from_browser(self):

@@ -1,13 +1,6 @@
-from can_tools.scrapers.variables import (
-    INITIATING_VACCINATIONS_ALL,
-    FULLY_VACCINATED_ALL,
-    PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
-)
-import pandas as pd
-
 import us
 
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import DatasetBase, variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -24,9 +17,9 @@ class MarylandCountyVaccines(ArcGIS, DatasetBase):
     source_name = "Maryland Department of Health"
 
     variables = {
-        "firstdose": INITIATING_VACCINATIONS_ALL,
-        "percentfullyvaccinated": PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
-        "fullyvaccinated": FULLY_VACCINATED_ALL,
+        "firstdose": variables.INITIATING_VACCINATIONS_ALL,
+        "percentfullyvaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
+        "fullyvaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self):

@@ -1,11 +1,11 @@
+from typing import Any
+
 import pandas as pd
+import us
 from pandas.core.frame import DataFrame
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
-
-from typing import Any
-import us
 
 
 class CaliforniaTesting(TableauDashboard):

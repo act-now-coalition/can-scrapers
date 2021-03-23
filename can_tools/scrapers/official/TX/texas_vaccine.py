@@ -1,19 +1,15 @@
 import io
-
 from abc import ABC
 
-import pandas as pd
-import us
 import lxml.html
+import pandas as pd
 import requests
+import us
 
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
-
 # the crename keys became long so I store them in another file
-from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
-    crename,
-)
+from can_tools.scrapers.official.TX.tx_vaccine_crenames import crename
 
 
 class TexasVaccineParent(StateDashboard, ABC):

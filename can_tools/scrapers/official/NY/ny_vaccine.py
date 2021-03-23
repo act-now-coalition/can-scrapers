@@ -1,9 +1,6 @@
-from can_tools.scrapers.variables import (
-    FULLY_VACCINATED_ALL,
-    INITIATING_VACCINATIONS_ALL,
-)
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -21,6 +18,6 @@ class NewYorkVaccineCounty(TableauDashboard):
     timezone = "US/Eastern"
 
     cmus = {
-        "SUM(First Dose)-alias": INITIATING_VACCINATIONS_ALL,
-        "SUM(People with completed Vaccine Series )-alias": FULLY_VACCINATED_ALL,
+        "SUM(First Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "SUM(People with completed Vaccine Series )-alias": variables.FULLY_VACCINATED_ALL,
     }

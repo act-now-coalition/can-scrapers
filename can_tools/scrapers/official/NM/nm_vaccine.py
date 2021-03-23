@@ -1,13 +1,8 @@
-from can_tools.scrapers.variables import (
-    FULLY_VACCINATED_ALL,
-    INITIATING_VACCINATIONS_ALL,
-    PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
-    PERCENTAGE_PEOPLE_INITIATING_VACCINE,
-)
 import pandas as pd
 import requests
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.util import requests_retry_session
@@ -94,10 +89,10 @@ class NewMexicoVaccineCounty(NewMexicoBase):
                 measurement="cumulative",
                 unit="doses",
             ),
-            "partiallyVaccinated": INITIATING_VACCINATIONS_ALL,
-            "fullyVaccinated": FULLY_VACCINATED_ALL,
-            "percentPartiallyVaccinated": PERCENTAGE_PEOPLE_INITIATING_VACCINE,
-            "percentFullyVaccinated": PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
+            "partiallyVaccinated": variables.INITIATING_VACCINATIONS_ALL,
+            "fullyVaccinated": variables.FULLY_VACCINATED_ALL,
+            "percentPartiallyVaccinated": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
+            "percentFullyVaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         }
 
         # Move things into long format

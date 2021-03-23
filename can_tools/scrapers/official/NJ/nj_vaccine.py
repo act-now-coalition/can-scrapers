@@ -1,13 +1,9 @@
-from can_tools.scrapers.variables import (
-    FULLY_VACCINATED_ALL,
-    INITIATING_VACCINATIONS_ALL,
-    TOTAL_DOSES_ADMINISTERED_ALL,
-)
 from typing import Any
 
 import pandas as pd
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ArcGIS
 
@@ -22,9 +18,9 @@ class NewJerseyVaccineCounty(ArcGIS):
     service: str = "VaxCov2"
 
     variables = {
-        "Dose_1": INITIATING_VACCINATIONS_ALL,
-        "CompletedVax": FULLY_VACCINATED_ALL,
-        "Grand_Total": TOTAL_DOSES_ADMINISTERED_ALL,
+        "Dose_1": variables.INITIATING_VACCINATIONS_ALL,
+        "CompletedVax": variables.FULLY_VACCINATED_ALL,
+        "Grand_Total": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self) -> Any:

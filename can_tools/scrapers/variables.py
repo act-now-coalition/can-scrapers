@@ -2,7 +2,6 @@
 
 from can_tools.scrapers import CMU
 
-
 INITIATING_VACCINATIONS_ALL = CMU(
     category="total_vaccine_initiated",
     measurement="cumulative",

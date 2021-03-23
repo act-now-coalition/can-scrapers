@@ -1,10 +1,11 @@
-from can_tools.scrapers.base import CMU
 from typing import List
-import us
-import requests
-import pandas as pd
-import bs4
 
+import bs4
+import pandas as pd
+import requests
+import us
+
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import CountyDashboard
 
 
