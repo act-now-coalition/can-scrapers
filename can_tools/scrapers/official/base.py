@@ -172,7 +172,7 @@ class StateDashboard(DatasetBase, ABC):
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
         timezone: Optional[str] = None,
-        apply_title_case: bool = True
+        apply_title_case: bool = True,
     ):
         """Renames or adds date and location columns.
 
