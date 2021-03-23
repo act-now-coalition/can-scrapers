@@ -17,12 +17,12 @@ class MSCountyVaccine(StateDashboard):
     source_name = "Mississippi State Department of Health"
 
     variable_map = {
-        "People Receiving at least One Dose*": CMU(
+        "People Receiving at least One Dose**": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "People Fully Vaccinated**": CMU(
+        "People Fully Vaccinated***": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
