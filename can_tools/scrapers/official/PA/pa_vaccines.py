@@ -128,7 +128,8 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows).dropna()
         df = df.query("location_name != '' & location_name != 'Out-of-State'")
 
-        # Initiated is not at least one dose for PA
+        # Initiated is not at least one dose for PA -- it is a count of
+        # individuals that are currently partially covered by a vaccine
         df["total_vaccine_initiated"] = df.eval(
             "total_vaccine_initiated + total_vaccine_completed"
         )
