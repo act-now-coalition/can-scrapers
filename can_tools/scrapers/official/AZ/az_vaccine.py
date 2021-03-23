@@ -1,3 +1,8 @@
+from can_tools.scrapers.variables import (
+    FULLY_VACCINATED_ALL,
+    INITIATING_VACCINATIONS_ALL,
+    TOTAL_DOSES_ADMINISTERED_ALL,
+)
 import camelot
 import pandas as pd
 import us
@@ -49,21 +54,9 @@ class ArizonaVaccineCounty(TableauDashboard):
     ]
 
     cmus = {
-        "total_vaccine_initiated": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "total_vaccine_completed": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "total_doses_administered": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
+        "total_vaccine_initiated": INITIATING_VACCINATIONS_ALL,
+        "total_vaccine_completed": FULLY_VACCINATED_ALL,
+        "total_doses_administered": TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self):
