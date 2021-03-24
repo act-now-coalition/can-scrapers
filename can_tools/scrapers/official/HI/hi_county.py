@@ -8,13 +8,12 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import (
     TableauDashboard,
     TableauMapClick,
-    StateDashboard,
 )
 
 from can_tools.scrapers.util import requests_retry_session
 
 
-class HawaiiVaccineCounty(TableauDashboard, StateDashboard):
+class HawaiiVaccineCounty(TableauDashboard):
     has_location = False
     source = "https://health.hawaii.gov/coronavirusdisease2019/what-you-should-know/current-situation-in-hawaii/#vaccine"
     source_name = (
@@ -25,21 +24,84 @@ class HawaiiVaccineCounty(TableauDashboard, StateDashboard):
     state_fips = int(us.states.lookup("Hawaii").fips)
     # https://public.tableau.com/shared/H33ZZ9HCC?:display_count=y&:origin=viz_share_link&:embed=y
     # Hawai'i https://public.tableau.com/shared/7TCBHC568?:display_count=y&:origin=viz_share_link&:embed=y
-    filterFunctionName = f"county%20select" # this is the name of the user action, not the filter function name. doesn't work
+    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]" # this is the name of the user action, not the filter function name. doesn't work
     baseurl = "https://public.tableau.com"
     viewPath = "HawaiiCOVID-19-VaccinationDashboard/VACCINESBYCOUNTY"
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
-
+    counties = [
+            'Maui',
+            'Hawaii',
+            'Honolulu',
+            'Kauai'
+        ]
     
     def fetch(self):
-        # Get Maui County
-        self.filterFunctionValue = 'MAUI'
 
-        return self.get_tableau_view()
+        results = {}
+        for county in self.counties:
+            # Get county data
+            self.filterFunctionValue = county
+            results[county] = self.get_tableau_view()
+        return results
 
     def normalize(self, data):
-        return data
+        dfs = []
+        for county in self.counties:
+
+            df = data[county]['Cumulative Persons']
+            df.columns = [
+                'total_vaccine_initiated',
+                'alias',
+                'total_vaccine_completed',
+                "total_vaccines_administered",
+                "sum_daily_count",
+                "measure_name",
+                "dt",
+                "date"
+            ]
+
+            df['location_name'] = county
+            df.dt = pd.to_datetime(df.dt)
+            dfs.append(df)
+
+        df = pd.concat(dfs)
+        crename = {
+            "total_vaccine_initiated": CMU(
+                category='total_vaccine_initiated',
+                measurement='cumulative',
+                unit='people'
+            ),
+            "total_vaccine_completed": CMU(
+                category="total_vaccine_completed",
+                measurement="cumulative",
+                unit="people"
+            ),
+            "sum_daily_count": CMU(
+                category="total_vaccine_doses_administered",
+                measurement="cumulative",
+                unit="doses"
+            )
+        }
+
+        out = df.melt(id_vars=['location_name', 'dt'], value_vars=crename.keys())
+        out = self.extract_CMU(out, crename)
+        out['vintage'] = self._retrieve_vintage()
+        cols_to_keep = [
+            "vintage",
+            "dt",
+            "location_name",
+            "category",
+            "measurement",
+            "unit",
+            "age",
+            "race",
+            "ethnicity",
+            "sex",
+            "value",
+        ]
+
+        return out.loc[:, cols_to_keep]
 
     def get_filters(self):
         url = f"{self.baseurl}/views/{self.viewPath}"
