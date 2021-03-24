@@ -3,6 +3,7 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
+from tableauscraper import TableauScraper as TS
 
 
 class DCVaccineSex(TableauDashboard):
@@ -13,7 +14,7 @@ class DCVaccineSex(TableauDashboard):
     location_type = "state"
     baseurl = "https://dataviz1.dc.gov/t/OCTO"
     viewPath = "Vaccine_Public/Demographics"
-
+    demographic_cmu = "sex"
     data_tableau_table = "Demographics "
 
     # map column names into CMUs
@@ -58,8 +59,38 @@ class DCVaccineSex(TableauDashboard):
         df = df.pipe(self.extract_CMU, cmu=self.cmus)
         df["value"] = df["value"].astype(int)
 
-        out = df.assign(sex=df["Cross-value"].str.lower()).drop(
-            columns={"Cross-value", "variable"}
-        )
+        df[self.demographic_cmu] = df["Cross-value"].str.lower()
+        out = df.drop(columns={"Cross-value", "variable"})
 
         return out
+
+
+class DCVaccineRace(DCVaccineSex):
+    fullUrl = "https://dataviz1.dc.gov/t/OCTO/views/Vaccine_Public/Demographics"
+    demographic_cmu = "race"
+    demographic_col_name = "Race"
+
+    def fetch(self):
+        """
+        uses the tableauscraper module:
+        https://github.com/bertrandmartel/tableau-scraping/blob/master/README.md
+        """
+        ts = TS()
+        ts.loads(self.fullUrl)
+        workbook = ts.getWorkbook()
+        workbook = workbook.setParameter("Demographic", self.demographic_col_name)
+        return workbook.worksheets[0].data
+
+
+class DCVaccineEthnicity(DCVaccineRace):
+    demographic_cmu = "ethinicity"
+    demographic_col_name = "Ethnicity"
+
+
+class DCVaccineAge(DCVaccineRace):
+    demographic_cmu = "age"
+    demographic_col_name = "Age Group"
+
+    def normalize(self, data):
+        df = super().normalize(data)
+        return df.replace({"age": {"65+": "65_plus"}})
