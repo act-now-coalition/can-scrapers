@@ -24,7 +24,6 @@ class FloridaCountyVaccine(StateDashboard):
         for el in data:
             dfs.append(self._truncate_data(el.df))
         df = pd.concat(dfs)
-
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
         df = df.query(
             "location_name != 'Unknown' &"
@@ -46,11 +45,12 @@ class FloridaCountyVaccine(StateDashboard):
         )
 
         crename = {
-            "first_dose_new": CMU(
-                category="total_vaccine_initiated",
-                measurement="new",
-                unit="people",
-            ),
+            # # Removing this as it doesn't count the doses of J&J
+            # "first_dose_new": CMU(
+            #     category="total_vaccine_initiated",
+            #     measurement="new",
+            #     unit="people",
+            # ),
             "series_complete_new": CMU(
                 category="total_vaccine_completed",
                 measurement="new",
@@ -61,11 +61,12 @@ class FloridaCountyVaccine(StateDashboard):
                 measurement="new",
                 unit="doses",
             ),
-            "first_dose_total": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+            # Removing this as it doesn't count the doses of J&J
+            # "first_dose_total": CMU(
+            #     category="total_vaccine_initiated",
+            #     measurement="cumulative",
+            #     unit="people",
+            # ),
             "series_complete_total": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
