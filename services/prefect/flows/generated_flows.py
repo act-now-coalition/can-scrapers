@@ -5,19 +5,21 @@ import pandas as pd
 import sqlalchemy as sa
 from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
-
+from can_tools.scrapers.base import ALL_STATES_PLUS_DC
+from can_tools.scrapers import CDCCovidDataTracker
 import prefect
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
+from prefect.tasks.prefect.flow_run import StartFlowRun
 
 
 @task
-def create_scraper(cls: Type[DatasetBase]) -> DatasetBase:
+def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
     logger = prefect.context.get("logger")
     dt = prefect.context.get("scheduled_start_time")
     logger.info("Creating class {} with dt = {}".format(cls, dt))
-    return cls(execution_dt=dt)
+    return cls(execution_dt=dt, **kwargs)
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
@@ -71,7 +73,7 @@ def initialize_sentry(sentry_dsn: str):
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
 
-def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
+def create_flow_for_scraper(ix: int, cls: Type[DatasetBase]):
     sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
@@ -93,8 +95,58 @@ def create_flow_for_scraper(ix: int, d: Type[DatasetBase]):
     return flow
 
 
-for ix, cls in enumerate(ALL_SCRAPERS):
-    if not cls.autodag:
-        continue
-    flow = create_flow_for_scraper(ix, cls)
+def create_cdc_single_state_flow():
+    with Flow(CDCCovidDataTracker.__name__) as flow:
+        state = prefect.Parameter("state")
+        connstr = EnvVarSecret("COVID_DB_CONN_URI")
+        sentry_dsn = EnvVarSecret("SENTRY_DSN")
+        sentry_sdk_task = initialize_sentry(sentry_dsn)
+
+        d = create_scraper(CDCCovidDataTracker, state=state)
+        fetched = fetch(d)
+        normalized = normalize(d)
+        validated = validate(d)
+        done = put(d, connstr)
+
+        d.set_upstream(sentry_sdk_task)
+        normalized.set_upstream(fetched)
+        validated.set_upstream(normalized)
+        done.set_upstream(validated)
+
+    return flow
+
+
+def create_cdc_all_states_flow():
+    """Creates a flow that runs the CDC data update on all states."""
+    sched = CronSchedule("17 */4 * * *")
+
+    flow = Flow("CDCAllStatesDataUpdate", sched)
+    for state in ALL_STATES_PLUS_DC:
+        task = StartFlowRun(
+            flow_name=CDCCovidDataTracker.__name__,
+            project_name="can-scrape",
+            wait=True,
+            parameters={"state": state.abbr},
+        )
+        flow.add_task(task)
+
+    return flow
+
+
+def init_flows():
+    for ix, cls in enumerate(ALL_SCRAPERS):
+        if not cls.autodag:
+            continue
+        if cls == CDCCovidDataTracker:
+            flow = create_cdc_single_state_flow()
+        else:
+            flow = create_flow_for_scraper(ix, cls)
+        flow.register(project_name="can-scrape")
+
+    # Create additional flow that runs the CDC Data updater
+    flow = create_cdc_all_states_flow()
     flow.register(project_name="can-scrape")
+
+
+if __name__ == "__main__":
+    init_flows()

@@ -55,16 +55,13 @@ def test_datasets(cls):
     execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
         "%Y-%m-%d"
     )
-    d = cls(execution_date)
-
-    slow_scrapers = [CDCCovidDataTracker]
-    if cls in slow_scrapers:
-        # Certain scrapers take too long so we added a "test" argument
-        # that allows `fetch` to only return a subset of data to speed
-        # up the fetch process
-        raw = d.fetch(test=True)
+    if cls == CDCCovidDataTracker:
+        d = cls(execution_date, state="CA")
     else:
-        raw = d.fetch()
+        d = cls(execution_date)
+
+    raw = d.fetch()
+
     assert raw is not None
     clean = d.normalize(raw)
     assert isinstance(clean, pd.DataFrame)

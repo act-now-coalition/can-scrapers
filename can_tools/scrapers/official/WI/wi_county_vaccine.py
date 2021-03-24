@@ -1,8 +1,7 @@
 import pandas as pd
 import us
-import numpy as np
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -21,16 +20,8 @@ class WisconsinVaccineCounty(TableauDashboard):
 
     # map wide form column names into CMUs
     cmus = {
-        "SUM(Number With One Dose)-alias": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "SUM(Number With Two Doses)-alias": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
+        "SUM(Number With One Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "SUM(Number With Two Doses)-alias": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
