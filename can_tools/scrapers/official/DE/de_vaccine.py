@@ -1,10 +1,9 @@
 import datetime as dt
 import json
 
-import us
-import requests
 import pandas as pd
-
+import requests
+import us
 from bs4 import BeautifulSoup
 
 from can_tools.scrapers.base import CMU

@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -16,10 +16,9 @@ class MissouriVaccineCounty(TableauDashboard):
     data_tableau_table = "County - Table"
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        _make_cmu = lambda c: CMU(category=c, measurement="cumulative", unit="people")
         cmus = {
-            "COVID-19 Vaccine Regimen Initiated": _make_cmu("total_vaccine_initiated"),
-            "COVID-19 Vaccine Regimen Completed": _make_cmu("total_vaccine_completed"),
+            "First COVID-19 Dose Administered": variables.INITIATING_VACCINATIONS_ALL,
+            "Vax Complete": variables.FULLY_VACCINATED_ALL,
         }
         non_counties = ["St. Louis City", "Kansas City", "Joplin"]  # noqa
         return (

@@ -23,11 +23,6 @@ class MontanaCountyVaccine(ArcGIS):
             measurement="cumulative",
             unit="people",
         ),
-        "total_doses_admin": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
     }
 
     def fetch(self):
@@ -50,7 +45,6 @@ class MontanaCountyVaccine(ArcGIS):
         df["dt"] = df["dt"].map(self._esri_ts_to_dt)
 
         # this matches the values in the dashboard
-        df["total_doses_admin"] = df["Dose_1"] + df["Dose_2"]
 
         return self._transform_df(df)
 

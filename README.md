@@ -4,7 +4,7 @@
 ## Creating a development environment for scraping
 
 1. Install `conda` (either [anaconda](https://www.anaconda.com/products/individual) or [miniconda](https://docs.conda.io/en/latest/miniconda.html))
-2. Create conda environment for this project, `conda create -n can-scrapers python=3.6`
+2. Create conda environment for this project, `conda create -n can-scrapers python=3`
 3. Activate the environment, `conda activate can-scrapers`
 4. Move your command line or terminal into the `can-scrapers` directory
 6. Install required packages, `pip install -r requirements-dev.txt`
@@ -67,28 +67,44 @@ shared settings, but will also be overwritten by the absolute path to the
 conda environment on your machine. This path is unlikely to match exactly
 with the path for any other team members
 
+## Organization of scrapers
+
+The scrapers in this repository are organized in the `can_tools` python package
+
+All scrapers are written in `can_tools/scrapers` directory
+
+If the resource to be scraped comes from an official source (like a government web page or
+health department) then the scraper goes into `can_tools/scrapers/official`. Inside the `official`
+sub-directory there are many folders, each with the two letter abbreviation for a state. For
+example, scrapers that extract data from North Carolina Deparment of Health are in 
+`can_tools/scrapers/official/NC`
+
+
 ## Writing a new scraper
 
 Behind the scenes of every scraper written in `can-tools` are abstract base
 classes (ABC). These ABCs define abstract methods `fetch`, `normalize`, `validate`,
 and `put` which must be implemented in order to create a scraper.
 
-* The `fetch` method should grab the data and return the raw HTML page.
-* The `normalize` method should transform the raw HTML page into scraped data
+* The `fetch` method is responsible for making network requests. It should request
+  the remote resource and do as little else as possible. When the resource is a csv
+  or json file, it is ok use `pd.read_XXX` as the body of the fetch method. Other cases
+  might include the output of fetch being a `requests.Response` object, or other.
+* The `normalize` method should transform the output of `fetch` page into scraped data
   and return a DataFrame with columns `(vintage, dt, location, category,
-  measurement, unit, age, race, ethnicity, sex, value, provider)`.
+  measurement, unit, age, race, ethnicity, sex, value)`. See existing methods for
+  examples
 * The `validate` method should verify the data to ensure that it passes any
   necessary sanity checks.
 * The `put` method takes a SQL connection and a DataFrame and then puts the
-  DataFrame into the SQL database.
+  DataFrame into the SQL database. This is taken care of by parent classes and
+  does not need to be updated manuallly
 
 Most scrapers will not require one to write the `validate` or put methods because
 the generic methods should be able to validate the data and dump it into the database
 
-The two core ABCs are `DatasetBaseDate` and `DatasetBaseNoDate`. The key
-difference between these two ABCs is that the `get` method for `DatasetBaseDate`
-expects to receive an argument `date` to it's `get` method whereas
-`DatasetBaseNoDate` does not expect any arguments to the `get` method.
+All scrapers must inherit from `DatasetBase`, but this typically happens by subclassing 
+a resource specific parent class like `TableauDashboard` or `ArcGIS`.
 
 ## Triggering the integration
 

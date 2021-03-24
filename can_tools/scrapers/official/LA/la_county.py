@@ -6,7 +6,7 @@ from can_tools.scrapers.official.base import ArcGIS
 
 
 class LAVaccineCounty(ArcGIS):
-    provider = "county"
+    provider = "state"
     ARCGIS_ID = "O5K6bb5dZVZcTo5M"
     has_location = True
     location_type = "county"

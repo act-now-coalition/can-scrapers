@@ -1,5 +1,5 @@
-import pandas as pd
 import camelot
+import pandas as pd
 import requests
 import us
 

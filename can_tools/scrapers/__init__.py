@@ -1,13 +1,18 @@
+from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.ctp import (
+    CovidTrackingProject,
+    CovidTrackingProjectDemographics,
+)
 from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHistorical,; Massachusetts,
     ArizonaData,
     ArizonaMaricopaVaccine,
     ArizonaVaccineCounty,
     ArizonaVaccineCountyAllocated,
-    CASanDiegoVaccine,
     CaliforniaHospitals,
     CaliforniaTesting,
     CaliforniaVaccineCounty,
+    CASanDiegoVaccine,
     CDCCovidDataTracker,
     CDCStateVaccine,
     CDCVariantTracker,
@@ -18,13 +23,14 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     DCCases,
     DCDeaths,
     DCGeneral,
+    DCVaccineSex,
     DelawareData,
     DelawareStateVaccine,
     Florida,
+    FloridaCountyVaccine,
     FloridaHospitalCovid,
     FloridaHospitalUsage,
     FloridaICUUsage,
-    FloridaCountyVaccine,
     GeorgiaCountyVaccine,
     HawaiiVaccineCounty,
     HHSReportedPatientImpactHospitalCapacityFacility,
@@ -38,17 +44,17 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     MarylandCounties,
     MarylandCountyVaccines,
     MarylandState,
+    MichiganVaccineCounty,
     MinnesotaCountyVaccines,
+    MissouriVaccineCounty,
     MontanaCountyVaccine,
     MontanaStateVaccine,
-    NewJerseyVaccineCounty,
-    MichiganVaccineCounty,
-    MissouriVaccineCounty,
+    NCVaccine,
     NevadaCountyVaccines,
+    NewJerseyVaccineCounty,
     NewMexicoVaccineCounty,
     NewYorkTests,
     NewYorkVaccineCounty,
-    NCVaccine,
     OhioVaccineCounty,
     OregonVaccineCounty,
     PennsylvaniaCasesDeaths,
@@ -67,29 +73,24 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     TexasCasesDeaths,
     TexasCountyVaccine,
     TexasStateVaccine,
+    TexasTests,
     TXVaccineCountyAge,
     TXVaccineCountyRace,
-    TexasTests,
     VermontCountyVaccine,
     VermontStateVaccine,
     VirginiaVaccine,
     WashingtonVaccine,
     WisconsinCounties,
+    WisconsinState,
     WisconsinVaccineAge,
+    WisconsinVaccineCounty,
+    WisconsinVaccineEthnicity,
     WisconsinVaccineRace,
     WisconsinVaccineSex,
-    WisconsinVaccineEthnicity,
-    WisconsinVaccineCounty,
-    WisconsinState,
     WYCountyVaccinations,
     WYStateVaccinations,
 )
-
-from can_tools.scrapers.ctp import (
-    CovidTrackingProject,
-    CovidTrackingProjectDemographics,
-)
-
-from can_tools.scrapers.usafacts import USAFactsDeaths, USAFactsCases
-
-from can_tools.scrapers import util
+from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
+from can_tools.scrapers.official.MS.ms_vaccine import MSCountyVaccine
+from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
+from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths
