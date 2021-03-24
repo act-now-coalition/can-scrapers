@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard, TableauDashboard
-
+from datetime import timedelta
 
 class SCVaccineCounty(StateDashboard):
     source = "https://scdhec.gov/covid19/covid-19-vaccine-allocation"
@@ -19,18 +19,27 @@ class SCVaccineCounty(StateDashboard):
     janssen_format = "Janssen-Vaccine-Allocation-%s.pdf"
     moderna_format = "Moderna-Vaccine-Allocation-%s.pdf"
     pfizer_format = "Pfzier-BioNTech-Vaccine-Allocation-%s.pdf"
+    data_date = None
 
     def _url_for_vaccine_date(self, vaccine, soup):
         # Find the correct donwload link for vaccine and date
-        url = soup.find(
-            "a",
-            title=lambda x: x
-            and (
-                "%s - %s"
-                % (self.execution_dt.strftime("%B %-d, %Y"), vaccine.capitalize()[0:1]) # check first two letters
+        # if no data for current date, get most recent date
+        url = None
+        check_date = self.execution_dt
+        while url is None:
+            url = soup.find(
+                "a",
+                title=lambda x: x
+                and (
+                    "%s - %s"
+                    % (check_date.strftime("%B %-d, %Y"), vaccine.capitalize()[0:1]) # check first two letters
+                )
+                in x,
             )
-            in x,
-        )
+            if url is None:
+                check_date = check_date - timedelta(days=1)
+
+        self.data_date = check_date        
         if url is None:
             return url
         # get the href and combine with hostname
@@ -42,7 +51,7 @@ class SCVaccineCounty(StateDashboard):
         if url is None or requests.head(url).status_code != 200:
             return []
         
-        print(f"getting {vaccine} data at url {url}")
+        # print(f"getting {vaccine} data at url {url}")
         return camelot.read_pdf(url, pages="all", flavor="lattice", process_background=True)
 
     def fetch(self):
@@ -217,7 +226,7 @@ class SCVaccineCounty(StateDashboard):
 
         non_counties = ['Totals', 'Totals:']
         out = out.query('location_name not in @non_counties')
-        out['dt'] = self._retrieve_dt()
+        out['dt'] = self.data_date
         out['vintage'] = self._retrieve_vintage()
         return out.drop(['variable'], axis="columns")
 
