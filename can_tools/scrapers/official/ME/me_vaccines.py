@@ -144,7 +144,6 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
 
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows, columns=row_names)
-
         # Title case and remove the word county
         df["location_name"] = df["county"].str.replace("County, ME", "").str.strip()
 
@@ -162,21 +161,13 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                 measurement="cumulative",
                 unit="doses",
             ),
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+           
             "total_vaccine_completed": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_initiated_percent": CMU(
-                category="total_vaccine_initiated",
-                measurement="current",
-                unit="percentage",
-            ),
+           
             "total_vaccine_completed_percent": CMU(
                 category="total_vaccine_completed",
                 measurement="current",
