@@ -5,17 +5,8 @@ from typing import Dict, List, Tuple, Type, Union
 # from sqlalchemy_utils import create_view
 import pandas as pd
 import sqlalchemy as sa
-from sqlalchemy import (
-    BigInteger,
-    Column,
-    Date,
-    DateTime,
-    ForeignKey,
-    Integer,
-    Numeric,
-    String,
-    event,
-)
+from sqlalchemy import (BigInteger, Column, Date, DateTime, ForeignKey,
+                        Integer, Numeric, String, event)
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext import compiler
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -23,11 +14,8 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.sql.ddl import DDL, DDLElement
 from sqlalchemy.sql.expression import and_, select
 from sqlalchemy.sql.functions import func
-from sqlalchemy.sql.schema import (
-    ForeignKeyConstraint,
-    PrimaryKeyConstraint,
-    UniqueConstraint,
-)
+from sqlalchemy.sql.schema import (ForeignKeyConstraint, PrimaryKeyConstraint,
+                                   UniqueConstraint)
 from sqlalchemy_utils.view import DropView, create_table_from_selectable
 
 Base = declarative_base()

@@ -17,13 +17,10 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 
 from can_tools.db_util import fast_append_to_sql
-from can_tools.models import (
-    Base,
-    CovidObservation,
-    TemptableOfficialHasLocation,
-    TemptableOfficialNoLocation,
-    build_insert_from_temp,
-)
+from can_tools.models import (Base, CovidObservation,
+                              TemptableOfficialHasLocation,
+                              TemptableOfficialNoLocation,
+                              build_insert_from_temp)
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
 

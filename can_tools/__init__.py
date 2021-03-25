@@ -40,9 +40,8 @@ def non_abc_subclasses(cls):
 
     # need to specifically remove some classes :(
     from can_tools.scrapers.official.base import TableauDashboard
-    from can_tools.scrapers.official.PA.pa_vaccines import (
-        PennsylvaniaVaccineDemographics,
-    )
+    from can_tools.scrapers.official.PA.pa_vaccines import \
+        PennsylvaniaVaccineDemographics
 
     bad = [TableauDashboard, PennsylvaniaVaccineDemographics]
 
