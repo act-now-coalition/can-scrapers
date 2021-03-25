@@ -4,4 +4,3 @@ from can_tools.scrapers.official.TX.texas_vaccine import (
     TXVaccineCountyAge,
     TXVaccineCountyRace,
 )
-from can_tools.scrapers.official.TX.tx_state import TexasCasesDeaths, TexasTests
