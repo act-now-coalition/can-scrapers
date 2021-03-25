@@ -14,7 +14,7 @@ class MichiganVaccineCounty(StateDashboard):
     location_type = "county"
 
     def fetch(self):
-        return pd.read_excel(self.url, sheet_name="Doses Administered", engine="xlrd")
+        return pd.read_excel(self.url, sheet_name="Doses Administered")
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         # date is written out in first column name
