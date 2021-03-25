@@ -35,6 +35,26 @@ from can_tools.scrapers.official.FL import (
 )
 from can_tools.scrapers.official.GA import GeorgiaCountyVaccine
 
+from can_tools.scrapers.official.IN import IndianaCountyVaccinations
+
+from can_tools.scrapers.official.MO import MissouriVaccineCounty
+
+from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
+
+from can_tools.scrapers.official.NV import NevadaCountyVaccines
+
+from can_tools.scrapers.official.PA import (
+    PennsylvaniaCasesDeaths,
+    PennsylvaniaCountyVaccines,
+    PennsylvaniaHospitals,
+    PennsylvaniaVaccineAge,
+    PennsylvaniaVaccineEthnicity,
+    PennsylvaniaVaccineRace,
+    PennsylvaniaVaccineSex,
+)
+
+from can_tools.scrapers.official.HI import HawaiiVaccineCounty
+
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineCounty,

@@ -32,6 +32,7 @@ from can_tools.scrapers.official import (  # IllinoisDemographics,; IllinoisHist
     FloridaHospitalUsage,
     FloridaICUUsage,
     GeorgiaCountyVaccine,
+    HawaiiVaccineCounty,
     HHSReportedPatientImpactHospitalCapacityFacility,
     HHSReportedPatientImpactHospitalCapacityState,
     IllinoisVaccineCounty,
