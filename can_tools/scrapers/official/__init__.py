@@ -60,9 +60,7 @@ from can_tools.scrapers.official.NM import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV import NevadaCountyVaccines
 from can_tools.scrapers.official.NY import NewYorkTests, NewYorkVaccineCounty
 
-from can_tools.scrapers.official.SC import (
-    SCVaccineCounty,
-    SouthCarolinaTableauVaccineCounty,
+from can_tools.scrapers.official.SC import SCVaccineCounty
 from can_tools.scrapers.official.OH import OhioVaccineCounty
 from can_tools.scrapers.official.OR import OregonVaccineCounty
 from can_tools.scrapers.official.PA import (

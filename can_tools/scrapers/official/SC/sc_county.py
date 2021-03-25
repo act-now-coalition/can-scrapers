@@ -240,34 +240,3 @@ class SCVaccineCounty(StateDashboard):
 
         return pd.concat([pfizer, moderna, janssen])
 
-
-class SouthCarolinaTableauVaccineCounty(TableauDashboard):
-    baseurl = "https://public.tableau.com/"
-    viewPath = "COVIDVaccineDashboard/RECIPIENTVIEW"
-
-    source = "https://scdhec.gov/covid19/covid-19-vaccination-dashboard"
-    source_name = "South Carolina Department of Health and Environmental Control"
-
-    base_url = "https://scdhec.gov/sites/default/files/media/document/"
-    state_fips = int(us.states.lookup("South Carolina").fips)
-    has_location = False
-    location_type = "county"
-
-    def fetch(self):
-        return self.get_tableau_view()
-
-    def normalize(self, data):
-        df = data['County Table People Sc Residents']
-        df = df.rename(columns={
-            'Measure Values-alias': 'value',
-            'Recipient County for maps-value': 'location_name',
-            'Measure Names-alias': "variable"
-            }
-        )
-        df = df[['value', 'location_name', 'variable']]
-        non_counties = ['Unknown', '%all%']
-        vars_to_keep = ['Count of Doses', 'Count of Vaccinated Residents']
-
-        df = df.query('location_name not in @non_counties').query('variable in @vars_to_keep')
-
-        return df
