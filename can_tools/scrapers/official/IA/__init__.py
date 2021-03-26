@@ -1,1 +1,0 @@
-from can_tools.scrapers.official.IA.ia_vaccine_county import IowaCountyVaccine

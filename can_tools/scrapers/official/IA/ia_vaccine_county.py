@@ -4,6 +4,7 @@ import requests
 import json
 from io import StringIO
 from can_tools.scrapers.official.base import StateDashboard, CMU
+from can_tools.scrapers import variables
 
 class IowaCountyVaccine(StateDashboard):
     has_location = False
@@ -28,6 +29,12 @@ class IowaCountyVaccine(StateDashboard):
             "6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE2NzkxNzYyLCJpYXQiOjE2MTY3NjI5NjIsImp0aSI6" \
             "IjdkODBhN2YwLWZmZjEtNDc2Yi1iNGQ3LThlOTRiOWFlYzJiMiJ9.Fn5GPyRJZal_b28wA2tS" \
             "HUBZxJv-QsbBlngmSlvmbfw"
+
+    variables = {
+            "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
+            "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+            "total_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL
+        }
     def fetch(self):
         headers = {
             'x-domo-embed-token': self.token,
@@ -44,52 +51,23 @@ class IowaCountyVaccine(StateDashboard):
 
     def normalize(self, data):
         df = data.rename(columns={
-            "County": "location_name",
             "Two-Dose Series Initiated": "total_vaccine_initiated",
             "Two-Dose Series Completed": "total_vaccine_completed",
             "Single-Dose Series Completed": "single_complete",
             "Total Doses Administered": "total_administered"
         })
 
+        df = self._rename_or_add_date_and_location(
+            df,
+            location_column="County",
+            timezone="US/Central",
+            apply_title_case=True,
+            location_names_to_drop=['Out of State']
+        )
+        # Count single dose vaccine as both initiated and completed
         df.total_vaccine_initiated = df.total_vaccine_initiated + df.single_complete
         df.total_vaccine_completed = df.total_vaccine_completed + df.single_complete
 
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people"
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people"
-            ),
-            "total_administered": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses"
-            )
-        }
+        out = self._reshape_variables(df, self.variables)
 
-        out = df.loc[df.location_name != "Out of State"].melt(id_vars=['location_name'], value_vars=crename.keys())
-        out = self.extract_CMU(out, crename)
-
-        out['dt'] = self._retrieve_dt("US/Central")
-        out['vintage'] = self._retrieve_vintage()
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-
-
-        return out[cols_to_keep]
+        return out
