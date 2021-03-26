@@ -1,1 +1,0 @@
-from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine

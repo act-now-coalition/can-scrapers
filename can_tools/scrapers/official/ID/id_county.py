@@ -2,7 +2,7 @@ import pandas as pd
 import us
 
 from can_tools.scrapers.official.base import TableauDashboard
-
+from can_tools.scrapers import variables
 class IdahoCountyVaccine(TableauDashboard):
     has_location = False
     source = "https://coronavirus.idaho.gov/"
@@ -12,6 +12,11 @@ class IdahoCountyVaccine(TableauDashboard):
     viewPath = "COVID-19VaccineDataDashboard/VaccineUptake"
 
     state_fips = int(us.states.lookup("Idaho").fips)
+
+    variables = {
+        '1': variables.INITIATING_VACCINATIONS_ALL,
+        '2': variables.FULLY_VACCINATED_ALL
+    }
 
     def fetch(self):
 
@@ -32,9 +37,17 @@ class IdahoCountyVaccine(TableauDashboard):
             "district_alias"
         ]
         keep = df[['county', 'doses', 'dose_number']]
-        out =  keep.pivot(index='county', columns='dose_number', values='doses').reset_index()
-        out = out.rename(columns={
-            "1": "total_vaccine_initiated",
-            "2": "total_vaccine_completed"
-        })
+        out =  keep.pivot(index='county', columns='dose_number', values='doses').reset_index().rename_axis(None, axis=1)
+        # It seems like people who are fully vaccinated are no longer counted in the
+        # "people who have received one dose" category. Summing these two together to 
+        # match our definition
+        out['1'] = out['1'] + out['2']
+
+        out = self._rename_or_add_date_and_location(
+            out,
+            location_name_column="county",
+            timezone="US/Mountain"
+        )
+        out = self._reshape_variables(out, self.variables)
+        
         return out
