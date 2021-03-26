@@ -65,8 +65,8 @@ class IowaCountyVaccine(StateDashboard):
             location_names_to_drop=['Out of State']
         )
         # Count single dose vaccine as both initiated and completed
-        df.total_vaccine_initiated = df.total_vaccine_initiated + df.single_complete
-        df.total_vaccine_completed = df.total_vaccine_completed + df.single_complete
+        df.total_vaccine_initiated += df.total_vaccine_completed + df.single_complete
+        df.total_vaccine_completed += df.single_complete
 
         out = self._reshape_variables(df, self.variables)
 
