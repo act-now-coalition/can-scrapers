@@ -20,8 +20,7 @@ class IdahoCountyVaccine(TableauDashboard):
 
     
     def normalize(self, data):
-        df = data['Vax Rate / County Chart']
-        df.columns = [
+        data.columns = [
             'doses',
             'vax_rate_value',
             'vax_rate_alias',
