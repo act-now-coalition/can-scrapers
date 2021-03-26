@@ -7,7 +7,7 @@ class IdahoCountyVaccine(TableauDashboard):
     has_location = False
     source = "https://coronavirus.idaho.gov/"
     source_name = "Idaho Official Government Website"
-
+    data_tableau_table = 'Vax Rate / County Chart
     baseurl = "https://public.tableau.com"
     viewPath = "COVID-19VaccineDataDashboard/VaccineUptake"
 
