@@ -56,11 +56,13 @@ from can_tools.scrapers.official.PA import (
 from can_tools.scrapers.official.HI import HawaiiVaccineCounty
 
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
+from can_tools.scrapers.official.IA import IowaCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineCounty,
     IllinoisVaccineState,
 )
 from can_tools.scrapers.official.IN import IndianaCountyVaccinations
+
 from can_tools.scrapers.official.LA.la_county import LAVaccineCounty
 from can_tools.scrapers.official.MD import (
     MarylandCounties,
