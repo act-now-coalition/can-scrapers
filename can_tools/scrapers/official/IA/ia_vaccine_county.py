@@ -59,7 +59,7 @@ class IowaCountyVaccine(StateDashboard):
 
         df = self._rename_or_add_date_and_location(
             df,
-            location_column="County",
+            location_name_column="County",
             timezone="US/Central",
             apply_title_case=True,
             location_names_to_drop=['Out of State']
