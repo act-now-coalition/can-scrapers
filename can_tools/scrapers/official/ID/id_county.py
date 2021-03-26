@@ -18,9 +18,6 @@ class IdahoCountyVaccine(TableauDashboard):
         '2': variables.FULLY_VACCINATED_ALL
     }
 
-    def fetch(self):
-
-        return self.get_tableau_view()
     
     def normalize(self, data):
         df = data['Vax Rate / County Chart']
