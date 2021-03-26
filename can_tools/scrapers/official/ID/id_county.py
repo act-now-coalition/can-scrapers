@@ -32,7 +32,7 @@ class IdahoCountyVaccine(TableauDashboard):
             "dose_number_alias",
             "district_alias"
         ]
-        keep = df[['county', 'doses', 'dose_number']]
+        keep = data[['county', 'doses', 'dose_number']]
         out =  keep.pivot(index='county', columns='dose_number', values='doses').reset_index().rename_axis(None, axis=1)
         # It seems like people who are fully vaccinated are no longer counted in the
         # "people who have received one dose" category. Summing these two together to 
