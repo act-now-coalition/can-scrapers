@@ -5,9 +5,10 @@ from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers import variables
 class IdahoCountyVaccine(TableauDashboard):
     has_location = False
+    location_type = "county"
     source = "https://coronavirus.idaho.gov/"
     source_name = "Idaho Official Government Website"
-    data_tableau_table = 'Vax Rate / County Chart
+    data_tableau_table = 'Vax Rate / County Chart'
     baseurl = "https://public.tableau.com"
     viewPath = "COVID-19VaccineDataDashboard/VaccineUptake"
 
