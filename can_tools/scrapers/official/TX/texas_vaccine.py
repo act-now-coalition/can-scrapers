@@ -126,7 +126,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             measurement="cumulative",
             unit="doses",
         ),
-        "People Vaccinated  ": CMU(
+        "People Vaccinated with at least One Dose": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -187,7 +187,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 columns={
                     "Age Group": "age",
                     "Race/Ethnicity": "race",
-                    "County": "location_name",
+                    "County Name": "location_name",
                 }
             )
             .melt(

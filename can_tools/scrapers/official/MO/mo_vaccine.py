@@ -17,8 +17,8 @@ class MissouriVaccineCounty(TableauDashboard):
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         cmus = {
-            "First COVID-19 Dose Administered": variables.INITIATING_VACCINATIONS_ALL,
-            "Vax Complete": variables.FULLY_VACCINATED_ALL,
+            "COVID-19 Vaccine Regimen Initiated": variables.INITIATING_VACCINATIONS_ALL,
+            "COVID-19 Vaccine Regimen Completed": variables.FULLY_VACCINATED_ALL,
         }
         non_counties = ["St. Louis City", "Kansas City", "Joplin"]  # noqa
         return (

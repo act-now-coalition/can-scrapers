@@ -22,7 +22,7 @@ class ALCountyVaccine(ArcGIS):
     }
 
     def fetch(self):
-        service = "Vax_Dashboard_Public_v2a_VIEW"
+        service = "Vax_Dashboard_Public_3_VIEW"
         return self.get_all_jsons(service, 1, "7")
 
     def normalize(self, data):
