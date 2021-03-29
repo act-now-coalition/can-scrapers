@@ -1,20 +1,18 @@
 import json
-import uuid
-import re
 import logging
-
+import re
+import urllib.parse
+import uuid
 from abc import ABC, abstractmethod
 from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
+import jmespath
 import pandas as pd
 import requests
-import urllib.parse
-
 from bs4 import BeautifulSoup
-import jmespath
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 
@@ -115,6 +113,124 @@ class StateDashboard(DatasetBase, ABC):
                 print("Removed the {} rows from temp table".format(rows_deleted))
 
         return worked, rows_inserted, rows_deleted
+
+    def _reshape_variables(
+        self, data: pd.DataFrame, variable_map: Dict[str, CMU]
+    ) -> pd.DataFrame:
+        """Reshape columns in data to be long form definitions defined in `variable_map`.
+
+        Parameters
+        ----------
+        data :
+            Input data
+        variable_map : Union[str,int]
+            Map from column name to output variables
+
+        Returns
+        -------
+        data:
+            Reshaped DataFrame.
+        """
+        # parse out data columns
+        value_cols = list(set(data.columns) & set(variable_map.keys()))
+        assert len(value_cols) == len(variable_map)
+        id_vars = []
+        if "location_name" in data.columns:
+            id_vars.append("location_name")
+        if "location" in data.columns:
+            id_vars.append("location")
+        if "dt" in data.columns:
+            id_vars.append("dt")
+        if "vintage" in data.columns:
+            id_vars.append("vintage")
+
+        data = (
+            data.melt(id_vars=id_vars, value_vars=value_cols)
+            .dropna()
+            .assign(
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .pipe(self.extract_CMU, cmu=variable_map)
+            .drop(["variable"], axis=1)
+        )
+
+        if "vintage" not in data.columns:
+            data["vintage"] = self._retrieve_vintage()
+
+        return data
+
+    def _rename_or_add_date_and_location(
+        self,
+        data: pd.DataFrame,
+        location_name_column: Optional[str] = None,
+        location_column: Optional[str] = None,
+        location_names_to_drop: Optional[List[str]] = None,
+        date_column: Optional[str] = None,
+        date: Optional[pd.Timestamp] = None,
+        timezone: Optional[str] = None,
+        apply_title_case: bool = True,
+    ):
+        """Renames or adds date and location columns.
+
+        Parameters
+        ----------
+        data :
+            Input data
+        location_name_column:
+            Name of column with location name
+        location_column:
+            Name of column with location (fips)
+        date_column:
+            Name of Column containing date.
+        date:
+            Date for data
+        timezone:
+            Timezone of data if date or date_column not supplied.
+        apply_title_case:
+            If True will make location name title case.
+
+        Returns
+        -------
+        data:
+            Data with date and location columns normalized.
+        """
+        assert location_name_column or location_column
+        assert date_column or date or timezone
+
+        rename_columns = {}
+        if location_name_column:
+            rename_columns[location_name_column] = "location_name"
+        if location_column:
+            rename_columns[location_column] = "location"
+        if date_column:
+            rename_columns[date_column] = "dt"
+
+        data = data.rename(columns=rename_columns)
+
+        if date_column:
+            data.loc[:, "dt"] = pd.to_datetime(data["dt"])
+
+        if timezone:
+            assert (
+                not date
+            ), "Both date and timezone passed, can only include one or the other"
+            date = self._retrieve_dt(timezone)
+
+        if date:
+            data = data.assign(dt=date)
+
+        if location_names_to_drop:
+            data = data.query("location_name != @location_names_to_drop")
+
+        if "location_name" in data.columns and apply_title_case:
+            data["location_name"] = data["location_name"].str.title()
+
+        if "location" in data.columns:
+            data["location"] = pd.to_numeric(data["location"])
+
+        return data
 
 
 class CountyDashboard(StateDashboard, ABC):

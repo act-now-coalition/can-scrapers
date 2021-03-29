@@ -7,7 +7,7 @@ from can_tools.scrapers.official.base import ArcGIS
 
 class MontanaCountyVaccine(ArcGIS):
     ARCGIS_ID = "qnjIrwR8z5Izc0ij"
-    has_location = False
+    has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Montana").fips)
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
@@ -23,11 +23,6 @@ class MontanaCountyVaccine(ArcGIS):
             measurement="cumulative",
             unit="people",
         ),
-        "total_doses_admin": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
     }
 
     def fetch(self):
@@ -37,12 +32,12 @@ class MontanaCountyVaccine(ArcGIS):
         df = (
             self.arcgis_jsons_to_df(data)
             .fillna(0)
-            .rename(columns={"NAME": "location_name", "Date_Reported": "dt"})
+            .rename(columns={"ALLFIPS": "location", "Date_Reported": "dt"})
         )
 
         # Capitalize start of words and replace wrong names
-        df.loc[:, "location_name"] = (
-            df.loc[:, "location_name"]
+        df.loc[:, "location"] = (
+            df.loc[:, "location"]
             .str.title()
             .replace({"Lewis & Clark": "Lewis and Clark", "Mccone": "McCone"})
         )
@@ -50,7 +45,6 @@ class MontanaCountyVaccine(ArcGIS):
         df["dt"] = df["dt"].map(self._esri_ts_to_dt)
 
         # this matches the values in the dashboard
-        df["total_doses_admin"] = df["Dose_1"] + df["Dose_2"]
 
         return self._transform_df(df)
 
