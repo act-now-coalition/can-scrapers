@@ -1,14 +1,16 @@
+from typing import List, Tuple
 import pandas as pd
 
-from can_tools.utils import determine_location_column
+
+from can_tools.validators.utils import prepare_indexed_df, prepare_selector_query
 
 
-def prepare_selector_query(column_names, elements):
-    "Takes a list of columns/values and only keeps values where column_names[i]==elements[i]"
-    return " & ".join([f"{x} == '{y}'" for x, y in zip(column_names, elements)])
-
-
-def prepare_comparison(df, column_names, elements1, elements2):
+def prepare_comparison(
+    df: pd.DataFrame,
+    column_names: List[str],
+    elements1: List[str],
+    elements2: List[str],
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Preparatory step for doing column-wise comparisons
 
@@ -31,35 +33,16 @@ def prepare_comparison(df, column_names, elements1, elements2):
         Two dataframes that have been subsetted to allow for comparison
     """
 
-    loc_col = determine_location_column(df)
-
-    # Index columns
-    idx_cols = [
-        "dt",
-        loc_col,
-        "category",
-        "measurement",
-        "unit",
-        "age",
-        "sex",
-        "race",
-        "ethnicity",
-    ]
-    for c in column_names:
-        idx_cols.remove(c)
+    idf = prepare_indexed_df(df)
 
     # Subset the data for relevant subsets
-    df1 = df.query(prepare_selector_query(column_names, elements1)).set_index(idx_cols)[
-        ["value"]
-    ]
-    df2 = df.query(prepare_selector_query(column_names, elements2)).set_index(idx_cols)[
-        ["value"]
-    ]
+    df1 = idf.query(prepare_selector_query(column_names, elements1))[["value"]]
+    df2 = idf.query(prepare_selector_query(column_names, elements2))[["value"]]
 
     return df1, df2
 
 
-def cat1_ge_cat2(df, cat1, cat2):
+def cat1_ge_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
     """
     Checks that values from subset where `category == cat1` are
     greater than or equal to the values from subset where `category == cat2`
@@ -69,7 +52,7 @@ def cat1_ge_cat2(df, cat1, cat2):
     return df1.ge(df2)["value"].all()
 
 
-def cat1_gt_cat2(df, cat1, cat2):
+def cat1_gt_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
     """
     Checks that values from subset where `category == cat1` are
     greater than the values from subset where `category == cat2`
@@ -79,7 +62,7 @@ def cat1_gt_cat2(df, cat1, cat2):
     return df1.gt(df2)["value"].all()
 
 
-def cat1_le_cat2(df, cat1, cat2):
+def cat1_le_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
     """
     Checks that values from subset where `category == cat1` are
     less than or equal to the values from subset where `category == cat2`
@@ -89,7 +72,7 @@ def cat1_le_cat2(df, cat1, cat2):
     return df1.le(df2)["value"].all()
 
 
-def cat1_lt_cat2(df, cat1, cat2):
+def cat1_lt_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
     """
     Checks that values from subset where `category == cat1` are
     less than the values from subset where `category == cat2`

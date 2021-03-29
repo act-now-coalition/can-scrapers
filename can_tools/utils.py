@@ -36,7 +36,9 @@ def is_time_series(df: pd.DataFrame) -> bool:
     return df["dt"].nunique() > 1
 
 
-def load_most_recent_cdc(source: str, engine: Optional[sa.core.Engine]) -> pd.DataFrame:
+def load_most_recent_cdc(
+    source: str, engine: Optional[sa.engine.Engine]
+) -> pd.DataFrame:
     """Loads most recent cdc data either from scraper output, sql, or parquet file
 
     Args:
