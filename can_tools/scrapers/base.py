@@ -1,3 +1,5 @@
+from can_tools.validators.timeseries import values_increasing_over_time
+from can_tools.utils import is_time_series
 from typing import Any, Dict, List, Optional, Type
 
 import os
@@ -404,6 +406,14 @@ class DatasetBase(ABC):
         validated : bool
             Whether we have validated the data
         """
+        if is_time_series(df):
+            if (df["measurement"] == "cumulative").sum() > 0:
+                ok, problem = values_increasing_over_time(df)
+                if not ok:
+                    raise ValidateDataFailedError(
+                        f"{problem} has decrease in cumulative variable"
+                    )
+
         return True
 
     def _validate(self):
