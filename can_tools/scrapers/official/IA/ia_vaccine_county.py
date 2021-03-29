@@ -24,11 +24,12 @@ class IowaCountyVaccine(StateDashboard):
     # 4) Inspect the Network tab in the browser, then click the link
     # 5) The token will be in the request headers under 'x-domo-embed-token`
     token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJ" \
-            "mIjoxNjE2NzYyOTUyLCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI6" \
-            "XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI" \
-            "6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE2NzkxNzYyLCJpYXQiOjE2MTY3NjI5NjIsImp0aSI6" \
-            "IjdkODBhN2YwLWZmZjEtNDc2Yi1iNGQ3LThlOTRiOWFlYzJiMiJ9.Fn5GPyRJZal_b28wA2tS" \
-            "HUBZxJv-QsbBlngmSlvmbfw"
+            "mIjoxNjE3MDIzNzY3LCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI" \
+            "6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25" \
+            "zXCI6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE3MDUyNTc3LCJpYXQiOjE2MTcwMjM3Nzc" \
+            "sImp0aSI6IjhiMjkwZTdiLTIyOGItNDk1ZS1hZWM4LTk4MzU4ZmY1MGQ1MSJ9.fLonEP" \
+            "lF81TuGI5UlVI4CAYAbkO3rk3HTv-vyvSNWbY"
+    
 
     variables = {
             "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
@@ -37,7 +38,7 @@ class IowaCountyVaccine(StateDashboard):
         }
     def fetch(self):
         headers = {
-            'x-domo-embed-token': self.token,
+            'x-domo-embed-token': self.token
         }
         res = requests.post(self.csv_link, {
             "request": json.dumps({
