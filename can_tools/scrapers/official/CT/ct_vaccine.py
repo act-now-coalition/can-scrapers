@@ -27,7 +27,12 @@ class CTCountyVaccine(SODA, DatasetBase):
         data = data.rename(
             columns={"date": "dt", "county_of_residence": "location_name"}
         )
-        unwanted_loc = ["Total", "Address pending validation", "Residence out of state", "Resident out of state"]
+        unwanted_loc = [
+            "Total",
+            "Address pending validation",
+            "Residence out of state",
+            "Resident out of state",
+        ]
         data = data.query("location_name not in @unwanted_loc")
 
         crename = {
