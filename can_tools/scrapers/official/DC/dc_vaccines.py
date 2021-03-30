@@ -1,7 +1,6 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
@@ -20,7 +19,7 @@ class DCVaccineRace(TableauDashboard):
     # map column names into CMUs
     variables = {
         "FULLY VACCINATED": variables.FULLY_VACCINATED_ALL,
-        "PARTIALLY VACCINATED": variables.INITIATING_VACCINATIONS_ALL,
+        "INITIATED": variables.INITIATING_VACCINATIONS_ALL,
     }
 
     def _get_date(self):
@@ -31,31 +30,39 @@ class DCVaccineRace(TableauDashboard):
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
     def normalize(self, data):
-        df = (
-            data.rename(
-                columns={
-                    "Vaccination Status-alias": "variable",
-                    "SUM(Vaccinated)-value": "value",
-                }
-            )
-            .assign(
-                vintage=self._retrieve_vintage(),
-                dt=self._get_date(),
-                location=self.state_fips,
-            )
-            .drop(
-                columns={
-                    "SUM(Vaccinated)-alias",
-                    "Cross-alias",
-                }
-            )
+        df = data.rename(
+            columns={
+                "Vaccination Status-alias": "variable",
+                "SUM(Vaccinated)-value": "value",
+                "Cross-value": "demo_val",
+            }
+        ).drop(
+            columns={
+                "SUM(Vaccinated)-alias",
+                "Cross-alias",
+            }
         )
 
-        # already in long form yay
-        df = df.pipe(self.extract_CMU, cmu=self.variables)
-        df["value"] = df["value"].astype(int)
+        # sum the partially and fully vaccinated entries to match definition
+        # to avoid pivoting to wide then back to long I selected each corresponding entry to sum
+        q = 'variable == "{v} VACCINATED" and demo_val == "{d}"'
+        for d in ["BLACK", "WHITE", "OTHER"]:
+            initiated_value = int(
+                df.query(q.format(v="PARTIALLY", d=d))["value"]
+            ) + int(df.query(q.format(v="FULLY", d=d))["value"])
+            row = {"variable": "INITIATED", "demo_val": d, "value": initiated_value}
+            df = df.append(row, ignore_index=True)
 
-        out = df.assign(race=df["Cross-value"].str.lower()).drop(
-            columns={"Cross-value", "variable"}
+        df = df.query('variable != "PARTIALLY VACCINATED"').pipe(
+            self.extract_CMU, cmu=self.variables
         )
+
+        out = df.assign(
+            race=df["demo_val"].str.lower(),
+            value=df["value"].astype(int),
+            vintage=self._retrieve_vintage(),
+            dt=self._get_date(),
+            location=self.state_fips,
+        ).drop(columns={"demo_val", "variable"})
+
         return out
