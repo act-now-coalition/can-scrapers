@@ -63,10 +63,10 @@ class AlaskaCountyVaccine(ArcGIS):
             z.replace("count--", "")
                 .replace('F', 'female')
                 .replace("M", "male")
-                .replace("U", "unknown")
+                .replace("U", "gender_unknown")
                 .replace('--1', "-initiated")
                 .replace("--2", "-completed")
-                .replace("--3", "-unknown")
+                .replace("--3", "-dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
         
@@ -97,7 +97,7 @@ class AlaskaCountyVaccine(ArcGIS):
                 .replace('Age Bracket - ', '')
                 .replace('--1', "-initiated")
                 .replace("--2", "-completed")
-                .replace("--3", "-unknown")
+                .replace("--3", "-dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
         
