@@ -18,7 +18,7 @@ from can_tools.scrapers.official.CA.counties.sandiego_vaccine import CASanDiegoV
 from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
-from can_tools.scrapers.official.DC.dc_vaccines import DCVaccineSex
+from can_tools.scrapers.official.DC.dc_vaccines import DCVaccineRace
 from can_tools.scrapers.official.DE.de_vaccine import DelawareStateVaccine
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
