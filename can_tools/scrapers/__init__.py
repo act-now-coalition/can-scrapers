@@ -71,6 +71,9 @@ from can_tools.scrapers.official.PA.pa_vaccines import (
     PennsylvaniaVaccineRace,
     PennsylvaniaVaccineSex,
 )
+
+from can_tools.scrapers.official.SD.sd_vaccines import SDVaccineCounty
+
 from can_tools.scrapers.official.TN.tn_state import (
     TennesseeAge,
     TennesseeAgeByCounty,
