@@ -42,11 +42,16 @@ class DCVaccineRace(TableauDashboard):
                 "Cross-alias",
             }
         )
+        df["demo_val"] = df["demo_val"].str.lower()
+
+        # check to ensure that the scraper is still returning data by race
+        if not all(x in list(df["demo_val"].unique()) for x in ["white", "black"]):
+            raise ValueError("scraper is not returning race data")
 
         # sum the partially and fully vaccinated entries to match definition
         # to avoid pivoting to wide then back to long I selected each corresponding entry to sum
         q = 'variable == "{v} VACCINATED" and demo_val == "{d}"'
-        for d in ["BLACK", "WHITE", "OTHER"]:
+        for d in ["black", "white", "other"]:
             initiated_value = int(
                 df.query(q.format(v="PARTIALLY", d=d))["value"]
             ) + int(df.query(q.format(v="FULLY", d=d))["value"])
@@ -58,7 +63,7 @@ class DCVaccineRace(TableauDashboard):
         )
 
         out = df.assign(
-            race=df["demo_val"].str.lower(),
+            race=df["demo_val"],
             value=df["value"].astype(int),
             vintage=self._retrieve_vintage(),
             dt=self._get_date(),
