@@ -31,7 +31,7 @@ class DCVaccineSex(TableauDashboard):
         # 'last updated' date is stored in a 1x1 df
         df = self.get_tableau_view(
             url=(self.baseurl + "/views/Vaccine_Public/Administration")
-        )["Update"]
+        )["Admin Update"]
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
     def normalize(self, data):
@@ -66,7 +66,7 @@ class DCVaccineSex(TableauDashboard):
         return out
 
 
-class DCVaccine(TableauDashboard):
+class DCVaccine(DCVaccineSex):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
@@ -99,9 +99,7 @@ class DCVaccine(TableauDashboard):
             .reset_index()
             .rename_axis(None, axis=1)
         )
-
-        renamed = self._rename_or_add_date_and_location(
-            df, location_column="location", timezone="US/Eastern"
-        )
-        out = self._reshape_variables(renamed, self.variables)
+        df['dt'] = self._get_date()
+       
+        out = self._reshape_variables(df, self.variables)
         return out
