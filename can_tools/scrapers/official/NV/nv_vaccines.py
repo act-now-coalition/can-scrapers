@@ -84,7 +84,7 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                     "From": self.construct_from(
                                         [
                                             ("c", "Counties", 0),
-                                            ("s", "Sheet1", 0),
+                                            ("s", "Vaccinations by Patient County", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
