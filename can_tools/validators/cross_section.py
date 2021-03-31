@@ -54,7 +54,10 @@ def _elementwise_comp_by_cat(
         df1.reset_index(level=drop_levels, inplace=True, drop=True)
         df2.reset_index(level=drop_levels, inplace=True, drop=True)
 
-    bools = method(df1, df2)["value"]
+    # find common subset
+    common_index = df1.index.intersection(df2.index)
+
+    bools = method(df1.loc[common_index], df2.loc[common_index])["value"]
     if bools.all():
         return True, None
     else:
