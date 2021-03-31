@@ -144,8 +144,11 @@ class StateDashboard(DatasetBase, ABC):
         if "vintage" in data.columns:
             id_vars.append("vintage")
 
-        if "sex" in data.columns:
-            id_vars.append("sex")
+        included_demographic_columns = []
+        for demographic_column in ["sex", "age", "race", "ethnicity"]:
+            if demographic_column in data.columns:
+                id_vars.append(demographic_column)
+                included_demographic_columns.append(demographic_column)
 
         data = (
             data.melt(id_vars=id_vars, value_vars=value_cols)
@@ -155,7 +158,11 @@ class StateDashboard(DatasetBase, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU_with_demographic_column, cmu=variable_map, demographic_column="sex")
+            .pipe(
+                self.extract_CMU,
+                cmu=variable_map,
+                included_demographic_columns=included_demographic_columns,
+            )
             .drop(["variable"], axis=1)
         )
         if "vintage" not in data.columns:

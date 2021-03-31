@@ -168,7 +168,7 @@ class DatasetBase(ABC):
             "ethnicity",
             "sex",
         ],
-        included_demographic_columns: Optional[List] = None
+        included_demographic_columns: Optional[List] = None,
         var_name: str = "variable",
     ) -> pd.DataFrame:
         """
@@ -198,52 +198,10 @@ class DatasetBase(ABC):
         variable_column = df[var_name]
         out = df.copy()
         for col in columns:
-            out[col] = variable_column.map(lambda x: getattr(cmu[x], col))
-        return out
-
-    def extract_CMU_with_demographic_column(
-        self,
-        df: pd.DataFrame,
-        cmu: Dict[str, CMU],
-        demographic_column: str,
-        columns: List[str] = [
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-        ],
-        var_name: str = "variable",
-    ) -> pd.DataFrame:
-        """
-        Adds columns "category", "measurement", and "unit" to df
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            This DataFrame must have the column `variable` and the
-            unique elements of `variable` must be keys in the
-            `cmu_dict`
-        cmu : dict(str -> CMU)
-            This dictionary maps variable names into a subcategory,
-            measurement, and unit using a CMU namedtuple
-        columns: List[str]
-            A list of columns to set using the `cmu` dict
-        var_name: str
-            The name of the column in `df` that should be used to lookup
-            items from the `cmu` dict for unpacking columns
-
-        Returns
-        -------
-        df : pd.DataFrame
-            A copy of the DataFrame passed in that has new columns
-            "category", "measurement", and "unit"
-        """
-        variable_column = df[var_name]
-        out = df.copy()
-        for col in columns:
+            if col in included_demographic_columns:
+                # Want to keep the value of the current column as its value,
+                # carry on.
+                continue
             else:
                 out[col] = variable_column.map(lambda x: getattr(cmu[x], col))
         return out

@@ -40,6 +40,7 @@ from can_tools.scrapers.official.GA.ga_vaccines import GeorgiaCountyVaccine
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
+
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IA.ia_vaccine_county import IowaCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (
