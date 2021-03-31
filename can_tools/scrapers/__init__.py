@@ -59,7 +59,7 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
     MontanaStateVaccine,
 )
 
-# from can_tools.scrapers.official.MA import Massachusetts
+from can_tools.scrapers.official.MA.ma_vaccine import MACountyVaccine
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
