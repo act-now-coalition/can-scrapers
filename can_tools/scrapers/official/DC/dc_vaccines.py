@@ -99,7 +99,7 @@ class DCVaccine(DCVaccineSex):
             .reset_index()
             .rename_axis(None, axis=1)
         )
-        df['dt'] = self._get_date()
-       
+        df["dt"] = self._get_date()
+
         out = self._reshape_variables(df, self.variables)
         return out
