@@ -22,8 +22,8 @@ class NCVaccine(TableauDashboard):
 
     # map wide form column names into CMUs
     cmus = {
-        "SUM(Partially Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "SUM(Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
+        "AGG(Calc.Tooltip Partially Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "AGG(Calc.Tooltip Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:

@@ -3,6 +3,7 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
+from can_tools.scrapers import variables
 
 
 class DCVaccineSex(TableauDashboard):
@@ -30,7 +31,7 @@ class DCVaccineSex(TableauDashboard):
         # 'last updated' date is stored in a 1x1 df
         df = self.get_tableau_view(
             url=(self.baseurl + "/views/Vaccine_Public/Administration")
-        )["Update"]
+        )["Admin Update"]
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
     def normalize(self, data):
@@ -62,4 +63,43 @@ class DCVaccineSex(TableauDashboard):
             columns={"Cross-value", "variable"}
         )
 
+        return out
+
+
+class DCVaccine(DCVaccineSex):
+    has_location = True
+    source = "https://coronavirus.dc.gov/data/vaccination"
+    source_name = "DC Health"
+    state_fips = int(us.states.lookup("District of Columbia").fips)
+    location_type = "state"
+    baseurl = "https://dataviz1.dc.gov/t/OCTO"
+    viewPath = "Vaccine_Public/Administration"
+    data_tableau_table = "TimeTable"
+
+    variables = {
+        "FULLY VACCINATED": variables.FULLY_VACCINATED_ALL,
+        "PARTIALLY/FULLY VACCINATED": variables.INITIATING_VACCINATIONS_ALL,
+    }
+
+    def normalize(self, data):
+        df = data
+        df["Measure Values-alias"] = pd.to_numeric(
+            df["Measure Values-alias"].str.replace(",", ""), errors="coerce"
+        )
+        df = df.loc[df["Resident_Type-value"] == "DC Resident"][
+            ["Measure Values-alias", "Measure Names-alias"]
+        ]
+        df["location"] = self.state_fips
+        df = (
+            df.pivot(
+                index="location",
+                columns="Measure Names-alias",
+                values="Measure Values-alias",
+            )
+            .reset_index()
+            .rename_axis(None, axis=1)
+        )
+        df["dt"] = self._get_date()
+
+        out = self._reshape_variables(df, self.variables)
         return out
