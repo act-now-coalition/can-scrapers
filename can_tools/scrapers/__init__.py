@@ -1,9 +1,5 @@
 from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
-from can_tools.scrapers.ctp import (
-    CovidTrackingProject,
-    CovidTrackingProjectDemographics,
-)
 from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
@@ -13,8 +9,6 @@ from can_tools.scrapers.official.AZ.counties.maricopa_vaccine import (
     ArizonaMaricopaVaccine,
 )
 from can_tools.scrapers.official.CA.ca_vaccine import CaliforniaVaccineCounty
-from can_tools.scrapers.official.CA.counties.la_vaccine import LACaliforniaCountyVaccine
-from can_tools.scrapers.official.CA.counties.sandiego_vaccine import CASanDiegoVaccine
 from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths

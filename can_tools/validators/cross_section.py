@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 import pandas as pd
 
 
@@ -42,41 +42,40 @@ def prepare_comparison(
     return df1, df2
 
 
-def cat1_ge_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
+def _elementwise_comp_by_cat(
+    method,
+    df: pd.DataFrame,
+    cat1: str,
+    cat2: str,
+    drop_levels: Optional[List[str]] = None,
+) -> Tuple[bool, pd.MultiIndex]:
+    df1, df2 = prepare_comparison(df, ["category"], [cat1], [cat2])
+    if drop_levels is not None:
+        df1.reset_index(level=drop_levels, inplace=True, drop=True)
+        df2.reset_index(level=drop_levels, inplace=True, drop=True)
+
+    bools = method(df1, df2)["value"]
+    if bools.all():
+        return True, None
+    else:
+        return False, df1.index[~bools]
+
+
+def cat1_ge_cat2(
+    df: pd.DataFrame, cat1: str, cat2: str, drop_levels: Optional[List[str]] = None
+) -> Tuple[bool, pd.MultiIndex]:
     """
     Checks that values from subset where `category == cat1` are
     greater than or equal to the values from subset where `category == cat2`
     """
-    df1, df2 = prepare_comparison(df, ["category"], [cat1], [cat2])
-
-    return df1.ge(df2)["value"].all()
+    return _elementwise_comp_by_cat(pd.DataFrame.ge, df, cat1, cat2, drop_levels)
 
 
-def cat1_gt_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
+def cat1_gt_cat2(
+    df: pd.DataFrame, cat1: str, cat2: str, drop_levels: Optional[List[str]] = None
+) -> Tuple[bool, pd.MultiIndex]:
     """
     Checks that values from subset where `category == cat1` are
     greater than the values from subset where `category == cat2`
     """
-    df1, df2 = prepare_comparison(df, ["category"], [cat1], [cat2])
-
-    return df1.gt(df2)["value"].all()
-
-
-def cat1_le_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
-    """
-    Checks that values from subset where `category == cat1` are
-    less than or equal to the values from subset where `category == cat2`
-    """
-    df1, df2 = prepare_comparison(df, ["category"], [cat1], [cat2])
-
-    return df1.le(df2)["value"].all()
-
-
-def cat1_lt_cat2(df: pd.DataFrame, cat1: str, cat2: str) -> bool:
-    """
-    Checks that values from subset where `category == cat1` are
-    less than the values from subset where `category == cat2`
-    """
-    df1, df2 = prepare_comparison(df, ["category"], [cat1], [cat2])
-
-    return df1.lt(df2)["value"].all()
+    return _elementwise_comp_by_cat(pd.DataFrame.gt, df, cat1, cat2, drop_levels)

@@ -1,3 +1,5 @@
+from ipdb.__main__ import launch_ipdb_on_exception
+from can_tools.validators.cross_section import cat1_ge_cat2
 from can_tools.validators.timeseries import values_increasing_over_time
 from can_tools.utils import is_time_series
 from typing import Any, Dict, List, Optional, Type
@@ -387,6 +389,39 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
+    def _validate_time_series(self, df):
+        """Do checks only applicable to time series data"""
+        if (df["measurement"] == "cumulative").sum() > 0:
+            ok, problem = values_increasing_over_time(df)
+            if not ok:
+                import pprint
+
+                print("\n")
+                pprint.pprint(problem)
+                raise ValidateDataFailedError(
+                    f"{problem} has decrease in cumulative variable"
+                )
+
+    def _validate_order_of_variables(self, df):
+        cats = [
+            # ("total_vaccine_initiated", "total_vaccine_doses_administered"),
+            ("total_vaccine_completed", "total_vaccine_doses_administered"),
+            ("total_vaccine_completed", "total_vaccine_initiated"),
+        ]
+        cumulatives = df.query("measurement == 'cumulative'")
+        categories = list(cumulatives["category"].unique())
+        for cat_small, cat_large in cats:
+            if cat_small in categories and cat_large in categories:
+                ok, problems = cat1_ge_cat2(
+                    cumulatives,
+                    cat_large,
+                    cat_small,
+                    drop_levels=["unit", "category"],
+                )
+                if not ok:
+                    raise ValidateDataFailedError(f"{cat_small} >= {cat_large}")
+
+
     def validate(self, df, df_hist):
         """
         The `validate` method checks what the tentative clean data looks
@@ -407,13 +442,25 @@ class DatasetBase(ABC):
             Whether we have validated the data
         """
         if is_time_series(df):
-            if (df["measurement"] == "cumulative").sum() > 0:
-                ok, problem = values_increasing_over_time(df)
-                if not ok:
-                    raise ValidateDataFailedError(
-                        f"{problem} has decrease in cumulative variable"
-                    )
+            self._validate_time_series(df)
 
+        cats = [
+            # ("total_vaccine_initiated", "total_vaccine_doses_administered"),
+            ("total_vaccine_completed", "total_vaccine_doses_administered"),
+            ("total_vaccine_completed", "total_vaccine_initiated"),
+        ]
+        cumulatives = df.query("measurement == 'cumulative'")
+        categories = list(cumulatives["category"].unique())
+        for cat_small, cat_large in cats:
+            if cat_small in categories and cat_large in categories:
+                ok = cat1_ge_cat2(
+                    cumulatives,
+                    cat_large,
+                    cat_small,
+                    drop_levels=["unit", "category"],
+                )
+                if not ok:
+                    raise ValidateDataFailedError(f"{cat_small} >= {cat_large}")
         return True
 
     def _validate(self):
