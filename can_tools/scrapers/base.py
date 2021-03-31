@@ -1,7 +1,7 @@
+import pprint
 from ipdb.__main__ import launch_ipdb_on_exception
-from can_tools.validators.cross_section import cat1_ge_cat2
-from can_tools.validators.timeseries import values_increasing_over_time
-from can_tools.utils import is_time_series
+from can_tools.validators import cross_section, timeseries
+from can_tools import utils
 from typing import Any, Dict, List, Optional, Type
 
 import os
@@ -47,6 +47,38 @@ class ValidateDataFailedError(Exception):
     """Error raised when data vailidation fails."""
 
 
+class ValidateRelativeOrderOfCategoriesError(Exception):
+    def __init__(self, cat_small, cat_large, problems):
+        self.cat_small = cat_small
+        self.cat_large = cat_large
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.cat_small} > {self.cat_large}\n"
+        out += pprint.pformat(self.problems, indent=2)
+        return out
+
+
+class ValidateDecreaseInCumulativeVariableError(Exception):
+    def __init__(self, category, problems):
+        self.category = category
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.category} measured cumulative, but had decrease on these dates:\n"
+        out += pprint.pformat(sorted(self.problems), indent=2)
+        return out
+
+class ValidationErrors(Exception):
+    def __init__(self, all_errors: List[Exception]):
+        self.all_errors = all_errors
+
+    def __str__(self):
+        out = "The following errors were found:"
+        out += "\n" + "\n".join([str(x) for x in self.all_errors])
+        return out
+
+
 def _get_base_path() -> Path:
     if "DATAPATH" in os.environ.keys():
         return Path(os.environ["DATAPATH"])
@@ -81,6 +113,15 @@ class DatasetBase(ABC):
     location_type: Optional[str]
     base_path: Path
     source: str
+
+    # this list of tuples specifies categories for which the first
+    # category listed should always be less than or equal to the second
+    # category listed, when the measurement type is cumulative
+    ordered_validation_categories = [
+        ("total_vaccine_initiated", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_initiated"),
+    ]
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         self.execution_dt = pd.to_datetime(execution_dt, utc=True)
@@ -389,37 +430,41 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
-    def _validate_time_series(self, df):
+    def _validate_time_series(self, df)-> [List[Exception]]:
         """Do checks only applicable to time series data"""
+        issues = []
         if (df["measurement"] == "cumulative").sum() > 0:
-            ok, problem = values_increasing_over_time(df)
-            if not ok:
-                import pprint
+            bad = timeseries.values_increasing_over_time(df)
+            for variable, dates in bad.items():
+                err = ValidateDecreaseInCumulativeVariableError(variable, dates)
+                issues.append(err)
 
-                print("\n")
-                pprint.pprint(problem)
-                raise ValidateDataFailedError(
-                    f"{problem} has decrease in cumulative variable"
-                )
+        return issues
 
-    def _validate_order_of_variables(self, df):
-        cats = [
-            # ("total_vaccine_initiated", "total_vaccine_doses_administered"),
-            ("total_vaccine_completed", "total_vaccine_doses_administered"),
-            ("total_vaccine_completed", "total_vaccine_initiated"),
-        ]
+    def _validate_order_of_variables(self, df) -> [List[Exception]]:
+        """
+        Returns a list of exceptions that occured while doing checks
+        """
+        issues = []
         cumulatives = df.query("measurement == 'cumulative'")
         categories = list(cumulatives["category"].unique())
-        for cat_small, cat_large in cats:
+        for cat_small, cat_large in self.ordered_validation_categories:
             if cat_small in categories and cat_large in categories:
-                ok, problems = cat1_ge_cat2(
+                ok, problems = cross_section.cat1_ge_cat2(
                     cumulatives,
                     cat_large,
                     cat_small,
                     drop_levels=["unit", "category"],
                 )
                 if not ok:
-                    raise ValidateDataFailedError(f"{cat_small} >= {cat_large}")
+                    err = ValidateRelativeOrderOfCategoriesError(
+                        cat_small=cat_small,
+                        cat_large=cat_large,
+                        problems=problems
+                    )
+                    issues.append(err)
+
+        return issues
 
     def validate(self, df, df_hist):
         """
@@ -428,6 +473,8 @@ class DatasetBase(ABC):
         are then it returns True otherwise it returns False and stops
         the fetch->normalize->validate->put DAG
 
+        Raises Exceptions if validation fails
+
         Parameters
         ----------
         df : pd.DataFrame
@@ -435,43 +482,21 @@ class DatasetBase(ABC):
         df_hist : pd.DataFrame
             Historical data
 
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
-        if is_time_series(df):
-            self._validate_time_series(df)
+        issues = []
+        if utils.is_time_series(df):
+            issues.extend(self._validate_time_series(df))
 
-        cats = [
-            # ("total_vaccine_initiated", "total_vaccine_doses_administered"),
-            ("total_vaccine_completed", "total_vaccine_doses_administered"),
-            ("total_vaccine_completed", "total_vaccine_initiated"),
-        ]
-        cumulatives = df.query("measurement == 'cumulative'")
-        categories = list(cumulatives["category"].unique())
-        for cat_small, cat_large in cats:
-            if cat_small in categories and cat_large in categories:
-                ok = cat1_ge_cat2(
-                    cumulatives,
-                    cat_large,
-                    cat_small,
-                    drop_levels=["unit", "category"],
-                )
-                if not ok:
-                    raise ValidateDataFailedError(f"{cat_small} >= {cat_large}")
-        return True
+        issues.extend(self._validate_order_of_variables(df))
+
+        if len(issues) > 0:
+            raise ValidationErrors(issues)
 
     def _validate(self):
         """
         The `_validate` method loads the appropriate data and then
         checks the data using `validate` and determines whether the
         data has been validated
-
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
         # Load cleaned data
         df = self._read_clean()
@@ -554,7 +579,7 @@ class DatasetBase(ABC):
         """Reprocesses data from fetched data - useful to fix errors after fetch."""
         self._normalize()
 
-        if not self._validate():
-            raise ValidateDataFailedError()
+        # validate will either succeed or raise an Exception
+        self._validate()
 
         self._put(engine)

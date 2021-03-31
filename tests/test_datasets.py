@@ -70,7 +70,7 @@ def test_datasets(cls):
     assert clean.shape[0] > 0
     _test_data_structure(d, clean)
 
-    assert d.validate(clean, None)
+    d.validate(clean, None)
 
     d.put(engine, clean)
 

@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 import pandas as pd
 
 
-from can_tools.validators.utils import prepare_indexed_df, prepare_selector_query
+from can_tools.validators import utils
 
 
 def prepare_comparison(
@@ -33,11 +33,11 @@ def prepare_comparison(
         Two dataframes that have been subsetted to allow for comparison
     """
 
-    idf = prepare_indexed_df(df)
+    idf = utils.prepare_indexed_df(df)
 
     # Subset the data for relevant subsets
-    df1 = idf.query(prepare_selector_query(column_names, elements1))[["value"]]
-    df2 = idf.query(prepare_selector_query(column_names, elements2))[["value"]]
+    df1 = idf.query(utils.prepare_selector_query(column_names, elements1))[["value"]]
+    df2 = idf.query(utils.prepare_selector_query(column_names, elements2))[["value"]]
 
     return df1, df2
 

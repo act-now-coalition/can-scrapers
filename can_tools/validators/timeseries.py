@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import Dict, Any
 
 from can_tools.validators.utils import list_index_cols
 
@@ -8,14 +9,16 @@ class CumulativeValueDecreases(Exception):
         self.info = info
 
 
-def values_increasing_over_time(df: pd.DataFrame) -> bool:
-    """[summary]
+def values_increasing_over_time(df: pd.DataFrame) -> Dict[str,Any]:
+    """
+    Check if all cumulative variables are always
 
     Args:
-        df (pd.DataFrame): [description]
+        df: normalized Dataframe with varying `dt`
 
     Returns:
-        bool: [description]
+        bad: A dictionary mapping from (category, age, sex, race, ethnicity, sex)
+             to a collection of dates where the observations decrease
     """
     index_cols = list_index_cols(df)
     idf = df.set_index(index_cols)
@@ -36,7 +39,4 @@ def values_increasing_over_time(df: pd.DataFrame) -> bool:
             # find bad dates
             bad[col] = series21.loc[has_decrease].index.get_level_values("dt")
 
-    if len(bad) > 0:
-        return False, bad
-
-    return True, None
+    return bad

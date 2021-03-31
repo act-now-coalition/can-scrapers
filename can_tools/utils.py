@@ -7,7 +7,7 @@ def determine_location_column(df: pd.DataFrame) -> str:
     """Return name of column containing location identifier
 
     Args:
-        df (pd.DataFrame): Normalized DataFrame
+        df: Normalized DataFrame
 
     Raises:
         ValueError: raised when locaiton column could not be found.
@@ -25,14 +25,7 @@ def determine_location_column(df: pd.DataFrame) -> str:
 
 
 def is_time_series(df: pd.DataFrame) -> bool:
-    """Check if normalized DataFrame contains time series data
-
-    Args:
-        df (pd.DataFrame): [description]
-
-    Returns:
-        bool: [description]
-    """
+    "Check if normalized DataFrame contains time series data"
     return df["dt"].nunique() > 1
 
 
@@ -42,10 +35,10 @@ def load_most_recent_cdc(
     """Loads most recent cdc data either from scraper output, sql, or parquet file
 
     Args:
-        source (str): Where to get data. One of "scraper_output", "sql", "parquet"
-        engine (sa.core.Engine): sqlalchemy engine for sql queries. Only necessary when source = "sql"
+        source: Where to get data. One of "scraper_output", "sql", "parquet"
+        engine: sqlalchemy engine for sql queries. Only necessary when source = "sql"
 
     Returns:
-        pd.DataFrame: [description]
+        pd.DataFrame: DataFrame with CDC Covid Tracker data
     """
     pass
