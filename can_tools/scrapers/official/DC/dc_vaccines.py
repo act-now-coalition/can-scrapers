@@ -110,7 +110,7 @@ class DCVaccineRace(TableauDashboard):
         return out
 
 
-class DCVaccine(DCVaccineSex):
+class DCVaccine(DCVaccineRace):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
