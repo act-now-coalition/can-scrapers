@@ -18,7 +18,9 @@ from can_tools.scrapers.official.CA.counties.sandiego_vaccine import CASanDiegoV
 from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
-from can_tools.scrapers.official.DC.dc_vaccines import DCVaccineRace
+
+from can_tools.scrapers.official.DC.dc_vaccines import DCVaccineRace, DCVaccine
+
 from can_tools.scrapers.official.DE.de_vaccine import DelawareStateVaccine
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
@@ -37,6 +39,7 @@ from can_tools.scrapers.official.FL.fl_vaccine import FloridaCountyVaccine
 from can_tools.scrapers.official.GA.ga_vaccines import GeorgiaCountyVaccine
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
+from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 # from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IA.ia_vaccine_county import IowaCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (

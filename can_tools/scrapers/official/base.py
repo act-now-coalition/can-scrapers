@@ -222,7 +222,8 @@ class StateDashboard(DatasetBase, ABC):
             data = data.assign(dt=date)
 
         if location_names_to_drop:
-            data = data.query("location_name != @location_names_to_drop")
+            non_locs = data.loc[:, "location_name"].isin(location_names_to_drop)
+            data = data.loc[~non_locs, :]
 
         if "location_name" in data.columns and apply_title_case:
             data["location_name"] = data["location_name"].str.title()
