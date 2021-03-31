@@ -30,11 +30,20 @@ class CaliforniaVaccineCounty(StateDashboard):
         return pd.read_csv(self.url)
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        non_counties = [
+            # adding these twice b/c I've seen different capitalization on different days
+            "All Ca Counties",
+            "All Ca and Non-Ca Counties",
+            "All CA Counties",
+            "All CA and Non-CA Counties",
+            "Outside California",
+            "Unknown",
+        ]
         data = self._rename_or_add_date_and_location(
             data,
             location_name_column="county",
             date_column="administered_date",
-            location_names_to_drop=["Outside California", "Unknown"],
+            location_names_to_drop=non_counties,
         )
 
         data = self._reshape_variables(data, self.variables)
