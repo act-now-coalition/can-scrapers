@@ -421,7 +421,6 @@ class DatasetBase(ABC):
                 if not ok:
                     raise ValidateDataFailedError(f"{cat_small} >= {cat_large}")
 
-
     def validate(self, df, df_hist):
         """
         The `validate` method checks what the tentative clean data looks
