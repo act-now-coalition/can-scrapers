@@ -29,6 +29,41 @@ class DCVaccineRace(TableauDashboard):
         )["Admin Update"]
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
+    def _get_unknown(self):
+        # get total unknown initiating value
+        initiated = int(
+            self.get_tableau_view()["Sheet 11"]["Measure Values-alias"][0].replace(
+                ",", ""
+            )
+        )
+
+        df = self.get_tableau_view()["Demographics (2)"]
+        df = (
+            df.rename(
+                columns={
+                    "Vaccination Status-alias": "variable",
+                    "SUM(Vaccinated)-alias": "value",
+                    "Cross-alias": "demo_val",
+                }
+            )
+            .drop(columns={"Cross-value", "Vaccination Status-value"})
+            .query("demo_val == 'UNKNOWN'")
+        )
+
+        # the 'completed' is a fraction of the total initiating value
+        df["value"] = (df["value"] * initiated).astype(int)
+
+        # create a new row and append
+        row = {"variable": "INITIATED", "demo_val": "UNKNOWN", "value": initiated}
+        df = df.append(row, ignore_index=True)
+        df = df[
+            (df["variable"] == "FULLY VACCINATED") | (df["variable"] == "INITIATED")
+        ]
+
+        return df.pipe(self.extract_CMU, cmu=self.variables).assign(
+            race="unknown", ethnicity="unknown"
+        )
+
     def normalize(self, data):
         df = data.rename(
             columns={
@@ -62,12 +97,13 @@ class DCVaccineRace(TableauDashboard):
             self.extract_CMU, cmu=self.variables
         )
 
-        out = df.assign(
-            race=df["demo_val"],
-            value=df["value"].astype(int),
+        out = df.assign(race=df["demo_val"], value=df["value"].astype(int))
+        # add the unknown values
+        out = pd.concat([out, self._get_unknown()])
+
+        out = out.assign(
             vintage=self._retrieve_vintage(),
             dt=self._get_date(),
             location=self.state_fips,
         ).drop(columns={"demo_val", "variable"})
-
         return out
