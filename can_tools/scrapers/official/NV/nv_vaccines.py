@@ -111,7 +111,7 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                                 "Sum(Sheet1.Doses Administered)",
                                             ),
                                         ],
-                                       []
+                                        [],
                                     ),
                                 }
                             }
