@@ -49,10 +49,18 @@ class SCVaccineCounty(StateDashboard):
     def _fetch_vaccine(self, vaccine, soup):
         url = self._url_for_vaccine_date(vaccine, soup)
         if url is None or requests.head(url).status_code != 200:
+            
             return []
         
         # print(f"getting {vaccine} data at url {url}")
-        return camelot.read_pdf(url, pages="all", flavor="lattice", process_background=True)
+        return camelot.read_pdf(
+            url, 
+            pages="all", 
+            flavor="lattice", 
+            process_background=True,
+            split_text=True,
+            line_scale=40
+        )
 
     def fetch(self):
         # First request the webpage with the download links
@@ -72,7 +80,13 @@ class SCVaccineCounty(StateDashboard):
         for d in data:
             dfs.append(d.df)
         return dfs
-
+   
+    def _clean_names(self, name):
+        ix = name.find("\n")
+        if ix != -1:
+            return name[ix+1:]
+        else :
+            return name
 
     def _normalize_one_dose(self, vaccine_data, vaccine_name):
         dfs = self._extract_dfs(vaccine_data)
@@ -115,6 +129,7 @@ class SCVaccineCounty(StateDashboard):
         ]
         df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
         # group by county
+        df['location_name'] = df['location_name'].apply(self._clean_names)
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
 
@@ -154,10 +169,12 @@ class SCVaccineCounty(StateDashboard):
 
         return init_dfs
 
+
+
     def _normalize_two_dose(self, vaccine_data, vaccine_name):
         dfs = self._extract_dfs(vaccine_data)
         res = []
-        for d in dfs:
+        for ix, d in enumerate(dfs):
             # Clean data
             df = d.replace("", np.nan).replace("--", 0)
             # Remove first empty row
@@ -165,6 +182,7 @@ class SCVaccineCounty(StateDashboard):
             # Check if first column parsed correctly
             if "Providers" != df[0][1]:
                 # TODO: Replace the rows were col 1 is NaN with the split/expand
+                print(f"Couldn't parse {vaccine_name} #{ix}!")
                 continue
             # Set first row as column names
             df.columns = df.iloc[0]
@@ -180,7 +198,7 @@ class SCVaccineCounty(StateDashboard):
                 'City',
                 "location_name",
                 "First-Doses Received",
-                " First-Doses Distributed",
+                "First-Doses Distributed",
                 "First-Doses Administered",
                 "First-Doses Utlization",
                 "Second-Doses Received",
@@ -201,6 +219,9 @@ class SCVaccineCounty(StateDashboard):
         ]
         df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
         df['Second-Doses Administered'] = pd.to_numeric( df['Second-Doses Administered'], errors='coerce')
+        # clean up county names
+        df['location_name'] = df['location_name'].apply(self._clean_names)
+
         # group by county
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
