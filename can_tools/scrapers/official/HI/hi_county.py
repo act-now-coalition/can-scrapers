@@ -24,18 +24,13 @@ class HawaiiVaccineCounty(TableauDashboard):
     state_fips = int(us.states.lookup("Hawaii").fips)
     # https://public.tableau.com/shared/H33ZZ9HCC?:display_count=y&:origin=viz_share_link&:embed=y
     # Hawai'i https://public.tableau.com/shared/7TCBHC568?:display_count=y&:origin=viz_share_link&:embed=y
-    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]" # this is the name of the user action, not the filter function name. doesn't work
+    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"  # this is the name of the user action, not the filter function name. doesn't work
     baseurl = "https://public.tableau.com"
     viewPath = "HawaiiCOVID-19-VaccinationDashboard/VACCINESBYCOUNTY"
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
-    counties = [
-            'Maui',
-            'Hawaii',
-            'Honolulu',
-            'Kauai'
-        ]
-    
+    counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
+
     def fetch(self):
 
         results = {}
@@ -49,44 +44,44 @@ class HawaiiVaccineCounty(TableauDashboard):
         dfs = []
         for county in self.counties:
 
-            df = data[county]['Cumulative Persons']
+            df = data[county]["Cumulative Persons"]
             df.columns = [
-                'total_vaccine_initiated',
-                'alias',
-                'total_vaccine_completed',
+                "total_vaccine_initiated",
+                "alias",
+                "total_vaccine_completed",
                 "total_vaccines_administered",
                 "sum_daily_count",
                 "measure_name",
                 "dt",
-                "date"
+                "date",
             ]
 
-            df['location_name'] = county
+            df["location_name"] = county
             df.dt = pd.to_datetime(df.dt)
             dfs.append(df)
 
         df = pd.concat(dfs)
         crename = {
             "total_vaccine_initiated": CMU(
-                category='total_vaccine_initiated',
-                measurement='cumulative',
-                unit='people'
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
             ),
             "total_vaccine_completed": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
-                unit="people"
+                unit="people",
             ),
             "sum_daily_count": CMU(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
-                unit="doses"
-            )
+                unit="doses",
+            ),
         }
 
-        out = df.melt(id_vars=['location_name', 'dt'], value_vars=crename.keys())
+        out = df.melt(id_vars=["location_name", "dt"], value_vars=crename.keys())
         out = self.extract_CMU(out, crename)
-        out['vintage'] = self._retrieve_vintage()
+        out["vintage"] = self._retrieve_vintage()
         cols_to_keep = [
             "vintage",
             "dt",
