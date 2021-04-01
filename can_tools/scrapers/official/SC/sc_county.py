@@ -58,7 +58,7 @@ class SCVaccineCounty(StateDashboard):
             pages="all", 
             flavor="lattice", 
             process_background=True,
-            split_text=True,
+            strip_text=',',
             line_scale=40
         )
 
@@ -91,14 +91,17 @@ class SCVaccineCounty(StateDashboard):
     def _normalize_one_dose(self, vaccine_data, vaccine_name):
         dfs = self._extract_dfs(vaccine_data)
         res = []
-        for d in dfs:
+        for ix, d in enumerate(dfs):
             # Clean data
+             if len(df.columns) != 11: 
+                print(f"\t{vaccine_name} #{ix} doesn't have right number of columns!")
             df = d.replace("", np.nan).replace("--", 0)
             # Remove first empty row
             df = df[1:]
             # Check if first column parsed correctly
             if "Providers" != df[0][1]:
                 # TODO: Replace the rows were col 1 is NaN with the split/expand
+                print(f"Couldn't parse {vaccine_name} #{ix}!")
                 continue
             # Set first row as column names
             df.columns = df.iloc[0]
@@ -177,6 +180,8 @@ class SCVaccineCounty(StateDashboard):
         for ix, d in enumerate(dfs):
             # Clean data
             df = d.replace("", np.nan).replace("--", 0)
+            if len(df.columns) != 11: 
+                print(f"\t{vaccine_name} #{ix} doesn't have right number of columns!")
             # Remove first empty row
             df = df[1:]
             # Check if first column parsed correctly
