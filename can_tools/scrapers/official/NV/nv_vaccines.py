@@ -96,19 +96,19 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                                 "s",
                                                 "Doses Initiated",
                                                 0,
-                                                "Sum(Sheet1.Doses Initiated)",
+                                                "doses_initiated",
                                             ),
                                             (
                                                 "s",
                                                 "Fully Immunized",
                                                 0,
-                                                "Sum(Sheet1.Fully Immunized",
+                                                "doses_completed",
                                             ),
                                             (
                                                 "s",
                                                 "Doses Administered",
                                                 0,
-                                                "Sum(Sheet1.Doses Administered)",
+                                                "doses_administered",
                                             ),
                                         ],
                                         [],
@@ -171,17 +171,17 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
         )
         # Reshape
         crename = {
-            "Sum(Sheet1.Doses Initiated)": CMU(
+            "doses_initiated": CMU(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Sum(Sheet1.Fully Immunized": CMU(
+            "doses_completed": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Sum(Sheet1.Doses Administered)": CMU(
+            "doses_administered": CMU(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
