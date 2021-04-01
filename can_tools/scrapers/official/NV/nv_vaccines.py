@@ -84,7 +84,7 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                     "From": self.construct_from(
                                         [
                                             ("c", "Counties", 0),
-                                            ("s", "Sheet1", 0),
+                                            ("s", "Vaccinations by Patient County", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -96,22 +96,22 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                                 "s",
                                                 "Doses Initiated",
                                                 0,
-                                                "doses_initiated",
+                                                "Sum(Sheet1.Doses Initiated)",
                                             ),
                                             (
                                                 "s",
                                                 "Fully Immunized",
                                                 0,
-                                                "doses_completed",
+                                                "Sum(Sheet1.Fully Immunized",
                                             ),
                                             (
                                                 "s",
                                                 "Doses Administered",
                                                 0,
-                                                "doses_administered",
+                                                "Sum(Sheet1.Doses Administered)",
                                             ),
                                         ],
-                                        [],
+                                       []
                                     ),
                                 }
                             }
@@ -169,20 +169,19 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
             .rename(columns=col_mapping)
             .rename(columns={"county": "location_name"})
         )
-
         # Reshape
         crename = {
-            "doses_initiated": CMU(
+            "Sum(Sheet1.Doses Initiated)": CMU(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "doses_completed": CMU(
+            "Sum(Sheet1.Fully Immunized": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "doses_administered": CMU(
+            "Sum(Sheet1.Doses Administered)": CMU(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
