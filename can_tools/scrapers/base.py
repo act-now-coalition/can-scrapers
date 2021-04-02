@@ -48,13 +48,13 @@ class ValidateDataFailedError(Exception):
 
 
 class ValidateRelativeOrderOfCategoriesError(Exception):
-    def __init__(self, cat_small, cat_large, problems):
-        self.cat_small = cat_small
-        self.cat_large = cat_large
+    def __init__(self, category_small, category_large, problems):
+        self.category_small = category_small
+        self.category_large = category_large
         self.problems = problems
 
     def __str__(self):
-        out = f"{self.cat_small} > {self.cat_large}\n"
+        out = f"{self.category_small} > {self.category_large}\n"
         out += pprint.pformat(self.problems, indent=2)
         return out
 
@@ -68,6 +68,7 @@ class ValidateDecreaseInCumulativeVariableError(Exception):
         out = f"{self.category} measured cumulative, but had decrease on these dates:\n"
         out += pprint.pformat(sorted(self.problems), indent=2)
         return out
+
 
 class ValidationErrors(Exception):
     def __init__(self, all_errors: List[Exception]):
@@ -430,7 +431,7 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
-    def _validate_time_series(self, df)-> [List[Exception]]:
+    def _validate_time_series(self, df) -> [List[Exception]]:
         """Do checks only applicable to time series data"""
         issues = []
         if (df["measurement"] == "cumulative").sum() > 0:
@@ -448,19 +449,19 @@ class DatasetBase(ABC):
         issues = []
         cumulatives = df.query("measurement == 'cumulative'")
         categories = list(cumulatives["category"].unique())
-        for cat_small, cat_large in self.ordered_validation_categories:
-            if cat_small in categories and cat_large in categories:
+        for category_small, category_large in self.ordered_validation_categories:
+            if category_small in categories and category_large in categories:
                 ok, problems = cross_section.cat1_ge_cat2(
                     cumulatives,
-                    cat_large,
-                    cat_small,
+                    category_large,
+                    category_small,
                     drop_levels=["unit", "category"],
                 )
                 if not ok:
                     err = ValidateRelativeOrderOfCategoriesError(
-                        cat_small=cat_small,
-                        cat_large=cat_large,
-                        problems=problems
+                        category_small=category_small,
+                        category_large=category_large,
+                        problems=problems,
                     )
                     issues.append(err)
 

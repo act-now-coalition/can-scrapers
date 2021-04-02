@@ -9,15 +9,15 @@ class CumulativeValueDecreases(Exception):
         self.info = info
 
 
-def values_increasing_over_time(df: pd.DataFrame) -> Dict[str,Any]:
+def values_increasing_over_time(df: pd.DataFrame) -> Dict[str, Any]:
     """
-    Check if all cumulative variables are always
+    Check if all cumulative variables are always increasing over time
 
     Args:
         df: normalized Dataframe with varying `dt`
 
     Returns:
-        bad: A dictionary mapping from (category, age, sex, race, ethnicity, sex)
+        bad: A dictionary mapping from (category, unit, age, sex, race, ethnicity)
              to a collection of dates where the observations decrease
     """
     index_cols = list_index_cols(df)
