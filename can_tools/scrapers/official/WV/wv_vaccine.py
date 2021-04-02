@@ -3,7 +3,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU, variables
+from can_tools.scrapers import ScraperVariable, variables
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 

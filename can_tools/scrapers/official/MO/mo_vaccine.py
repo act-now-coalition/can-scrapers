@@ -40,6 +40,6 @@ class MissouriVaccineCounty(TableauDashboard):
                 ),
             )
             .query("location_name not in @non_counties")
-            .pipe(self.extract_CMU, cmu=cmus)
+            .pipe(self.extract_ScraperVariable, cmu=cmus)
             .drop(["variable"], axis="columns")
         )

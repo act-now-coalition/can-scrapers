@@ -74,7 +74,7 @@ class DCBase(StateDashboard):
 
     def _reshape(self, data: pd.DataFrame, _map: dict) -> pd.DataFrame:
         """
-        Function to prep data for put() function. renames and adds columns according to CMU (map) entries
+        Function to prep data for put() function. renames and adds columns according to ScraperVariable (map) entries
 
             Accepts
             -------
@@ -83,7 +83,7 @@ class DCBase(StateDashboard):
                                 dt   Variable Name  ...         location_name
                     0   2020-03-07  Variable Value  ...  District of Columbia
                     ...
-                _map: dictionary with CMU keys/values
+                _map: dictionary with ScraperVariable keys/values
 
             Returns
             -------
@@ -97,7 +97,7 @@ class DCBase(StateDashboard):
             out["value"].astype(str).str.replace(",", "").str.strip(),
         )
 
-        out = self.extract_CMU(out, _map)
+        out = self.extract_ScraperVariable(out, _map)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [

@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -18,6 +18,6 @@ class {{ scraper.name }}(TableauDashboard):
     location_name_col = "{{ scraper.location_name_col }}"
     timezone = "{{ scraper.timezone }}"
 
-    # map wide form column names into CMUs
+    # map wide form column names into ScraperVariables
     cmus = {
     }

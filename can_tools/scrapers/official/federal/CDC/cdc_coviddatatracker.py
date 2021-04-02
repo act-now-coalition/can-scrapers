@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import ALL_STATES_PLUS_DC, ScraperVariable
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -16,18 +16,18 @@ class CDCCovidDataTracker(FederalDashboard):
     provider = "cdc"
 
     variables = {
-        "new_cases_7_day_rolling_average": CMU(
+        "new_cases_7_day_rolling_average": ScraperVariable(
             category="cases", measurement="rolling_average_7_day", unit="people"
         ),
-        "new_deaths_7_day_rolling_average": CMU(
+        "new_deaths_7_day_rolling_average": ScraperVariable(
             category="deaths", measurement="rolling_average_7_day", unit="people"
         ),
-        "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
+        "percent_new_test_results_reported_positive_7_day_rolling_average": ScraperVariable(
             category="pcr_tests_positive",
             measurement="rolling_average_7_day",
             unit="percentage",
         ),
-        "new_test_results_reported_7_day_rolling_average": CMU(
+        "new_test_results_reported_7_day_rolling_average": ScraperVariable(
             category="pcr_tests_total",
             measurement="rolling_average_7_day",
             unit="specimens",  # TODO: Need to ensure this is actually specimens!

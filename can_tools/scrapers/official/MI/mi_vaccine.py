@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -22,7 +22,7 @@ class MichiganVaccineCounty(StateDashboard):
         data["variable"] = data["variable"].str.replace(" ", "")
 
         def _make_cmu(cat):
-            return CMU(
+            return ScraperVariable(
                 category=cat,
                 measurement="cumulative",
                 unit="people",
@@ -40,7 +40,7 @@ class MichiganVaccineCounty(StateDashboard):
             "PfizerSecondDose": _make_cmu("pfizer_vaccine_completed"),
             "total_initiated": _make_cmu("total_vaccine_initiated"),
             "total_completed": _make_cmu("total_vaccine_completed"),
-            "total": CMU(
+            "total": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -114,6 +114,6 @@ class MichiganVaccineCounty(StateDashboard):
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_CMU, cmu=cmus)  # extract CMUs
+            .pipe(self.extract_ScraperVariable, cmu=cmus)  # extract ScraperVariables
             .drop(["variable"], axis=1)  # drop variable
         )

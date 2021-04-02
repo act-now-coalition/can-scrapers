@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
 
@@ -13,9 +13,9 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
     location_name_col = "AGG(Geography TT)-alias"
     location_type = "state"
 
-    # map wide form column names into CMUs
+    # map wide form column names into ScraperVariables
     cmus = {
-        "SUM(Initiation or completed count for TT)-alias": CMU(
+        "SUM(Initiation or completed count for TT)-alias": ScraperVariable(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -30,7 +30,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
                      each demographic uses this in its respective normalize
 
         params:
-            demo: the demographic as labeled according to CMU (age,sex,race, etc...)
+            demo: the demographic as labeled according to ScraperVariable (age,sex,race, etc...)
             demo_col_name: the name of the demographic column from the fetched data
 
         returns: normalized data in long format
@@ -57,7 +57,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=self.cmus)
+            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
         )
         df[demo] = df[demo_col_name]
         return df.drop(["variable", demo_col_name], axis=1)

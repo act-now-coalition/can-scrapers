@@ -3,7 +3,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -21,6 +21,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     source_name = "Minnesota Covid-19 Response"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
     powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiYTVjYWYwNjMtODk4ZS00YTRhLWE2Y2MtYWE5YzcxNjE4NGUyIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}
 
@@ -155,12 +156,12 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
 
         # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
+            "total_vaccine_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
+            "total_vaccine_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
@@ -168,8 +169,8 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
         }
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        # Add ScraperVariable, dt, vintage
+        out = self.extract_ScraperVariable(out, crename)
         out["dt"] = self._retrieve_dt("US/Central")
         out["vintage"] = self._retrieve_vintage()
 

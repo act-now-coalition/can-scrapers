@@ -3,14 +3,14 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import ScraperVariable, DatasetBase
 from can_tools.scrapers.official.base import ArcGIS
 
 
 def case_cmu(**kw):
     kwargs = dict(category="cases", measurement="cumulative", unit="people")
     kwargs.update(kw)
-    return CMU(**kwargs)
+    return ScraperVariable(**kwargs)
 
 
 def deaths_cmu(**kw):
@@ -34,34 +34,36 @@ class WisconsinArcGIS(ArcGIS, ABC):
     SHEET: int
 
     crename = {
-        "positive": CMU(
+        "positive": ScraperVariable(
             category="cases",
             measurement="cumulative",
             unit="people",
         ),
-        "negative": CMU(
+        "negative": ScraperVariable(
             category="pcr_tests_negative",
             measurement="cumulative",
             unit="unique_people",
         ),
-        "pos_new": CMU(
+        "pos_new": ScraperVariable(
             category="cases",
             measurement="new",
             unit="people",
         ),
-        "neg_new": CMU(
+        "neg_new": ScraperVariable(
             category="pcr_tests_negative",
             measurement="new",
             unit="unique_people",
         ),
-        "test_new": CMU(
+        "test_new": ScraperVariable(
             category="pcr_tests_total",
             measurement="new",
             unit="unique_people",
         ),
-        "deaths": CMU(category="deaths", measurement="cumulative", unit="people"),
-        "dth_new": CMU(category="deaths", measurement="new", unit="people"),
-        "hosp_yes": CMU(
+        "deaths": ScraperVariable(
+            category="deaths", measurement="cumulative", unit="people"
+        ),
+        "dth_new": ScraperVariable(category="deaths", measurement="new", unit="people"),
+        "hosp_yes": ScraperVariable(
             category="hospital_beds_in_use_covid",
             measurement="cumulative",
             unit="people",
@@ -147,7 +149,7 @@ class WisconsinArcGIS(ArcGIS, ABC):
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         # Extract category information and add other variable context
-        out = self.extract_CMU(out, self.crename)
+        out = self.extract_ScraperVariable(out, self.crename)
 
         cols_to_keep = [
             "vintage",

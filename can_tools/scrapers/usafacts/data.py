@@ -2,7 +2,7 @@ from typing import Any
 
 import pandas as pd
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import FederalDashboard
 
 BASEURL = "https://usafactsstatic.blob.core.windows.net/public/data/"
@@ -78,9 +78,11 @@ class USAFactsCases(FederalDashboard):
         out["vintage"] = self._retrieve_vintage()
 
         out["variable"] = "replaceme"
-        cmu = CMU(category=self.category, measurement="cumulative", unit="people")
+        cmu = ScraperVariable(
+            category=self.category, measurement="cumulative", unit="people"
+        )
 
-        return out.pipe(self.extract_CMU, cmu={"replaceme": cmu}).drop(
+        return out.pipe(self.extract_ScraperVariable, cmu={"replaceme": cmu}).drop(
             ["variable"], axis="columns"
         )
 

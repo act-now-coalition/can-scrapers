@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -31,19 +31,19 @@ class LAVaccineCounty(ArcGIS):
         )
 
         crename = {
-            "SeriesInt": CMU(
+            "SeriesInt": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "SeriesComp": CMU(
+            "SeriesComp": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
         }
 
-        result = self.extract_CMU(melted, crename)
+        result = self.extract_ScraperVariable(melted, crename)
 
         result["vintage"] = self._retrieve_vintage()
 

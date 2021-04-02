@@ -4,7 +4,7 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -40,7 +40,7 @@ class NewJerseyVaccineCounty(ArcGIS):
                 vintage=self._retrieve_vintage(),
                 location_name=lambda x: x["location_name"].str.title(),
             )
-            .pipe(self.extract_CMU, cmu=self.variables)
+            .pipe(self.extract_ScraperVariable, cmu=self.variables)
             .drop(["variable"], axis=1)
             .query("location_name not in @non_counties")
             .dropna()

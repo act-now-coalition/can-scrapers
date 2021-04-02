@@ -3,7 +3,7 @@ import us
 import requests
 import json
 from io import StringIO
-from can_tools.scrapers.official.base import StateDashboard, CMU
+from can_tools.scrapers.official.base import StateDashboard, ScraperVariable
 from can_tools.scrapers import variables
 
 

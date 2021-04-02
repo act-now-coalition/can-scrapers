@@ -3,7 +3,7 @@ import requests
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.util import requests_retry_session
 
@@ -69,22 +69,22 @@ class NewMexicoVaccineCounty(NewMexicoBase):
 
         # Create dictionary for columns to map
         crename = {
-            "modernaShipped": CMU(
+            "modernaShipped": ScraperVariable(
                 category="moderna_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "pfizerShipped": CMU(
+            "pfizerShipped": ScraperVariable(
                 category="pfizer_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "dosesAdministered": CMU(
+            "dosesAdministered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "totalShipped": CMU(
+            "totalShipped": ScraperVariable(
                 category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
@@ -101,7 +101,7 @@ class NewMexicoVaccineCounty(NewMexicoBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(df, crename)
+        df = self.extract_ScraperVariable(df, crename)
 
         # Determine what columns to keep
         cols_to_keep = [

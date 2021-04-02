@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.util import requests_retry_session
 
@@ -68,10 +68,10 @@ class TennesseeAge(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "AR_CASECOUNT": CMU(
+            "AR_CASECOUNT": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "AR_TOTALDEATHS": CMU(
+            "AR_TOTALDEATHS": ScraperVariable(
                 category="deaths", measurement="cumulative", unit="people"
             ),
         }
@@ -80,7 +80,7 @@ class TennesseeAge(TennesseeBase):
         df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(
+        df = self.extract_ScraperVariable(
             df,
             crename,
             columns=["category", "measurement", "unit", "race", "ethnicity", "sex"],
@@ -149,7 +149,7 @@ class TennesseeAgeByCounty(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "CASE_COUNT": CMU(
+            "CASE_COUNT": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people"
             ),
         }
@@ -160,7 +160,7 @@ class TennesseeAgeByCounty(TennesseeBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(
+        df = self.extract_ScraperVariable(
             df, crename, ["category", "measurement", "unit", "race", "ethnicity", "sex"]
         )
 
@@ -259,10 +259,10 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "Cat_CaseCount": CMU(
+            "Cat_CaseCount": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "CAT_DEATHCOUNT": CMU(
+            "CAT_DEATHCOUNT": ScraperVariable(
                 category="deaths", measurement="cumulative", unit="people"
             ),
         }
@@ -281,7 +281,9 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_CMU(df, crename, ["category", "measurement", "unit", "age"])
+        df = self.extract_ScraperVariable(
+            df, crename, ["category", "measurement", "unit", "age"]
+        )
 
         # Determine what columns to keep
         cols_to_keep = [

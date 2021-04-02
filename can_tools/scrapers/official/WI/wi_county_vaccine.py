@@ -18,7 +18,7 @@ class WisconsinVaccineCounty(TableauDashboard):
     location_name_col = "County-alias"
     timezone = "US/Central"
 
-    # map wide form column names into CMUs
+    # map wide form column names into ScraperVariables
     cmus = {
         "SUM(Number With One Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "SUM(Number With Two Doses)-alias": variables.FULLY_VACCINATED_ALL,
@@ -49,7 +49,7 @@ class WisconsinVaccineCounty(TableauDashboard):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=self.cmus)
+            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
         return df

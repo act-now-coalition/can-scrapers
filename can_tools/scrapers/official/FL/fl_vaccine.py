@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -46,32 +46,32 @@ class FloridaCountyVaccine(StateDashboard):
         )
 
         crename = {
-            "first_dose_new": CMU(
+            "first_dose_new": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="new",
                 unit="people",
             ),
-            "series_complete_new": CMU(
+            "series_complete_new": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="new",
                 unit="people",
             ),
-            "total_people_vaccinated_new": CMU(
+            "total_people_vaccinated_new": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="new",
                 unit="doses",
             ),
-            "first_dose_total": CMU(
+            "first_dose_total": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "series_complete_total": CMU(
+            "series_complete_total": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_people_vaccinated_total": CMU(
+            "total_people_vaccinated_total": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -79,7 +79,7 @@ class FloridaCountyVaccine(StateDashboard):
         }
 
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
 

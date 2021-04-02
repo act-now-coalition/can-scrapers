@@ -3,7 +3,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -157,27 +157,27 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
 
         # Reshape
         crename = {
-            "total_vaccine_administered": CMU(
+            "total_vaccine_administered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "total_vaccine_initiated": CMU(
+            "total_vaccine_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
+            "total_vaccine_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_initiated_percent": CMU(
+            "total_vaccine_initiated_percent": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="current",
                 unit="percentage",
             ),
-            "total_vaccine_completed_percent": CMU(
+            "total_vaccine_completed_percent": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="current",
                 unit="percentage",
@@ -185,8 +185,8 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
         }
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        # Add ScraperVariable, dt, vintage
+        out = self.extract_ScraperVariable(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 

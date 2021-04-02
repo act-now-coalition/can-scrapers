@@ -3,7 +3,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -171,17 +171,17 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
         )
         # Reshape
         crename = {
-            "doses_initiated": CMU(
+            "doses_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "doses_completed": CMU(
+            "doses_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "doses_administered": CMU(
+            "doses_administered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -189,8 +189,8 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
         }
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        # Add ScraperVariable, dt, vintage
+        out = self.extract_ScraperVariable(out, crename)
         out["dt"] = self._retrieve_dt("US/Pacific")
         out["vintage"] = self._retrieve_vintage()
 

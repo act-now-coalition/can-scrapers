@@ -3,7 +3,7 @@ import requests
 import us
 from bs4 import BeautifulSoup
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import CountyDashboard
 
 
@@ -46,7 +46,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
 
         # Create dictionary for columns to map
         crename = {
-            "total_vaccine_doses_administered": CMU(
+            "total_vaccine_doses_administered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -57,7 +57,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         df = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        out = self.extract_CMU(df, crename)
+        out = self.extract_ScraperVariable(df, crename)
 
         # Add rows that don't change
         out["vintage"] = self._retrieve_vintage()

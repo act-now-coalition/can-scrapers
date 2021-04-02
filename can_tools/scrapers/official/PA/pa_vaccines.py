@@ -3,7 +3,7 @@ from abc import ABC
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -137,12 +137,12 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
         # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
+            "total_vaccine_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
+            "total_vaccine_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
@@ -150,8 +150,8 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         }
         out = df.melt(id_vars=["location_name"])
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        # Add ScraperVariable, dt, vintage
+        out = self.extract_ScraperVariable(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 
@@ -313,7 +313,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         return df, value_dicts
 
     def normalize_postprocess(self, df, untracked_cats, crename):
-        out = self.extract_CMU(df, crename, columns=untracked_cats)
+        out = self.extract_ScraperVariable(df, crename, columns=untracked_cats)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
         out.loc[:, "location_type"] = "county"
@@ -386,12 +386,12 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
 
         # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
+            "total_vaccine_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
+            "total_vaccine_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",

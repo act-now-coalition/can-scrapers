@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import ScraperVariable, DatasetBase
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
 
 
@@ -131,15 +131,15 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         stateVaccineDataFrame["location"] = self.state_fips
         stateVaccineDataFrame["dt"] = pd.to_datetime(stateVaccineDataFrame["dt"])
         crename = {
-            "supplyCumulative": CMU(
+            "supplyCumulative": ScraperVariable(
                 category="total_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "administeredVac1": CMU(
+            "administeredVac1": ScraperVariable(
                 category="total_vaccine_initiated", measurement="new", unit="people"
             ),
-            "administeredVac2": CMU(
+            "administeredVac2": ScraperVariable(
                 category="total_vaccine_completed", measurement="new", unit="people"
             ),
         }
@@ -148,7 +148,7 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         ).dropna()
         out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         return out.drop(["variable"], axis="columns")
 
 
@@ -273,17 +273,17 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
         )
 
         crename = {
-            "totalSupply": CMU(
+            "totalSupply": ScraperVariable(
                 category="total_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "administeredVac1": CMU(
+            "administeredVac1": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "administeredVac2": CMU(
+            "administeredVac2": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
@@ -295,5 +295,5 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
 
         out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
-        df = self.extract_CMU(out, crename)
+        df = self.extract_ScraperVariable(out, crename)
         return df.drop(["variable"], axis="columns")

@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -13,12 +13,12 @@ class MontanaCountyVaccine(ArcGIS):
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
     source_name = "Montana Department of Health & Human Services"
     crename = {
-        "Dose_1": CMU(
+        "Dose_1": ScraperVariable(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "Dose_2": CMU(
+        "Dose_2": ScraperVariable(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
@@ -64,7 +64,7 @@ class MontanaCountyVaccine(ArcGIS):
             id_vars=["dt", loc_col_type], value_vars=self.crename.keys()
         ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_CMU(out, self.crename)
+        out = self.extract_ScraperVariable(out, self.crename)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
@@ -87,12 +87,12 @@ class MontanaStateVaccine(MontanaCountyVaccine):
     location_type = "state"
     has_location = True
     crename = {
-        "Total_Montanans_Immunized": CMU(
+        "Total_Montanans_Immunized": ScraperVariable(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
         ),
-        "Total_Doses_Administered": CMU(
+        "Total_Doses_Administered": ScraperVariable(
             category="total_vaccine_doses_administered",
             measurement="cumulative",
             unit="doses",

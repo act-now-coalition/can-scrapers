@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import ALL_STATES_PLUS_DC, ScraperVariable
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -39,22 +39,22 @@ class CDCStateVaccine(FederalDashboard):
         )
 
         crename = {
-            "Doses_Distributed": CMU(
+            "Doses_Distributed": ScraperVariable(
                 category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "Administered_Dose1_Recip": CMU(
+            "Administered_Dose1_Recip": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Series_Complete_Yes": CMU(
+            "Series_Complete_Yes": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Doses_Administered": CMU(
+            "Doses_Administered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -63,7 +63,7 @@ class CDCStateVaccine(FederalDashboard):
 
         # Reshape and add variable information
         out = df.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         out["vintage"] = self._retrieve_vintage()
 
         cols_2_keep = [

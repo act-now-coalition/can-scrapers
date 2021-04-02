@@ -3,7 +3,7 @@ from typing import Dict, Optional
 import camelot
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -16,17 +16,17 @@ class MSCountyVaccine(StateDashboard):
     source_name = "Mississippi State Department of Health"
 
     variable_map = {
-        "People Receiving at least One Dose**": CMU(
+        "People Receiving at least One Dose**": ScraperVariable(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "People Fully Vaccinated***": CMU(
+        "People Fully Vaccinated***": ScraperVariable(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
         ),
-        "Total Doses Administered": CMU(
+        "Total Doses Administered": ScraperVariable(
             category="total_vaccine_doses_administered",
             measurement="cumulative",
             unit="doses",

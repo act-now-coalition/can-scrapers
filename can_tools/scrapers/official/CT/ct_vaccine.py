@@ -44,5 +44,5 @@ class CTCountyVaccine(SODA, DatasetBase):
         ).dropna()
         out["value"] = pd.to_numeric(out.loc[:, "value"])
         out["vintage"] = self._retrieve_vintage()
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         return out.drop(["variable"], axis="columns")

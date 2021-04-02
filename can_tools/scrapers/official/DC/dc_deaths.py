@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.DC.dc_base import DCBase
 
 
@@ -33,49 +33,49 @@ class DCDeaths(DCBase):
 
         # maps for each df
         crename_age = {
-            "<19": CMU(
+            "<19": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="0-19",
             ),
-            "20-29": CMU(
+            "20-29": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="20-29",
             ),
-            "30-39": CMU(
+            "30-39": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="30-39",
             ),
-            "40-49": CMU(
+            "40-49": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="40-49",
             ),
-            "50-59": CMU(
+            "50-59": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="50-59",
             ),
-            "60-69": CMU(
+            "60-69": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="60-69",
             ),
-            "70-79": CMU(
+            "70-79": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 age="70-79",
             ),
-            "80+": CMU(
+            "80+": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
@@ -83,13 +83,13 @@ class DCDeaths(DCBase):
             ),
         }
         crename_sex = {
-            "Female": CMU(
+            "Female": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 sex="female",
             ),
-            "Male": CMU(
+            "Male": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
@@ -97,39 +97,39 @@ class DCDeaths(DCBase):
             ),
         }
         crename_race = {
-            "Asian": CMU(
+            "Asian": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 race="asian",
             ),
-            "Black/African American": CMU(
+            "Black/African American": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 race="black",
             ),
-            "Hispanic/Latinx": CMU(
+            "Hispanic/Latinx": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 race="all",
                 ethnicity="hispanic",
             ),
-            "Non-Hispanic White": CMU(
+            "Non-Hispanic White": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 race="white",
                 ethnicity="non-hispanic",
             ),
-            "Unknown": CMU(
+            "Unknown": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
                 race="unknown",
             ),
-            "All": CMU(
+            "All": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",

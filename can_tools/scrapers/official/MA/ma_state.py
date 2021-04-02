@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBaseNeedsDate
+from can_tools.scrapers.base import ScraperVariable, DatasetBaseNeedsDate
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -28,10 +28,10 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
 
         names = {"Date": "dt", "County": "county"}
         cats = {
-            "Total Confirmed Cases": CMU(
+            "Total Confirmed Cases": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "Total Probable and Confirmed Deaths": CMU(
+            "Total Probable and Confirmed Deaths": ScraperVariable(
                 category="deaths", measurement="cumulative", unit="people"
             ),
         }
@@ -40,7 +40,7 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
 
         return (
             melted.drop_duplicates(subset=["dt", "county", "variable"], keep="first")
-            .pipe(self.extract_CMU, cats)
+            .pipe(self.extract_ScraperVariable, cats)
             .drop(["variable"], axis=1)
             .assign(value=lambda x: x["value"].fillna(-1).astype(int))
         )
@@ -69,12 +69,12 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
             raise ValueError(f"Could not find ICU column from list: {list(df)}")
 
         cats = {
-            hosp_col[-1]: CMU(
+            hosp_col[-1]: ScraperVariable(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
-            icu_col[-1]: CMU(
+            icu_col[-1]: ScraperVariable(
                 category="icu_beds_in_use_covid", measurement="current", unit="beds"
             ),
         }
@@ -86,7 +86,7 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
             .rename(columns={"Hospital County": "county"})
             .assign(dt=date)
             .melt(id_vars=["dt", "county"])
-            .pipe(self.extract_CMU, cats)
+            .pipe(self.extract_ScraperVariable, cats)
             .drop(["variable"], axis=1)
         )
 

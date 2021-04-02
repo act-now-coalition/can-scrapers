@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -39,17 +39,17 @@ class IllinoisVaccineCounty(StateDashboard):
 
         # Select certain columns
         cmus = {
-            "AdministeredCount": CMU(
+            "AdministeredCount": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "AllocatedDoses": CMU(
+            "AllocatedDoses": ScraperVariable(
                 category="total_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "PersonsFullyVaccinated": CMU(
+            "PersonsFullyVaccinated": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
@@ -71,7 +71,7 @@ class IllinoisVaccineCounty(StateDashboard):
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_CMU, cmu=cmus)
+            .pipe(self.extract_ScraperVariable, cmu=cmus)
             .drop(["variable"], axis=1)
         )
 

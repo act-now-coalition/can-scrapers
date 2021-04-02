@@ -20,7 +20,7 @@ class NCVaccine(TableauDashboard):
     location_name_col = "County -alias"
     timezone = "US/Eastern"
 
-    # map wide form column names into CMUs
+    # map wide form column names into ScraperVariables
     cmus = {
         "AGG(Calc.Tooltip Partially Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "AGG(Calc.Tooltip Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,

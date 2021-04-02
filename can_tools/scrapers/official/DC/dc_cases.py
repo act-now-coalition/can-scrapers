@@ -1,6 +1,6 @@
 import pandas as pd
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.DC.dc_base import DCBase
 
 
@@ -27,39 +27,39 @@ class DCCases(DCBase):
         df = self._wrangle(data.parse("Total Cases by Race"))
 
         crename = {
-            "All": CMU(
+            "All": ScraperVariable(
                 category="cases",
                 measurement="cumulative",
                 unit="people",
             ),
-            "Unknown": CMU(
+            "Unknown": ScraperVariable(
                 category="cases",
                 measurement="cumulative",
                 unit="people",
                 race="unknown",
             ),
-            "White": CMU(
+            "White": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people", race="white"
             ),
-            "Black/African American": CMU(
+            "Black/African American": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people", race="black"
             ),
-            "Asian": CMU(
+            "Asian": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people", race="asian"
             ),
-            "American Indian/Alaska Native": CMU(  ##question?
+            "American Indian/Alaska Native": ScraperVariable(  ##question?
                 category="cases",
                 measurement="cumulative",
                 unit="people",
                 race="ai_an",
             ),
-            "Native Hawaiin Pacific Islander": CMU(  ##question?
+            "Native Hawaiin Pacific Islander": ScraperVariable(  ##question?
                 category="cases",
                 measurement="cumulative",
                 unit="people",
                 race="pacific_islander",
             ),
-            "Other/Multi-Racial": CMU(  ##question?
+            "Other/Multi-Racial": ScraperVariable(  ##question?
                 category="cases",
                 measurement="cumulative",
                 unit="people",

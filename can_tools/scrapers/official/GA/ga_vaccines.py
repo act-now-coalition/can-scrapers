@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -47,17 +47,17 @@ class GeorgiaCountyVaccine(ArcGIS):
         df = df.query("location_name != 'Georgia'")
 
         crename = {
-            "dose_1": CMU(
+            "dose_1": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "dose_2": CMU(
+            "dose_2": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_administered": CMU(
+            "total_administered": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -66,7 +66,7 @@ class GeorgiaCountyVaccine(ArcGIS):
 
         # Extract category information and add other variable context
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
 
         # Add date and vintage
         out["dt"] = self._retrieve_dt("US/Eastern")

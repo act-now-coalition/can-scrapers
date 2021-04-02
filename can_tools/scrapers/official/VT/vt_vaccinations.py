@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 pd.options.mode.chained_assignment = None  # Avoid unnessacary SettingWithCopy warning
@@ -83,47 +83,47 @@ class VermontCountyVaccine(ArcGIS):
         )
 
         crename = {
-            "dose_1": CMU(
+            "dose_1": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="new_7_day",
                 unit="people",
             ),
-            "dose_2": CMU(
+            "dose_2": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="new_7_day",
                 unit="people",
             ),
-            "dose_1_male": CMU(
+            "dose_1_male": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="new_7_day",
                 unit="people",
                 sex="male",
             ),
-            "dose_2_male": CMU(
+            "dose_2_male": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="new_7_day",
                 unit="people",
                 sex="male",
             ),
-            "dose_1_female": CMU(
+            "dose_1_female": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="new_7_day",
                 unit="people",
                 sex="female",
             ),
-            "dose_2_female": CMU(
+            "dose_2_female": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="new_7_day",
                 unit="people",
                 sex="female",
             ),
-            "dose_1_sex_unknown": CMU(
+            "dose_1_sex_unknown": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="new_7_day",
                 unit="people",
                 sex="unknown",
             ),
-            "dose_2_sex_unknown": CMU(
+            "dose_2_sex_unknown": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="new_7_day",
                 unit="people",
@@ -138,7 +138,7 @@ class VermontCountyVaccine(ArcGIS):
         weekly_df["vintage"] = self._retrieve_vintage()
 
         # Extract category information and add other variable context
-        weekly_df = self.extract_CMU(weekly_df, crename)
+        weekly_df = self.extract_ScraperVariable(weekly_df, crename)
         weekly_df = weekly_df.drop(columns={"variable"})
 
         return pd.concat([cumulative_df, weekly_df], ignore_index=True)

@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -55,24 +55,24 @@ class VirginiaVaccine(TableauDashboard):
         df = pd.concat([state_df, county_df], axis=0)
 
         crename = {
-            "totalHadFirstDose": CMU(
+            "totalHadFirstDose": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "totalHadSecondDose": CMU(
+            "totalHadSecondDose": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "totalDoses": CMU(
+            "totalDoses": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
         }
         df = df.melt(id_vars=["location"], value_vars=crename.keys()).dropna()
-        df = self.extract_CMU(df, crename)
+        df = self.extract_ScraperVariable(df, crename)
 
         df.loc[:, "value"] = pd.to_numeric(df["value"])
         df.loc[:, "location"] = df["location"].astype(int)

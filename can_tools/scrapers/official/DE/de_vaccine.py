@@ -6,7 +6,7 @@ import requests
 import us
 from bs4 import BeautifulSoup
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -99,17 +99,17 @@ class DelawareStateVaccine(StateDashboard):
     def normalize(self, data):
         df = data
         crename = {
-            "NewVaccineAdminstrd": CMU(
+            "NewVaccineAdminstrd": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="new",
                 unit="doses",
             ),
-            "CumVaccineAdminstrd": CMU(
+            "CumVaccineAdminstrd": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "CumVaccineDelivrd": CMU(
+            "CumVaccineDelivrd": ScraperVariable(
                 category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
@@ -124,7 +124,7 @@ class DelawareStateVaccine(StateDashboard):
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         # Extract category information and add other variable context
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
 
         cols_to_keep = [
             "vintage",

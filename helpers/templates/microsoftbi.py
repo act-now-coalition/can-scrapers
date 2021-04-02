@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 
@@ -136,8 +136,8 @@ class {SCRAPER NAME}(MicrosoftBIDashboard):
         crename = {}
         out = df.melt(id_vars=["location_name"])
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        # Add ScraperVariable, dt, vintage
+        out = self.extract_ScraperVariable(out, crename)
 
         cols_to_keep = [
             "vintage",

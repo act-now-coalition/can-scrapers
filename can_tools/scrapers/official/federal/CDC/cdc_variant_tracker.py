@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import ALL_STATES_PLUS_DC, ScraperVariable
 from can_tools.scrapers.official.base import FederalDashboard
 
 STATE_ABBRS = [x.abbr for x in ALL_STATES_PLUS_DC]
@@ -36,17 +36,17 @@ class CDCVariantTracker(FederalDashboard):
 
         # Reshape and add variable information
         crename = {
-            "Variant B.1.1.7": CMU(
+            "Variant B.1.1.7": ScraperVariable(
                 category="b117_cases", measurement="cumulative", unit="people"
             ),
-            "Variant P.1": CMU(
+            "Variant P.1": ScraperVariable(
                 category="p1_cases", measurement="cumulative", unit="people"
             ),
-            "Variant B.1.351": CMU(
+            "Variant B.1.351": ScraperVariable(
                 category="b1351_cases", measurement="cumulative", unit="people"
             ),
         }
-        out = self.extract_CMU(df, crename).fillna(0.0)
+        out = self.extract_ScraperVariable(df, crename).fillna(0.0)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 

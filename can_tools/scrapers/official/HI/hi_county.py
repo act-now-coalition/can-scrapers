@@ -4,7 +4,7 @@ import requests
 import re
 import json
 from bs4 import BeautifulSoup
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import (
     TableauDashboard,
     TableauMapClick,
@@ -62,17 +62,17 @@ class HawaiiVaccineCounty(TableauDashboard):
 
         df = pd.concat(dfs)
         crename = {
-            "total_vaccine_initiated": CMU(
+            "total_vaccine_initiated": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
+            "total_vaccine_completed": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "sum_daily_count": CMU(
+            "sum_daily_count": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
@@ -80,7 +80,7 @@ class HawaiiVaccineCounty(TableauDashboard):
         }
 
         out = df.melt(id_vars=["location_name", "dt"], value_vars=crename.keys())
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         out["vintage"] = self._retrieve_vintage()
         cols_to_keep = [
             "vintage",

@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import CountyDashboard
 
 
@@ -43,16 +43,18 @@ class LACaliforniaCountyVaccine(CountyDashboard):
         ).assign(dt=dt, vintage=self._retrieve_vintage(), location=self.location)
 
         cmus = {
-            "total_dose": CMU(
+            "total_dose": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "dose2": CMU(
+            "dose2": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
         }
 
-        return df.pipe(self.extract_CMU, cmu=cmus).drop(["variable"], axis="columns")
+        return df.pipe(self.extract_ScraperVariable, cmu=cmus).drop(
+            ["variable"], axis="columns"
+        )

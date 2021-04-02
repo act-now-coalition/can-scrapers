@@ -44,6 +44,6 @@ class WashingtonVaccine(StateDashboard):
                 dt=self._retrieve_dt("America/Los_Angeles"),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_CMU, cmu=self.variables)
+            .pipe(self.extract_ScraperVariable, cmu=self.variables)
             .drop(["variable"], axis="columns")
         )

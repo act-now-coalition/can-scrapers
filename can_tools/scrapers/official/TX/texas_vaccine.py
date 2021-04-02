@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard
 
 # the crename keys became long so I store them in another file
@@ -51,7 +51,7 @@ class TexasCountyVaccine(TexasVaccineParent):
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
 
         out["vintage"] = self._retrieve_vintage()
 
@@ -121,17 +121,17 @@ class TXVaccineCountyAge(TexasVaccineParent):
     location_type = "county"
     has_location = False
     cmus = {
-        "Doses Administered": CMU(
+        "Doses Administered": ScraperVariable(
             category="total_vaccine_doses_administered",
             measurement="cumulative",
             unit="doses",
         ),
-        "People Vaccinated with at least One Dose": CMU(
+        "People Vaccinated with at least One Dose": ScraperVariable(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
         ),
-        "People Fully Vaccinated": CMU(
+        "People Fully Vaccinated": ScraperVariable(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
@@ -195,7 +195,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 value_vars=list(self.cmus.keys()),
             )
             .replace(self.replacers)
-            .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
+            .pipe(self.extract_ScraperVariable, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
             .query("location_name not in @non_counties")

@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -36,7 +36,7 @@ class CASanDiegoVaccine(ArcGIS):
         all_demographics = ["age", "race", "ethnicity", "sex"]
         all_demographics.remove(dgroup)
         cmu_cols = ["category", "measurement", "unit"] + all_demographics
-        foo = self.extract_CMU(foo, cmu, columns=cmu_cols)
+        foo = self.extract_ScraperVariable(foo, cmu, columns=cmu_cols)
 
         # Drop Category/variable
         foo = foo.drop(["Category", "variable"], axis="columns")
@@ -58,7 +58,7 @@ class CASanDiegoVaccine(ArcGIS):
 
         # Work with each subgroup of data
         crename = {
-            "Count_": CMU(
+            "Count_": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
@@ -111,22 +111,22 @@ class CASanDiegoVaccine(ArcGIS):
 
         # Totals
         total_crename = {
-            "DosesShipped": CMU(
+            "DosesShipped": ScraperVariable(
                 category="total_vaccine_distributed",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "AdministeredDoses": CMU(
+            "AdministeredDoses": ScraperVariable(
                 category="total_vaccine_doses_administered",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "IndividualsVacc": CMU(
+            "IndividualsVacc": ScraperVariable(
                 category="total_vaccine_initiated",
                 measurement="cumulative",
                 unit="people",
             ),
-            "FullyVacc": CMU(
+            "FullyVacc": ScraperVariable(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
@@ -142,7 +142,7 @@ class CASanDiegoVaccine(ArcGIS):
         total_temp["Join_Name"] = total_temp.Join_Name.replace(
             {"Doses administered": "AdministeredDoses"}
         )
-        total_df = self.extract_CMU(
+        total_df = self.extract_ScraperVariable(
             total_temp, total_crename, var_name="Join_Name"
         ).drop(["Category", "Join_Name", "variable"], axis="columns")
 

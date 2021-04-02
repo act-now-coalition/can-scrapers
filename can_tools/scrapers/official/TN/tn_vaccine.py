@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -21,12 +21,12 @@ class TennesseeVaccineCounty(TableauDashboard):
     timezone = "US/Central"
 
     cmus = {
-        "SUM(% At Least One % (copy))-alias": CMU(
+        "SUM(% At Least One % (copy))-alias": ScraperVariable(
             category="total_vaccine_initiated",
             measurement="current",
             unit="percentage",
         ),
-        "SUM(% Two Doses %)-alias": CMU(
+        "SUM(% Two Doses %)-alias": ScraperVariable(
             category="total_vaccine_completed",
             measurement="current",
             unit="percentage",

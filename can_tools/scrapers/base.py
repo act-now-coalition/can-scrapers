@@ -17,7 +17,7 @@ from can_tools.models import Base
 ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
 
 
-class CMU:
+class ScraperVariable:
     def __init__(
         self,
         category="cases",
@@ -155,10 +155,10 @@ class DatasetBase(ABC):
         """Get the current UTC timestamp, at hourly resolution. Used as "vintage" in db"""
         return self.execution_dt.floor("h")
 
-    def extract_CMU(
+    def extract_ScraperVariable(
         self,
         df: pd.DataFrame,
-        cmu: Dict[str, CMU],
+        cmu: Dict[str, ScraperVariable],
         columns: List[str] = [
             "category",
             "measurement",
@@ -179,9 +179,9 @@ class DatasetBase(ABC):
             This DataFrame must have the column `variable` and the
             unique elements of `variable` must be keys in the
             `cmu_dict`
-        cmu : dict(str -> CMU)
+        cmu : dict(str -> ScraperVariable)
             This dictionary maps variable names into a subcategory,
-            measurement, and unit using a CMU namedtuple
+            measurement, and unit using a ScraperVariable namedtuple
         columns: List[str]
             A list of columns to set using the `cmu` dict
         var_name: str

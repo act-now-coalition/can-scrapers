@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -26,7 +26,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         def _cases(race, ethnicity="all"):
-            return CMU(
+            return ScraperVariable(
                 category="cases",
                 measurement="cumulative",
                 unit="people",
@@ -35,7 +35,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
             )
 
         def _deaths(race, ethnicity="all"):
-            return CMU(
+            return ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
@@ -44,7 +44,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
             )
 
         def _hosp(race, ethnicity="all"):
-            return CMU(
+            return ScraperVariable(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
@@ -119,7 +119,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
                 value_vars=column_map.keys(),
             )
             .dropna()
-            .pipe(self.extract_CMU, column_map)
+            .pipe(self.extract_ScraperVariable, column_map)
             .assign(
                 location_type="state",
                 vintage=self._retrieve_vintage(),
@@ -143,102 +143,102 @@ class CovidTrackingProject(FederalDashboard):
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         column_map = dict(
-            death=CMU(
+            death=ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
             ),
-            hospitalizedCurrently=CMU(
+            hospitalizedCurrently=ScraperVariable(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
-            inIcuCurrently=CMU(
+            inIcuCurrently=ScraperVariable(
                 category="icu_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
-            negative=CMU(
+            negative=ScraperVariable(
                 category="pcr_tests_negative",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            negativeTestsAntibody=CMU(
+            negativeTestsAntibody=ScraperVariable(
                 category="antibody_tests_negative",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            negativeTestsPeopleAntibody=CMU(
+            negativeTestsPeopleAntibody=ScraperVariable(
                 category="antibody_tests_negative",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            negativeTestsViral=CMU(
+            negativeTestsViral=ScraperVariable(
                 category="pcr_tests_negative",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            positive=CMU(
+            positive=ScraperVariable(
                 category="cases",
                 measurement="cumulative",
                 unit="people",
             ),
-            positiveCasesViral=CMU(
+            positiveCasesViral=ScraperVariable(
                 category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            positiveTestsAntibody=CMU(
+            positiveTestsAntibody=ScraperVariable(
                 category="antibody_tests_positive",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            positiveTestsAntigen=CMU(
+            positiveTestsAntigen=ScraperVariable(
                 category="antigen_tests_positive",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            positiveTestsPeopleAntibody=CMU(
+            positiveTestsPeopleAntibody=ScraperVariable(
                 category="antibody_tests_positive",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            positiveTestsPeopleAntigen=CMU(
+            positiveTestsPeopleAntigen=ScraperVariable(
                 category="antigen_tests_positive",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            positiveTestsViral=CMU(
+            positiveTestsViral=ScraperVariable(
                 category="pcr_tests_positive",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            totalTestsAntigen=CMU(
+            totalTestsAntigen=ScraperVariable(
                 category="antigen_tests_total",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            totalTestsAntibody=CMU(
+            totalTestsAntibody=ScraperVariable(
                 category="antibody_tests_total",
                 measurement="cumulative",
                 unit="specimens",
             ),
-            totalTestsPeopleAntibody=CMU(
+            totalTestsPeopleAntibody=ScraperVariable(
                 category="antibody_tests_total",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            totalTestsPeopleAntigen=CMU(
+            totalTestsPeopleAntigen=ScraperVariable(
                 category="antigen_tests_total",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            totalTestsPeopleViral=CMU(
+            totalTestsPeopleViral=ScraperVariable(
                 category="pcr_tests_total",
                 measurement="cumulative",
                 unit="unique_people",
             ),
-            totalTestsViral=CMU(
+            totalTestsViral=ScraperVariable(
                 category="pcr_tests_total",
                 measurement="cumulative",
                 unit="specimens",
@@ -252,7 +252,7 @@ class CovidTrackingProject(FederalDashboard):
                 value_vars=column_map.keys(),
             )
             .dropna()
-            .pipe(self.extract_CMU, column_map)
+            .pipe(self.extract_ScraperVariable, column_map)
             .assign(location_type="state", vintage=self._retrieve_vintage())
         )
 

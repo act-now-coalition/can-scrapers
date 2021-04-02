@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBaseNoDate
+from can_tools.scrapers.base import ScraperVariable, DatasetBaseNoDate
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -23,15 +23,15 @@ class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
         url = "https://www.dph.illinois.gov/sitefiles/COVIDHistoricalTestResults.json?nocache=1"
         js = self._get_js(url)
         cats = {
-            "confirmed_cases": CMU(
+            "confirmed_cases": ScraperVariable(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "deaths": CMU(
+            "deaths": ScraperVariable(
                 category="deaths",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_tested": CMU(
+            "total_tested": ScraperVariable(
                 category="antigen_pcr_tests_total",
                 measurement="cumulative",
                 unit="unknown",
@@ -45,7 +45,7 @@ class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
                 pd.DataFrame(date_data["values"])
                 .rename(columns={"County": "county"})
                 .melt(id_vars=["county"], value_vars=list(cats.keys()))
-                .pipe(self.extract_CMU, cats)
+                .pipe(self.extract_ScraperVariable, cats)
                 .assign(dt=dt, vintage=self._retrieve_vintage())
                 .drop(["variable"], axis=1)
             )

@@ -24,7 +24,7 @@ from can_tools.models import (
     TemptableOfficialNoLocation,
     build_insert_from_temp,
 )
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import ScraperVariable, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
 
 _logger = logging.getLogger(__name__)
@@ -115,7 +115,7 @@ class StateDashboard(DatasetBase, ABC):
         return worked, rows_inserted, rows_deleted
 
     def _reshape_variables(
-        self, data: pd.DataFrame, variable_map: Dict[str, CMU]
+        self, data: pd.DataFrame, variable_map: Dict[str, ScraperVariable]
     ) -> pd.DataFrame:
         """Reshape columns in data to be long form definitions defined in `variable_map`.
 
@@ -152,7 +152,7 @@ class StateDashboard(DatasetBase, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=variable_map)
+            .pipe(self.extract_ScraperVariable, cmu=variable_map)
             .drop(["variable"], axis=1)
         )
 
@@ -642,7 +642,7 @@ class TableauDashboard(StateDashboard, ABC):
     timezone: str
     data_tableau_table: str
     location_name_col: str
-    cmus: Dict[str, CMU]
+    cmus: Dict[str, ScraperVariable]
 
     def fetch(self) -> pd.DataFrame:
         return self.get_tableau_view()[self.data_tableau_table]
@@ -665,7 +665,7 @@ class TableauDashboard(StateDashboard, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=self.cmus)
+            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
 

@@ -3,7 +3,7 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.base import StateDashboard, TableauDashboard
 
 
@@ -148,22 +148,22 @@ class ArizonaVaccineCountyAllocated(StateDashboard):
 
         # Create dictionary for columns to map
         crename = {
-            "moderna_vaccine_allocated": CMU(
+            "moderna_vaccine_allocated": ScraperVariable(
                 category="moderna_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "pfizer_vaccine_allocated": CMU(
+            "pfizer_vaccine_allocated": ScraperVariable(
                 category="pfizer_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "janssen_vaccine_allocated": CMU(
+            "janssen_vaccine_allocated": ScraperVariable(
                 category="janssen_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
             ),
-            "total_vaccine_allocated": CMU(
+            "total_vaccine_allocated": ScraperVariable(
                 category="total_vaccine_allocated",
                 measurement="cumulative",
                 unit="doses",
@@ -174,7 +174,7 @@ class ArizonaVaccineCountyAllocated(StateDashboard):
         df = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        out = self.extract_CMU(df, crename)
+        out = self.extract_ScraperVariable(df, crename)
 
         # Convert value columns, remove commas
         out.loc[:, "value"] = pd.to_numeric(out["value"].str.replace(",", ""))

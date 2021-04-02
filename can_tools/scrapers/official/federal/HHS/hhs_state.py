@@ -3,7 +3,7 @@ from io import StringIO
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers.base import ScraperVariable
 from can_tools.scrapers.official.federal.HHS.common import HHSDataset
 
 
@@ -32,64 +32,64 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         df.loc[:, "location"] = df["state"].map(lambda x: int(us.states.lookup(x).fips))
 
         crename = {
-            "critical_staffing_shortage_today_yes": CMU(
+            "critical_staffing_shortage_today_yes": ScraperVariable(
                 category="critical_staff_shortage_yes",
                 measurement="current",
                 unit="hospitals",
             ),
-            "critical_staffing_shortage_today_no": CMU(
+            "critical_staffing_shortage_today_no": ScraperVariable(
                 category="critical_staff_shortage_no",
                 measurement="current",
                 unit="hospitals",
             ),
-            "critical_staffing_shortage_today_yes": CMU(
+            "critical_staffing_shortage_today_yes": ScraperVariable(
                 category="critical_staff_shortage_noreport",
                 measurement="current",
                 unit="hospitals",
             ),
-            "critical_staffing_shortage_anticipated_within_week_yes": CMU(
+            "critical_staffing_shortage_anticipated_within_week_yes": ScraperVariable(
                 category="critical_staff_shortage_yes",
                 measurement="anticipated_within_7_day",
                 unit="hospitals",
             ),
-            "critical_staffing_shortage_anticipated_within_week_no": CMU(
+            "critical_staffing_shortage_anticipated_within_week_no": ScraperVariable(
                 category="critical_staff_shortage_no",
                 measurement="anticipated_within_7_day",
                 unit="hospitals",
             ),
-            "critical_staffing_shortage_anticipated_within_week_yes": CMU(
+            "critical_staffing_shortage_anticipated_within_week_yes": ScraperVariable(
                 category="critical_staff_shortage_noreport",
                 measurement="anticipated_within_7_day",
                 unit="hospitals",
             ),
-            "inpatient_beds": CMU(
+            "inpatient_beds": ScraperVariable(
                 category="hospital_beds_capacity", measurement="current", unit="beds"
             ),
-            "inpatient_beds_used": CMU(
+            "inpatient_beds_used": ScraperVariable(
                 category="hospital_beds_in_use", measurement="current", unit="beds"
             ),
-            "inpatient_beds_used_covid": CMU(
+            "inpatient_beds_used_covid": ScraperVariable(
                 category="hospital_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
-            "inpatient_beds_utilization": CMU(
+            "inpatient_beds_utilization": ScraperVariable(
                 category="hospital_beds_in_use",
                 measurement="current",
                 unit="percentage",
             ),
-            "total_staffed_adult_icu_beds": CMU(
+            "total_staffed_adult_icu_beds": ScraperVariable(
                 category="adult_icu_beds_capacity", measurement="current", unit="beds"
             ),
-            "staffed_adult_icu_bed_occupancy": CMU(
+            "staffed_adult_icu_bed_occupancy": ScraperVariable(
                 category="adult_icu_beds_in_use", measurement="current", unit="beds"
             ),
-            "staffed_icu_adult_patients_confirmed_covid": CMU(
+            "staffed_icu_adult_patients_confirmed_covid": ScraperVariable(
                 category="adult_icu_beds_in_use_covid",
                 measurement="current",
                 unit="beds",
             ),
-            "adult_icu_bed_covid_utilization": CMU(
+            "adult_icu_bed_covid_utilization": ScraperVariable(
                 category="adult_icu_beds_in_use",
                 measurement="current",
                 unit="percentage",
@@ -103,7 +103,7 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         )
 
         # Add category, measurement, unit, age, sex, race
-        out = self.extract_CMU(out, crename)
+        out = self.extract_ScraperVariable(out, crename)
         out["vintage"] = self._retrieve_vintage()
         cols_2_keep = [
             "vintage",

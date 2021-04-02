@@ -38,7 +38,7 @@ class IndianaCountyVaccinations(StateQueryAPI):
         df : pd.DataFrame
             A DataFrame with the normalized data
         """
-        # Map current column names to CMU elements
+        # Map current column names to ScraperVariable elements
         cmus = {
             "fully_vaccinated": variables.FULLY_VACCINATED_ALL,
             "at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
@@ -84,6 +84,6 @@ class IndianaCountyVaccinations(StateQueryAPI):
             .stack()
             .rename("value")
             .reset_index()
-            .pipe(self.extract_CMU, cmu=cmus)
+            .pipe(self.extract_ScraperVariable, cmu=cmus)
             .assign(vintage=self._retrieve_vintage())
         )

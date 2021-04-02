@@ -1,5 +1,5 @@
 from can_tools.scrapers import util
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import ScraperVariable, DatasetBase
 from can_tools.scrapers.ctp import (
     CovidTrackingProject,
     CovidTrackingProjectDemographics,

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from can_tools.scrapers.base import CMU, DatasetBaseNoDate
+from can_tools.scrapers.base import ScraperVariable, DatasetBaseNoDate
 from can_tools.scrapers.official.IL.il_historical import IllinoisHistorical
 
 
@@ -11,12 +11,12 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
         "orig is demographic colname in df, final is what we want it to be"
 
         cats = {
-            "count": CMU(
+            "count": ScraperVariable(
                 category="cases",
                 measurement="cumulative",
                 unit="people",
             ),
-            "tested": CMU(
+            "tested": ScraperVariable(
                 category="antigen_pcr_tests_total",
                 measurement="cumulative",
                 unit="unknown",
@@ -29,7 +29,7 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
             df.rename(columns={orig: temp})
             .melt(value_vars=cats.keys(), id_vars=[temp])
             .assign(dt=self._retrieve_dt(), vintage=self._retrieve_vintage())
-            .pipe(self.extract_CMU, cats)
+            .pipe(self.extract_ScraperVariable, cats)
             .drop([final, "variable"], axis=1)
             .rename(columns={temp: final})
         )
