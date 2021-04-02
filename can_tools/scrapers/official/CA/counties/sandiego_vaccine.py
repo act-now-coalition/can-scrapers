@@ -36,7 +36,7 @@ class CASanDiegoVaccine(ArcGIS):
         all_demographics = ["age", "race", "ethnicity", "sex"]
         all_demographics.remove(dgroup)
         cmu_cols = ["category", "measurement", "unit"] + all_demographics
-        foo = self.extract_ScraperVariable(foo, cmu, columns=cmu_cols)
+        foo = self.extract_scraper_variables(foo, cmu, columns=cmu_cols)
 
         # Drop Category/variable
         foo = foo.drop(["Category", "variable"], axis="columns")
@@ -142,7 +142,7 @@ class CASanDiegoVaccine(ArcGIS):
         total_temp["Join_Name"] = total_temp.Join_Name.replace(
             {"Doses administered": "AdministeredDoses"}
         )
-        total_df = self.extract_ScraperVariable(
+        total_df = self.extract_scraper_variables(
             total_temp, total_crename, var_name="Join_Name"
         ).drop(["Category", "Join_Name", "variable"], axis="columns")
 

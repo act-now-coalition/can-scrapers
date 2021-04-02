@@ -101,7 +101,7 @@ class NewMexicoVaccineCounty(NewMexicoBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_ScraperVariable(df, crename)
+        df = self.extract_scraper_variables(df, crename)
 
         # Determine what columns to keep
         cols_to_keep = [

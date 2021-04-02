@@ -57,7 +57,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
+            .pipe(self.extract_scraper_variables, cmu=self.cmus)
         )
         df[demo] = df[demo_col_name]
         return df.drop(["variable", demo_col_name], axis=1)

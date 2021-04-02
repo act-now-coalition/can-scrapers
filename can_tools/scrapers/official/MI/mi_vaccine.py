@@ -114,6 +114,6 @@ class MichiganVaccineCounty(StateDashboard):
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_ScraperVariable, cmu=cmus)  # extract ScraperVariables
+            .pipe(self.extract_scraper_variables, cmu=cmus)  # extract ScraperVariables
             .drop(["variable"], axis=1)  # drop variable
         )

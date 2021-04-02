@@ -190,7 +190,7 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
 
         # Add ScraperVariable, dt, vintage
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["dt"] = self._retrieve_dt("US/Pacific")
         out["vintage"] = self._retrieve_vintage()
 

@@ -29,7 +29,7 @@ class IllinoisDemographics(IllinoisHistorical, DatasetBaseNoDate):
             df.rename(columns={orig: temp})
             .melt(value_vars=cats.keys(), id_vars=[temp])
             .assign(dt=self._retrieve_dt(), vintage=self._retrieve_vintage())
-            .pipe(self.extract_ScraperVariable, cats)
+            .pipe(self.extract_scraper_variables, cats)
             .drop([final, "variable"], axis=1)
             .rename(columns={temp: final})
         )

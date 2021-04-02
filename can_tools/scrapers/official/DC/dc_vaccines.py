@@ -61,7 +61,7 @@ class DCVaccineRace(TableauDashboard):
             (df["variable"] == "FULLY VACCINATED") | (df["variable"] == "INITIATED")
         ]
 
-        return df.pipe(self.extract_ScraperVariable, cmu=self.variables).assign(
+        return df.pipe(self.extract_scraper_variables, cmu=self.variables).assign(
             race="unknown", ethnicity="unknown"
         )
 
@@ -95,7 +95,7 @@ class DCVaccineRace(TableauDashboard):
             df = df.append(row, ignore_index=True)
 
         df = df.query('variable != "PARTIALLY VACCINATED"').pipe(
-            self.extract_ScraperVariable, cmu=self.variables
+            self.extract_scraper_variables, cmu=self.variables
         )
 
         out = df.assign(race=df["demo_val"], value=df["value"].astype(int))

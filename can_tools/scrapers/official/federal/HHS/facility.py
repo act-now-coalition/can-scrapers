@@ -149,7 +149,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
         )
 
         # Add category, measurement, unit, age, sex, race
-        df_long = self.extract_ScraperVariable(df_long, crename)
+        df_long = self.extract_scraper_variables(df_long, crename)
 
         # Group by relevant factors and sum
         identifier = [

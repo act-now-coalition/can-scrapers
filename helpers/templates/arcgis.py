@@ -29,7 +29,7 @@ class {ScraperName}(ArcGIS):
         crename = {}
 
         # Extract category information and add other variable context
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
 
         cols_to_keep = [
             "vintage",

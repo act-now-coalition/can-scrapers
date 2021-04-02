@@ -148,7 +148,7 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         ).dropna()
         out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         return out.drop(["variable"], axis="columns")
 
 
@@ -295,5 +295,5 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
 
         out["value"] = out["value"].astype(int)
         out["vintage"] = self._retrieve_vintage()
-        df = self.extract_ScraperVariable(out, crename)
+        df = self.extract_scraper_variables(out, crename)
         return df.drop(["variable"], axis="columns")

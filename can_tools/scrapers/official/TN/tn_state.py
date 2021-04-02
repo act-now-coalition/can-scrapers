@@ -80,7 +80,7 @@ class TennesseeAge(TennesseeBase):
         df = df.melt(id_vars=["dt", "age"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        df = self.extract_ScraperVariable(
+        df = self.extract_scraper_variables(
             df,
             crename,
             columns=["category", "measurement", "unit", "race", "ethnicity", "sex"],
@@ -160,7 +160,7 @@ class TennesseeAgeByCounty(TennesseeBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_ScraperVariable(
+        df = self.extract_scraper_variables(
             df, crename, ["category", "measurement", "unit", "race", "ethnicity", "sex"]
         )
 
@@ -281,7 +281,7 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         ).dropna()
 
         # Determine the category of each observation
-        df = self.extract_ScraperVariable(
+        df = self.extract_scraper_variables(
             df, crename, ["category", "measurement", "unit", "age"]
         )
 

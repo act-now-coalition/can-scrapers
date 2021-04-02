@@ -57,7 +57,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         df = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        out = self.extract_ScraperVariable(df, crename)
+        out = self.extract_scraper_variables(df, crename)
 
         # Add rows that don't change
         out["vintage"] = self._retrieve_vintage()

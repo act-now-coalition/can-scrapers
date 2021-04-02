@@ -82,7 +82,7 @@ class USAFactsCases(FederalDashboard):
             category=self.category, measurement="cumulative", unit="people"
         )
 
-        return out.pipe(self.extract_ScraperVariable, cmu={"replaceme": cmu}).drop(
+        return out.pipe(self.extract_scraper_variables, cmu={"replaceme": cmu}).drop(
             ["variable"], axis="columns"
         )
 

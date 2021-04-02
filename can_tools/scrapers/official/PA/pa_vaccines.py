@@ -151,7 +151,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location_name"])
 
         # Add ScraperVariable, dt, vintage
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 
@@ -313,7 +313,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         return df, value_dicts
 
     def normalize_postprocess(self, df, untracked_cats, crename):
-        out = self.extract_ScraperVariable(df, crename, columns=untracked_cats)
+        out = self.extract_scraper_variables(df, crename, columns=untracked_cats)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
         out.loc[:, "location_type"] = "county"

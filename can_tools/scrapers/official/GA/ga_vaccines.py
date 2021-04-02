@@ -66,7 +66,7 @@ class GeorgiaCountyVaccine(ArcGIS):
 
         # Extract category information and add other variable context
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys())
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
 
         # Add date and vintage
         out["dt"] = self._retrieve_dt("US/Eastern")

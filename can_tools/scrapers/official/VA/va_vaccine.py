@@ -72,7 +72,7 @@ class VirginiaVaccine(TableauDashboard):
             ),
         }
         df = df.melt(id_vars=["location"], value_vars=crename.keys()).dropna()
-        df = self.extract_ScraperVariable(df, crename)
+        df = self.extract_scraper_variables(df, crename)
 
         df.loc[:, "value"] = pd.to_numeric(df["value"])
         df.loc[:, "location"] = df["location"].astype(int)

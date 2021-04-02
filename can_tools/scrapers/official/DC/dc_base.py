@@ -97,7 +97,7 @@ class DCBase(StateDashboard):
             out["value"].astype(str).str.replace(",", "").str.strip(),
         )
 
-        out = self.extract_ScraperVariable(out, _map)
+        out = self.extract_scraper_variables(out, _map)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [

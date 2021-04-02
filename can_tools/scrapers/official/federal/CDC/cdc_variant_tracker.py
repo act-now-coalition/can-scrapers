@@ -46,7 +46,7 @@ class CDCVariantTracker(FederalDashboard):
                 category="b1351_cases", measurement="cumulative", unit="people"
             ),
         }
-        out = self.extract_ScraperVariable(df, crename).fillna(0.0)
+        out = self.extract_scraper_variables(df, crename).fillna(0.0)
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 

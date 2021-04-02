@@ -137,7 +137,7 @@ class {SCRAPER NAME}(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location_name"])
 
         # Add ScraperVariable, dt, vintage
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
 
         cols_to_keep = [
             "vintage",

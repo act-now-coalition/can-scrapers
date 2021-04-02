@@ -64,7 +64,7 @@ class MontanaCountyVaccine(ArcGIS):
             id_vars=["dt", loc_col_type], value_vars=self.crename.keys()
         ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_ScraperVariable(out, self.crename)
+        out = self.extract_scraper_variables(out, self.crename)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [

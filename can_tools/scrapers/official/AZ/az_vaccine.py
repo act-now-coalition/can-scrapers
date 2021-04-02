@@ -174,7 +174,7 @@ class ArizonaVaccineCountyAllocated(StateDashboard):
         df = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
         # Determine the category of each observation
-        out = self.extract_ScraperVariable(df, crename)
+        out = self.extract_scraper_variables(df, crename)
 
         # Convert value columns, remove commas
         out.loc[:, "value"] = pd.to_numeric(out["value"].str.replace(",", ""))

@@ -43,7 +43,7 @@ class LAVaccineCounty(ArcGIS):
             ),
         }
 
-        result = self.extract_ScraperVariable(melted, crename)
+        result = self.extract_scraper_variables(melted, crename)
 
         result["vintage"] = self._retrieve_vintage()
 

@@ -40,7 +40,7 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
 
         return (
             melted.drop_duplicates(subset=["dt", "county", "variable"], keep="first")
-            .pipe(self.extract_ScraperVariable, cats)
+            .pipe(self.extract_scraper_variables, cats)
             .drop(["variable"], axis=1)
             .assign(value=lambda x: x["value"].fillna(-1).astype(int))
         )
@@ -86,7 +86,7 @@ class Massachusetts(DatasetBaseNeedsDate, StateDashboard):
             .rename(columns={"Hospital County": "county"})
             .assign(dt=date)
             .melt(id_vars=["dt", "county"])
-            .pipe(self.extract_ScraperVariable, cats)
+            .pipe(self.extract_scraper_variables, cats)
             .drop(["variable"], axis=1)
         )
 

@@ -119,7 +119,7 @@ class CovidTrackingProjectDemographics(FederalDashboard):
                 value_vars=column_map.keys(),
             )
             .dropna()
-            .pipe(self.extract_ScraperVariable, column_map)
+            .pipe(self.extract_scraper_variables, column_map)
             .assign(
                 location_type="state",
                 vintage=self._retrieve_vintage(),
@@ -252,7 +252,7 @@ class CovidTrackingProject(FederalDashboard):
                 value_vars=column_map.keys(),
             )
             .dropna()
-            .pipe(self.extract_ScraperVariable, column_map)
+            .pipe(self.extract_scraper_variables, column_map)
             .assign(location_type="state", vintage=self._retrieve_vintage())
         )
 

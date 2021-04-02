@@ -155,7 +155,7 @@ class DatasetBase(ABC):
         """Get the current UTC timestamp, at hourly resolution. Used as "vintage" in db"""
         return self.execution_dt.floor("h")
 
-    def extract_ScraperVariable(
+    def extract_scraper_variables(
         self,
         df: pd.DataFrame,
         cmu: Dict[str, ScraperVariable],

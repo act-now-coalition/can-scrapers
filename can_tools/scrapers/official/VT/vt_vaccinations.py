@@ -138,7 +138,7 @@ class VermontCountyVaccine(ArcGIS):
         weekly_df["vintage"] = self._retrieve_vintage()
 
         # Extract category information and add other variable context
-        weekly_df = self.extract_ScraperVariable(weekly_df, crename)
+        weekly_df = self.extract_scraper_variables(weekly_df, crename)
         weekly_df = weekly_df.drop(columns={"variable"})
 
         return pd.concat([cumulative_df, weekly_df], ignore_index=True)

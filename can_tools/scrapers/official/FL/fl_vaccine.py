@@ -79,7 +79,7 @@ class FloridaCountyVaccine(StateDashboard):
         }
 
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
 

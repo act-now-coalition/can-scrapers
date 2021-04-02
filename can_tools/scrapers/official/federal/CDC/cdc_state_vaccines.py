@@ -63,7 +63,7 @@ class CDCStateVaccine(FederalDashboard):
 
         # Reshape and add variable information
         out = df.melt(id_vars=["dt", "location"], value_vars=crename.keys()).dropna()
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["vintage"] = self._retrieve_vintage()
 
         cols_2_keep = [

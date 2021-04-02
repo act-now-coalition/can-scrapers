@@ -55,6 +55,6 @@ class LACaliforniaCountyVaccine(CountyDashboard):
             ),
         }
 
-        return df.pipe(self.extract_ScraperVariable, cmu=cmus).drop(
+        return df.pipe(self.extract_scraper_variables, cmu=cmus).drop(
             ["variable"], axis="columns"
         )

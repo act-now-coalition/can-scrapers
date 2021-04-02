@@ -71,7 +71,7 @@ class IllinoisVaccineCounty(StateDashboard):
                 value=lambda x: pd.to_numeric(x.loc[:, "value"]),
                 vintage=self._retrieve_vintage(),
             )
-            .pipe(self.extract_ScraperVariable, cmu=cmus)
+            .pipe(self.extract_scraper_variables, cmu=cmus)
             .drop(["variable"], axis=1)
         )
 

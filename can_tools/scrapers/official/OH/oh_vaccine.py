@@ -47,6 +47,6 @@ class OhioVaccineCounty(StateDashboard):
                 location_name=lambda x: x["location_name"].str.strip(),
             )
             .query("location_name not in @not_counties")
-            .pipe(self.extract_ScraperVariable, cmu=self.variables)
+            .pipe(self.extract_scraper_variables, cmu=self.variables)
             .drop(["variable"], axis=1)
         )

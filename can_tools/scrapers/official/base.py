@@ -152,7 +152,7 @@ class StateDashboard(DatasetBase, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_ScraperVariable, cmu=variable_map)
+            .pipe(self.extract_scraper_variables, cmu=variable_map)
             .drop(["variable"], axis=1)
         )
 
@@ -665,7 +665,7 @@ class TableauDashboard(StateDashboard, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
+            .pipe(self.extract_scraper_variables, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
 

@@ -45,7 +45,7 @@ class IllinoisHistorical(DatasetBaseNoDate, StateDashboard):
                 pd.DataFrame(date_data["values"])
                 .rename(columns={"County": "county"})
                 .melt(id_vars=["county"], value_vars=list(cats.keys()))
-                .pipe(self.extract_ScraperVariable, cats)
+                .pipe(self.extract_scraper_variables, cats)
                 .assign(dt=dt, vintage=self._retrieve_vintage())
                 .drop(["variable"], axis=1)
             )

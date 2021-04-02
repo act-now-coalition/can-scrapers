@@ -80,7 +80,7 @@ class HawaiiVaccineCounty(TableauDashboard):
         }
 
         out = df.melt(id_vars=["location_name", "dt"], value_vars=crename.keys())
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["vintage"] = self._retrieve_vintage()
         cols_to_keep = [
             "vintage",

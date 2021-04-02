@@ -103,7 +103,7 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         )
 
         # Add category, measurement, unit, age, sex, race
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
         out["vintage"] = self._retrieve_vintage()
         cols_2_keep = [
             "vintage",

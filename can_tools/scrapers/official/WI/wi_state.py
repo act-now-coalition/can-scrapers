@@ -149,7 +149,7 @@ class WisconsinArcGIS(ArcGIS, ABC):
         out.loc[:, "value"] = pd.to_numeric(out["value"])
 
         # Extract category information and add other variable context
-        out = self.extract_ScraperVariable(out, self.crename)
+        out = self.extract_scraper_variables(out, self.crename)
 
         cols_to_keep = [
             "vintage",

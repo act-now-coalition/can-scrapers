@@ -51,7 +51,7 @@ class TexasCountyVaccine(TexasVaccineParent):
             id_vars=["dt", "location_name"], value_vars=crename.keys()
         ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_ScraperVariable(out, crename)
+        out = self.extract_scraper_variables(out, crename)
 
         out["vintage"] = self._retrieve_vintage()
 
@@ -195,7 +195,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 value_vars=list(self.cmus.keys()),
             )
             .replace(self.replacers)
-            .pipe(self.extract_ScraperVariable, cmu=self.cmus, columns=self.cmu_columns)
+            .pipe(self.extract_scraper_variables, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
             .query("location_name not in @non_counties")

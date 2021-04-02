@@ -84,6 +84,6 @@ class IndianaCountyVaccinations(StateQueryAPI):
             .stack()
             .rename("value")
             .reset_index()
-            .pipe(self.extract_ScraperVariable, cmu=cmus)
+            .pipe(self.extract_scraper_variables, cmu=cmus)
             .assign(vintage=self._retrieve_vintage())
         )

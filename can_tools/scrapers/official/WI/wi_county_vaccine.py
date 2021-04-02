@@ -49,7 +49,7 @@ class WisconsinVaccineCounty(TableauDashboard):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_ScraperVariable, cmu=self.cmus)
+            .pipe(self.extract_scraper_variables, cmu=self.cmus)
             .drop(["variable"], axis=1)
         )
         return df
