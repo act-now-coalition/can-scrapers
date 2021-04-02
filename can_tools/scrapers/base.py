@@ -38,6 +38,8 @@ class CMU:
 
 
 class RequestError(Exception):
+    """Error raised when a network request fails"""
+
     pass
 
 
