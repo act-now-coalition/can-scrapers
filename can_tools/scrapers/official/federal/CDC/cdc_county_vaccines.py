@@ -44,13 +44,13 @@ class CDCCountyVaccine(FederalDashboard):
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
-                age="18_plus"
+                age="18_plus",
             ),
             "Series_Complete_65Plus": CMU(
                 category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
-                age="65_plus"
+                age="65_plus",
             ),
             "Series_Complete_Pop_Pct": CMU(
                 category="total_vaccine_completed",
@@ -61,13 +61,13 @@ class CDCCountyVaccine(FederalDashboard):
                 category="total_vaccine_completed",
                 measurement="current",
                 unit="percentage",
-                age="18_plus"
+                age="18_plus",
             ),
             "Series_Complete_65PlusPop_Pct": CMU(
                 category="total_vaccine_completed",
                 measurement="current",
                 unit="percentage",
-                age="65_plus"
+                age="65_plus",
             ),
         }
 
