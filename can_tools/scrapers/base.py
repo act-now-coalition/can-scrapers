@@ -37,8 +37,14 @@ class CMU:
         self.sex = sex
 
 
+class RequestError(Exception):
+    pass
+
+
 class ValidateDataFailedError(Exception):
     """Error raised when data vailidation fails."""
+
+    pass
 
 
 def _get_base_path() -> Path:
