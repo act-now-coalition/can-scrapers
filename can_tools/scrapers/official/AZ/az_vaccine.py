@@ -184,7 +184,3 @@ class ArizonaVaccineCountyAllocated(StateDashboard):
         out["dt"] = self._retrieve_dt("US/Arizona")
 
         return out.query("location_name not in @non_counties")
-
-    def validate(self, df, df_hist) -> bool:
-        "Quality is free, but only to those who are willing to pay heavily for it. - DeMarco and Lister"
-        return True

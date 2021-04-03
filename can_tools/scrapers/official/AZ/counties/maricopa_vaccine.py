@@ -64,7 +64,3 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         out["dt"] = self._retrieve_dt("US/Arizona")
 
         return out
-
-    def validate(self, df, df_hist) -> bool:
-        "A pinch of probability is worth a pound of perhaps. - James Thurber"
-        return True

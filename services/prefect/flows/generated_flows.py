@@ -44,8 +44,8 @@ def normalize(d: DatasetBase):
 
 @task()
 def validate(d: DatasetBase):
-    if not d._validate():
-        raise ValueError("failed validation")
+    # validation either completes successfully or raises an exception
+    d._validate()
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
