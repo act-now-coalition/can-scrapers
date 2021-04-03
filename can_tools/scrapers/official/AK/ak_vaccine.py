@@ -118,6 +118,9 @@ class AlaskaCountyVaccine(ArcGIS):
     def normalize(self, data):
         df = self._rename_and_prep(data)
         totals = self._get_total_doses_administered_by_day(df)
+        
+        # drop "other" for now
+        totals = totals.drop(columns={"vaccine_other"})
 
         # melt daily/new data to long form
         out = (
@@ -127,7 +130,7 @@ class AlaskaCountyVaccine(ArcGIS):
         
         # sum by county and variable type to get cumulative data, keep the most recent date
         cumulative = out.groupby(['fips','variable']).agg(
-            {'value': 'sum', 'dt':'last'}
+            {'value': 'sum', 'dt':'max'}
         ).reset_index()
         # label the data as cumulative
         cumulative['variable'] = cumulative['variable'] + '_sum'
@@ -143,23 +146,8 @@ class AlaskaCountyVaccine(ArcGIS):
         )
         return out.rename(columns={'fips':'location'})
 
+
 class AlaskaVaccineDemographics(AlaskaCountyVaccine):
-
-    variables = {
-        "initiated": CMU(
-            category="total_vaccine_initiated",
-            measurement="new",
-            unit="people",
-        ),
-
-        "completed": CMU(
-            category="total_vaccine_completed",
-            measurement="new",
-            unit="people",
-        ),
-        "initiated_sum": variables.INITIATING_VACCINATIONS_ALL,
-        "completed_sum": variables.FULLY_VACCINATED_ALL
-    }
 
     def _get_by_sex(self, df):
         keep = df[["dt", "dose_num", "fips", "sex", 'primarykeyid']]
@@ -175,8 +163,8 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
                 .replace('F', 'female')
                 .replace("M", "male")
                 .replace("U", "unknown")
-                .replace('--1', ":initiated")
-                .replace("--2", ":completed")
+                .replace('--1', ":vaccine_initiated")
+                .replace("--2", ":vaccine_completed")
                 .replace("--3", ":dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
@@ -199,8 +187,8 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         unstacked.columns = [
             z.replace("count--", "")
                 .replace('Age Bracket - ', '')
-                .replace('--1', ":initiated")
-                .replace("--2", ":completed")
+                .replace('--1', ":vaccine_initiated")
+                .replace("--2", ":vaccine_completed")
                 .replace("--3", ":dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
@@ -212,43 +200,31 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
 
         return out
 
-    def normalize(self, data):
-        df = self._rename_and_prep(data)
-        sex = self._get_by_sex(df)
-        age = self._get_by_age(df)
-
-        sex_total = self._cumulate_combine_melt(sex, 'sex')
-        age_total = self._cumulate_combine_melt(age, 'age')
-        return pd.concat([sex_total, age_total])
-
-        return out.rename(columns={'fips':'location'})
-
     def _cumulate_combine_melt(self, df, demo):
         """
-        takes data and transforms into long form with CMU pairings, and calculates cumulative data from daily and returns both new/cumulative data
         accepts:
             df: dataframe -- df of new/daily data in wide form
             demo: str -- name of the demographic according to CMU class (sex,age,race etc)
 
-        returns: df in long form with CMU columns and cumulative and new data
+        returns: df in long form with CMU columns containing cumulative and new data
         """
 
-        # use all cols except date and location as value vars
+        # use all cols except date and location as value vars for pivot
         val_vars = [e for e in list(df.columns) if e not in ('dt', 'fips')]
         out = (
             df.melt(id_vars=["fips", "dt"], value_vars=val_vars)
             .dropna()
         )
 
-        # split variable column name (in form of demo:variable) into two columns
+        # split variable column name (in form of demo:variable) into two columns -- one for the variable one for the demographic value
         out[['temp_demo', 'variable']] = out['variable'].str.split(":",expand=True)
         
-        # remove unknown vals
+        # TEMP: remove unknown vals
         out = out[out['variable'] != 'dose_unknown']
 
         # calculate cumulative values and label as such
         cumulative = out.groupby(['fips','variable','temp_demo']).agg(
-            {'value': 'sum', 'dt':'last'}
+            {'value': 'sum', 'dt':'max'}
         ).reset_index()
         cumulative['variable'] = cumulative['variable'] + '_sum'
         
@@ -262,4 +238,16 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
             .drop(["variable"], axis=1)
         )
         out[demo] = out['temp_demo']
-        return out.drop(columns={'temp_demo'})
+        return out.drop(columns={'temp_demo'}).rename(columns={"fips":"location"})
+
+    def normalize(self, data):
+        df = self._rename_and_prep(data)
+        sex = self._get_by_sex(df)
+        age = self._get_by_age(df)
+
+        sex_total = self._cumulate_combine_melt(sex, 'sex')
+        age_total = self._cumulate_combine_melt(age, 'age')
+        out = pd.concat([sex_total, age_total])
+
+        return out
+
