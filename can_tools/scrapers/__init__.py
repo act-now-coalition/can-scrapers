@@ -4,7 +4,7 @@ from can_tools.scrapers.ctp import (
     CovidTrackingProject,
     CovidTrackingProjectDemographics,
 )
-from can_tools.scrapers.official.AK.ak_vaccine import AlaskaCountyVaccine
+from can_tools.scrapers.official.AK.ak_vaccine import AlaskaCountyVaccine, AlaskaVaccineDemographics
 from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
