@@ -52,7 +52,7 @@ class CDCCountyVaccine(FederalDashboard):
         if not response.ok:
             msg = f"Failed to make request to {self.url}\n"
             msg += "Response from request was\n:"
-            msg += textwrap.indent(response, "\t")
+            msg += textwrap.indent(response.content, "\t")
             raise RequestError(msg)
         return response.json()
 
