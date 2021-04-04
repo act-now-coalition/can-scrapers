@@ -37,8 +37,6 @@ class NCVaccine(TableauDashboard):
     }
 
     def fetch(self):
-        #county_data = self.get_tableau_view()
-
         """
         uses the tableauscraper module:
         https://github.com/bertrandmartel/tableau-scraping/blob/master/README.md
@@ -52,6 +50,7 @@ class NCVaccine(TableauDashboard):
         genderWeekly = workbook.getWorksheet("Gender_Weekly_statewide")
         ethnicityWeekly = workbook.getWorksheet("Ethnicity_Weekly_Statewide")
 
+        #What format do we actually want this in?
         frames = [ageWeekly.data, raceWeekly.data, genderWeekly.data, ethnicityWeekly.data]
 
         df = pd.concat(frames)
