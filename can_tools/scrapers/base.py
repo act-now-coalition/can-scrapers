@@ -1,5 +1,4 @@
 import pprint
-from ipdb.__main__ import launch_ipdb_on_exception
 from can_tools.validators import cross_section, timeseries
 from can_tools import utils
 from typing import Any, Dict, List, Optional, Type
