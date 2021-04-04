@@ -1,8 +1,10 @@
 import pandas as pd
+from pandas.core.frame import DataFrame
 import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
+from tableauscraper import TableauScraper as TS
 
 
 class NCVaccine(TableauDashboard):
@@ -17,7 +19,6 @@ class NCVaccine(TableauDashboard):
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
 
     data_tableau_table = "County Map"
-    #data_tableau_table = "Date-Demographics"
     location_name_col = "County -alias"
     timezone = "US/Eastern"
 
@@ -36,7 +37,29 @@ class NCVaccine(TableauDashboard):
     }
 
     def fetch(self):
-        county_data = self.get_tableau_view()
+        #county_data = self.get_tableau_view()
+
+        """
+        uses the tableauscraper module:
+        https://github.com/bertrandmartel/tableau-scraping/blob/master/README.md
+        """
+        ts = TS()
+        ts.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/Demographics")
+        workbook = ts.getWorkbook()
+
+        ageWeekly = workbook.getWorksheet("Age_Weekly_Statewide")
+        raceWeekly = workbook.getWorksheet("Race Weekly Statewide")
+        genderWeekly = workbook.getWorksheet("Gender_Weekly_statewide")
+        ethnicityWeekly = workbook.getWorksheet("Ethnicity_Weekly_Statewide")
+
+        frames = [ageWeekly.data, raceWeekly.data, genderWeekly.data, ethnicityWeekly.data]
+
+        df = pd.concat(frames)
+
+        df.to_csv('C:\personalproj\output.csv', sep=',')
+
+        workbook = workbook.setParameter("Age_County", "Age_County")
+        return workbook.worksheets[0].data
         print(county_data)
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
