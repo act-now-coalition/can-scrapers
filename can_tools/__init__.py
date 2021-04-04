@@ -52,5 +52,3 @@ def non_abc_subclasses(cls):
 ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = non_abc_subclasses(
     scrapers.DatasetBase
 )
-
-print(ALL_SCRAPERS)
