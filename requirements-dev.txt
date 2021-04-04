@@ -46,8 +46,8 @@ entrypoints==0.3
 epc==0.0.5
 fastapi==0.62.0
 filelock==3.0.12
-flake8==3.8.4
 Fiona==1.8.17
+flake8==3.8.4
 Flask==1.1.2
 Flask-Admin==1.5.4
 Flask-AppBuilder==2.3.4
