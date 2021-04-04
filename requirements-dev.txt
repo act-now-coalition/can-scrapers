@@ -33,7 +33,7 @@ configparser==3.5.3
 croniter==0.3.36
 cryptography==3.2.1
 data-science-types==0.2.20
-dataclasses==0.8
+dataclasses==0.6
 decorator==4.4.2
 defusedxml==0.6.0
 dill==0.3.3
@@ -46,7 +46,6 @@ entrypoints==0.3
 epc==0.0.5
 fastapi==0.62.0
 filelock==3.0.12
-Fiona==1.8.17
 flake8==3.8.4
 Flask==1.1.2
 Flask-Admin==1.5.4
@@ -250,4 +249,4 @@ zope.deprecation==4.4.0
 zope.event==4.5.0
 zope.interface==5.2.0
 uvicorn==0.12.3
-pyarrow==2.0.0
+pyarrow==3.0.0
