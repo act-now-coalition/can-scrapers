@@ -104,57 +104,57 @@ class FloridaCountyVaccine(StateDashboard):
             ),
         }
 
-        age_replace = {
-            "16-24 years": "16-24",
-            "25-34 years": "25-34",
-            "35-44 years": "35-44",
-            "45-54 years": "45-54",
-            "55-64 years": "55-64",
-            "65-74 years": "65-74",
-            "75-84 years": "75-84",
-            "85+ years": "85_plus",
-            "Age Unknown": "unknown",
-        }
-        age_df = self.normalize_group(df, "Age Groups", "age", age_replace, crename)
+        # age_replace = {
+        #     "16-24 years": "16-24",
+        #     "25-34 years": "25-34",
+        #     "35-44 years": "35-44",
+        #     "45-54 years": "45-54",
+        #     "55-64 years": "55-64",
+        #     "65-74 years": "65-74",
+        #     "75-84 years": "75-84",
+        #     "85+ years": "85_plus",
+        #     "Age Unknown": "unknown",
+        # }
+        # age_df = self.normalize_group(df, "Age Groups", "age", age_replace, crename)
 
-        gender_replace = {
-            "Female": "female",
-            "Male": "male",
-            "Gender Unknown": "unknown",
-        }
-        gender_df = self.normalize_group(df, "Gender", "sex", gender_replace, crename)
+        # gender_replace = {
+        #     "Female": "female",
+        #     "Male": "male",
+        #     "Gender Unknown": "unknown",
+        # }
+        # gender_df = self.normalize_group(df, "Gender", "sex", gender_replace, crename)
 
-        race_replace = {
-            "American Indian or Alaska Native": "ai_an",
-            "Asian": "asian",
-            "Black or African-American": "black",
-            "Native Hawaiian or Other Pacific Islander": "pacific_islander",
-            "Other Race": "other",
-            "White": "white",
-        }
-        race_col = [
-            c for c in df["Category"].unique() if c is not None and "race" in c.lower()
-        ][0]
-        race_df = self.normalize_group(df, race_col, "race", race_replace, crename)
-
-        ethnicity_replace = {"Hispanic or Latino": "hispanic"}
-        eth_col = [
-            c
-            for c in df["Category"].unique()
-            if c is not None and "ethnicity" in c.lower()
-        ][0]
-        eth_df = self.normalize_group(
-            df, eth_col, "ethnicity", ethnicity_replace, crename
-        )
+        # race_replace = {
+        #     "American Indian or Alaska Native": "ai_an",
+        #     "Asian": "asian",
+        #     "Black or African-American": "black",
+        #     "Native Hawaiian or Other Pacific Islander": "pacific_islander",
+        #     "Other Race": "other",
+        #     "White": "white",
+        # }
+        # race_col = [
+        #     c for c in df["Category"].unique() if c is not None and "race" in c.lower()
+        # ][0]
+        # race_df = self.normalize_group(df, race_col, "race", race_replace, crename)
+        #
+        # ethnicity_replace = {"Hispanic or Latino": "hispanic"}
+        # eth_col = [
+        #     c
+        #     for c in df["Category"].unique()
+        #     if c is not None and "ethnicity" in c.lower()
+        # ][0]
+        # eth_df = self.normalize_group(
+        #     df, eth_col, "ethnicity", ethnicity_replace, crename
+        # )
 
         out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
         out = self.extract_CMU(out, crename)
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
 
-        out: pd.DataFrame = pd.concat(
-            [age_df, gender_df, race_df, eth_df, total_df], axis=0, ignore_index=True
-        ).dropna()
+        # out: pd.DataFrame = pd.concat(
+        #     [age_df, gender_df, race_df, eth_df, total_df], axis=0, ignore_index=True
+        # ).dropna()
 
         cols_to_keep = [
             "vintage",
@@ -206,8 +206,6 @@ class FloridaCountyVaccine(StateDashboard):
 
     def _truncate_demographics_data(self, data, county_name):
 
-        # data.drop(data.columns[[0]], axis=1, inplace=True)
-
         data.columns = [
             "location_name",
             "age_group",
@@ -216,9 +214,25 @@ class FloridaCountyVaccine(StateDashboard):
             "total_people_vaccinated_total",
         ]
 
-        data.assign(location_name=county_name)
+        data.loc[:, 'location_name'] = county_name
 
-        # the data/table starts two lines after 'County of residence' appears in the location column
         startIndex = data.query("age_group == 'Age group'").index[0] + 1
 
         return data[startIndex: startIndex+8]
+
+    # def normalize_group(self, df, demographic, dgroup, group_rename, cmu):
+    #     keep_vals = list(group_rename.keys())
+    #     foo = df.query("category == @demographic &" "Join_Name in @keep_vals").rename(
+    #         columns={"Join_Name": dgroup}
+    #     )
+    #     foo.loc[:, dgroup] = foo.loc[:, dgroup].str.strip()
+    #     foo = foo.replace({dgroup: group_rename})
+    #
+    #     # Keep all but current demographic info
+    #     all_demographics = ["age", "race", "ethnicity", "sex"]
+    #     all_demographics.remove(dgroup)
+    #     cmu_cols = ["category", "measurement", "unit"] + all_demographics
+    #     foo = self.extract_CMU(foo, cmu, columns=cmu_cols)
+    #
+    #     # Drop Category/variable
+    #     foo = foo.drop(["Category", "variable"], axis="columns")
