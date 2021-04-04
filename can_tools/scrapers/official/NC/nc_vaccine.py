@@ -17,6 +17,7 @@ class NCVaccine(TableauDashboard):
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
 
     data_tableau_table = "County Map"
+    #data_tableau_table = "Date-Demographics"
     location_name_col = "County -alias"
     timezone = "US/Eastern"
 
@@ -33,6 +34,10 @@ class NCVaccine(TableauDashboard):
             unit="people",
         ),
     }
+
+    def fetch(self):
+        county_data = self.get_tableau_view()
+        print(county_data)
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = super().normalize(df)
