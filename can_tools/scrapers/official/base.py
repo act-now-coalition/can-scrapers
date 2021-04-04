@@ -700,7 +700,6 @@ class TableauDashboard(StateDashboard, ABC):
         tableauData = json.loads(tableauTag.text)
         parsed_url = urllib.parse.urlparse(fullURL)
         dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
-        ##### here
 
         # copy over some additional headers from tableauData
         form_data = {}
@@ -722,23 +721,6 @@ class TableauDashboard(StateDashboard, ABC):
         # The response contains multiple chuncks of the form
         # `<size>;<json>` where `<size>` is the number of bytes in `<json>`
         resp_text = resp.text
-
-        dataUrl = f'https://public.tableau.com/vizql/w/NCDHHS_COVID-19_Dashboard_Vaccinations/v/Summary/sessions/{tableauData["sessionid"]}/commands/tabdoc/goto-sheet'
-
-        form_map = {
-            "windowId": "48A36656-36DF-4008-9D8A-C8C98B8F739C"
-        }
-
-        for k, v in form_map.items():
-            if k in tableauData:
-                form_data[v] = tableauData[k]
-
-        resp = req.post(
-            dataUrl,
-            data=form_data,
-            headers={"Accept": "text/javascript"},
-        )
-        
         data = []
         while len(resp_text) != 0:
             size, rest = resp_text.split(";", 1)
