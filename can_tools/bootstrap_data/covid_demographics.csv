@@ -6,15 +6,18 @@ all,all,all,all
 10-19,all,all,all
 11-20,all,all,all
 15-19,all,all,all
+16-17,all,all,all
 16-49,all,all,female
 16-49,all,all,male
 16-49,all,all,unknown
 16-49,all,all,all
+18-24,all,all,all
 20-24,all,all,all
 20-29,all,all,all
 20-34,all,all,all
 21-30,all,all,all
 25-29,all,all,all
+25-34,all,all,all
 30-34,all,all,all
 30-39,all,all,all
 31-40,all,all,all
@@ -43,6 +46,7 @@ all,all,all,all
 65-79,all,all,male
 65-79,all,all,unknown
 65-79,all,all,all
+65_plus,all,all,all
 70-74,all,all,all
 70-79,all,all,all
 71-80,all,all,all
@@ -87,6 +91,7 @@ all,multiple_other,all,all
 all,multiple_other,hispanic,all
 all,multiple_other,non-hispanic,all
 all,multiple_other,unknown,all
+all,native_american,all,all
 all,pacific_islander,all,all
 all,pacific_islander,hispanic,all
 all,pacific_islander,non-hispanic,all

@@ -1,8 +1,10 @@
-import pandas as pd
-import us
-import lxml.html
-import requests
 from abc import abstractmethod
+
+import lxml.html
+import pandas as pd
+import requests
+import us
+
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -92,7 +94,7 @@ class DCBase(StateDashboard):
             id_vars=["dt", "location_name"], value_vars=_map.keys()
         ).dropna()
         out["value"] = pd.to_numeric(
-            out["value"].astype(str).str.replace(",", "").str.replace(" ", "")
+            out["value"].astype(str).str.replace(",", "").str.strip(),
         )
 
         out = self.extract_CMU(out, _map)

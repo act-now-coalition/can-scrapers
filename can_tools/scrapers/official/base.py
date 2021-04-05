@@ -1,17 +1,17 @@
 import json
-import uuid
+import logging
 import re
-
+import urllib.parse
+import uuid
 from abc import ABC, abstractmethod
 from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
+import jmespath
 import pandas as pd
 import requests
-import urllib.parse
-
 from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
@@ -26,6 +26,8 @@ from can_tools.models import (
 )
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.util import requests_retry_session
+
+_logger = logging.getLogger(__name__)
 
 
 class StateDashboard(DatasetBase, ABC):
@@ -111,6 +113,125 @@ class StateDashboard(DatasetBase, ABC):
                 print("Removed the {} rows from temp table".format(rows_deleted))
 
         return worked, rows_inserted, rows_deleted
+
+    def _reshape_variables(
+        self, data: pd.DataFrame, variable_map: Dict[str, CMU]
+    ) -> pd.DataFrame:
+        """Reshape columns in data to be long form definitions defined in `variable_map`.
+
+        Parameters
+        ----------
+        data :
+            Input data
+        variable_map : Union[str,int]
+            Map from column name to output variables
+
+        Returns
+        -------
+        data:
+            Reshaped DataFrame.
+        """
+        # parse out data columns
+        value_cols = list(set(data.columns) & set(variable_map.keys()))
+        assert len(value_cols) == len(variable_map)
+        id_vars = []
+        if "location_name" in data.columns:
+            id_vars.append("location_name")
+        if "location" in data.columns:
+            id_vars.append("location")
+        if "dt" in data.columns:
+            id_vars.append("dt")
+        if "vintage" in data.columns:
+            id_vars.append("vintage")
+
+        data = (
+            data.melt(id_vars=id_vars, value_vars=value_cols)
+            .dropna()
+            .assign(
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .pipe(self.extract_CMU, cmu=variable_map)
+            .drop(["variable"], axis=1)
+        )
+
+        if "vintage" not in data.columns:
+            data["vintage"] = self._retrieve_vintage()
+
+        return data
+
+    def _rename_or_add_date_and_location(
+        self,
+        data: pd.DataFrame,
+        location_name_column: Optional[str] = None,
+        location_column: Optional[str] = None,
+        location_names_to_drop: Optional[List[str]] = None,
+        date_column: Optional[str] = None,
+        date: Optional[pd.Timestamp] = None,
+        timezone: Optional[str] = None,
+        apply_title_case: bool = True,
+    ):
+        """Renames or adds date and location columns.
+
+        Parameters
+        ----------
+        data :
+            Input data
+        location_name_column:
+            Name of column with location name
+        location_column:
+            Name of column with location (fips)
+        date_column:
+            Name of Column containing date.
+        date:
+            Date for data
+        timezone:
+            Timezone of data if date or date_column not supplied.
+        apply_title_case:
+            If True will make location name title case.
+
+        Returns
+        -------
+        data:
+            Data with date and location columns normalized.
+        """
+        assert location_name_column or location_column
+        assert date_column or date or timezone
+
+        rename_columns = {}
+        if location_name_column:
+            rename_columns[location_name_column] = "location_name"
+        if location_column:
+            rename_columns[location_column] = "location"
+        if date_column:
+            rename_columns[date_column] = "dt"
+
+        data = data.rename(columns=rename_columns)
+
+        if date_column:
+            data.loc[:, "dt"] = pd.to_datetime(data["dt"])
+
+        if timezone:
+            assert (
+                not date
+            ), "Both date and timezone passed, can only include one or the other"
+            date = self._retrieve_dt(timezone)
+
+        if date:
+            data = data.assign(dt=date)
+
+        if location_names_to_drop:
+            non_locs = data.loc[:, "location_name"].isin(location_names_to_drop)
+            data = data.loc[~non_locs, :]
+
+        if "location_name" in data.columns and apply_title_case:
+            data["location_name"] = data["location_name"].str.title()
+
+        if "location" in data.columns:
+            data["location"] = pd.to_numeric(data["location"])
+
+        return data
 
 
 class CountyDashboard(StateDashboard, ABC):
@@ -388,7 +509,7 @@ class SODA(StateDashboard, ABC):
 
 class StateQueryAPI(StateDashboard, ABC):
     """
-    Fetch data from OpenDataCali service
+    Fetch data from State API service (CKAN?)
     """
 
     apiurl: str
@@ -681,19 +802,21 @@ class TableauMapClick(StateDashboard, ABC):
         _ : List
             The Tableau-view-specific json filter function called onMapClick
         """
-        urlFltr = []
+        url_filter_keys = []
+
         # Grab the map filter function guts:
         for fn in htmDump["worldUpdate"]["applicationPresModel"]["workbookPresModel"][
             "dashboardPresModel"
         ]["userActions"]:
-            if fn.get("name") == "Map filter":
-                urlFltr = (
-                    urllib.parse.unquote(fn.get("linkSpec").get("url"))
-                    .split("?")[1]
-                    .replace("=<Countynm1~na>", "")
-                    .split("&")
+
+            if fn.get("name", "").lower().startswith("map filter"):
+                _, *rest = urllib.parse.unquote(fn.get("linkSpec").get("url")).split(
+                    "?"
                 )
-        return urlFltr
+                rest = "?".join(rest)
+                url_filter_keys = [param.split("=")[0] for param in rest.split("&")]
+
+        return url_filter_keys
 
     def extractTbluData(self, htmdump, area) -> pd.DataFrame:
         """
@@ -712,68 +835,42 @@ class TableauMapClick(StateDashboard, ABC):
             Already-pivoted covid data with column names extracted from tableau
             'location' column will contain the proveded 'area' data
         """
-        valF = []  # Initialize placeholder array
+        data_vals = []  # Initialize placeholder array
         # Grab the raw data loaded into the current tableau view
-        lsUpdt = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][2][
-            "dataValues"
-        ][
-            -1
-        ]
-        intDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][0][
-            "dataValues"
-        ]
-        rlDat = htmdump["secondaryInfo"]["presModelMap"]["dataDictionary"][
-            "presModelHolder"
-        ]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"][1][
-            "dataValues"
-        ]
+        data_segment = jmespath.search(
+            "secondaryInfo.presModelMap.dataDictionary.presModelHolder.genDataDictionaryPresModel.dataSegments",
+            htmdump,
+        )["0"]
+        last_updated = jmespath.search("dataColumns[2].dataValues[-1]", data_segment)
+        integer_data = jmespath.search("dataColumns[0].dataValues", data_segment)
+        real_data = jmespath.search("dataColumns[1].dataValues", data_segment)
+
+        pres_model_map = jmespath.search(
+            "secondaryInfo.presModelMap.vizData.presModelHolder.genPresModelMapPresModel.presModelMap",
+            htmdump,
+        )
+
         # First extract the datatype and indices:
-        for i in htmdump["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"][
-            "genPresModelMapPresModel"
-        ]["presModelMap"]:
-            dtyp = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                "presModelHolder"
-            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                "genVizDataPresModel"
-            ][
-                "paneColumnsData"
-            ][
-                "vizDataColumns"
-            ][
-                1
-            ].get(
-                "dataType"
+        for name, col_map in pres_model_map.items():
+            pane_col_data = jmespath.search(
+                "presModelHolder.genVizDataPresModel.paneColumnsData", col_map
             )
-            indx = htmdump["secondaryInfo"]["presModelMap"]["vizData"][
-                "presModelHolder"
-            ]["genPresModelMapPresModel"]["presModelMap"][i]["presModelHolder"][
-                "genVizDataPresModel"
-            ][
-                "paneColumnsData"
-            ][
-                "paneColumnsList"
-            ][
-                0
-            ][
-                "vizPaneColumns"
-            ][
-                1
-            ].get(
-                "aliasIndices"
-            )[
-                0
-            ]
+            dtyp = jmespath.search("vizDataColumns[1].dataType", pane_col_data)
+            indx = jmespath.search(
+                "paneColumnsList[0].vizPaneColumns[1].aliasIndices[0]",
+                pane_col_data,
+            )
+            if dtyp is None or indx is None:
+                _logger.warning(f"Failed to process {name}")
+                continue
+
             if dtyp == "integer":
-                valF.append([area, i, intDat[indx]])
+                data_vals.append([area, name, integer_data[indx]])
             elif dtyp == "real":
-                valF.append([area, i, rlDat[indx]])
-        valF.append([area, "Last update", lsUpdt])
-        if valF:
-            val = pd.DataFrame(valF, columns=["location", "Name", "Value"])
+                data_vals.append([area, name, real_data[indx]])
+        data_vals.append([area, "Last update", last_updated])
+        if data_vals:
+            val = pd.DataFrame(data_vals, columns=["location", "Name", "Value"])
             val = pd.pivot_table(
                 val,
                 values="Value",
@@ -785,7 +882,7 @@ class TableauMapClick(StateDashboard, ABC):
         else:
             return None
 
-    def getRawTbluPageData(self, url, bsRt, reqParams) -> (json, json):
+    def getRawTbluPageData(self, url, bsRt, reqParams) -> (dict, dict):
         """
         Extracts and parses htm data from a tableau dashboard page
 
@@ -820,10 +917,8 @@ class TableauMapClick(StateDashboard, ABC):
             dataUrl,
             data={"sheet_id": tdata["sheetId"], "showParams": tdata["showParams"]},
         )
-
         # Regex the non-json output
         dat = re.search("\d+;({.*})\d+;({.*})", r.text, re.MULTILINE)
-
         # load info head and data group separately
         info = json.loads(dat.group(1))
         fdat = json.loads(dat.group(2))

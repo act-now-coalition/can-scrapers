@@ -1,19 +1,16 @@
 import io
-
 from abc import ABC
 
-import pandas as pd
-import us
 import lxml.html
+import pandas as pd
 import requests
+import us
 
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 # the crename keys became long so I store them in another file
-from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
-    crename,
-)
+from can_tools.scrapers.official.TX.tx_vaccine_crenames import crename
 
 
 class TexasVaccineParent(StateDashboard, ABC):
@@ -30,13 +27,9 @@ class TexasVaccineParent(StateDashboard, ABC):
 
     def excel_to_dataframe(self, data, sheet) -> pd.DataFrame:
         # Read data from excel file and parse specified sheet
-        data = pd.ExcelFile(io.BytesIO(data.content))
-        df = data.parse(sheet, na_values="--")
-
-        # Set date to yesterday
-        df["dt"] = self._retrieve_dtm1d("US/Eastern")
-
-        return df
+        return pd.read_excel(
+            data.content, sheet_name=sheet, engine="openpyxl", na_values="--"
+        ).assign(dt=self._retrieve_dtm1d("US/Eastern"))
 
 
 class TexasCountyVaccine(TexasVaccineParent):
@@ -68,7 +61,13 @@ class TexasCountyVaccine(TexasVaccineParent):
         # Read excel file and set date
         df = self.excel_to_dataframe(data, "By County")
         df = self._rename_and_reshape(df)
-        non_counties = ["Texas", "Federal Pharmacy Retail Vaccination Program", "Other"]
+        non_counties = [
+            "Texas",
+            "Federal Pharmacy Retail Vaccination Program",
+            "Other",
+            "Grand Total",
+            "* Other",
+        ]
         # Drop state data which we retrieve with another scraper
         # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
         df = df.query("location_name not in @non_counties")
@@ -181,15 +180,17 @@ class TXVaccineCountyAge(TexasVaccineParent):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read in data, set location, and drop totals
+        non_counties = ["Other", "Grand Total"]
         df = (
             self.excel_to_dataframe(data, self.sheet_name)
             .rename(
                 columns={
                     "Age Group": "age",
                     "Race/Ethnicity": "race",
-                    "County": "location_name",
+                    "County Name": "location_name",
                 }
             )
+            .rename(columns=str.strip)
             .melt(
                 id_vars=["dt", "location_name"] + self.cmu_id_vars,
                 value_vars=list(self.cmus.keys()),
@@ -198,7 +199,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
             .assign(vintage=self._retrieve_vintage())
-            .query("location_name != 'Other'")
+            .query("location_name not in @non_counties")
             .dropna(subset=["value"])
         )
 

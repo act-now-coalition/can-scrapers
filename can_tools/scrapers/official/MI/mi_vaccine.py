@@ -14,7 +14,7 @@ class MichiganVaccineCounty(StateDashboard):
     location_type = "county"
 
     def fetch(self):
-        return pd.read_excel(self.url, sheet_name="Doses Administered", engine="xlrd")
+        return pd.read_excel(self.url, sheet_name="Doses Administered")
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         # date is written out in first column name
@@ -46,7 +46,7 @@ class MichiganVaccineCounty(StateDashboard):
                 unit="doses",
             ),
         }
-        not_counties = ["No County", "Detroit", "Non-Michigan Resident"]  # noqa
+        not_counties = ["No County", "Non-Michigan Resident"]  # noqa
 
         # need to sum over all the possible facility types for distribution
         df = (
@@ -62,16 +62,33 @@ class MichiganVaccineCounty(StateDashboard):
             .fillna(0)
             .astype(int)
             .assign(
-                total_initiated=lambda x: x.eval("ModernaFirstDose + PfizerFirstDose"),
-                total_completed=lambda x: x.eval(
-                    "ModernaSecondDose + PfizerSecondDose"
-                ),
+                total_initiated=lambda x: x.eval("ModernaFirstDose + PfizerFirstDose")
+                + x["J&JFirstDose"],
+                total_completed=lambda x: x.eval("ModernaSecondDose + PfizerSecondDose")
+                + x["J&JFirstDose"],
             )
             .assign(
                 total=lambda x: x.eval("total_initiated + total_completed"),
             )
             .loc[:, cmus.keys()]
         )
+
+        # Detroit data is reported separately from Wayne county. As detroit is not a real
+        # county, combine data with Wayne county.
+        is_wayne_county = df.index.get_level_values("location_name") == "Wayne"
+        is_detroit = df.index.get_level_values("location_name") == "Detroit"
+
+        renamed_detroit_data = df.loc[is_detroit, :].rename(
+            index={"Detroit": "Wayne"}, level="location_name"
+        )
+
+        # verify that indices are the same so that when adding data frames
+        # no values are dropped
+        assert renamed_detroit_data.index.equals(df.loc[is_wayne_county, :].index)
+        df.loc[is_wayne_county, :] += renamed_detroit_data
+
+        # Drop detroit data
+        df = df.loc[~is_detroit, :]
 
         # now we need to reindex to fill in all dates -- fill missing with 0
         dates = pd.Series(df.index.get_level_values("dt")).agg(["min", "max"])

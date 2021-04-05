@@ -11,18 +11,20 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
     has_location = True
     location_type = "state"
     source = (
-        "https://legacy.healthdata.gov/dataset/"
-        "covid-19-reported-patient-impact-and-hospital-capacity-state-timeseries/"
+        "https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa"
+        "/g62h-syeh"
     )
-    dsid = "83b4a668-9321-4d8c-bc4f-2bef66c49050"
+    source_url = (
+        "https://healthdata.gov/api/views/g62h-syeh/rows.csv?accessType=DOWNLOAD"
+    )
 
     def fetch(self):
-        return self.dataset_details()
+        df = pd.read_csv(self.source_url)
+        return df
 
     def normalize(self, data: str) -> pd.DataFrame:
-
+        df = data.copy()
         # Read the dataframe from the string csv
-        df = pd.read_csv(StringIO(data))
         df.columns = [x.lower().strip() for x in df.columns]
 
         # Set date and fips code
