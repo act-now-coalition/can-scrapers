@@ -84,6 +84,12 @@ class USAFactsCases(FederalDashboard):
             ["variable"], axis="columns"
         )
 
+    def validate(self, df, df_hist):
+        # Overriding validate method to not fail for usa facts because
+        # county cumulative case/death reporting has dips because of local corrections.
+        # TODO(chris): Add option to skip increasing over time validate check.
+        return
+
 
 class USAFactsDeaths(USAFactsCases):
     """
