@@ -7,7 +7,7 @@ from can_tools.scrapers.official.base import ArcGIS
 
 class MontanaCountyVaccine(ArcGIS):
     ARCGIS_ID = "qnjIrwR8z5Izc0ij"
-    has_location = False
+    has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Montana").fips)
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
@@ -32,12 +32,12 @@ class MontanaCountyVaccine(ArcGIS):
         df = (
             self.arcgis_jsons_to_df(data)
             .fillna(0)
-            .rename(columns={"NAME": "location_name", "Date_Reported": "dt"})
+            .rename(columns={"ALLFIPS": "location", "Date_Reported": "dt"})
         )
 
         # Capitalize start of words and replace wrong names
-        df.loc[:, "location_name"] = (
-            df.loc[:, "location_name"]
+        df.loc[:, "location"] = (
+            df.loc[:, "location"]
             .str.title()
             .replace({"Lewis & Clark": "Lewis and Clark", "Mccone": "McCone"})
         )
@@ -111,4 +111,21 @@ class MontanaStateVaccine(MontanaCountyVaccine):
         df["dt"] = df["dt"].map(self._esri_ts_to_dt)
         df["location"] = self.state_fips
 
-        return self._transform_df(df)
+        out = self._transform_df(df)
+
+        # this scraper has some duplicates. Drop them here
+        return out.drop_duplicates(
+            subset=[
+                "vintage",
+                "dt",
+                "location",
+                "category",
+                "measurement",
+                "unit",
+                "age",
+                "race",
+                "ethnicity",
+                "sex",
+            ],
+            keep="last",
+        )
