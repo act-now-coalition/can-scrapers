@@ -93,7 +93,7 @@ class SCVaccineCounty(StateDashboard):
         res = []
         for ix, d in enumerate(dfs):
             # Clean data
-             if len(df.columns) != 11: 
+            if len(df.columns) != 11: 
                 print(f"\t{vaccine_name} #{ix} doesn't have right number of columns!")
             df = d.replace("", np.nan).replace("--", 0)
             # Remove first empty row
