@@ -134,7 +134,9 @@ class AlaskaCountyVaccine(ArcGIS):
             )
             .drop(["variable"], axis=1)
         )
-        return out.rename(columns={'fips':'location'})
+        out = out.rename(columns={'fips':'location'})
+        out = out.query("location != 2000").replace(2270, 2158)
+        return out
 
 
 class AlaskaVaccineDemographics(AlaskaCountyVaccine):
@@ -259,4 +261,3 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         out = pd.concat([sex_total, age_total])
 
         return out
-
