@@ -4,11 +4,10 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import DatasetBase
 from can_tools.scrapers.official.base import SODA
 
 
-class CTCountyVaccine(SODA, DatasetBase):
+class CTCountyVaccine(SODA):
 
     baseurl = "https://data.ct.gov/"
     resource_id = "5g42-tpzq"

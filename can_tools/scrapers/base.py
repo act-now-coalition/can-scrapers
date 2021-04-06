@@ -105,13 +105,16 @@ class DatasetBase(ABC):
         single type of geography. It will set the `"location_type"` column
         to this value (when performing the `put`) if `"location_type"` is not
         already set in the df
+
+    source: str
+        A string containing a URL that points to the dashboard or remote
+        resource that will be scraped
     """
 
     autodag: bool = True
     data_type: str = "general"
     table: Type[Base]
     location_type: Optional[str]
-    base_path: Path
     source: str
 
     # this list of tuples specifies categories for which the first
@@ -430,7 +433,7 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
-    def _validate_time_series(self, df) -> [List[Exception]]:
+    def _validate_time_series(self, df) -> List[Exception]:
         """Do checks only applicable to time series data"""
         issues = []
         if (df["measurement"] == "cumulative").sum() > 0:
@@ -441,7 +444,7 @@ class DatasetBase(ABC):
 
         return issues
 
-    def _validate_order_of_variables(self, df) -> [List[Exception]]:
+    def _validate_order_of_variables(self, df) -> List[Exception]:
         """
         Returns a list of exceptions that occured while doing checks
         """

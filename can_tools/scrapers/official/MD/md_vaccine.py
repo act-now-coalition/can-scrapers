@@ -1,10 +1,10 @@
 import us
 
-from can_tools.scrapers import DatasetBase, variables
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class MarylandCountyVaccines(ArcGIS, DatasetBase):
+class MarylandCountyVaccines(ArcGIS):
     """
     Fetch county level covid data from Maryland's ARCGIS dashboard
     """

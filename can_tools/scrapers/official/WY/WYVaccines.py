@@ -5,11 +5,11 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
 
 
-class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
+class WYStateVaccinations(GoogleDataStudioDashboard):
     state_fips = int(us.states.lookup("Wyoming").fips)
     execution_dt = pd.Timestamp.now()
     source = (
@@ -152,7 +152,7 @@ class WYStateVaccinations(GoogleDataStudioDashboard, DatasetBase):
         return out.drop(["variable"], axis="columns")
 
 
-class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
+class WYCountyVaccinations(GoogleDataStudioDashboard):
     """
     Pulls Wyoming state vaccine data, cleans and up the Json Strig that is returned before returning that object as
     a dictionary

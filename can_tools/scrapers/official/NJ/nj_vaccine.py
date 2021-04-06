@@ -4,7 +4,6 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -27,21 +26,12 @@ class NewJerseyVaccineCounty(ArcGIS):
         return self.get_all_jsons(self.service, 0, 7)
 
     def normalize(self, data: Any) -> pd.DataFrame:
-        non_counties = ["Out Of State", "Unknown", "Missing"]  # noqa
-        return (
-            self.arcgis_jsons_to_df(data)
-            .rename(columns=dict(County="location_name"))
-            .melt(
-                id_vars=["location_name"],
-                value_vars=list(self.variables.keys()),
-            )
-            .assign(
-                dt=self._retrieve_dt(),
-                vintage=self._retrieve_vintage(),
-                location_name=lambda x: x["location_name"].str.title(),
-            )
-            .pipe(self.extract_CMU, cmu=self.variables)
-            .drop(["variable"], axis=1)
-            .query("location_name not in @non_counties")
-            .dropna()
+        non_counties = ["OUT OF STATE", "UNKNOWN", "MISSING"]
+        df = self.arcgis_jsons_to_df(data)
+        df = self._rename_or_add_date_and_location(
+            df,
+            location_name_column="County",
+            timezone="US/Eastern",
+            location_names_to_drop=non_counties,
         )
+        return self._reshape_variables(df, self.variables)
