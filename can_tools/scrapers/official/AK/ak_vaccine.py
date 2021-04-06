@@ -28,17 +28,17 @@ class AlaskaCountyVaccine(ArcGIS):
             measurement="new",
             unit="people",
         ),
-        "vaccine_initiated_sum": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
+        # "vaccine_initiated_sum": CMU(
+        #     category="total_vaccine_initiated",
+        #     measurement="cumulative",
+        #     unit="people",
+        # ),
 
-        "vaccine_completed_sum": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        )
+        # "vaccine_completed_sum": CMU(
+        #     category="total_vaccine_completed",
+        #     measurement="cumulative",
+        #     unit="people",
+        # )
     }
 
     def fetch(self):
@@ -124,19 +124,10 @@ class AlaskaCountyVaccine(ArcGIS):
 
         # melt daily/new data to long form
         out = (
-            totals.melt(id_vars=["fips", "dt"], value_vars=['vaccine_initiated','vaccine_completed'])
+            totals.melt(id_vars=["fips", "dt"], value_vars=self.variables.keys())
             .dropna()
         )
         
-        # sum by county and variable type to get cumulative data, keep the most recent date
-        cumulative = out.groupby(['fips','variable']).agg(
-            {'value': 'sum', 'dt':'max'}
-        ).reset_index()
-        # label the data as cumulative
-        cumulative['variable'] = cumulative['variable'] + '_sum'
-       
-        # combine new and cumulative data
-        out = pd.concat([cumulative, out])
         out = (out.pipe(self.extract_CMU, cmu=self.variables)
             .assign(
                 vintage=self._retrieve_vintage(),
@@ -222,14 +213,6 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         # TEMP: remove unknown vals
         out = out[out['variable'] != 'dose_unknown']
 
-        # calculate cumulative values and label as such
-        cumulative = out.groupby(['fips','variable','temp_demo']).agg(
-            {'value': 'sum', 'dt':'max'}
-        ).reset_index()
-        cumulative['variable'] = cumulative['variable'] + '_sum'
-        
-        # combine new and cumulative doses
-        out = pd.concat([out,cumulative])
         out = (out.pipe(self.extract_CMU, cmu=self.variables)
             .assign(
                 vintage=self._retrieve_vintage(),
