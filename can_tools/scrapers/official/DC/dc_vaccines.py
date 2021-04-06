@@ -5,6 +5,7 @@ from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 from tableauscraper import TableauScraper as TS
 
+
 class DCVaccineRace(TableauDashboard):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
@@ -15,7 +16,7 @@ class DCVaccineRace(TableauDashboard):
     viewPath = "Vaccine_Public/Demographics"
     demographic_cmu = "sex"
     data_tableau_table = "Demographics "
-    demographic_cmu = 'race'
+    demographic_cmu = "race"
 
     # map column names into CMUs
     variables = {
@@ -32,7 +33,7 @@ class DCVaccineRace(TableauDashboard):
 
     def _get_unknown(self):
         """
-            returns df of unknown data for race and ethnicity
+        returns df of unknown data for race and ethnicity
         """
         # get total unknown initiating value
         initiated = int(
@@ -86,7 +87,7 @@ class DCVaccineRace(TableauDashboard):
         # sum the partially and fully vaccinated entries to match definition
         # to avoid pivoting to wide then back to long I selected each corresponding entry to sum
         q = 'variable == "{v} VACCINATED" and demo_val == "{d}"'
-        for d in df['demo_val'].unique():
+        for d in df["demo_val"].unique():
             initiated_value = int(
                 df.query(q.format(v="PARTIALLY", d=d))["value"]
             ) + int(df.query(q.format(v="FULLY", d=d))["value"])
@@ -96,7 +97,7 @@ class DCVaccineRace(TableauDashboard):
         out = df.query('variable != "PARTIALLY VACCINATED"').pipe(
             self.extract_CMU, cmu=self.variables
         )
-        out[self.demographic_cmu] = out['demo_val']
+        out[self.demographic_cmu] = out["demo_val"]
 
         out = out.assign(
             value=out["value"].astype(int),
