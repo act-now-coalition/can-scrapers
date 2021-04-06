@@ -2,7 +2,7 @@ import pandas as pd
 import us
 import requests
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -16,23 +16,13 @@ class NebraskaVaccineSex(StateDashboard):
         "https://gis.ne.gov/Enterprise/rest/services/C19Vac/MapServer/{table}/query"
     )
     source_name = "Nebraska Department of Health and Human Services"
+
     crename = {
-        "initiated": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "attributes.TotalCompletedVac": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "attributes.TotalDoses": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
+        "initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "attributes.TotalCompletedVac": variables.FULLY_VACCINATED_ALL,
+        "attributes.TotalDoses": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
+
     # col_name: the demographic column name as labeled in the raw data. cmu_name: name of demo as used in the CMU class
     demographic = {"col_name": "attributes.Gender", "cmu_name": "sex"}
     # table to query to find corresponding data
