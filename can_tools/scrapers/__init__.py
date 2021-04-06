@@ -106,10 +106,6 @@ from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, Wisconsin
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations,
-    NebraskaVaccineSex,
-    NebraskaVaccineRace,
-    NebraskaVaccineEthnicity,
-    NebraskaVaccineAge,
+    WYStateVaccinations
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths

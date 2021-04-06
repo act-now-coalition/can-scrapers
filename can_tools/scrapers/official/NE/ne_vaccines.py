@@ -5,16 +5,6 @@ import requests
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
-"""
-    QUERY TABLE CONTENTS KEY:
-    3 = age 
-    4 = new daily cases state level
-    5 = sex 
-    6 = ethnicity
-    7 = race
-    8 = cumulative daily
-"""
-
 
 class NebraskaVaccineSex(StateDashboard):
 
@@ -26,9 +16,8 @@ class NebraskaVaccineSex(StateDashboard):
         "https://gis.ne.gov/Enterprise/rest/services/C19Vac/MapServer/{table}/query"
     )
     source_name = "Nebraska Department of Health and Human Services"
-    # totalFirstDose INCLUDES 1 shot vaccines
     crename = {
-        "attributes.TotalFirstDose": CMU(
+        "initiated": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
@@ -70,6 +59,14 @@ class NebraskaVaccineSex(StateDashboard):
     def normalize(self, data) -> pd.DataFrame:
         df = pd.json_normalize(data["features"])
         df["location"] = self.state_fips
+
+        # initiated:
+        # everyone with at least one dose is the sum of all the single doses, people with one dose, and people with second dose
+        df["initiated"] = (
+            df["attributes.TotalFirstDose"]
+            + df["attributes.TotalSecondDose"]
+            + df["attributes.TotalSingleDose"]
+        )
 
         # group by location and demographic and transform
         out = (
