@@ -10,8 +10,8 @@ from can_tools.scrapers import CMU, variables
 class AlaskaCountyVaccine(ArcGIS):
     has_location = False
     location_type = "county"
-    source = "https://experience.arcgis.com/experience/c2ef4a4fcbe5458fbf2e48a21e4fece9"
-    source_name = "The Arkansas Department of Health"
+    source = "https://alaska-coronavirus-vaccine-outreach-alaska-dhss.hub.arcgis.com/app/c74be37e02b44bb8b8b40515eabbab55"
+    source_name = "Alaska Department of Health and Social Services Coronavirus Response Hub"
     service = "Vaccine_Dashboard_PROD"
     ARCGIS_ID = "WzFsmainVTuD5KML"
     state_fips = int(us.states.lookup("Alaska").fips)
@@ -121,7 +121,6 @@ class AlaskaCountyVaccine(ArcGIS):
         
         # drop "other" for now
         totals = totals.drop(columns={"vaccine_other"})
-
         # melt daily/new data to long form
         out = (
             totals.melt(id_vars=["fips", "dt"], value_vars=self.variables.keys())
@@ -189,6 +188,33 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         out = self._fix_fips(out)
         out = out.replace(np.nan, 0)
 
+        return out
+
+    def _get_by_ethnicity(self, df):
+        keep = df[["dt", "dose_num", "fips", "ethnicity", 'primarykeyid']]
+        count_per_day = (
+            keep.groupby(["dt", "fips", "dose_num", 'ethnicity'])
+            .count()
+            .rename(columns={"primarykeyid": "count"})
+        )
+        unstacked = count_per_day.unstack().unstack()
+        # Fix column names
+        unstacked.columns = [
+            z.replace("count--", "")
+                .replace('ethnicity ', '')
+                .replace('--1', ":vaccine_initiated")
+                .replace("--2", ":vaccine_completed")
+                .replace("--3", ":dose_unknown")
+                # Confirmed enthnicities by matching numbers on dashboard
+                .replace("2135-2", "hispanic")
+                .replace("2186-5", "non-hispanic")
+                .replace("UNK", "unknown")
+            for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
+        ]
+
+        out = unstacked.reset_index()
+        out = self._fix_fips(out)
+        out = out.replace(np.nan, 0)
         return out
 
     def _melt(self, df, demo):
