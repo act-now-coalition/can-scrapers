@@ -8,7 +8,7 @@ from can_tools.scrapers import CMU, variables
 
 
 class AlaskaCountyVaccine(ArcGIS):
-    has_location = False
+    has_location = True
     location_type = "county"
     source = "https://alaska-coronavirus-vaccine-outreach-alaska-dhss.hub.arcgis.com/app/c74be37e02b44bb8b8b40515eabbab55"
     source_name = "Alaska Department of Health and Social Services Coronavirus Response Hub"
