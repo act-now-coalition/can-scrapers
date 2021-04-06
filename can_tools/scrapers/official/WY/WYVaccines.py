@@ -297,6 +297,3 @@ class WYCountyVaccinations(GoogleDataStudioDashboard, DatasetBase):
         out["vintage"] = self._retrieve_vintage()
         df = self.extract_CMU(out, crename)
         return df.drop(["variable"], axis="columns")
-
-new = WYCountyVaccinations()
-new.normalize(new.fetch())
