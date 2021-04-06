@@ -191,13 +191,13 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
 
         return out
 
-    def _cumulate_combine_melt(self, df, demo):
+    def _melt(self, df, demo):
         """
         accepts:
             df: dataframe -- df of new/daily data in wide form
             demo: str -- name of the demographic according to CMU class (sex,age,race etc)
 
-        returns: df in long form with CMU columns containing cumulative and new data
+        returns: df in long form with CMU columns containing new data
         """
 
         # use all cols except date and location as value vars for pivot
@@ -228,8 +228,8 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         sex = self._get_by_sex(df)
         age = self._get_by_age(df)
 
-        sex_total = self._cumulate_combine_melt(sex, 'sex')
-        age_total = self._cumulate_combine_melt(age, 'age')
+        sex_total = self._melt(sex, 'sex')
+        age_total = self._melt(age, 'age')
         out = pd.concat([sex_total, age_total])
 
         return out
