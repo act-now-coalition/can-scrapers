@@ -1,7 +1,8 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.official.base import (TableauDashboard)
+from can_tools.scrapers import variables
+from can_tools.scrapers.official.base import (TableauDashboard, ArcGIS)
 
 class SCVaccineCountyTaleau(TableauDashboard):
     has_location = False
@@ -14,6 +15,12 @@ class SCVaccineCountyTaleau(TableauDashboard):
     viewPath = "COVIDVaccineDashboard/RECIPIENTVIEW"
 
     data_tableau_table = 'County Table People Sc Residents'
+
+    variables = {
+        'Count of Doses': variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        'SC Residents with at least 1 Vaccine': variables.INITIATING_VACCINATIONS_ALL,
+
+    }
 
     def normalize(self, data):
         df = data.rename(columns={
@@ -29,7 +36,17 @@ class SCVaccineCountyTaleau(TableauDashboard):
 
         pivoted = keep.pivot_table(index='county', values='value', columns='measure').reset_index()
 
-        pivoted['completed'] = pivoted['Count of Doses'] - pivoted['SC Residents with at least 1 Vaccine']
+        # This doesn't match up...
+        # pivoted['completed'] = pivoted['Count of Doses'] - pivoted['SC Residents with at least 1 Vaccine']
 
 
-        return keep
+        return pivoted
+
+class SCCountyVaccineArcGIS(ArcGIS):
+    ARCGIS_ID = 'XZg2efAbaieYAXmu'
+    service = 'VaccineProvider_County_v2_HUB_NEW'
+    def fetch(self):
+        return self.get_all_jsons(self.service, 0, "2")
+
+    def normalize(self, data):
+        return data
