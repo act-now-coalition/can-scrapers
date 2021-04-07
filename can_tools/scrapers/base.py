@@ -42,8 +42,16 @@ class CMU:
         self.sex = sex
 
 
+class RequestError(Exception):
+    """Error raised when a network request fails"""
+
+    pass
+
+
 class ValidateDataFailedError(Exception):
     """Error raised when data vailidation fails."""
+
+    pass
 
 
 class ValidateRelativeOrderOfCategoriesError(Exception):
