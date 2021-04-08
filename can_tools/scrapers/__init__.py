@@ -31,7 +31,10 @@ from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )
 from can_tools.scrapers.official.FL.fl_vaccine import FloridaCountyVaccine
-from can_tools.scrapers.official.GA.ga_vaccines import GeorgiaCountyVaccine
+from can_tools.scrapers.official.GA.ga_vaccines import (
+    GeorgiaCountyVaccine,
+    GeorgiaCountyVaccineAge,
+)
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
@@ -110,6 +113,6 @@ from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, Wisconsin
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations
+    WYStateVaccinations,
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths

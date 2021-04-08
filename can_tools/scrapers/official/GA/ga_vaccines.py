@@ -86,3 +86,106 @@ class GeorgiaCountyVaccine(ArcGIS):
         ]
 
         return out.loc[:, cols_to_keep]
+
+
+class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
+    service = "Georgia_DPH_PUBLIC_Vaccination_Dashboard_V5_VIEW"
+    has_location = True
+    sheet = 7
+    column_names = ["AGE"]
+
+    variables = {
+        "00-05": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="0-9",
+        ),
+        "05_09": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="5-9",
+        ),
+        "10_14": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="10-14",
+        ),
+        "15_19": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="15-19",
+        ),
+        "20_24": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="20-24",
+        ),
+        "25_34": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="25-34",
+        ),
+        "35_44": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="35-44",
+        ),
+        "45_54": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="45-54",
+        ),
+        "55_64": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="55-64",
+        ),
+        "65_74": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="65-74",
+        ),
+        "75_84": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="75-84",
+        ),
+        "85PLUS": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="85_plus",
+        ),
+    }
+
+    def fetch(self):
+        return self.get_all_jsons(self.service, self.sheet, "6")
+
+    def normalize(self, data):
+        df = self.arcgis_jsons_to_df(data)
+        df = (
+            df.pivot_table(
+                index="COUNTYFIPS", columns=self.column_names, values="COUNTS"
+            )
+            .reset_index()
+            .rename_axis(None, axis=1)
+        )
+        df = self._rename_or_add_date_and_location(
+            df, location_column="COUNTYFIPS", timezone="US/Eastern"
+        )
+        df = self._reshape_variables(df, self.variables)
+
+        locs_to_drop = ["0"]
+        df = df.query("location not in @locs_to_drop")
+        return df
