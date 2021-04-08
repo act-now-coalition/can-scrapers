@@ -133,3 +133,34 @@ class ALCountyVaccineRace(ALCountyVaccineSex):
             race="asian",
         ),
     }
+
+
+class ALCountyVaccineAge(ALCountyVaccineSex):
+    variable_columns = ["AGECAT"]
+    sheet_num = 5
+    variables = {
+        "16-54": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="16-54",
+        ),
+        "55-64": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="55-64",
+        ),
+        "65-74": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="65-74",
+        ),
+        "75+": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            age="75_plus",
+        ),
+    }
