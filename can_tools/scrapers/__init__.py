@@ -13,9 +13,14 @@ from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
 
-from can_tools.scrapers.official.DC.dc_vaccines import DCVaccineRace, DCVaccine, DCVaccineAge, DCVaccineSex, DCVaccineEthnicity
+from can_tools.scrapers.official.DC.dc_vaccines import (
+    DCVaccineRace,
+    DCVaccine,
+    DCVaccineAge,
+    DCVaccineSex,
+    DCVaccineEthnicity,
+)
 
-from can_tools.scrapers.official.DE.de_vaccine import DelawareStateVaccine
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
 )
@@ -110,6 +115,6 @@ from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, Wisconsin
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations
+    WYStateVaccinations,
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths
