@@ -1,15 +1,13 @@
 # Covid Act Now Scraping Tools
 
-
 ## Creating a development environment for scraping
 
 1. Install `conda` (either [anaconda](https://www.anaconda.com/products/individual) or [miniconda](https://docs.conda.io/en/latest/miniconda.html))
 2. Create conda environment for this project, `conda create -n can-scrapers python=3`
 3. Activate the environment, `conda activate can-scrapers`
 4. Move your command line or terminal into the `can-scrapers` directory
-6. Install required packages, `pip install -r requirements-dev.txt`
-5. (Windows users only) Install required package, `conda install fiona`
-7. Install development version of package, `pip install -e .`
+5. (Windows/Mac users only) Install required package, `conda install fiona`
+6. Install development version of package, `pip install -e .`
 
 ### Database setup
 
@@ -26,7 +24,6 @@ For running integration tests locally there are two options:
 2. Use a PostgreSQL server: To use a PostgreSQL server instead, you must set the
    environment variable `CAN_PG_CONN_STR` to a proper PostgreSQL connection URI
    before running pytest. Again see training/training.org for more info
-
 
 If you would like to work interactively in an IPython session or Jupyter
 notebook, you can use the function `can_tools.models.create_dev_engine` to set
@@ -76,9 +73,8 @@ All scrapers are written in `can_tools/scrapers` directory
 If the resource to be scraped comes from an official source (like a government web page or
 health department) then the scraper goes into `can_tools/scrapers/official`. Inside the `official`
 sub-directory there are many folders, each with the two letter abbreviation for a state. For
-example, scrapers that extract data from North Carolina Deparment of Health are in 
+example, scrapers that extract data from North Carolina Deparment of Health are in
 `can_tools/scrapers/official/NC`
-
 
 ## Writing a new scraper
 
@@ -86,31 +82,30 @@ Behind the scenes of every scraper written in `can-tools` are abstract base
 classes (ABC). These ABCs define abstract methods `fetch`, `normalize`, `validate`,
 and `put` which must be implemented in order to create a scraper.
 
-* The `fetch` method is responsible for making network requests. It should request
+- The `fetch` method is responsible for making network requests. It should request
   the remote resource and do as little else as possible. When the resource is a csv
   or json file, it is ok use `pd.read_XXX` as the body of the fetch method. Other cases
   might include the output of fetch being a `requests.Response` object, or other.
-* The `normalize` method should transform the output of `fetch` page into scraped data
-  and return a DataFrame with columns `(vintage, dt, location, category,
-  measurement, unit, age, race, ethnicity, sex, value)`. See existing methods for
+- The `normalize` method should transform the output of `fetch` page into scraped data
+  and return a DataFrame with columns `(vintage, dt, location, category, measurement, unit, age, race, ethnicity, sex, value)`. See existing methods for
   examples
-* The `validate` method should verify the data to ensure that it passes any
+- The `validate` method should verify the data to ensure that it passes any
   necessary sanity checks.
-* The `put` method takes a SQL connection and a DataFrame and then puts the
+- The `put` method takes a SQL connection and a DataFrame and then puts the
   DataFrame into the SQL database. This is taken care of by parent classes and
   does not need to be updated manuallly
 
 Most scrapers will not require one to write the `validate` or put methods because
 the generic methods should be able to validate the data and dump it into the database
 
-All scrapers must inherit from `DatasetBase`, but this typically happens by subclassing 
+All scrapers must inherit from `DatasetBase`, but this typically happens by subclassing
 a resource specific parent class like `TableauDashboard` or `ArcGIS`.
 
 ## Triggering the integration
 
 When creating a pull request various tests are performed on the code.
 Occasionally, you might need to trigger a re-test without actually changing code
-on your scraper.  To achieve that goal, you can make an empty commit and then
+on your scraper. To achieve that goal, you can make an empty commit and then
 push it, causing the `on: pull requests` checks to be run.
 
 ```git commit --allow-empty -m "Trigger GitHub actions"
