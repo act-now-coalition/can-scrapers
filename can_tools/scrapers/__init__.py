@@ -36,6 +36,7 @@ from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccineAge,
     GeorgiaCountyVaccineRace,
     GeorgiaCountyVaccineSex,
+    GeorgiaCountyVaccineEthnicity,
 )
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
