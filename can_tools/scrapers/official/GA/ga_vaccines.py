@@ -78,76 +78,79 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
         "00-05": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="0-9",
         ),
         "05_09": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="5-9",
         ),
         "10_14": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="10-14",
         ),
         "15_19": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="15-19",
         ),
         "20_24": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="20-24",
         ),
         "25_34": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="25-34",
         ),
         "35_44": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="35-44",
         ),
         "45_54": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="45-54",
         ),
         "55_64": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="55-64",
         ),
         "65_74": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="65-74",
         ),
         "75_84": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="75-84",
         ),
         "85PLUS": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="85_plus",
         ),
     }
+
+    def fetch(self):
+        return self.get_all_jsons(self.service, self.sheet, "6")
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
