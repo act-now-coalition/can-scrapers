@@ -51,7 +51,7 @@ class GeorgiaCountyVaccine(ArcGIS):
         sheet = 3
         return self.get_all_jsons(self.service, sheet, "6")
 
-    def _normalize(self, data, dataset_name, col):
+    def normalize_helper(self, data, dataset_name, col):
         df = self.arcgis_jsons_to_df(data[dataset_name])
         df = self._rename_or_add_date_and_location(
             df, date_column="ADMIN_DATE", location_column="COUNTY_ID"
@@ -59,9 +59,9 @@ class GeorgiaCountyVaccine(ArcGIS):
         return df.set_index(["location", "dt"])[[col]]
 
     def normalize(self, data):
-        completed = self._normalize(data, "completed", "CUMPERSONCVAX")
-        initiated = self._normalize(data, "initiated", "CUMPERSONVAX")
-        total = self._normalize(data, "total", "CUMVAXADMIN")
+        completed = self.normalize_helper(data, "completed", "CUMPERSONCVAX")
+        initiated = self.normalize_helper(data, "initiated", "CUMPERSONVAX")
+        total = self.normalize_helper(data, "total", "CUMVAXADMIN")
         df = completed.join(initiated).join(total).reset_index()
         out = self._reshape_variables(df, self.variables)
         locs_to_del = ["0", "99999"]
