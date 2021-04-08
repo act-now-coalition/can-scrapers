@@ -58,14 +58,17 @@ class ALCountyVaccineSex(ALCountyVaccine):
         ),
     }
 
+    variable_columns = ["RECIP_SEX"]
+    sheet_num = 6
+
     def fetch(self):
         service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
-        return self.get_all_jsons(service, 6, "7")
+        return self.get_all_jsons(service, self.sheet_num, "7")
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df = df.pivot_table(
-            index="CNTYFIPS", columns="RECIP_SEX", values="COUNTS"
+            index="CNTYFIPS", columns=self.variable_columns, values="COUNTS"
         ).reset_index()
         df = df.rename_axis(None, axis=1)
         df = self._rename_or_add_date_and_location(
@@ -75,3 +78,58 @@ class ALCountyVaccineSex(ALCountyVaccine):
         locations_to_drop = [0, 99999]
         df = df.query("location != @locations_to_drop")
         return df
+
+
+class ALCountyVaccineRace(ALCountyVaccineSex):
+    variable_columns = ["RACE_LBL"]
+    sheet_num = 4
+    variables = {
+        "Native Hawaiian or other Pacific Islander": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="pacific_islander",
+        ),
+        "Two or More Races": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="multiple",
+        ),
+        "Other Race": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="other",
+        ),
+        "American Indian or Alaskan Native": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="ai_an",
+        ),
+        "White": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="white",
+        ),
+        "Unknown": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="unknown",
+        ),
+        "Black or African American": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="black",
+        ),
+        "Asian": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            race="asian",
+        ),
+    }

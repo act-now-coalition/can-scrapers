@@ -3,6 +3,7 @@ from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.official.AL.al_vaccine import (
     ALCountyVaccine,
     ALCountyVaccineSex,
+    ALCountyVaccineRace,
 )
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
