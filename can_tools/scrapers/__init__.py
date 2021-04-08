@@ -1,6 +1,11 @@
 from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
-from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
+from can_tools.scrapers.official.AL.al_vaccine import (
+    ALCountyVaccine,
+    ALCountyVaccineSex,
+    ALCountyVaccineRace,
+    ALCountyVaccineAge,
+)
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
     ArizonaVaccineCountyAllocated,
