@@ -166,7 +166,7 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
         )
         df = self._reshape_variables(df, self.variables)
 
-        locs_to_drop = ["0"]
+        locs_to_drop = ["0", "00000", 0]
         df = df.query("location not in @locs_to_drop")
         return df
 
