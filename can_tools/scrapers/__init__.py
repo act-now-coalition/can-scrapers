@@ -34,6 +34,7 @@ from can_tools.scrapers.official.FL.fl_vaccine import FloridaCountyVaccine
 from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccine,
     GeorgiaCountyVaccineAge,
+    GeorgiaCountyVaccineRace,
 )
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
