@@ -3,7 +3,7 @@ import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
-from can_tools.scrapers import variables
+from tableauscraper import TableauScraper as TS
 
 
 class DCVaccineRace(TableauDashboard):
@@ -14,8 +14,9 @@ class DCVaccineRace(TableauDashboard):
     location_type = "state"
     baseurl = "https://dataviz1.dc.gov/t/OCTO"
     viewPath = "Vaccine_Public/Demographics"
-
+    demographic_cmu = "sex"
     data_tableau_table = "Demographics "
+    demographic_cmu = "race"
 
     # map column names into CMUs
     variables = {
@@ -31,6 +32,9 @@ class DCVaccineRace(TableauDashboard):
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
     def _get_unknown(self):
+        """
+        returns df of unknown data for race and ethnicity
+        """
         # get total unknown initiating value
         initiated = int(
             self.get_tableau_view()["Sheet 11"]["Measure Values-alias"][0].replace(
@@ -80,29 +84,23 @@ class DCVaccineRace(TableauDashboard):
         )
         df["demo_val"] = df["demo_val"].str.lower()
 
-        # check to ensure that the scraper is still returning data by race
-        if not all(x in list(df["demo_val"].unique()) for x in ["white", "black"]):
-            raise ValueError("scraper is not returning race data")
-
         # sum the partially and fully vaccinated entries to match definition
         # to avoid pivoting to wide then back to long I selected each corresponding entry to sum
         q = 'variable == "{v} VACCINATED" and demo_val == "{d}"'
-        for d in ["black", "white", "other"]:
+        for d in df["demo_val"].unique():
             initiated_value = int(
                 df.query(q.format(v="PARTIALLY", d=d))["value"]
             ) + int(df.query(q.format(v="FULLY", d=d))["value"])
             row = {"variable": "INITIATED", "demo_val": d, "value": initiated_value}
             df = df.append(row, ignore_index=True)
 
-        df = df.query('variable != "PARTIALLY VACCINATED"').pipe(
+        out = df.query('variable != "PARTIALLY VACCINATED"').pipe(
             self.extract_CMU, cmu=self.variables
         )
-
-        out = df.assign(race=df["demo_val"], value=df["value"].astype(int))
-        # add the unknown values
-        out = pd.concat([out, self._get_unknown()])
+        out[self.demographic_cmu] = out["demo_val"]
 
         out = out.assign(
+            value=out["value"].astype(int),
             vintage=self._retrieve_vintage(),
             dt=self._get_date(),
             location=self.state_fips,
@@ -147,3 +145,34 @@ class DCVaccine(DCVaccineRace):
 
         out = self._reshape_variables(df, self.variables)
         return out
+
+
+class DCVaccineSex(DCVaccineRace):
+    fullUrl = "https://dataviz1.dc.gov/t/OCTO/views/Vaccine_Public/Demographics"
+    demographic_cmu = "sex"
+    demographic_col_name = "Gender"
+
+    def fetch(self):
+        """
+        uses the tableauscraper module:
+        https://github.com/bertrandmartel/tableau-scraping/blob/master/README.md
+        """
+        ts = TS()
+        ts.loads(self.fullUrl)
+        workbook = ts.getWorkbook()
+        workbook = workbook.setParameter("Demographic", self.demographic_col_name)
+        return workbook.worksheets[0].data
+
+
+class DCVaccineEthnicity(DCVaccineSex):
+    demographic_cmu = "ethinicity"
+    demographic_col_name = "Ethnicity"
+
+
+class DCVaccineAge(DCVaccineSex):
+    demographic_cmu = "age"
+    demographic_col_name = "Age Group"
+
+    def normalize(self, data):
+        df = super().normalize(data)
+        return df.replace({"age": {"65+": "65_plus"}})

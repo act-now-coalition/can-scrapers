@@ -7,6 +7,7 @@ all,all,all,all
 11-20,all,all,all
 15-19,all,all,all
 16-17,all,all,all
+16-19,all,all,all
 16-49,all,all,female
 16-49,all,all,male
 16-49,all,all,unknown
@@ -15,6 +16,7 @@ all,all,all,all
 18_plus,all,all,all
 20-24,all,all,all
 20-29,all,all,all
+20-44,all,all,all
 20-34,all,all,all
 21-30,all,all,all
 25-29,all,all,all
@@ -29,6 +31,7 @@ all,all,all,all
 41-50,all,all,all
 45-49,all,all,all
 45-54,all,all,all
+46-64,all,all,all
 50-54,all,all,all
 50-59,all,all,all
 50-64,all,all,female
