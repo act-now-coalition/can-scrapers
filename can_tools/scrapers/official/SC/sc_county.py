@@ -8,6 +8,7 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard, TableauDashboard
 from datetime import timedelta
 
+
 class SCVaccineCounty(StateDashboard):
     source = "https://scdhec.gov/covid19/covid-19-vaccine-allocation"
     source_name = "South Carolina Department of Health and Environmental Control"
@@ -32,14 +33,17 @@ class SCVaccineCounty(StateDashboard):
                 title=lambda x: x
                 and (
                     "%s - %s"
-                    % (check_date.strftime("%B %-d, %Y"), vaccine.capitalize()[0:1]) # check first two letters
+                    % (
+                        check_date.strftime("%B %-d, %Y"),
+                        vaccine.capitalize()[0:1],
+                    )  # check first two letters
                 )
                 in x,
             )
             if url is None:
                 check_date = check_date - timedelta(days=1)
 
-        self.data_date = check_date        
+        self.data_date = check_date
         if url is None:
             return url
         # get the href and combine with hostname
@@ -47,19 +51,20 @@ class SCVaccineCounty(StateDashboard):
         return url
 
     def _fetch_vaccine(self, vaccine, soup):
+        print(f"Fetching data for {vaccine}")
         url = self._url_for_vaccine_date(vaccine, soup)
         if url is None or requests.head(url).status_code != 200:
-            
+
             return []
-        
+
         # print(f"getting {vaccine} data at url {url}")
         return camelot.read_pdf(
-            url, 
-            pages="all", 
-            flavor="lattice", 
+            url,
+            pages="all",
+            flavor="lattice",
             process_background=True,
-            strip_text=',',
-            line_scale=40
+            strip_text=",",
+            line_scale=50,
         )
 
     def fetch(self):
@@ -80,12 +85,12 @@ class SCVaccineCounty(StateDashboard):
         for d in data:
             dfs.append(d.df)
         return dfs
-   
+
     def _clean_names(self, name):
         ix = name.find("\n")
         if ix != -1:
-            return name[ix+1:]
-        else :
+            return name[ix + 1 :]
+        else:
             return name
 
     def _normalize_one_dose(self, vaccine_data, vaccine_name):
@@ -93,11 +98,10 @@ class SCVaccineCounty(StateDashboard):
         res = []
         for ix, d in enumerate(dfs):
             # Clean data
-            if len(df.columns) != 11: 
+            if len(d.columns) != 7:
                 print(f"\t{vaccine_name} #{ix} doesn't have right number of columns!")
             df = d.replace("", np.nan).replace("--", 0)
-            # Remove first empty row
-            df = df[1:]
+
             # Check if first column parsed correctly
             if "Providers" != df[0][1]:
                 # TODO: Replace the rows were col 1 is NaN with the split/expand
@@ -106,20 +110,21 @@ class SCVaccineCounty(StateDashboard):
             # Set first row as column names
             df.columns = df.iloc[0]
             # Remove first row
-            df = df[1:]
+            df = df.iloc[1:]
+
             # Drop all rows where County == np.NaN
             df = df.loc[~df.County.isna()]
             # Drop all rows where county was changed from '--' to 0
             df = df.loc[~(df.County == 0)]
 
             df.columns = [
-                'Providers',
-                'City',
+                "Providers",
+                "City",
                 "location_name",
                 "First-Doses Received",
                 "First-Doses Distributed",
                 "First-Doses Administered",
-                "First-Doses Utlization"
+                "First-Doses Utlization",
             ]
 
             res.append(df)
@@ -130,9 +135,11 @@ class SCVaccineCounty(StateDashboard):
             "location_name",
             "First-Doses Administered",
         ]
-        df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
+        df["First-Doses Administered"] = pd.to_numeric(
+            df["First-Doses Administered"], errors="coerce"
+        )
         # group by county
-        df['location_name'] = df['location_name'].apply(self._clean_names)
+        df["location_name"] = df["location_name"].apply(self._clean_names)
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
 
@@ -142,7 +149,6 @@ class SCVaccineCounty(StateDashboard):
                 measurement="cumulative",
                 unit="people",
             ),
-           
         }
 
         melted = df.reset_index().melt(
@@ -151,13 +157,12 @@ class SCVaccineCounty(StateDashboard):
 
         out = self.extract_CMU(melted, crename)
 
-        non_counties = ['Totals', 'Totals:']
-        out = out.query('location_name not in @non_counties')
+        non_counties = ["Totals", "Totals:", "County"]
+        out = out.query("location_name not in @non_counties")
 
-        out['dt'] = self._retrieve_dt()
-        out['vintage'] = self._retrieve_vintage()
-        return out.drop(['variable'], axis="columns")
-            
+        out["dt"] = self._retrieve_dt()
+        out["vintage"] = self._retrieve_vintage()
+        return out.drop(["variable"], axis="columns")
 
     def _remove_duplicates(self, data):
         init_dfs = []
@@ -172,35 +177,31 @@ class SCVaccineCounty(StateDashboard):
 
         return init_dfs
 
-
-
     def _normalize_two_dose(self, vaccine_data, vaccine_name):
         dfs = self._extract_dfs(vaccine_data)
         res = []
         for ix, d in enumerate(dfs):
             # Clean data
             df = d.replace("", np.nan).replace("--", 0)
-            if len(df.columns) != 11: 
+            if len(df.columns) != 11:
                 print(f"\t{vaccine_name} #{ix} doesn't have right number of columns!")
-            # Remove first empty row
-            df = df[1:]
+                continue
+
             # Check if first column parsed correctly
             if "Providers" != df[0][1]:
                 # TODO: Replace the rows were col 1 is NaN with the split/expand
-                print(f"Couldn't parse {vaccine_name} #{ix}!")
-                continue
-            # Set first row as column names
-            df.columns = df.iloc[0]
-            # Remove first row
-            df = df[1:]
-            # Drop all rows where County == np.NaN
-            df = df.loc[~df.County.isna()]
-            # Drop all rows where county was changed from '--' to 0
-            df = df.loc[~(df.County == 0)]
+                if df[0][1].find("\n") != -1:
+                    print(f"Couldn't parse {vaccine_name} #{ix}!")
+                    continue
+            else:
+                # Set first row as column names
+                df.columns = df.iloc[0]
+                # Remove first row
+                df = df[1:]
 
             df.columns = [
-                'Providers',
-                'City',
+                "Providers",
+                "City",
                 "location_name",
                 "First-Doses Received",
                 "First-Doses Distributed",
@@ -212,8 +213,13 @@ class SCVaccineCounty(StateDashboard):
                 "Second-Doses Utlization",
             ]
 
+            # Drop all rows where County == np.NaN
+            df = df.loc[~df.location_name.isna()]
+            # Drop all rows where county was changed from '--' to 0
+            df = df.loc[~(df.location_name == 0)]
+
             res.append(df)
-        
+
         if len(res) == 0:
             return pd.DataFrame()
         df = pd.concat(res)
@@ -222,15 +228,20 @@ class SCVaccineCounty(StateDashboard):
             "First-Doses Administered",
             "Second-Doses Administered",
         ]
-        df['First-Doses Administered'] = pd.to_numeric( df['First-Doses Administered'], errors='coerce')
-        df['Second-Doses Administered'] = pd.to_numeric( df['Second-Doses Administered'], errors='coerce')
+        df["First-Doses Administered"] = pd.to_numeric(
+            df["First-Doses Administered"], errors="coerce"
+        )
+        df["Second-Doses Administered"] = pd.to_numeric(
+            df["Second-Doses Administered"], errors="coerce"
+        )
         # clean up county names
-        df['location_name'] = df['location_name'].apply(self._clean_names)
+        df["location_name"] = df["location_name"].apply(self._clean_names)
 
+        return df
         # group by county
         gbc = df[keep_cols].groupby("location_name")
         df = gbc.sum()
-
+        return df
         crename = {
             "First-Doses Administered": CMU(
                 category=f"{vaccine_name}_vaccine_initiated",
@@ -250,11 +261,11 @@ class SCVaccineCounty(StateDashboard):
 
         out = self.extract_CMU(melted, crename)
 
-        non_counties = ['Totals', 'Totals:']
-        out = out.query('location_name not in @non_counties')
-        out['dt'] = self.data_date
-        out['vintage'] = self._retrieve_vintage()
-        return out.drop(['variable'], axis="columns")
+        non_counties = ["Totals", "Totals:", "County"]
+        out = out.query("location_name not in @non_counties")
+        out["dt"] = self.data_date
+        out["vintage"] = self._retrieve_vintage()
+        return out.drop(["variable"], axis="columns")
 
     def normalize(self, data):
         print("Normalizing pfizer data")
@@ -265,4 +276,3 @@ class SCVaccineCounty(StateDashboard):
         janssen = self._normalize_one_dose(data["janssen"], "janssen")
 
         return pd.concat([pfizer, moderna, janssen])
-
