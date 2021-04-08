@@ -1,5 +1,5 @@
+from typing import Any, Tuple, Type, List
 from datetime import timedelta
-from typing import Any, Tuple, Type
 import sentry_sdk
 import pandas as pd
 import sqlalchemy as sa
@@ -73,8 +73,10 @@ def initialize_sentry(sentry_dsn: str):
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
 
-def create_flow_for_scraper(ix: int, cls: Type[DatasetBase]):
-    sched = CronSchedule(f"{ix % 60} */4 * * *")
+def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
+    sched = None
+    if schedule:
+        sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
@@ -116,9 +118,11 @@ def create_cdc_single_state_flow():
     return flow
 
 
-def create_cdc_all_states_flow():
+def create_cdc_all_states_flow(schedule=True):
     """Creates a flow that runs the CDC data update on all states."""
-    sched = CronSchedule("17 */4 * * *")
+    sched = None
+    if schedule:
+        sched = CronSchedule("17 */4 * * *")
 
     flow = Flow("CDCAllStatesDataUpdate", sched)
     for state in ALL_STATES_PLUS_DC:
@@ -133,18 +137,45 @@ def create_cdc_all_states_flow():
     return flow
 
 
+def create_main_flow(flows: List[Flow], project_name):
+    schedule = CronSchedule("0 */3 * * *")
+
+    with Flow("MainFlow", schedule) as main_flow:
+        tasks = []
+        for flow in flows:
+            task = StartFlowRun(
+                flow_name=flow.name, project_name=project_name, wait=True
+            )
+            tasks.append(task)
+
+        parquet_flow = StartFlowRun(
+            flow_name="UpdateParquetFiles", project_name=project_name, wait=True
+        )
+
+        for task in tasks:
+            task.set_downstream(parquet_flow)
+
+    return main_flow
+
+
 def init_flows():
+    flows = []
     for ix, cls in enumerate(ALL_SCRAPERS):
         if not cls.autodag:
             continue
         if cls == CDCCovidDataTracker:
             flow = create_cdc_single_state_flow()
         else:
-            flow = create_flow_for_scraper(ix, cls)
+            flow = create_flow_for_scraper(ix, cls, schedule=False)
+            flows.append(flow)
         flow.register(project_name="can-scrape")
 
     # Create additional flow that runs the CDC Data updater
-    flow = create_cdc_all_states_flow()
+    flow = create_cdc_all_states_flow(schedule=False)
+    flows.append(flow)
+    flow.register(project_name="can-scrape")
+
+    flow = create_main_flow(flows, "can-scrape")
     flow.register(project_name="can-scrape")
 
 
