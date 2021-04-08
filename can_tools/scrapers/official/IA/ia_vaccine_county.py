@@ -25,11 +25,11 @@ class IowaCountyVaccine(StateDashboard):
     # 4) Inspect the Network tab in the browser, then click the link
     # 5) The token will be in the request headers under 'x-domo-embed-token`
     token = (
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJmIjox"
-        "NjE3MjgwNjQwLCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI6XCIxd0I5a"
-        "lwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI6W1wiUkVBRFw"
-        "iXX0iXSwiZXhwIjoxNjE3MzA5NDUwLCJpYXQiOjE2MTcyODA2NTAsImp0aSI6IjNkN2UwZTM2L"
-        "WMyNTktNDlkOS04ZDdmLTlhYmVhMjU4ZTUzOSJ9.1_st_ky1-ZdDw3dO77I_qIVghNce6otO_00EUAuq7WE"
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
+        "eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJmIjoxNjE3ODk3MjMzLCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIn"
+        "tcInRva2VuXCI6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI6"
+        "W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE3OTI2MDQzLCJpYXQiOjE2MTc4OTcyNDMsImp0aSI6ImEzZGM2YzVkLW"
+        "Q4YjktNDI5ZC1hZWIzLWMxMzAwYzJmZTQ4OSJ9.D00YtcgxxaExeSr-RcYt9PggyVb_Q9Ud4eaCPB3qvnI"
     )
 
     variables = {
