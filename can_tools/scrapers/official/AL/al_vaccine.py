@@ -34,3 +34,44 @@ class ALCountyVaccine(ArcGIS):
         locations_to_drop = [0, 99999]
         data = data.query("location != @locations_to_drop")
         return data
+
+
+class ALCountyVaccineSex(ALCountyVaccine):
+    variables = {
+        "F": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            sex="female",
+        ),
+        "M": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            sex="male",
+        ),
+        "U": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
+            sex="unknown",
+        ),
+    }
+
+    def fetch(self):
+        service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
+        return self.get_all_jsons(service, 6, "7")
+
+    def normalize(self, data):
+        df = self.arcgis_jsons_to_df(data)
+        df = df.pivot_table(
+            index="CNTYFIPS", columns="RECIP_SEX", values="COUNTS"
+        ).reset_index()
+        df = df.rename_axis(None, axis=1)
+        df = self._rename_or_add_date_and_location(
+            df, location_column="CNTYFIPS", timezone="US/Central"
+        )
+        df = self._reshape_variables(df, self.variables)
+        locations_to_drop = [0, 99999]
+        df = df.query("location != @locations_to_drop")
+        return df

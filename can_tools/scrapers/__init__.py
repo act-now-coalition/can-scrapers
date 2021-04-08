@@ -1,6 +1,9 @@
 from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
-from can_tools.scrapers.official.AL.al_vaccine import ALCountyVaccine
+from can_tools.scrapers.official.AL.al_vaccine import (
+    ALCountyVaccine,
+    ALCountyVaccineSex,
+)
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
     ArizonaVaccineCountyAllocated,
@@ -110,6 +113,6 @@ from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, Wisconsin
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations
+    WYStateVaccinations,
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths
