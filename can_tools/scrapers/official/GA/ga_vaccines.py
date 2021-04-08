@@ -245,3 +245,28 @@ class GeorgiaCountyVaccineRace(GeorgiaCountyVaccineAge):
             race="other",
         ),
     }
+
+
+class GeorgiaCountyVaccineSex(GeorgiaCountyVaccineRace):
+    sheet = 8
+    column_names = ["SEX"]
+    variables = {
+        "F": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+            sex="female",
+        ),
+        "M": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+            sex="male",
+        ),
+        "U": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+            sex="unknown",
+        ),
+    }
