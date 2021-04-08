@@ -20,10 +20,12 @@ class ALCountyVaccine(ArcGIS):
         "PERSONCVAX": variables.FULLY_VACCINATED_ALL,
         "NADMIN": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
+    service = "Vax_Dashboard_Public_3_VIEW"
+    sheet = 1
 
     def fetch(self):
         service = "Vax_Dashboard_Public_3_VIEW"
-        return self.get_all_jsons(service, 1, "7")
+        return self.get_all_jsons(self.service, self.sheet, "7")
 
     def normalize(self, data):
         data = self.arcgis_jsons_to_df(data)
@@ -39,27 +41,28 @@ class ALCountyVaccine(ArcGIS):
 class ALCountyVaccineSex(ALCountyVaccine):
     variables = {
         "F": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             sex="female",
         ),
         "M": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             sex="male",
         ),
         "U": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             sex="unknown",
         ),
     }
 
     variable_columns = ["RECIP_SEX"]
     sheet_num = 6
+    service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
 
     def fetch(self):
         service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
@@ -85,51 +88,51 @@ class ALCountyVaccineRace(ALCountyVaccineSex):
     sheet_num = 4
     variables = {
         "Native Hawaiian or other Pacific Islander": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="pacific_islander",
         ),
         "Two or More Races": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="multiple",
         ),
         "Other Race": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="other",
         ),
         "American Indian or Alaskan Native": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="ai_an",
         ),
         "White": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="white",
         ),
         "Unknown": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="unknown",
         ),
         "Black or African American": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="black",
         ),
         "Asian": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             race="asian",
         ),
     }
@@ -140,27 +143,27 @@ class ALCountyVaccineAge(ALCountyVaccineSex):
     sheet_num = 5
     variables = {
         "16-54": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="16-54",
         ),
         "55-64": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="55-64",
         ),
         "65-74": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="65-74",
         ),
         "75+": CMU(
-            category="total_vaccine_doses_administered",
+            category="total_vaccine_initiated",
             measurement="cumulative",
-            unit="doses",
+            unit="people",
             age="75_plus",
         ),
     }
