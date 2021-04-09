@@ -2,7 +2,7 @@ from contextlib import closing
 from datetime import timedelta
 import os
 import pathlib
-
+from prefect import triggers
 import pandas as pd
 import prefect
 import sqlalchemy as sa
@@ -30,7 +30,12 @@ def export_to_csv(connstr: str):
     return True
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1), nout=2)
+@task(
+    max_retries=3,
+    retry_delay=timedelta(minutes=1),
+    nout=2,
+    trigger=triggers.all_finished,
+)
 def create_parquet(_success):
     ts = prefect.context.scheduled_start_time
     dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")

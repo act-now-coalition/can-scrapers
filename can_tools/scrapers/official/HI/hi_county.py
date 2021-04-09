@@ -1,15 +1,13 @@
-import pandas as pd
-import us
-import requests
-import re
 import json
-from bs4 import BeautifulSoup
-from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import (
-    TableauDashboard,
-    TableauMapClick,
-)
+import re
 
+import pandas as pd
+import requests
+import us
+from bs4 import BeautifulSoup
+
+from can_tools.scrapers.base import CMU
+from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
 from can_tools.scrapers.util import requests_retry_session
 
 
