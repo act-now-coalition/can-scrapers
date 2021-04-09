@@ -64,11 +64,7 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                                                 "Geographic County Name",
                                                 "county",
                                             ),
-                                            (
-                                                "c",
-                                                "Vaccine Manufacturer",
-                                                "manu"
-                                            )
+                                            ("c", "Vaccine Manufacturer", "manu"),
                                         ],
                                         [],
                                         [
@@ -138,16 +134,16 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
         # Extract components we care about from json
         foo = resjson["results"][0]["result"]["data"]
         data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
-        data = [d for d in data if list(d.keys())[0] == 'G0'] # keep only relevent data
+        data = [d for d in data if list(d.keys())[0] == "G0"]  # keep only relevent data
 
         # Build dict of dicts with relevant info
         col_mapping = {
             "G0": "county",
-            "M_0_DM2_0_C_0": 'total_vaccine_administered',
-            "M_0_DM2_0_C_1": 'pfizer_moderna_first_dose',
-            "M_0_DM2_0_C_2": 'total_vaccine_completed',
-            "M_1_DM3_0_C_1": 'janssen_series',
-            "M_0_DM2_0_C_4": 'total_vaccine_completed_percent',
+            "M_0_DM2_0_C_0": "total_vaccine_administered",
+            "M_0_DM2_0_C_1": "pfizer_moderna_first_dose",
+            "M_0_DM2_0_C_2": "total_vaccine_completed",
+            "M_1_DM3_0_C_1": "janssen_series",
+            "M_0_DM2_0_C_4": "total_vaccine_completed_percent",
         }
 
         # Iterate through all of the rows and store relevant data
@@ -166,20 +162,24 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
         df = pd.DataFrame.from_records(data_rows)
 
         # calculate vaccine initiated to match def'n
-        df['total_vaccine_initiated'] = df['pfizer_moderna_first_dose'] + df['janssen_series']
+        df["total_vaccine_initiated"] = (
+            df["pfizer_moderna_first_dose"] + df["janssen_series"]
+        )
 
         # Title case and remove the word county
         df["location_name"] = df["county"].str.replace("County, ME", "").str.strip()
-        
+
         # Change % column into percentage
-        df["total_vaccine_completed_percent"] = 100 * df["total_vaccine_completed_percent"]
+        df["total_vaccine_completed_percent"] = (
+            100 * df["total_vaccine_completed_percent"]
+        )
 
         # Reshape
         variables = {
             "total_vaccine_administered": v.TOTAL_DOSES_ADMINISTERED_ALL,
             "total_vaccine_initiated": v.INITIATING_VACCINATIONS_ALL,
             "total_vaccine_completed": v.FULLY_VACCINATED_ALL,
-            "total_vaccine_completed_percent":v.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
+            "total_vaccine_completed_percent": v.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         }
 
         out = self._reshape_variables(df, variables)
