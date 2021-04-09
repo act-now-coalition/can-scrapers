@@ -3,7 +3,6 @@ import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
-from can_tools.scrapers import variables
 
 
 class DCVaccineRace(TableauDashboard):

@@ -1,10 +1,12 @@
-import pandas as pd
-import us
-import requests
 import json
 from io import StringIO
-from can_tools.scrapers.official.base import StateDashboard, CMU
+
+import pandas as pd
+import requests
+import us
+
 from can_tools.scrapers import variables
+from can_tools.scrapers.official.base import CMU, StateDashboard
 
 
 class IowaCountyVaccine(StateDashboard):

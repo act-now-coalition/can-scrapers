@@ -6,9 +6,9 @@ import requests
 import us
 from bs4 import BeautifulSoup
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
-from can_tools.scrapers import variables
 
 
 class DelawareStateVaccine(StateDashboard):
