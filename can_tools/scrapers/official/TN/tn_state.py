@@ -97,10 +97,6 @@ class TennesseeAge(TennesseeBase):
 
         return out
 
-    def validate(self, df, df_hist) -> bool:
-        "The best is the enemy of the good. -Voltaire"
-        return True
-
 
 class TennesseeAgeByCounty(TennesseeBase):
     """
@@ -188,10 +184,6 @@ class TennesseeAgeByCounty(TennesseeBase):
         out["vintage"] = self._retrieve_vintage()
 
         return out
-
-    def validate(self, df, df_hist) -> bool:
-        "Quality means doing it right even when no one is looking. -Henry Ford"
-        return True
 
 
 class TennesseeRaceEthnicitySex(TennesseeBase):
@@ -307,9 +299,3 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         out["vintage"] = self._retrieve_vintage()
 
         return out
-
-    def validate(self, df, df_hist) -> bool:
-        "Be a yardstick of quality. Some people aren’t used to an environment where excellence is expected. -Steve Jobs"
-        # TODO: Create a calculated column and sanity check this against unspecified_tests_total
-        # df["unspecified_tests_total_calculated"] = df.eval("unspecified_tests_positive + unspecified_tests_negative")
-        return True

@@ -184,9 +184,6 @@ class DelawareCountyVaccine(DelawareStateVaccine):
                     {"aria-labelledby": "chart-covid-vaccine-fully-vaccinated-label"},
                 )["data-charts--covid-vaccine-fully-vaccinated-config-value"]
             )
-            import ipdb
-
-            ipdb.set_trace()
             sd = tdata["startDate"]
             # Parse start date
             startDate = dt.datetime(sd[0], sd[1], sd[2])
