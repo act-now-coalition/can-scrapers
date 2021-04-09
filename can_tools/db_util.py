@@ -5,7 +5,8 @@ from typing import List, Optional, Type, Union
 import pandas as pd
 from sqlalchemy.engine.base import Engine
 
-from can_tools.models import TemptableOfficialHasLocation, TemptableOfficialNoLocation
+from can_tools.models import (TemptableOfficialHasLocation,
+                              TemptableOfficialNoLocation)
 
 
 def fast_append_to_sql(

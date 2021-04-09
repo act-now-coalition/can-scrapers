@@ -3,7 +3,8 @@ import us
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
-from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
+from can_tools.scrapers.official.WI.wi_county_vaccine import \
+    WisconsinVaccineCounty
 
 
 class WisconsinVaccineAge(WisconsinVaccineCounty):
