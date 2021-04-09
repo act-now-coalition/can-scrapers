@@ -8,6 +8,7 @@ import us
 
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
+
 # the crename keys became long so I store them in another file
 from can_tools.scrapers.official.TX.tx_vaccine_crenames import crename
 
