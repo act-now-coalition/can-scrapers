@@ -4,6 +4,7 @@ all,all,all,all
 0-5,all,all,all
 0-10,all,all,all
 0-19,all,all,all
+5-17,all,all,all
 5-9,all,all,all
 10-19,all,all,all
 10-14,all,all,all
@@ -17,6 +18,7 @@ all,all,all,all
 16-49,all,all,all
 16-54,all,all,all
 18-24,all,all,all
+18-29,all,all,all
 18_plus,all,all,all
 20-24,all,all,all
 20-29,all,all,all
@@ -57,6 +59,7 @@ all,all,all,all
 65_plus,all,all,all
 70-74,all,all,all
 70-79,all,all,all
+70_plus,all,all,all
 71-80,all,all,all
 75-79,all,all,all
 75-84,all,all,all
