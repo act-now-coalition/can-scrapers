@@ -231,37 +231,8 @@ class LAVaccineCountyDemographics(LAVaccineCounty):
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         # Multiply each of these columns by the population column
-        init_col_names = [
-            "PercInt_Black",
-            "PercInt_White",
-            "PercInt_Other",
-            "PercInt_RaceUnk",
-            "PercComp_Black",
-            "PercComp_Other",
-            "PercComp_RaceUnk",
-            "PercComp_White",
-            "PercInt_5to17",
-            "PercInt_18to29",
-            "PercInt_30to39",
-            "PercInt_40to49",
-            "PercInt_50to59",
-            "PercInt_60to69",
-            "PercInt_70plus",
-            "PercInt_AgeUnk",
-            "PercComp_5to17",
-            "PercComp_18to29",
-            "PercComp_30to39",
-            "PercComp_40to49",
-            "PercComp_50to59",
-            "PercComp_60to69",
-            "PercComp_70plus",
-            "PercInt_Female",
-            "PercInt_Male",
-            "PercInt_SexUnk",
-            "PercComp_Female",
-            "PercComp_Male",
-            "PercComp_SexUnk",
-        ]
+        init_col_names = [x.replace("_value", "") for x in self.variables.keys()]
+
         for col in init_col_names:
             df[col + "_value"] = np.floor((df[col] / 100) * df["Total_2018pop"])
 
