@@ -69,3 +69,4 @@ vaccine,total_vaccine_initiated
 vaccine,total_vaccine_completed
 vaccine,total_vaccine_doses_administered
 vaccine,janssen_vaccine_allocated
+vaccine,janssen_vaccine_completed
