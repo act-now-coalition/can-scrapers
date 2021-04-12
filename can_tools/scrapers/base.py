@@ -491,6 +491,10 @@ class DatasetBase(ABC):
             Historical data
 
         """
+        # TODO (SL, 2021-04-12): we aren't ready with other tooling for dealing
+        # nicely with validation errors and exception lists. Until then we will
+        # disable validation
+        return
         issues = []
         if utils.is_time_series(df):
             issues.extend(self._validate_time_series(df))
