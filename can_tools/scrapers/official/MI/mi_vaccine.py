@@ -242,8 +242,18 @@ class MichiganVaccineCountyDemographics(MichiganVaccineCounty):
             "measurement",
             "unit",
             "value",
-            "category",
             "last_updated",
             "vintage",
         ]
-        return out.query("location_name not in @locs_to_remove")[cols]
+        out = out.query("location_name not in @locs_to_remove")[cols]
+        out =  out.rename(columns={"variable":"category"})
+
+
+        # combine Wayne county and Detroit records
+        # combine rows that have every variable matching except value
+        # rename Detroit entries to Wayne so that the rows we want get combined
+        group_by = [c for c in out.columns if c not in ['value']]
+        out = out.replace('Detroit', 'Wayne')
+        out = out.groupby(group_by, as_index=False).aggregate({'value':'sum'})
+        return out
+
