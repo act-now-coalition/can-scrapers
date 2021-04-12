@@ -57,6 +57,7 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
 
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
+from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
 
 from can_tools.scrapers.official.NE.ne_vaccines import (
     NebraskaVaccineSex,
@@ -110,6 +111,6 @@ from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, Wisconsin
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations
+    WYStateVaccinations,
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths
