@@ -17,7 +17,7 @@ class TennesseeVaccineCounty(TableauDashboard):
     category: str = "total_vaccine_initiated"
 
     data_tableau_table = "REPORTING"
-    location_name_col = "Patient County-value"
+    location_name_col = "Patient County-alias"
     timezone = "US/Central"
 
     cmus = {

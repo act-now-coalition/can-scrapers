@@ -127,7 +127,3 @@ class NewMexicoVaccineCounty(NewMexicoBase):
         out["vintage"] = self._retrieve_vintage()
 
         return out
-
-    def validate(self, df, df_hist) -> bool:
-        "Software never was perfect and won’t get perfect. But is that a license to create garbage? The missing ingredient is our reluctance to quantify quality. - Boris Beizer"
-        return True

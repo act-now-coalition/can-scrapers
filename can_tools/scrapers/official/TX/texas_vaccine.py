@@ -183,6 +183,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
         non_counties = ["Other", "Grand Total"]
         df = (
             self.excel_to_dataframe(data, self.sheet_name)
+            .rename(columns=str.strip)
             .rename(
                 columns={
                     "Age Group": "age",
@@ -190,6 +191,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                     "County Name": "location_name",
                 }
             )
+            .rename(columns=str.strip)
             .melt(
                 id_vars=["dt", "location_name"] + self.cmu_id_vars,
                 value_vars=list(self.cmus.keys()),

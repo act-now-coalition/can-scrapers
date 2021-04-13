@@ -111,4 +111,21 @@ class MontanaStateVaccine(MontanaCountyVaccine):
         df["dt"] = df["dt"].map(self._esri_ts_to_dt)
         df["location"] = self.state_fips
 
-        return self._transform_df(df)
+        out = self._transform_df(df)
+
+        # this scraper has some duplicates. Drop them here
+        return out.drop_duplicates(
+            subset=[
+                "vintage",
+                "dt",
+                "location",
+                "category",
+                "measurement",
+                "unit",
+                "age",
+                "race",
+                "ethnicity",
+                "sex",
+            ],
+            keep="last",
+        )

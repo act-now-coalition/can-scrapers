@@ -1,10 +1,12 @@
-import pandas as pd
-import us
-import requests
 import json
 from io import StringIO
-from can_tools.scrapers.official.base import StateDashboard, CMU
+
+import pandas as pd
+import requests
+import us
+
 from can_tools.scrapers import variables
+from can_tools.scrapers.official.base import CMU, StateDashboard
 
 
 class IowaCountyVaccine(StateDashboard):
@@ -24,14 +26,7 @@ class IowaCountyVaccine(StateDashboard):
     # 3) Hover over the table in the top right corner, a button should appear
     # 4) Inspect the Network tab in the browser, then click the link
     # 5) The token will be in the request headers under 'x-domo-embed-token`
-    token = (
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJ"
-        "mIjoxNjE3MDIzNzY3LCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI"
-        "6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25"
-        "zXCI6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE3MDUyNTc3LCJpYXQiOjE2MTcwMjM3Nzc"
-        "sImp0aSI6IjhiMjkwZTdiLTIyOGItNDk1ZS1hZWM4LTk4MzU4ZmY1MGQ1MSJ9.fLonEP"
-        "lF81TuGI5UlVI4CAYAbkO3rk3HTv-vyvSNWbY"
-    )
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJmIjoxNjE4MjYxMjU1LCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE4MjkwMDY1LCJpYXQiOjE2MTgyNjEyNjUsImp0aSI6IjQ4NmFkOGQwLTFhN2UtNDVkOC1hMWE3LWM3NDIxM2YyNmI5ZCJ9.b5idajZ5iK1xLgxgut7qmWk7gIAZGrIStQ98p20FADc"
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
