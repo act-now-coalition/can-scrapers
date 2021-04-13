@@ -2,9 +2,10 @@ age,race,ethnicity,sex
 all,all,all,all
 0-9,all,all,all
 0-10,all,all,all
+0-17,all,all,all
 0-19,all,all,all
-10-19,all,all,all
-11-20,all,all,all
+Oct-19,all,all,all
+Nov-20,all,all,all
 15-19,all,all,all
 16-17,all,all,all
 16-49,all,all,female
@@ -17,6 +18,7 @@ all,all,all,all
 21-30,all,all,all
 25-29,all,all,all
 25-34,all,all,all
+25-49,all,all,all
 30-34,all,all,all
 30-39,all,all,all
 31-40,all,all,all
