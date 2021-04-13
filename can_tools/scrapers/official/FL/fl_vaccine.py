@@ -35,7 +35,7 @@ class FloridaCountyVaccine(StateDashboard):
                                           pdf_pages_headers.decode("utf-8"))
                 county_names = list(map(lambda x: x if not x.endswith(" County") else x[:-7], county_names))
 
-        county_demographics_data = camelot.read_pdf(self.fetch_url_for_counties, pages="1-3", flavor="stream", row_tol=10)
+        county_demographics_data = camelot.read_pdf(self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=10)
         return {"vaccine_data": vaccine_data, "county_demographics_data": county_demographics_data, "county_names": county_names}
 
     def normalize_group(self, df, demographic, dgroup, group_rename, cmu):
