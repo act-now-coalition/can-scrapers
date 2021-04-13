@@ -115,7 +115,10 @@ from can_tools.scrapers.official.TX.texas_vaccine import (
     TXVaccineCountyAge,
     TXVaccineCountyRace,
 )
-from can_tools.scrapers.official.VA.va_vaccine import VirginiaVaccine
+from can_tools.scrapers.official.VA.va_vaccine import (
+    VirginiaVaccine,
+    VirginiaCountyVaccineDemographics,
+)
 from can_tools.scrapers.official.VT.vt_vaccinations import (
     VermontCountyVaccine,
     VermontStateVaccine,
