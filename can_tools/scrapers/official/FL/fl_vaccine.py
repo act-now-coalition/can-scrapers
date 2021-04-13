@@ -33,9 +33,27 @@ class FloridaCountyVaccine(StateDashboard):
                 pdf_pages_headers = textract.process(tmp_file)
                 county_names = re.findall(r"COVID-19: (?P<countyName>.*?) vaccine summary",
                                           pdf_pages_headers.decode("utf-8"))
+                county_names = list(map(lambda x: x if not x.endswith(" County") else x[:-7], county_names))
 
         county_demographics_data = camelot.read_pdf(self.fetch_url_for_counties, pages="1-3", flavor="stream", row_tol=10)
         return {"vaccine_data": vaccine_data, "county_demographics_data": county_demographics_data, "county_names": county_names}
+
+    def normalize_group(self, df, demographic, dgroup, group_rename, cmu):
+        keep_vals = list(group_rename.keys())
+        foo = df.query("category == @demographic &" "Join_Name in @keep_vals").rename(
+            columns={"Join_Name": dgroup}
+        )
+        foo.loc[:, dgroup] = foo.loc[:, dgroup].str.strip()
+        foo = foo.replace({dgroup: group_rename})
+
+        # Keep all but current demographic info
+        all_demographics = ["age", "race", "ethnicity", "sex"]
+        all_demographics.remove(dgroup)
+        cmu_cols = ["category", "measurement", "unit"] + all_demographics
+        foo = self.extract_CMU(foo, cmu, columns=cmu_cols)
+
+        # Drop Category/variable
+        foo = foo.drop(["Category", "variable"], axis="columns")
 
     def normalize(self, data):
         # read in data, remove extra header cols, rename column names
@@ -45,11 +63,29 @@ class FloridaCountyVaccine(StateDashboard):
                 dfs.append(self._truncate_vaccine_data(el.df))
         df = pd.concat(dfs)
 
-        dfs_demographics = []
+        dfs_age_demographics = []
         if "county_demographics_data" in data:
             for i in range(len(data["county_demographics_data"])):
-                dfs_demographics.append(self._truncate_demographics_data(data["county_demographics_data"][i].df, data["county_names"][i]))
-        df_demographics =pd.concat(dfs_demographics)
+                dfs_age_demographics.append(self._truncate_demographics_age_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+        df_age_demographics = pd.concat(dfs_age_demographics)
+
+        dfs_race_demographics = []
+        if "county_demographics_data" in data:
+            for i in range(len(data["county_demographics_data"])):
+                dfs_race_demographics.append(self._truncate_demographics_race_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+        df_race_demographics = pd.concat(dfs_race_demographics)
+
+        dfs_sex_demographics = []
+        if "county_demographics_data" in data:
+            for i in range(len(data["county_demographics_data"])):
+                dfs_sex_demographics.append(self._truncate_demographics_sex_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+        df_sex_demographics = pd.concat(dfs_sex_demographics)
+
+        dfs_etn_demographics = []
+        if "county_demographics_data" in data:
+            for i in range(len(data["county_demographics_data"])):
+                dfs_etn_demographics.append(self._truncate_demographics_etn_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+        df_etn_demographics = pd.concat(dfs_etn_demographics)
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
         df = df.query(
@@ -104,57 +140,18 @@ class FloridaCountyVaccine(StateDashboard):
             ),
         }
 
-        # age_replace = {
-        #     "16-24 years": "16-24",
-        #     "25-34 years": "25-34",
-        #     "35-44 years": "35-44",
-        #     "45-54 years": "45-54",
-        #     "55-64 years": "55-64",
-        #     "65-74 years": "65-74",
-        #     "75-84 years": "75-84",
-        #     "85+ years": "85_plus",
-        #     "Age Unknown": "unknown",
-        # }
-        # age_df = self.normalize_group(df, "Age Groups", "age", age_replace, crename)
+        # out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
+        # out = self.extract_CMU(out, crename)
 
-        # gender_replace = {
-        #     "Female": "female",
-        #     "Male": "male",
-        #     "Gender Unknown": "unknown",
-        # }
-        # gender_df = self.normalize_group(df, "Gender", "sex", gender_replace, crename)
-
-        # race_replace = {
-        #     "American Indian or Alaska Native": "ai_an",
-        #     "Asian": "asian",
-        #     "Black or African-American": "black",
-        #     "Native Hawaiian or Other Pacific Islander": "pacific_islander",
-        #     "Other Race": "other",
-        #     "White": "white",
-        # }
-        # race_col = [
-        #     c for c in df["Category"].unique() if c is not None and "race" in c.lower()
-        # ][0]
-        # race_df = self.normalize_group(df, race_col, "race", race_replace, crename)
-        #
-        # ethnicity_replace = {"Hispanic or Latino": "hispanic"}
-        # eth_col = [
-        #     c
-        #     for c in df["Category"].unique()
-        #     if c is not None and "ethnicity" in c.lower()
-        # ][0]
-        # eth_df = self.normalize_group(
-        #     df, eth_col, "ethnicity", ethnicity_replace, crename
-        # )
-
-        out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
-        out = self.extract_CMU(out, crename)
+        out: pd.DataFrame = pd.concat(
+            [df_age_demographics, df_etn_demographics, df_race_demographics, df_sex_demographics], axis=0, ignore_index=True
+        ).dropna()
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
-
-        # out: pd.DataFrame = pd.concat(
-        #     [age_df, gender_df, race_df, eth_df, total_df], axis=0, ignore_index=True
-        # ).dropna()
+        out["category"] = "total_vaccine_initiated"
+        out["measurement"] = "new"
+        out["unit"] = "people"
+        out["value"] = out["total_people_vaccinated_total"]
 
         cols_to_keep = [
             "vintage",
@@ -169,6 +166,7 @@ class FloridaCountyVaccine(StateDashboard):
             "sex",
             "value",
         ]
+
         return out.loc[:, cols_to_keep]
 
     def _get_date(self):
@@ -204,35 +202,100 @@ class FloridaCountyVaccine(StateDashboard):
         # the data/table starts two lines after 'County of residence' appears in the location column
         return data[data.query("location_name == 'County of residence'").index[0] + 2 :]
 
-    def _truncate_demographics_data(self, data, county_name):
+    def _truncate_demographics_age_data(self, data, county_name):
 
         data.columns = [
             "location_name",
-            "age_group",
+            "age",
             "first_dose_total",
             "series_complete_total",
             "total_people_vaccinated_total",
         ]
 
         data.loc[:, 'location_name'] = county_name
+        startIndex = data.query("age == 'Age group'").index[0] + 1
+        result = data[startIndex: startIndex+8]
+        result["race"] = result["ethnicity"] = result["sex"] = "all"
+        age_replace = {
+            "16-24 years": "16-24",
+            "25-34 years": "25-34",
+            "35-44 years": "35-44",
+            "45-54 years": "45-54",
+            "55-64 years": "55-64",
+            "65-74 years": "65-74",
+            "75-84 years": "75-84",
+            "85+ years": "85_plus",
+            "Age Unknown": "unknown",
+        }
+        result["age"] = result["age"].map(age_replace)
 
-        startIndex = data.query("age_group == 'Age group'").index[0] + 1
+        return result
 
-        return data[startIndex: startIndex+8]
+    def _truncate_demographics_race_data(self, data, county_name):
 
-    # def normalize_group(self, df, demographic, dgroup, group_rename, cmu):
-    #     keep_vals = list(group_rename.keys())
-    #     foo = df.query("category == @demographic &" "Join_Name in @keep_vals").rename(
-    #         columns={"Join_Name": dgroup}
-    #     )
-    #     foo.loc[:, dgroup] = foo.loc[:, dgroup].str.strip()
-    #     foo = foo.replace({dgroup: group_rename})
-    #
-    #     # Keep all but current demographic info
-    #     all_demographics = ["age", "race", "ethnicity", "sex"]
-    #     all_demographics.remove(dgroup)
-    #     cmu_cols = ["category", "measurement", "unit"] + all_demographics
-    #     foo = self.extract_CMU(foo, cmu, columns=cmu_cols)
-    #
-    #     # Drop Category/variable
-    #     foo = foo.drop(["Category", "variable"], axis="columns")
+        data.columns = [
+            "location_name",
+            "race",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated_total",
+        ]
+
+        data.loc[:, 'location_name'] = county_name
+        startIndex = data.query("race == 'Race'").index[0] + 1
+        result = data[startIndex: startIndex+6]
+        result.drop(result[result.race == ""].index, inplace=True)
+        result["age"] = result["ethnicity"] = result["sex"] = "all"
+        race_replace = {
+            "American Indian/Alaskan": "ai_an",
+            "Unknown": "unknown",
+            "Black": "black",
+            "Other": "other",
+            "White": "white",
+        }
+        result["race"] = result["race"].map(race_replace)
+        return result
+
+    def _truncate_demographics_sex_data(self, data, county_name):
+
+        data.columns = [
+            "location_name",
+            "sex",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated_total",
+        ]
+
+        data.loc[:, 'location_name'] = county_name
+        startIndex = data.query("sex == 'Gender'").index[0] + 1
+        result = data[startIndex: startIndex+3]
+        result["age"] = result["ethnicity"] = result["race"] = "all"
+        gender_replace = {
+            "Female": "female",
+            "Male": "male",
+            "Unknown": "unknown",
+        }
+        result["sex"] = result["sex"].map(gender_replace)
+        return result
+
+    def _truncate_demographics_etn_data(self, data, county_name):
+
+        data.columns = [
+            "location_name",
+            "ethnicity",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated_total",
+        ]
+
+        data.loc[:, 'location_name'] = county_name
+        startIndex = data.query("ethnicity == 'Ethnicity'").index[0] + 1
+        result = data[startIndex: startIndex+3]
+        result["age"] = result["sex"] = result["race"] = "all"
+        ethnicity_replace = {
+            "Hispanic": "hispanic",
+            "Non-Hispanic": "non-hispanic",
+            "Unknown": "unknown",
+        }
+        result["ethnicity"] = result["ethnicity"].map(ethnicity_replace)
+        return result
