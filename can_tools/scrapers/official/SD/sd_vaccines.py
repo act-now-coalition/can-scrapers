@@ -25,6 +25,31 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
         "total_vaccine_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+        "moderna_1_dose": CMU(
+            category="moderna_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+        ),
+        "pfizer_1_dose": CMU(
+            category="pfizer_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+        ),
+        "moderna_complete": CMU(
+            category="moderna_vaccine_completed",
+            measurement="cumulative",
+            unit="people",
+        ),
+        "pfizer_complete": CMU(
+            category="pfizer_vaccine_completed",
+            measurement="cumulative",
+            unit="people",
+        ),
+        "janssen_series": CMU(
+            category="janssen_vaccine_completed",
+            measurement="cumulative",
+            unit="people"
+        )
     }
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
