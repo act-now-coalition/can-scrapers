@@ -4,15 +4,11 @@ from typing import Any
 
 import pandas as pd
 import us
+import os.path
 
 from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
-
-"""
-    Notes:
-    J&J shot included in "one shot" data, but NOT in two shot data
-"""
 
 
 class SDVaccineCounty(MicrosoftBIDashboard):
@@ -26,11 +22,12 @@ class SDVaccineCounty(MicrosoftBIDashboard):
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
 
     variables = {
-        "at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
-        "total_doses": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "total_vaccine_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
     }
 
-    def construct_body(self, resource_key, ds_id, model_id, report_id):
+    def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
         "Build body request"
         body = {}
 
@@ -39,172 +36,83 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         body["cancelQueries"] = []
         body["modelId"] = model_id
 
-        # used the orignal query (from the network call) because without the "WHERE" clause the # of vaccines initiated were not returned
+        from_variables = [
+            # From
+            ("c", "County", 0),
+            ("v", "Vaccines", 0),
+            ("m", " Measures", 0),
+        ]
+
+        select_variables = [
+            [
+                # Selects
+                ("c", "County", "county"),
+                ("v", "Manufacturer - Dose # (spelled out)", "doses"),
+            ],
+            [],
+            [
+                # Measures
+                ("m", "Number of Recipients", "recipients")
+            ],
+        ]
+
+        where_query = [
+            {
+                "Condition": {
+                    "In": {
+                        "Expressions": [
+                            {
+                                "Column": {
+                                    "Expression": {"SourceRef": {"Source": "c"}},
+                                    "Property": "County",
+                                }
+                            }
+                        ],
+                        "Values": [
+                            [{"Literal": {"Value": f"'{counties[0]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[1]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[2]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[3]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[4]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[5]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[6]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[7]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[8]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[9]}'"}}],
+                            [{"Literal": {"Value": f"'{counties[10]}'"}}],
+                        ],
+                    }
+                }
+            },
+            {
+                "Condition": {
+                    "In": {
+                        "Expressions": [
+                            {
+                                "Column": {
+                                    "Expression": {"SourceRef": {"Source": "v"}},
+                                    "Property": "IsMostRecentDose",
+                                }
+                            }
+                        ],
+                        "Values": [[{"Literal": {"Value": "true"}}]],
+                    }
+                }
+            },
+        ]
+
         body["queries"] = [
             {
                 "Query": {
                     "Commands": [
                         {
                             "SemanticQueryDataShapeCommand": {
-                                "Binding": {
-                                    "DataReduction": {
-                                        "DataVolume": 3,
-                                        "Primary": {"Window": {"Count": 100}},
-                                        "Secondary": {"Top": {"Count": 100}},
-                                    },
-                                    "Primary": {
-                                        "Groupings": [
-                                            {"Projections": [2]},
-                                            {"Projections": [1]},
-                                        ]
-                                    },
-                                    "Secondary": {
-                                        "Groupings": [
-                                            {"Projections": [3, 0], "Subtotal": 2}
-                                        ]
-                                    },
-                                    "Version": 1,
-                                },
                                 "Query": {
-                                    "From": [
-                                        {"Entity": " Measures", "Name": "m", "Type": 0},
-                                        {"Entity": "County", "Name": "c", "Type": 0},
-                                        {"Entity": "Vaccines", "Name": "v", "Type": 0},
-                                    ],
-                                    "OrderBy": [
-                                        {
-                                            "Direction": 2,
-                                            "Expression": {
-                                                "Measure": {
-                                                    "Expression": {
-                                                        "SourceRef": {"Source": "m"}
-                                                    },
-                                                    "Property": "Number of Recipients",
-                                                }
-                                            },
-                                        }
-                                    ],
-                                    "Select": [
-                                        {
-                                            "Measure": {
-                                                "Expression": {
-                                                    "SourceRef": {"Source": "m"}
-                                                },
-                                                "Property": "Number of Recipients",
-                                            },
-                                            "Name": "Measures Table.Recipient Count",
-                                        },
-                                        {
-                                            "Column": {
-                                                "Expression": {
-                                                    "SourceRef": {"Source": "c"}
-                                                },
-                                                "Property": "Doses Administered",
-                                            },
-                                            "Name": "County.Doses Administered",
-                                        },
-                                        {
-                                            "Column": {
-                                                "Expression": {
-                                                    "SourceRef": {"Source": "c"}
-                                                },
-                                                "Property": "County",
-                                            },
-                                            "Name": "County.County",
-                                        },
-                                        {
-                                            "Column": {
-                                                "Expression": {
-                                                    "SourceRef": {"Source": "v"}
-                                                },
-                                                "Property": "# Persons per Dose Count",
-                                            },
-                                            "Name": "Vaccines.# Persons per Dose Count",
-                                        },
-                                    ],
                                     "Version": 2,
-                                    "Where": [
-                                        {
-                                            "Condition": {
-                                                "In": {
-                                                    "Expressions": [
-                                                        {
-                                                            "Column": {
-                                                                "Expression": {
-                                                                    "SourceRef": {
-                                                                        "Source": "v"
-                                                                    }
-                                                                },
-                                                                "Property": "IsMostRecentDose",
-                                                            }
-                                                        }
-                                                    ],
-                                                    "Values": [
-                                                        [{"Literal": {"Value": "true"}}]
-                                                    ],
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "Condition": {
-                                                "Not": {
-                                                    "Expression": {
-                                                        "In": {
-                                                            "Expressions": [
-                                                                {
-                                                                    "Column": {
-                                                                        "Expression": {
-                                                                            "SourceRef": {
-                                                                                "Source": "c"
-                                                                            }
-                                                                        },
-                                                                        "Property": "County",
-                                                                    }
-                                                                }
-                                                            ],
-                                                            "Values": [
-                                                                [
-                                                                    {
-                                                                        "Literal": {
-                                                                            "Value": "null"
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            ],
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "Condition": {
-                                                "In": {
-                                                    "Expressions": [
-                                                        {
-                                                            "Column": {
-                                                                "Expression": {
-                                                                    "SourceRef": {
-                                                                        "Source": "v"
-                                                                    }
-                                                                },
-                                                                "Property": "Exclude",
-                                                            }
-                                                        }
-                                                    ],
-                                                    "Values": [
-                                                        [
-                                                            {
-                                                                "Literal": {
-                                                                    "Value": "false"
-                                                                }
-                                                            }
-                                                        ]
-                                                    ],
-                                                }
-                                            }
-                                        },
-                                    ],
-                                },
+                                    "From": self.construct_from(from_variables),
+                                    "Select": self.construct_select(*select_variables),
+                                    "Where": where_query,
+                                }
                             }
                         }
                     ]
@@ -231,27 +139,51 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         # Build post headers
         headers = self.construct_headers(resource_key)
 
-        # Build post body
-        body = self.construct_body(resource_key, ds_id, model_id, report_id)
+        # get list of counties
+        counties = list(
+            pd.read_csv(
+                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
+            ).query("state == @self.state_fips and name != 'South Dakota'")["name"]
+        )
 
-        res = self.sess.post(url, json=body, headers=headers)
-
-        return res.json()
+        jsons = []
+        """
+        --The max # of counties that the service will return at one time is 13--
+        So, to get all counties make multiple requests.
+        There are 66 counties, so we make 6 queries of 11 counties each (11*6 = 66).
+        store the results of each in a list then return a list of lists.
+        """
+        for i in range(0, len(counties), 11):
+            body = self.construct_body(
+                resource_key, ds_id, model_id, report_id, counties[i : i + 11]
+            )
+            res = self.sess.post(url, json=body, headers=headers)
+            jsons.append(res.json())
+        return jsons
 
     def normalize(self, resjson):
-        # Extract components we care about from json
-        foo = resjson["results"][0]["result"]["data"]
-        data = foo["dsr"]["DS"][0]["PH"][0]["DM0"]
-        # total doses admin data are stored in different part of response
-        total_doses = foo["dsr"]["DS"][0]["ValueDicts"]["D0"]
+        # extract the data we want from each response
+        data = []
+        for chunk in resjson:
+            foo = chunk["results"][0]["result"]["data"]
+            d = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
+            data.append(d)
 
-        data_rows = []
+        # flatten our data list of lists to one list (eg: [[1,2],[3,4]] -> [1,2,3,4])
+        data = [j for i in data for j in i]
+
         # make the mappings manually
         col_mapping = {
             "G0": "county",
-            "M_0_DM1_0_X_2_A0": "at_least_one_dose",
+            "M_0_DM2_0_A1": "total_vaccine_initiated",
+            "M_1_DM3_0_C_1": "janssen_series",
+            "M_1_DM3_1_C_1": "moderna_1_dose",
+            "M_1_DM3_2_C_1": "moderna_complete",
+            "M_1_DM3_3_C_1": "pfizer_1_dose",
+            "M_1_DM3_4_C_1": "pfizer_complete",
         }
-        for i, record in enumerate(data):
+        data_rows = []
+        for record in data:
             flat_record = flatten_dict(record)
 
             row = {}
@@ -260,13 +192,22 @@ class SDVaccineCounty(MicrosoftBIDashboard):
 
                 if len(flat_record_key) > 0:
                     row[col_mapping[k]] = flat_record[flat_record_key[0]]
-                    # append total doses administered data
-                    row["total_doses"] = int(total_doses[i].replace(",", ""))
-
             data_rows.append(row)
 
         # Dump records into a DataFrame and transform
         df = pd.DataFrame.from_records(data_rows)
+
+        # calculate metrics to match our def'ns
+        df["total_vaccine_completed"] = (
+            df["janssen_series"] + df["moderna_complete"] + df["pfizer_complete"]
+        )
+        df["total_vaccine_doses_administered"] = (
+            df["janssen_series"]
+            + df["moderna_1_dose"]
+            + df["pfizer_1_dose"]
+            + 2 * (df["moderna_complete"] + df["pfizer_complete"])
+        )
+
         out = self._rename_or_add_date_and_location(
             df,
             location_name_column="county",
