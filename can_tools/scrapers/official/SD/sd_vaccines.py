@@ -48,8 +48,8 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         "janssen_series": CMU(
             category="janssen_vaccine_completed",
             measurement="cumulative",
-            unit="people"
-        )
+            unit="people",
+        ),
     }
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
