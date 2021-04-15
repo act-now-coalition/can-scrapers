@@ -6,7 +6,7 @@ from can_tools.scrapers.official.base import TableauDashboard
 from tableauscraper import TableauScraper as TS
 
 
-class DCVaccineRace(TableauDashboard):
+class DCVaccineSex(TableauDashboard):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
@@ -16,7 +16,6 @@ class DCVaccineRace(TableauDashboard):
     viewPath = "Vaccine_Public/Demographics"
     demographic_cmu = "sex"
     data_tableau_table = "Demographics "
-    demographic_cmu = "race"
 
     # map column names into CMUs
     variables = {
@@ -108,7 +107,7 @@ class DCVaccineRace(TableauDashboard):
         return out
 
 
-class DCVaccine(DCVaccineRace):
+class DCVaccine(DCVaccineSex):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
@@ -147,10 +146,10 @@ class DCVaccine(DCVaccineRace):
         return out
 
 
-class DCVaccineSex(DCVaccineRace):
+class DCVaccineRace(DCVaccineSex):
     fullUrl = "https://dataviz1.dc.gov/t/OCTO/views/Vaccine_Public/Demographics"
-    demographic_cmu = "sex"
-    demographic_col_name = "Gender"
+    demographic_cmu = "race"
+    demographic_col_name = "Race"
 
     def fetch(self):
         """
@@ -164,12 +163,12 @@ class DCVaccineSex(DCVaccineRace):
         return workbook.worksheets[0].data
 
 
-class DCVaccineEthnicity(DCVaccineSex):
+class DCVaccineEthnicity(DCVaccineRace):
     demographic_cmu = "ethinicity"
     demographic_col_name = "Ethnicity"
 
 
-class DCVaccineAge(DCVaccineSex):
+class DCVaccineAge(DCVaccineRace):
     demographic_cmu = "age"
     demographic_col_name = "Age Group"
 
