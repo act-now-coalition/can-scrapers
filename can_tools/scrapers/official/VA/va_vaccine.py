@@ -1,8 +1,10 @@
 import pandas as pd
 import us
+import os.path
 from tqdm import tqdm
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
+from multiprocessing import Pool
 
 
 class VirginiaVaccine(TableauDashboard):
@@ -88,162 +90,42 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
     filterFunctionValue = None
     has_location = False
     location_type = "county"
-    counties = [
-        "Accomack",
-        "Albemarle",
-        "Alexandria",
-        "Alleghany",
-        "Amelia",
-        "Amherst",
-        "Appomattox",
-        "Arlington",
-        "Augusta",
-        "Bath",
-        "Bedford",
-        "Bland",
-        "Botetourt",
-        "Bristol",
-        "Brunswick",
-        "Buchanan",
-        "Buckingham",
-        "Buena Vista City",
-        "Campbell",
-        "Caroline",
-        "Carroll",
-        "Charles City",
-        "Charlotte",
-        "Charlottesville",
-        "Chesapeake",
-        "Chesterfield",
-        "Clarke",
-        "Colonial Heights",
-        "Covington",
-        "Craig",
-        "Culpeper",
-        "Cumberland",
-        "Danville",
-        "Dickenson",
-        "Dinwiddie",
-        "Emporia",
-        "Essex",
-        "Fairfax",
-        "Fairfax City",
-        "Falls Church",
-        "Fauquier",
-        "Floyd",
-        "Fluvanna",
-        "Franklin City",
-        "Franklin County",
-        "Frederick",
-        "Fredericksburg",
-        "Galax",
-        "Giles",
-        "Gloucester",
-        "Goochland",
-        "Grayson",
-        "Greene",
-        "Greensville",
-        "Halifax",
-        "Hampton",
-        "Hanover",
-        "Harrisonburg",
-        "Henrico",
-        "Henry",
-        "Highland",
-        "Hopewell",
-        "Isle of Wight",
-        "James City",
-        "King and Queen",
-        "King George",
-        "King William",
-        "Lancaster",
-        "Lee",
-        "Lexington",
-        "Loudoun",
-        "Louisa",
-        "Lunenburg",
-        "Lynchburg",
-        "Madison",
-        "Manassas City",
-        "Manassas Park",
-        "Martinsville",
-        "Mathews",
-        "Mecklenburg",
-        "Middlesex",
-        "Montgomery",
-        "Nelson",
-        "New Kent",
-        "Newport News",
-        "Norfolk",
-        "Northampton",
-        "Northumberland",
-        "Norton",
-        "Nottoway",
-        "Orange",
-        "Page",
-        "Patrick",
-        "Petersburg",
-        "Pittsylvania",
-        "Poquoson",
-        "Portsmouth",
-        "Powhatan",
-        "Prince Edward",
-        "Prince George",
-        "Prince William",
-        "Pulaski",
-        "Radford",
-        "Rappahannock",
-        "Richmond City",
-        "Richmond County",
-        "Roanoke City",
-        "Roanoke County",
-        "Rockbridge",
-        "Rockingham",
-        "Russell",
-        "Salem",
-        "Scott",
-        "Shenandoah",
-        "Smyth",
-        "Southampton",
-        "Spotsylvania",
-        "Stafford",
-        "Staunton",
-        "Suffolk",
-        "Surry",
-        "Sussex",
-        "Tazewell",
-        "Virginia Beach",
-        "Warren",
-        "Washington",
-        "Waynesboro",
-        "Westmoreland",
-        "Williamsburg",
-        "Winchester",
-        "Wise",
-        "Wythe",
-        "York",
-    ]
 
     secondaryFilterFunctionName = "[Parameters].[Parameter 1]"
     secondaryFilterValues = ["full", "one"]
     secondaryFilterValue = None
 
+    def _fetch_county_dose(self, county_dose):
+        self.secondaryFilterValue = county_dose[1]
+        self.filterFunctionValue = county_dose[0]
+        data = self.get_tableau_view()
+        res = {}
+        res["age"] = data["Vaccinations - Age Group"]
+        res["sex"] = data["Vaccinations - Sex"]
+        res["race"] = data["Vaccinations - Race Ethnicity"]
+        return res
+
+    def _fetch_multiprocess(self, func, i, n_processors):
+        with Pool(processes=n_processors) as pool:
+            return list(tqdm(pool.imap(func, i), total=len(i)))
+
     def fetch(self):
-        res = {"age": [], "sex": [], "race": []}
-        counts = tqdm(self.counties)
-        for n in counts:
-            for x in self.secondaryFilterValues:
-                counts.set_description(f"Processing {n}")
-                self.secondaryFilterValue = x
-                self.filterFunctionValue = n
-                data = self.get_tableau_view()
-                res["age"].append(data["Vaccinations - Age Group"])
-                res["sex"].append(data["Vaccinations - Sex"])
-                res["race"].append(data["Vaccinations - Race Ethnicity"])
+        counties = list(
+            pd.read_csv(
+                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
+            ).query(f"state == {self.state_fips} and name != 'Virginia'")["name"]
+        )
+        # Set up multithreading
+        n_processors = 6
+        args = []
+        for county in counties:
+            for dose in self.secondaryFilterValues:
+                args.append([county, dose])
+        res = self._fetch_multiprocess(self._fetch_county_dose, args, n_processors)
         return res
 
     def _normalize_sex(self, data):
-        df = pd.concat(data["sex"])
+        df = pd.concat(x["sex"] for x in data)
         df["dt"] = self._retrieve_dt()
         df = df.rename(
             columns={
@@ -277,7 +159,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
         ]
 
     def _normalize_age(self, data):
-        df = pd.concat(data["age"])
+        df = pd.concat(x["age"] for x in data)
         df["dt"] = self._retrieve_dt()
         df = df.rename(
             columns={
@@ -311,7 +193,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
         ]
 
     def _normalize_race(self, data):
-        df = pd.concat(data["race"])
+        df = pd.concat(x["race"] for x in data)
         df["dt"] = self._retrieve_dt()
         df = df.rename(
             columns={
@@ -330,7 +212,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
 
         df.race = df.race.str.replace("White", "white")
         df.race = df.race.str.replace("Other Race", "other")
-        df.race = df.race.str.replace("Native American", "native_american")
+        df.race = df.race.str.replace("Native American", "ai_an")
         df.race = df.race.str.replace("Black", "black")
         df.race = df.race.str.replace("Latino", "latino")
         df.race = df.race.str.replace(
