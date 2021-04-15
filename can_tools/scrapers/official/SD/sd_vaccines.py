@@ -192,10 +192,7 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         for chunk in resjson:
             foo = chunk["results"][0]["result"]["data"]
             d = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
-            data.append(d)
-
-        # flatten our data list of lists to one list (eg: [[1,2],[3,4]] -> [1,2,3,4])
-        data = [j for i in data for j in i]
+            data.extend(d)
 
         # make the mappings manually
         col_mapping = {
