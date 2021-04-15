@@ -22,7 +22,7 @@ class CDCCovidDataTracker(FederalDashboard):
         "new_deaths_7_day_rolling_average": CMU(
             category="deaths", measurement="rolling_average_7_day", unit="people"
         ),
-        "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
+        "percent_positive_7_day": CMU(
             category="pcr_tests_positive",
             measurement="rolling_average_7_day",
             unit="percentage",
