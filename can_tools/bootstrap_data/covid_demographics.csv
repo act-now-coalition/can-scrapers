@@ -3,7 +3,8 @@ all,all,all,all
 0-9,all,all,all
 0-5,all,all,all
 0-10,all,all,all
-0-19,all,all,all
+0-19,all,all,
+0-20,all,all,all
 5-17,all,all,all
 5-9,all,all,all
 10-19,all,all,all
@@ -22,8 +23,8 @@ all,all,all,all
 18_plus,all,all,all
 20-24,all,all,all
 20-29,all,all,all
-20-44,all,all,all
 20-34,all,all,all
+20-44,all,all,all
 21-30,all,all,all
 25-29,all,all,all
 25-34,all,all,all
@@ -32,6 +33,7 @@ all,all,all,all
 31-40,all,all,all
 35-39,all,all,all
 35-44,all,all,all
+35-54,all,all,all
 40-44,all,all,all
 40-49,all,all,all
 41-50,all,all,all
@@ -47,6 +49,7 @@ all,all,all,all
 51-60,all,all,all
 55-59,all,all,all
 55-64,all,all,all
+55-74,all,all,all
 60-64,all,all,all
 60-69,all,all,all
 61-70,all,all,all
@@ -116,6 +119,7 @@ all,white,all,all
 all,white,hispanic,all
 all,white,non-hispanic,all
 all,white,unknown,all
+
 all,all,hispanic,all
 all,all,non-hispanic,all
 all,all,unknown,all
