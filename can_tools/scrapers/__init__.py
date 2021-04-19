@@ -21,11 +21,8 @@ from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
 from can_tools.scrapers.official.DE.de_vaccine import DelawareCountyVaccine
 
 from can_tools.scrapers.official.DC.dc_vaccines import (
-    DCVaccineRace,
     DCVaccine,
-    DCVaccineAge,
-    DCVaccineSex,
-    DCVaccineEthnicity,
+    DCVaccineDemographics,
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
