@@ -12,7 +12,7 @@ class WisconsinVaccineCounty(TableauDashboard):
     state_fips = int(us.states.lookup("Wisconsin").fips)
     location_type = "county"
     baseurl = "https://bi.wisconsin.gov/t/DHS"
-    viewPath = "VaccinesAdministeredtoWIResidents/VaccinatedWisconsin-County"
+    viewPath = "VaccinesAdministeredtoWIResidents_16129838459350/VaccinatedWisconsin-County"
 
     data_tableau_table = "Map"
     location_name_col = "County-alias"
