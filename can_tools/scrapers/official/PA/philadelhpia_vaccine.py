@@ -1,11 +1,11 @@
 import pandas as pd
 from us import states
 import sqlalchemy as sa
-from can_tools.scrapers.official.base import StateDashboard
+from can_tools.scrapers.official.base import CountyDashboard
 from can_tools.scrapers import variables, CMU
 
 
-class PhiladelphaVaccine(StateDashboard):
+class PhiladelphaVaccine(CountyDashboard):
     state_fips = int(states.lookup("Pennsylvania").fips)
     has_location = True
     location_type = "county"
