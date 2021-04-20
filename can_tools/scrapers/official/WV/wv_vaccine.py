@@ -34,12 +34,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
         from_variables = [
             (
                 "c",
-                "vamsCOVID_Vaccine",
-                0,
-            ),
-            (
-                "d1",
-                "dimFollow-Up Vaccine",
+                "COVID_Vaccine",
                 0,
             ),
             (
@@ -47,6 +42,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
                 "dimCounty",
                 0,
             ),
+            ("n", "Navigation", 0),
         ]
 
         select_variables = [
@@ -55,7 +51,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
             ],
             [],
             [
-                ("c", "Count", "COVID_Vaccine.Count"),
+                ("c", "Total Dose", "COVID_Vaccine.Total Dose"),
             ],
         ]
 
@@ -88,8 +84,8 @@ class WVCountyVaccine(MicrosoftBIDashboard):
                         "Expressions": [
                             {
                                 "Column": {
-                                    "Expression": {"SourceRef": {"Source": "d1"}},
-                                    "Property": "Updated Name",
+                                    "Expression": {"SourceRef": {"Source": "n"}},
+                                    "Property": "Name",
                                 }
                             }
                         ],
@@ -137,7 +133,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
         # Because of the way WV presents their data, making two separate queries
         # to pull out the partially vaccinated and fully vaccinated individuals.
         body = self.construct_body(
-            resource_key, ds_id, model_id, report_id, "People Partially Vaccinated"
+            resource_key, ds_id, model_id, report_id, "People With At Least One Dose"
         )
         res = self.sess.post(url, json=body, headers=headers)
         partial_vaccination_results = res.json()

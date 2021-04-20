@@ -4,6 +4,7 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import CMU
+from can_tools.scrapers import variables as v
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -45,8 +46,13 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                                                 0,
                                             ),
                                             (
-                                                "c",
+                                                "c1",
                                                 "COVID Vaccination Summary Measures",
+                                                0,
+                                            ),
+                                            (
+                                                "c",
+                                                "COVID Vaccination Attributes",
                                                 0,
                                             ),
                                         ]
@@ -58,31 +64,32 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                                                 "Geographic County Name",
                                                 "county",
                                             ),
+                                            ("c", "Vaccine Manufacturer", "manu"),
                                         ],
                                         [],
                                         [
                                             (
-                                                "c",
+                                                "c1",
                                                 "Doses Administered",
                                                 "total_vaccine_administered",
                                             ),
                                             (
-                                                "c",
+                                                "c1",
                                                 "First Dose",
                                                 "total_vaccine_initiated",
                                             ),
                                             (
-                                                "c",
+                                                "c1",
                                                 "Final Dose",
                                                 "total_vaccine_completed",
                                             ),
                                             (
-                                                "c",
+                                                "c1",
                                                 "Population First Dose %",
                                                 "total_vaccine_initiated_percent",
                                             ),
                                             (
-                                                "c",
+                                                "c1",
                                                 "Population Final Dose %",
                                                 "total_vaccine_completed_percent",
                                             ),
@@ -126,82 +133,55 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
     def normalize(self, resjson: dict) -> pd.DataFrame:
         # Extract components we care about from json
         foo = resjson["results"][0]["result"]["data"]
-        descriptor = foo["descriptor"]["Select"]
         data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
+        data = [d for d in data if list(d.keys())[0] == "G0"]  # keep only relevent data
 
         # Build dict of dicts with relevant info
-        col_mapping = {x["Value"]: x["Name"] for x in descriptor}
-        col_keys = list(col_mapping.keys())
+        col_mapping = {
+            "G0": "county",
+            "M_0_DM2_0_C_0": "total_vaccine_administered",
+            "M_0_DM2_0_C_1": "pfizer_moderna_first_dose",
+            "M_0_DM2_0_C_2": "total_vaccine_completed",
+            "M_1_DM3_0_C_1": "janssen_series",
+            "M_0_DM2_0_C_4": "total_vaccine_completed_percent",
+        }
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
-        row_names = [col_mapping[desc["N"]] for desc in data[0]["S"]]
         for record in data:
-            Crecord = record["C"]
-            if "County" not in str(Crecord[0]):
-                continue
-            data_rows.append(record["C"])
+            flat_record = flatten_dict(record)
+            row = {}
+            for k in list(col_mapping.keys()):
+                flat_record_key = [frk for frk in flat_record.keys() if k in frk]
 
-        # Dump records into a DataFrame
-        df = pd.DataFrame.from_records(data_rows, columns=row_names)
+                if len(flat_record_key) > 0:
+                    row[col_mapping[k]] = flat_record[flat_record_key[0]]
+
+            data_rows.append(row)
+
+        df = pd.DataFrame.from_records(data_rows)
+
+        # calculate vaccine initiated to match def'n
+        df["total_vaccine_initiated"] = (
+            df["pfizer_moderna_first_dose"] + df["janssen_series"]
+        )
 
         # Title case and remove the word county
         df["location_name"] = df["county"].str.replace("County, ME", "").str.strip()
 
-        # Change into percentage
-        for col in [
-            "total_vaccine_initiated_percent",
-            "total_vaccine_completed_percent",
-        ]:
-            df.loc[:, col] = 100 * df.loc[:, col]
+        # Change % column into percentage
+        df["total_vaccine_completed_percent"] = (
+            100 * df["total_vaccine_completed_percent"]
+        )
 
         # Reshape
-        crename = {
-            "total_vaccine_administered": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_initiated_percent": CMU(
-                category="total_vaccine_initiated",
-                measurement="current",
-                unit="percentage",
-            ),
-            "total_vaccine_completed_percent": CMU(
-                category="total_vaccine_completed",
-                measurement="current",
-                unit="percentage",
-            ),
+        variables = {
+            "total_vaccine_administered": v.TOTAL_DOSES_ADMINISTERED_ALL,
+            "total_vaccine_initiated": v.INITIATING_VACCINATIONS_ALL,
+            "total_vaccine_completed": v.FULLY_VACCINATED_ALL,
+            "total_vaccine_completed_percent": v.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         }
-        out = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
 
-        # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename)
+        out = self._reshape_variables(df, variables)
         out["dt"] = self._retrieve_dt("US/Eastern")
-        out["vintage"] = self._retrieve_vintage()
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, cols_to_keep]
+        return out

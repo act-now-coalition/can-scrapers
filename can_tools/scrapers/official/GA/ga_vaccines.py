@@ -64,9 +64,9 @@ class GeorgiaCountyVaccine(ArcGIS):
         total = self.normalize_helper(data, "total", "CUMVAXADMIN")
         df = completed.join(initiated).join(total).reset_index()
         out = self._reshape_variables(df, self.variables)
-        locs_to_del = ["0", "99999"]
+        locs_to_del = ["0", "99999", 0, 99999]
 
-        return out.query("location not in @locs_to_del")
+        return out.loc[~out.location.isin(locs_to_del), :]
 
 
 class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
@@ -182,12 +182,12 @@ class GeorgiaCountyVaccineRace(GeorgiaCountyVaccineAge):
             unit="people",
             race="black",
         ),
-        "2076-8": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="white",
-        ),
+        # "2076-8": CMU(
+        #     category="total_vaccine_initiated",
+        #     measurement="cumulative",
+        #     unit="people",
+        #     race="white",
+        # ),
         "2106-3": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",

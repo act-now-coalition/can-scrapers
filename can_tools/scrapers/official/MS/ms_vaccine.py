@@ -46,7 +46,7 @@ class MSCountyVaccine(StateDashboard):
         data = self._rename_or_add_date_and_location(
             data,
             location_name_column="County of Residence",
-            location_names_to_drop=["Total"],
+            location_names_to_drop=["Total", "Out of State"],
             timezone="US/Central",
         )
         data = self._reshape_variables(data, self.variable_map)

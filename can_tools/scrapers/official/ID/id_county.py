@@ -1,8 +1,8 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers import variables
+from can_tools.scrapers.official.base import TableauDashboard
 
 
 class IdahoCountyVaccine(TableauDashboard):
@@ -13,7 +13,8 @@ class IdahoCountyVaccine(TableauDashboard):
     data_tableau_table = "Vax Rate / County Chart"
     baseurl = "https://public.tableau.com"
     viewPath = "COVID-19VaccineDataDashboard/VaccineUptake"
-
+    filterFunctionName = "[Parameters].[Map (copy)]"
+    filterFunctionValue = "County"
     state_fips = int(us.states.lookup("Idaho").fips)
 
     variables = {

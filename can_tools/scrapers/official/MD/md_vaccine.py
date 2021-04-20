@@ -18,7 +18,6 @@ class MarylandCountyVaccines(ArcGIS, DatasetBase):
 
     variables = {
         "firstdose": variables.INITIATING_VACCINATIONS_ALL,
-        "percentfullyvaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         "fullyvaccinated": variables.FULLY_VACCINATED_ALL,
     }
 

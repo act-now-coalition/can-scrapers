@@ -3,7 +3,9 @@ all,all,all,all
 0-9,all,all,all
 0-5,all,all,all
 0-10,all,all,all
-0-19,all,all,all
+0-19,all,all,
+0-20,all,all,all
+5-17,all,all,all
 5-9,all,all,all
 10-19,all,all,all
 10-14,all,all,all
@@ -20,6 +22,7 @@ all,all,all,all
 16-49,all,all,all
 16-54,all,all,all
 18-24,all,all,all
+18-29,all,all,all
 18_plus,all,all,all
 20-24,all,all,all
 20-29,all,all,all
@@ -28,6 +31,7 @@ all,all,all,all
 20-29,all,all,unknown
 20-44,all,all,all
 20-34,all,all,all
+20-44,all,all,all
 21-30,all,all,all
 25-29,all,all,all
 25-34,all,all,all
@@ -39,6 +43,7 @@ all,all,all,all
 31-40,all,all,all
 35-39,all,all,all
 35-44,all,all,all
+35-54,all,all,all
 40-44,all,all,all
 40-49,all,all,all
 40-49,all,all,female
@@ -57,6 +62,7 @@ all,all,all,all
 51-60,all,all,all
 55-59,all,all,all
 55-64,all,all,all
+55-74,all,all,all
 60-64,all,all,all
 60-69,all,all,all
 61-70,all,all,all
@@ -72,6 +78,7 @@ all,all,all,all
 65_plus,all,all,all
 70-74,all,all,all
 70-79,all,all,all
+70_plus,all,all,all
 71-80,all,all,all
 75-79,all,all,all
 75-84,all,all,all
@@ -123,6 +130,8 @@ all,pacific_islander,all,all
 all,pacific_islander,hispanic,all
 all,pacific_islander,non-hispanic,all
 all,pacific_islander,unknown,all
+all,latino,all,all
+all,asian_or_pacific_islander,all,all
 all,unknown,all,all
 all,unknown,hispanic,all
 all,unknown,non-hispanic,all
