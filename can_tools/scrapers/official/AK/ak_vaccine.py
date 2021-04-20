@@ -137,6 +137,8 @@ class AlaskaCountyVaccine(ArcGIS):
 
 
 class AlaskaVaccineDemographics(AlaskaCountyVaccine):
+    has_location = True
+
     def _get_by_sex(self, df):
         keep = df[["dt", "dose_num", "fips", "sex", "objectid"]]
         count_per_day = (
@@ -183,7 +185,6 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         out = unstacked.reset_index()
         out = self._fix_fips(out)
         out = out.replace(np.nan, 0)
-
         return out
 
     def _get_by_ethnicity(self, df):
@@ -247,6 +248,7 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
 
         sex_total = self._melt(sex, "sex")
         age_total = self._melt(age, "age")
+        age_total.age = age_total.age.str.replace("+", "_plus")
         out = pd.concat([sex_total, age_total])
-
-        return out
+        locs_to_drop = [2000, 2270]
+        return out.query("location not in @locs_to_drop")
