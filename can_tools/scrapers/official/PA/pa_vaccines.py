@@ -318,8 +318,10 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         out["vintage"] = self._retrieve_vintage()
         out.loc[:, "location_type"] = "county"
         out.loc[:, "location_type"] = out.loc[:, "location_type"].where(
-            out.loc[:, "location_name"] != "Pennsylvania", "state"
+            out.loc[:, "location_name"] != "Pennsylvania",
+            "state",
         )
+
         cols_to_keep = [
             "vintage",
             "dt",
