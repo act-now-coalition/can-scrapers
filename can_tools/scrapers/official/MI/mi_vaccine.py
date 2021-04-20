@@ -117,3 +117,141 @@ class MichiganVaccineCounty(StateDashboard):
             .pipe(self.extract_CMU, cmu=cmus)  # extract CMUs
             .drop(["variable"], axis=1)  # drop variable
         )
+
+
+class MichiganVaccineCountyDemographics(MichiganVaccineCounty):
+    variables = {
+        "janssen_vaccine_completed": CMU(
+            category="janssen_vaccine_completed", unit="people", measurement="new"
+        ),
+        "moderna_vaccine_completed": CMU(
+            category="moderna_vaccine_completed", unit="people", measurement="new"
+        ),
+        "moderna_vaccine_initiated": CMU(
+            category="moderna_vaccine_initiated", unit="people", measurement="new"
+        ),
+        "pfizer_vaccine_completed": CMU(
+            category="pfizer_vaccine_completed", unit="people", measurement="new"
+        ),
+        "pfizer_vaccine_initiated": CMU(
+            category="pfizer_vaccine_initiated", unit="people", measurement="new"
+        ),
+    }
+
+    def fetch(self):
+        return pd.read_excel(self.url, sheet_name="Doses Administered Demographics")
+
+    def _clean_columns(self, df):
+        df.Sex = df.Sex.replace("F", "female")
+        df.Sex = df.Sex.replace("M", "male")
+        df.Sex = df.Sex.replace("U", "unknown")
+        df["Age Group"] = df["Age Group"].str.replace(" years", "")
+        df["Age Group"] = df["Age Group"].str.replace("+", "_plus")
+        return df
+
+    def _pivot(self, df):
+        out = df.pivot_table(
+            columns=["Dose Number"],
+            values="Doses Administered",
+            index=["location_name", "Sex", "Age Group", "dt"],
+            aggfunc=sum,
+        ).rename_axis(None, axis=1)
+        return out
+
+    def _normalize_janssen(self, gb):
+        df = gb.get_group(("J&J", "First Dose"))
+
+        df["Dose Number"] = df["Dose Number"].str.replace(
+            "First Dose", "janssen_vaccine_completed"
+        )
+        return df
+
+    def _normalize_two_dose(self, gb):
+        pfi1 = gb.get_group(("Pfizer", "First Dose"))
+        pfi2 = gb.get_group(("Pfizer", "Second Dose"))
+        mod1 = gb.get_group(("Moderna", "First Dose"))
+        mod2 = gb.get_group(("Moderna", "Second Dose"))
+
+        pfi1["Dose Number"] = pfi1["Dose Number"].str.replace(
+            "First Dose", "pfizer_vaccine_initiated"
+        )
+        pfi2["Dose Number"] = pfi2["Dose Number"].str.replace(
+            "Second Dose", "pfizer_vaccine_completed"
+        )
+        mod1["Dose Number"] = mod1["Dose Number"].str.replace(
+            "First Dose", "moderna_vaccine_initiated"
+        )
+        mod2["Dose Number"] = mod2["Dose Number"].str.replace(
+            "Second Dose", "moderna_vaccine_completed"
+        )
+        return pd.concat([pfi1, pfi2, mod1, mod2])
+
+    def normalize(self, data):
+        df = self._rename_or_add_date_and_location(
+            data,
+            location_name_column="Person's Residence in County",
+            date_column="Week Ending Date",
+        ).drop(
+            columns=[
+                "Person's Residence in Preparedness Region",
+                "Person's Residence in Local Health Department Jurisdiction",
+            ]
+        )
+        df = self._clean_columns(df)
+        gbv = df.groupby(["Vaccine Type", "Dose Number"])
+        two_dose = self._normalize_two_dose(gbv)
+        jan = self._normalize_janssen(gbv)
+
+        out = (
+            pd.concat([two_dose, jan])
+            .fillna(0)
+            .reset_index()
+            .rename(
+                columns={
+                    "Sex": "sex",
+                    "Age Group": "age",
+                    "Dose Number": "variable",
+                    "Doses Administered": "value",
+                }
+            )
+        )
+
+        out = self.extract_CMU(
+            out,
+            self.variables,
+            columns=[
+                "measurement",
+                "unit",
+                "race",
+                "ethnicity",
+            ],
+        )
+        out["category"] = "vaccine"
+
+        out["last_updated"] = self._retrieve_vintage()
+        out["vintage"] = self._retrieve_vintage()
+        locs_to_remove = ["No County", "Non-Michigan Resident"]
+        cols = [
+            "location_name",
+            "dt",
+            "sex",
+            "age",
+            "race",
+            "ethnicity",
+            "variable",
+            "measurement",
+            "unit",
+            "value",
+            "last_updated",
+            "vintage",
+        ]
+        out = out.query("location_name not in @locs_to_remove")[cols]
+        out = out.rename(columns={"variable": "category"})
+
+        # combine Wayne county and Detroit records
+        # combine rows that have every variable matching except value
+        # rename Detroit entries to Wayne so that the rows we want get combined
+        group_by = [c for c in out.columns if c not in ["value"]]
+        out = out.replace("Detroit", "Wayne")
+        out = out.groupby(group_by, as_index=False).aggregate({"value": "sum"})
+        return out
