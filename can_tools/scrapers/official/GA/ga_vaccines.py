@@ -182,12 +182,12 @@ class GeorgiaCountyVaccineRace(GeorgiaCountyVaccineAge):
             unit="people",
             race="black",
         ),
-        "2076-8": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="white",
-        ),
+        # "2076-8": CMU(
+        #     category="total_vaccine_initiated",
+        #     measurement="cumulative",
+        #     unit="people",
+        #     race="white",
+        # ),
         "2106-3": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",

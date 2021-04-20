@@ -688,6 +688,13 @@ class TableauDashboard(StateDashboard, ABC):
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
             params += self.filterFunctionName + "=" + self.filterFunctionValue
+            if self.secondaryFilterFunctionName is not None:
+                params += (
+                    "&"
+                    + self.secondaryFilterFunctionName
+                    + "="
+                    + self.secondaryFilterValue.replace(" ", "%20")
+                )
             reqg = req.get(fullURL, params=params)
         else:
             reqg = req.get(
