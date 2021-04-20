@@ -18,13 +18,12 @@ class ALCountyVaccine(ArcGIS):
     variables = {
         "PERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
         "PERSONCVAX": variables.FULLY_VACCINATED_ALL,
-        "NADMIN": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "NADMIN_RES": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
-    service = "Vax_Dashboard_Public_3_VIEW"
+    service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
     sheet = 1
 
     def fetch(self):
-        service = "Vax_Dashboard_Public_3_VIEW"
         return self.get_all_jsons(self.service, self.sheet, "7")
 
     def normalize(self, data):
