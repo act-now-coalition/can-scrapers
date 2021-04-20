@@ -11,7 +11,9 @@ class AlaskaCountyVaccine(ArcGIS):
     has_location = True
     location_type = "county"
     source = "https://alaska-coronavirus-vaccine-outreach-alaska-dhss.hub.arcgis.com/app/c74be37e02b44bb8b8b40515eabbab55"
-    source_name = "Alaska Department of Health and Social Services Coronavirus Response Hub"
+    source_name = (
+        "Alaska Department of Health and Social Services Coronavirus Response Hub"
+    )
     service = "Vaccine_Dashboard_PROD"
     ARCGIS_ID = "WzFsmainVTuD5KML"
     state_fips = int(us.states.lookup("Alaska").fips)
@@ -22,7 +24,6 @@ class AlaskaCountyVaccine(ArcGIS):
             measurement="new",
             unit="people",
         ),
-
         "vaccine_completed": CMU(
             category="total_vaccine_completed",
             measurement="new",
@@ -33,7 +34,6 @@ class AlaskaCountyVaccine(ArcGIS):
         #     measurement="cumulative",
         #     unit="people",
         # ),
-
         # "vaccine_completed_sum": CMU(
         #     category="total_vaccine_completed",
         #     measurement="cumulative",
@@ -47,15 +47,15 @@ class AlaskaCountyVaccine(ArcGIS):
     def _fix_fips(self, df):
         out = df
         out.fips = str(self.state_fips) + out.fips
-        out.fips = pd.to_numeric(out.fips, errors='coerce')
+        out.fips = pd.to_numeric(out.fips, errors="coerce")
         return df
 
     def _get_total_doses_administered_by_day(self, df):
-        keep = df[["dt", "dose_num", "fips", "primarykeyid"]]
+        keep = df[["dt", "dose_num", "fips", "objectid"]]
         count_per_day = (
             keep.groupby(["dt", "fips", "dose_num"])
             .count()
-            .rename(columns={"primarykeyid": "count"})
+            .rename(columns={"objectid": "count"})
         )
         initiated = self._get_total_initiated_by_day(count_per_day)
         completed = self._get_total_completed_by_day(count_per_day)
@@ -76,7 +76,7 @@ class AlaskaCountyVaccine(ArcGIS):
         )
         out = self._fix_fips(out)
         return out.dropna()
-    
+
     def _get_total_initiated_by_day(self, df):
         # Get a cumsum of all rows where dose_num == 1
         initiated = (
@@ -107,7 +107,7 @@ class AlaskaCountyVaccine(ArcGIS):
                 "DATA_DT": "dt",
                 "VAX_SERIES_COMPLETE": "fully_vaccinated",
                 "REGION_NUM": "region",
-                "BOROUGH_FIPS": "fips"
+                "BOROUGH_FIPS": "fips",
             }
         )
         df.columns = df.columns.str.lower()
@@ -118,49 +118,44 @@ class AlaskaCountyVaccine(ArcGIS):
     def normalize(self, data):
         df = self._rename_and_prep(data)
         totals = self._get_total_doses_administered_by_day(df)
-        
+
         # drop "other" for now
         totals = totals.drop(columns={"vaccine_other"})
         # melt daily/new data to long form
+        out = totals.melt(
+            id_vars=["fips", "dt"], value_vars=self.variables.keys()
+        ).dropna()
+
         out = (
-            totals.melt(id_vars=["fips", "dt"], value_vars=self.variables.keys())
-            .dropna()
-        )
-        
-        out = (out.pipe(self.extract_CMU, cmu=self.variables)
-            .assign(
-                vintage=self._retrieve_vintage(),
-                dt=out['dt'].dt.date
-            )
+            out.pipe(self.extract_CMU, cmu=self.variables)
+            .assign(vintage=self._retrieve_vintage(), dt=out["dt"].dt.date)
             .drop(["variable"], axis=1)
         )
-        out = out.rename(columns={'fips':'location'})
+        out = out.rename(columns={"fips": "location"})
         out = out.query("location != 2000").replace(2270, 2158)
         return out
 
 
 class AlaskaVaccineDemographics(AlaskaCountyVaccine):
-
     def _get_by_sex(self, df):
-        keep = df[["dt", "dose_num", "fips", "sex", 'primarykeyid']]
+        keep = df[["dt", "dose_num", "fips", "sex", "objectid"]]
         count_per_day = (
-            keep.groupby(["dt", "fips", "dose_num", 'sex'])
+            keep.groupby(["dt", "fips", "dose_num", "sex"])
             .count()
-            .rename(columns={"primarykeyid": "count"})
+            .rename(columns={"objectid": "count"})
         )
         unstacked = count_per_day.unstack().unstack()
         # Fix column names
         unstacked.columns = [
             z.replace("count--", "")
-                .replace('F', 'female')
-                .replace("M", "male")
-                .replace("U", "unknown")
-                .replace('--1', ":vaccine_initiated")
-                .replace("--2", ":vaccine_completed")
-                .replace("--3", ":dose_unknown")
+            .replace("F", "female")
+            .replace("M", "male")
+            .replace("U", "unknown")
+            .replace("--1", ":vaccine_initiated")
+            .replace("--2", ":vaccine_completed")
+            .replace("--3", ":dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
-        
 
         out = unstacked.reset_index()
         out = self._fix_fips(out)
@@ -168,23 +163,22 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         return out
 
     def _get_by_age(self, df):
-        keep = df[["dt", "dose_num", "fips", "age_bracket", 'primarykeyid']]
+        keep = df[["dt", "dose_num", "fips", "age_bracket", "objectid"]]
         count_per_day = (
-            keep.groupby(["dt", "fips", "dose_num", 'age_bracket'])
+            keep.groupby(["dt", "fips", "dose_num", "age_bracket"])
             .count()
-            .rename(columns={"primarykeyid": "count"})
+            .rename(columns={"objectid": "count"})
         )
         unstacked = count_per_day.unstack().unstack()
         # Fix column names
         unstacked.columns = [
             z.replace("count--", "")
-                .replace('Age Bracket - ', '')
-                .replace('--1', ":vaccine_initiated")
-                .replace("--2", ":vaccine_completed")
-                .replace("--3", ":dose_unknown")
+            .replace("Age Bracket - ", "")
+            .replace("--1", ":vaccine_initiated")
+            .replace("--2", ":vaccine_completed")
+            .replace("--3", ":dose_unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
-        
 
         out = unstacked.reset_index()
         out = self._fix_fips(out)
@@ -193,24 +187,24 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         return out
 
     def _get_by_ethnicity(self, df):
-        keep = df[["dt", "dose_num", "fips", "ethnicity", 'primarykeyid']]
+        keep = df[["dt", "dose_num", "fips", "ethnicity", "objectid"]]
         count_per_day = (
-            keep.groupby(["dt", "fips", "dose_num", 'ethnicity'])
+            keep.groupby(["dt", "fips", "dose_num", "ethnicity"])
             .count()
-            .rename(columns={"primarykeyid": "count"})
+            .rename(columns={"objectid": "count"})
         )
         unstacked = count_per_day.unstack().unstack()
         # Fix column names
         unstacked.columns = [
             z.replace("count--", "")
-                .replace('ethnicity ', '')
-                .replace('--1', ":vaccine_initiated")
-                .replace("--2", ":vaccine_completed")
-                .replace("--3", ":dose_unknown")
-                # Confirmed enthnicities by matching numbers on dashboard
-                .replace("2135-2", "hispanic")
-                .replace("2186-5", "non-hispanic")
-                .replace("UNK", "unknown")
+            .replace("ethnicity ", "")
+            .replace("--1", ":vaccine_initiated")
+            .replace("--2", ":vaccine_completed")
+            .replace("--3", ":dose_unknown")
+            # Confirmed enthnicities by matching numbers on dashboard
+            .replace("2135-2", "hispanic")
+            .replace("2186-5", "non-hispanic")
+            .replace("UNK", "unknown")
             for z in ["--".join(str(y) for y in x) for x in unstacked.columns.values]
         ]
 
@@ -229,35 +223,30 @@ class AlaskaVaccineDemographics(AlaskaCountyVaccine):
         """
 
         # use all cols except date and location as value vars for pivot
-        val_vars = [e for e in list(df.columns) if e not in ('dt', 'fips')]
-        out = (
-            df.melt(id_vars=["fips", "dt"], value_vars=val_vars)
-            .dropna()
-        )
+        val_vars = [e for e in list(df.columns) if e not in ("dt", "fips")]
+        out = df.melt(id_vars=["fips", "dt"], value_vars=val_vars).dropna()
 
         # split variable column name (in form of demo:variable) into two columns -- one for the variable one for the demographic value
-        out[['temp_demo', 'variable']] = out['variable'].str.split(":",expand=True)
-        
-        # TEMP: remove unknown vals
-        out = out[out['variable'] != 'dose_unknown']
+        out[["temp_demo", "variable"]] = out["variable"].str.split(":", expand=True)
 
-        out = (out.pipe(self.extract_CMU, cmu=self.variables)
-            .assign(
-                vintage=self._retrieve_vintage(),
-                dt=out['dt'].dt.date
-            )
+        # TEMP: remove unknown vals
+        out = out[out["variable"] != "dose_unknown"]
+
+        out = (
+            out.pipe(self.extract_CMU, cmu=self.variables)
+            .assign(vintage=self._retrieve_vintage(), dt=out["dt"].dt.date)
             .drop(["variable"], axis=1)
         )
-        out[demo] = out['temp_demo']
-        return out.drop(columns={'temp_demo'}).rename(columns={"fips":"location"})
+        out[demo] = out["temp_demo"]
+        return out.drop(columns={"temp_demo"}).rename(columns={"fips": "location"})
 
     def normalize(self, data):
         df = self._rename_and_prep(data)
         sex = self._get_by_sex(df)
         age = self._get_by_age(df)
 
-        sex_total = self._melt(sex, 'sex')
-        age_total = self._melt(age, 'age')
+        sex_total = self._melt(sex, "sex")
+        age_total = self._melt(age, "age")
         out = pd.concat([sex_total, age_total])
 
         return out
