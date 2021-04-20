@@ -47,7 +47,7 @@ class WisconsinVaccineCounty(TableauDashboard):
                 }
             )
             .query(
-                "`Measure Names-alias` in ['Completed Series (#)', 'At Least One Dose (#)'] and location_name != 'Unknown'"
+                "`Measure Names-alias` in @self.cmus.keys() and location_name != 'Unknown'"
             )
             .rename(
                 columns={
