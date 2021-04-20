@@ -169,7 +169,12 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
             "value",
         ]
 
-        return out.loc[:, cols_to_keep]
+        res = out.loc[:, cols_to_keep]
+
+        # This scraper reports incorrect values for Philadelhpia county
+        # The PhiladelhpiaVaccine scraper now handles it's data
+        # Remove all Philadelphia county rows
+        return res.loc[res.location_name != "Philadelphia"]
 
 
 class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
@@ -318,8 +323,10 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         out["vintage"] = self._retrieve_vintage()
         out.loc[:, "location_type"] = "county"
         out.loc[:, "location_type"] = out.loc[:, "location_type"].where(
-            out.loc[:, "location_name"] != "Pennsylvania", "state"
+            out.loc[:, "location_name"] != "Pennsylvania",
+            "state",
         )
+
         cols_to_keep = [
             "vintage",
             "dt",
@@ -408,7 +415,12 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
             "ethnicity",
         ]
         categories.remove(self.demographic)
-        return self.normalize_postprocess(df, categories, crename)
+        res = self.normalize_postprocess(df, categories, crename)
+
+        # This scraper reports incorrect values for Philadelhpia county
+        # The PhiladelhpiaVaccine scraper now handles it's data
+        # Remove all Philadelphia county rows
+        return res.loc[df.location_name != "Philadelphia"]
 
 
 class PennsylvaniaVaccineAge(PennsylvaniaVaccineDemographics):
