@@ -15,3 +15,4 @@ libraries
    installation
    structure
    writing_scrapers
+   faq

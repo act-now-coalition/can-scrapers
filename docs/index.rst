@@ -5,7 +5,7 @@ This documentation is intended for developers who wish to contribute to the
 CovidActNow (CAN) data engineering effort. The main goal of the CAN data
 engineering team is identify, collect, and distribute high-integrity COVID-19
 data for all US counties. The main metrics of importance are cases, deaths,
-testing statistics, and hospitalizations.
+testing statistics, hospitalizations, and vaccinations.
 
 The efforts of the data engineering team are roughly split into two categories:
 

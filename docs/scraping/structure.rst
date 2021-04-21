@@ -11,10 +11,10 @@ Organization
 The scrapers are organized in a few sub-directories of ``can_tools/scrapers``:
 
 - ``official/``: these contain data from official federal, state, or county government websites (including health departments, CDC, HHS, etc.).
-    - Scrapers targeting a state level dashboard are put in ``official/XX`` where ``XX`` is the two letter state abbreviation (for example ``official/NM`` for New Mexico)
+    - Scrapers targeting a state level dashboard are put in ``official/XX`` where ``XX`` is the two letter state abbreviation (for example ``official/NM/nm_vaccine.py`` for a scraper collecting vaccine data for counties in the state of New Mexico)
     - Scrapers for a specific county are organized into ``official/XX/counties`` directory. For example ``official/XX/counties/la_county_vaccine.py`` might have a scraper that scrapes vaccine data from the Los Angeles county dashboard
 - ``usafacts/``: scrapers for the county-level data provided by usafacts
-- ``uscensus``: scrapers that obtain demographic data from the US Census
+- ``uscensus/``: scrapers that obtain demographic data from the US Census
 
 Class Hierarchy
 ---------------
@@ -37,8 +37,6 @@ DatasetBase
 *************
 
 Each scraper must be a subclass of the core ``DatasetBase`` class.
-
-
 
 The ``DatasetBase`` class is defined in ``can_tools/scrapers/base.py`` and does a number of things:
 
@@ -68,7 +66,7 @@ The majority of our scrapers collect data from a state maintained dashboard
 The ``StateDashboard`` class (defined in ``can_tools/scrapers/official/base.py``) adds some tools to make getting data from these sources easier:
 
 - Defines ``table``, ``provider``, and ``data_type`` class attributes
-- Methods ``put`` and ``_put_exec``: the code needed to push data to the database. Note, this means that none of our scraper classes (at the bottom of the hierarchy like ``NewJerseyVaccineCounty`` need to worry about database interactions)
+- Methods ``put`` and ``_put_exec``: the code needed to push data to the database. Note, this means that none of our scraper classes (at the bottom of the hierarchy like ``NewJerseyVaccineCounty``) need to worry about database interactions
 - Methods ``_rename_or_add_date_and_location`` and ``_reshape_variables``: tools for cleaning data (see below)
 
 .. autofunction:: can_tools.scrapers.official.base.StateDashboard._rename_or_add_date_and_location
