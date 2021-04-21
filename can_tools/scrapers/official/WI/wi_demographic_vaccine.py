@@ -1,10 +1,15 @@
 import pandas as pd
 import us
-
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
-
+from can_tools.scrapers.util import requests_retry_session
+from bs4 import BeautifulSoup
+import json
+from urllib.parse import parse_qs, urlparse
+import urllib.parse
+import re
+import requests
+from can_tools.scrapers import variables, CMU
 
 class WisconsinVaccineAge(WisconsinVaccineCounty):
     data_tableau_table = "Age vax/unvax County"
@@ -21,6 +26,7 @@ class WisconsinVaccineAge(WisconsinVaccineCounty):
             unit="people",
         )
     }
+
 
     def _get_demographic(
         self, df: pd.DataFrame, demo: str, demo_col_name: str
@@ -112,4 +118,111 @@ class WisconsinVaccineEthnicity(WisconsinVaccineAge):
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = self._get_demographic(df, "ethnicity", "Ethnicity-value")
         df["ethnicity"] = df["ethnicity"].str.lower()
+        return df
+
+class WisconsinVaccineCountyDemographics(WisconsinVaccineCounty):
+
+    variables = {
+        "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
+    }
+
+    def fetch(self):
+        """
+        make initial request (to open connection + get session id)
+        """
+        req = requests_retry_session()
+        fullURL = self.baseurl + "/views/" + self.viewPath
+        reqg = req.get(
+                fullURL,
+                params={
+                    ":language": "en",
+                    ":display_count": "y",
+                    ":origin": "viz_share_link",
+                    ":embed": "y",
+                    ":showVizHome": "n",
+                    ":jsdebug": "y",
+                    ":apiID": "host4",
+                    "#navType": "1",
+                    "navSrc": "Parse",
+                },
+                headers={"Accept": "text/javascript"},
+        )
+        soup = BeautifulSoup(reqg.text, "html.parser")
+        tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
+        tableauData = json.loads(tableauTag.text)
+        parsed_url = urllib.parse.urlparse(fullURL)
+        dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+        r = requests.post(dataUrl, data= {
+            "sheet_id": tableauData["sheetId"],
+        })
+
+        """
+        find county locations on dashboard + their index
+        the order of the counties is important, as this is the order that the data is stored/returned 
+        (see loops below)
+        """  
+        dataReg = re.search('\d+;({.*})\d+;({.*})', r.text, re.MULTILINE)
+        info = json.loads(dataReg.group(1))
+        data = json.loads(dataReg.group(2))
+
+        # "Map" and "[Calculation_328762828852510720]" are dashboard specific
+        # document how to find these
+        stateIndexInfo = [ 
+            (t["fieldRole"], {
+                "paneIndices": t["paneIndices"][0], 
+                "columnIndices": t["columnIndices"][0], 
+                "dataType": t["dataType"]
+            }) 
+            for t in data["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"]["genPresModelMapPresModel"]["presModelMap"]["Map"]["presModelHolder"]["genVizDataPresModel"]["paneColumnsData"]["vizDataColumns"]
+            if t.get("localBaseColumnName") and t["localBaseColumnName"] == "[Calculation_328762828852510720]"
+        ]
+        stateNameIndexInfo = [t[1] for t in stateIndexInfo if t[0] == 'dimension'][0]
+        panelColumnList = data["secondaryInfo"]["presModelMap"]["vizData"]["presModelHolder"]["genPresModelMapPresModel"]["presModelMap"]["Map"]["presModelHolder"]["genVizDataPresModel"]["paneColumnsData"]["paneColumnsList"]
+        stateNameIndices = panelColumnList[stateNameIndexInfo["paneIndices"]]["vizPaneColumns"][stateNameIndexInfo["columnIndices"]]["valueIndices"]
+        dataValues = [
+            t for t in data["secondaryInfo"]["presModelMap"]["dataDictionary"]["presModelHolder"]["genDataDictionaryPresModel"]["dataSegments"]["0"]["dataColumns"]
+            if t["dataType"] == stateNameIndexInfo["dataType"]
+        ][0]["dataValues"]
+        countyNames = [dataValues[t] for t in stateNameIndices]
+
+        """
+        simulate "selection" request for each county -- extract data and store in list.
+
+        If it's possible to return multiple counties in one call, we should do that to be more efficient.
+        But, this works
+        """
+        county_data = []
+        for i, name in enumerate(countyNames):
+            if i == 3:
+                break
+            r = requests.post(f'https://bi.wisconsin.gov{tableauData["vizql_root"]}/sessions/{tableauData["sessionid"]}/commands/tabdoc/select',
+                data = {
+                "worksheet": "Map",
+                "dashboard": "VaccinatedWisconsin-County",
+                "selection": json.dumps({
+                    "objectIds":[i+1],
+                    "selectionType":"tuples"
+                }),
+                "selectOptions": "select-options-simple"
+            })
+            #isolate covid data
+            dataSegments = r.json()["vqlCmdResponse"]["layoutStatus"]["applicationPresModel"]["dataDictionary"]["dataSegments"]
+            d = dataSegments[list(dataSegments.keys())[0]]["dataColumns"][0]['dataValues']
+            # add name to start of list
+            d.insert(0, name)
+            county_data.append(list(d))
+        
+        return county_data
+
+    
+    def normalize(self, data):
+        age = self._handle_demographic(data, [1,8], 'total_vaccine_initiated', 'age')
+        return age
+
+    def _handle_demographic(self, data, idx:list, category:str, demographic:str):
+        data = [d[0:1] + d[idx[0]:idx[1]] for d in data]
+        df = pd.DataFrame(data, columns = ['location_name', '65+', '55-64', '45-54','35-44','25-34','18-24','16-17'])
+        df = df.melt(id_vars=["location_name"], var_name='demo_val')
+        df['variable'] = category
+        df = self.extract_CMU(df, self.variables).drop(columns={'age'}).rename(columns={'demo_val':demographic})
         return df
