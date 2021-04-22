@@ -58,3 +58,29 @@ class CDCUSAVaccine(FederalDashboard):
             )
             .drop("variable", axis="columns")
         )
+
+
+def one_time_backfill():
+    df = pd.read_csv(
+        "/home/sglyon/Downloads/trends_in_number_of_covid19_vaccinations_in_the_us.csv",
+        skiprows=2,
+    )
+    filtered = df.loc[(df["Date Type"] == "Admin") & (df["Program"] == "US")]
+    variable_map = {
+        "People with at least One Dose Cumulative": variables.INITIATING_VACCINATIONS_ALL,
+        "People Fully Vaccinated Cumulative": variables.FULLY_VACCINATED_ALL,
+    }
+
+    d = CDCUSAVaccine()
+    cols = list(variable_map.keys()) + ["Date"]
+    df = (
+        filtered.loc[:, cols]
+        .assign(location=0)
+        .pipe(
+            d._rename_or_add_date_and_location,
+            location_column="location",
+            date_column="Date",
+        )
+        .pipe(d._reshape_variables, variable_map)
+    )
+    return df
