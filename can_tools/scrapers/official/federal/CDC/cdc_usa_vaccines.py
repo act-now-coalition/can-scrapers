@@ -24,11 +24,11 @@ class CDCUSAVaccine(FederalDashboard):
         async with with_page(headless=headless) as page:
             await page.goto(self.source)
             fullyvac = await page.waitForXPath(
-                r'//*[@id="vaccinations-banner-wrapper"]/div[1]/div/div[2]/div/div/div[2]/div[2]/div'
+                r'//*[@id="vaccinations-banner-wrapper"]/div[1]/div/div[2]/div/div/div[2]/div[3]/div'
             )
 
             atleastone = await page.waitForXPath(
-                r'//*[@id="vaccinations-banner-wrapper"]/div[1]/div/div[2]/div/div/div[2]/div[3]/div'
+                r'//*[@id="vaccinations-banner-wrapper"]/div[1]/div/div[2]/div/div/div[2]/div[2]/div'
             )
             func = "(x) => x.textContent"
             out = {
