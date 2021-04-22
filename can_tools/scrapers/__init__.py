@@ -36,6 +36,7 @@ from can_tools.scrapers.official.federal.CDC.cdc_county_vaccines import CDCCount
 from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
     CDCVariantTracker,
 )
+from can_tools.scrapers.official.federal.CDC.cdc_usa_vaccines import CDCUSAVaccine
 from can_tools.scrapers.official.federal.HHS.facility import (
     HHSReportedPatientImpactHospitalCapacityFacility,
 )
