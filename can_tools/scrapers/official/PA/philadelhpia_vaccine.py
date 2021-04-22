@@ -11,7 +11,7 @@ class PhiladelphaVaccine(CountyDashboard):
     state_fips = int(states.lookup("Pennsylvania").fips)
     has_location = True
     location_type = "county"
-    source = "https://www.opendataphilly.org/dataset/covid-vaccinations"
+    source = "https://www.phila.gov/programs/coronavirus-disease-2019-covid-19/data/vaccine/"
     source_name = "Philadelphia Department of Public Health"
 
     url = "https://healthviz.phila.gov/t/PublicHealth/views/COVIDVaccineDashboard/COVID_Vaccine?:embed=y&:showVizHome=no&:host_url=https%3A%2F%2Fhealthviz.phila.gov%2F&:embed_code_version=3&:tabs=no&:toolbar=no&:alerts=no&:showShareOptions=false&:showAskData=false&:showAppBanner=false&:isGuestRedirectFromVizportal=y&:display_spinner=no&:loadOrderID=0"
