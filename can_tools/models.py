@@ -463,6 +463,18 @@ def bootstrap(
 def create_dev_engine(
     verbose: bool = True, path: str = "/:memory:"
 ) -> Tuple[Engine, sessionmaker]:
+    """Create an in memory sqlite version of the CAN database for testing
+
+    Args:
+        verbose (bool, optional): Whether or not to print all executed
+                                  SQL statements to stdout. Defaults to True.
+        path (str, optional): Path or location for sqlite database.
+                              Defaults to "/:memory:", which means the database
+                              will live in the Python session memory
+
+    Returns:
+        Tuple[Engine, sessionmaker]: SQLAlchemy engine and sessionmaker instance
+    """
     engine = sa.create_engine(
         f"sqlite://{path}",
         echo=verbose,

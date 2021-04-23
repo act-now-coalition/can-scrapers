@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -166,7 +166,7 @@ class WisconsinArcGIS(ArcGIS, ABC):
         return out.loc[:, cols_to_keep]
 
 
-class WisconsinCounties(WisconsinArcGIS, DatasetBase):
+class WisconsinCounties(WisconsinArcGIS):
     """
     Fetch county-level covid data from Wisconsin's ARCGIS dashboard
     """
@@ -178,7 +178,7 @@ class WisconsinCounties(WisconsinArcGIS, DatasetBase):
         return df["geoid"].astype(int)
 
 
-class WisconsinState(WisconsinArcGIS, DatasetBase):
+class WisconsinState(WisconsinArcGIS):
     """
     Fetch state-level covid data from Wisconsin's ARCGIS dashboard
     Includes demographic breakdowns

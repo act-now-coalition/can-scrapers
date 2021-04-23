@@ -47,6 +47,11 @@ class StateDashboard(DatasetBase, ABC):
         Must be set by subclasses. True if location code (fips code) appears in data
     state_fips: int
         Must be set by subclasses. The two digit state fips code (as an int)
+    source: str
+        Must be set by subclasses. URL pointing to dashboard
+    source_name: str
+        Must be set by subclasses. Name of entity managing dataset, e.g.
+        "New York State Department of Health"
 
     """
 

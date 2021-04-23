@@ -46,3 +46,52 @@ for working on this project
 You can test your setup by running some of the tests.
 
 For example, to run the tests for the `Massachusetts` run `$ pytest -v -k Mass .`
+
+
+### Optional Steps
+
+Below are a few optional steps/tips that we've found help us be more efficient in our development process
+
+#### Setup IPython profile
+
+I (Spencer) often work with a text editor and IPython terminal. It is my happy place
+
+To make things a bit more convenient when working on this project, I created a custom ipython-profile specifically for the can-scrapers conda environment
+
+This custom ipython-profile does a few things:
+
+- Imports common third-party packages like pandas and sqlalchemy
+- Sets up a dev sqlite3 database and engine, bootstrapping it with all the metadata tables from `can_tools/bootstrap/*.csv` files
+- Imports all scrapers
+- Sets up autoreload so when I make an edit in my text editor, code is refreshed and I can simply re-execute corresponding method or function
+
+Here's how I did it using conda on a unix based system (MacOS or Linux)
+
+```sh
+conda activate can-scrapers
+cd $CONDA_PREFIX
+mkdir -p ./etc/conda/activate.d
+mkdir -p ./etc/conda/deactivate.d
+touch ./etc/conda/activate.d/env_vars.sh && echo 'alias ipython="ipython --profile=can_scrapers"' >> ./etc/conda/activate.d/env_vars.sh
+touch ./etc/conda/deactivate.d/env_vars.sh && echo 'unalias ipython' >> ./etc/conda/deactivate.d/env_vars.sh
+```
+
+I also created a file at `~/.ipython/profile_can_scrapers/ipython_config.py` with the following contents:
+
+```python
+c.InteractiveShellApp.exec_lines = [
+    r"%autoreload 2",
+    "import pandas as pd",
+    "import sqlalchemy as sa",
+    "import requests",
+    "from can_tools.scrapers import *",
+    "from can_tools.models import create_dev_engine, CovidObservation, Base, bootstrap, _bootstrap_csv_to_orm, CovidProvider, TemptableOfficialHasLocation, build_insert_from_temp",
+    "engine, Session = create_dev_engine(verbose=False)",
+]
+
+c.TerminalIPythonApp.extensions = ["autoreload"]
+```
+
+Now when I activate my conda environment with `conda activate can-scrapers` and then start an ipython session with `ipython` all the code in `c.InteractiveShellApp.exec_lines` is automatically executed
+
+If you want to customize or change what is run upon start of IPython, modify the lines of code in `c.InteractiveShellApp.exec_lines`

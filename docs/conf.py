@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "CAN Scrapers"
-copyright = "2020, CAN Developers"
+copyright = "2020-2021, CAN Developers"
 author = "CAN Developers"
 
 
@@ -30,6 +30,8 @@ author = "CAN Developers"
 extensions = [
     "sphinx.ext.autodoc",
     "recommonmark",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosectionlabel",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
