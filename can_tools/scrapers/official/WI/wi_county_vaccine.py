@@ -4,8 +4,6 @@ import us
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
-pd.set_option("display.max_rows", None)
-
 
 class WisconsinVaccineCounty(TableauDashboard):
     has_location = False
