@@ -31,12 +31,14 @@ from can_tools.scrapers.official.DC.dc_vaccines import (
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
 )
-from can_tools.scrapers.official.federal.CDC.cdc_state_vaccines import CDCStateVaccine
+from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
+    CDCStateVaccine,
+    CDCUSAVaccine,
+)
 from can_tools.scrapers.official.federal.CDC.cdc_county_vaccines import CDCCountyVaccine
 from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
     CDCVariantTracker,
 )
-from can_tools.scrapers.official.federal.CDC.cdc_usa_vaccines import CDCUSAVaccine
 from can_tools.scrapers.official.federal.HHS.facility import (
     HHSReportedPatientImpactHospitalCapacityFacility,
 )
