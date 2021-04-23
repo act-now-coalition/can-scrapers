@@ -1,6 +1,10 @@
 Writing Scrapers
 ================
 
+.. contents:: Table of Contents
+    :depth: 3
+
+
 The goal of the ``can_tools`` package is to make it easy to *build* and *maintain* COVID data scrapers
 
 As noted in :ref:`scraper_structure`, we have built a number of tools in an effort to achieve this goal
@@ -153,11 +157,118 @@ Known values are recorded in the file ``can_tools/bootstrap/covid_demographics.c
 ``CMU``
 *********
 
-To help fill in the values for the
+To help fill in the values for the variable dimensions (category, measurement, unit) and the demographic dimensions (age, race, ethnicity, sex); there is a helper class called ``CMU``.
+
+.. note::
+
+   Before we added demographics to our system, we only had the variable dimensions. The name ``CMU`` was chosen as an acronym for (catgegory, measurement, unit)
+
+The ``CMU`` class is documented below:
+
+.. autoclass:: can_tools.scrapers.base.CMU
+
+
+Typically a scraper will define a class attribute called ``variables`` that is a dictionary mapping from a column name in a wide form dataset we receive from the source into an instance of CMU describing variable and demographic dimensions for the data.
+
+A few ``CMU`` come up in many scrapers. These include ``CMU`` for total people with at least one dose, total people fully vaccinated, etc. Instead of repeating the instantiation of these ``CMU`` instances in every scraper, we instead have a helper module ``can_tools.scrapers.variables`` that contains common definitions as module level constants
+
+These were used in the ``NewJerseyVaccineCounty`` scraper we've been working with:
+
+
+.. literalinclude:: ../../can_tools/scrapers/official/NJ/nj_vaccine.py
+   :language: python
+   :start-after: # start variables
+   :end-before: # end variables
+
+
+Helper Methods
+****************
+
+Now we have all the pieces we need in order to fill in the necessary rows of a normalized DataFrame
+
+There are a few helper methods on the ``StateDashboard`` class (and therefore its subclasses) that we often use: ``_rename_or_add_date_and_location`` and ``_reshape_variables``
+
+These are documented in  :ref:`state_dashboard` and shown in the ``NewJerseyVaccineCounty.normalize`` method below:
+
+.. literalinclude:: ../../can_tools/scrapers/official/NJ/nj_vaccine.py
+   :language: python
+   :pyobject: NewJerseyVaccineCounty.normalize
+
 
 Running the scraper locally
 ----------------------------
 
+After writing a ``fetch`` and ``normalize`` method, you can run your scraper
+
+We could do this as follows:
+
+.. code:: python3
+
+   from can_tools.scrapers import NewJerseyVaccineCounty
+
+   # create scraper
+   d = NewJerseyVaccineCounty()
+
+# fetch raw resource
+   raw = d.fetch()
+
+   # normalize the raw resource into a conformable DataFrame
+   df = d.normalize(raw)
+
+At this point you should have a normalized DataFrame, ready to be injected into the CAN database.
+
+While running locally, we suggest you create an in-memory sqlite database and attempt to ``put`` your data
+
+We have helper methods set up for you to do this:
+
+.. code:: python3
+
+   from can_tools.models import create_dev_engine
+
+   # create a sqlalchemy engine and session connected to
+   # in memory sqlite db
+   engine, Session = create_dev_engine()
+
+   # put the DataFrame into the db
+   d.put(engine, df)
+
+If at this stage you have any problems inserting the data, see the :ref:`faq` page
 
 Running the tests for the scraper
 ------------------------------------
+
+There are a few tests that are automatically defined for you
+
+We use the ``pytest`` framework
+
+If you wanted to run the full test suite, you could run the ``pytest`` command from the ``can_tools`` directory
+
+To select a subset of tests to run, use the ``-k`` flag for ``pytest``
+
+For example, to run only the tests for our ``NewJerseyVaccineCounty`` scraper, I would run
+
+.. code:: shell
+
+   pytest -k NewJerseyVaccineCounty
+
+
+This would produce output similar to
+
+.. code::
+
+   ❯ pytest -k NewJerseyVaccineCounty
+   ============================================ test session starts =============================================
+   platform linux -- Python 3.9.1, pytest-6.1.2, py-1.10.0, pluggy-0.13.1
+   rootdir: /home/sglyon/valorum/covid/can-scrapers
+   plugins: xdist-2.2.1, forked-1.3.0, parallel-0.1.0
+   collected 370 items / 365 deselected / 5 selected
+
+   tests/test_datasets.py .....                                                                           [100%]
+
+   ============================================== warnings summary ==============================================
+   ../../../anaconda3/envs/can-scrapers/lib/python3.9/site-packages/us/states.py:86: 46 warnings
+   /home/sglyon/anaconda3/envs/can-scrapers/lib/python3.9/site-packages/us/states.py:86: DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+      val = jellyfish.metaphone(val)
+
+   -- Docs: https://docs.pytest.org/en/stable/warnings.html
+   =============================== 5 passed, 365 deselected, 46 warnings in 2.16s ===============================

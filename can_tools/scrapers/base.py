@@ -23,6 +23,35 @@ ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
 
 
 class CMU:
+    """Define variable and demographic dimensions for an observation
+
+    Variable dimensions include:
+
+    - category: The 'type' of variable. Examples are ``cases``, ``total_vaccine_completed``
+    - measurement: The form of measurement, e.g. ``cumulative``, ``new``
+    - unit: The unit of measurement, e.g. ``people``, ``doses``
+
+    Demographic dimensions include:
+
+    - age: the age group, e.g. ``1-10``, ``40-49``, ``65_plus``
+    - race: the race, e.g. ``white``, ``black``
+    - ethnicity: the ethnicity, e.g. ``hispanic``, ``non-hispanic``
+    - sex: the sex, ``male``, ``female``, ``uknown``
+
+    .. note::
+
+        All demographic dimensions allow a value of ``all``, which is interpreted
+        as the observation corresponding to all groups of that dimension (i.e. if
+        age is ``all``, then the data represent all ages)
+
+    For a complete list of admissible variable 3-tuples see the file
+    ``can_tools/bootstrap_data/covid_variables.csv``
+
+    For a complete list of admissible demographic 4-tuples see the file
+    ``can_tools/bootstrap_data/covid_demographics.csv``
+
+    """
+
     def __init__(
         self,
         category="cases",

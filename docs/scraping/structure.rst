@@ -58,6 +58,8 @@ These include: ``StateDashbord``, ``CountyDashboard``, ``FederalDashboard``
 
 We'll talk about these next
 
+.. _state_dashboard:
+
 StateDashboard
 ***************
 

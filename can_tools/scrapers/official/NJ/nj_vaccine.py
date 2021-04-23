@@ -16,11 +16,15 @@ class NewJerseyVaccineCounty(ArcGIS):
     source_name = "New Jersey Department of Health"
     service: str = "VaxCov2"
 
+    # NOTE: do not delete the `(start|end) variables` comments
+    #       they are needed to generate documentation
+    # start variables
     variables = {
         "Dose_1": variables.INITIATING_VACCINATIONS_ALL,
         "CompletedVax": variables.FULLY_VACCINATED_ALL,
         "Grand_Total": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
+    # end variables
 
     def fetch(self) -> Any:
         return self.get_all_jsons(self.service, 0, 7)
