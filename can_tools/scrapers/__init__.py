@@ -132,10 +132,14 @@ from can_tools.scrapers.official.VT.vt_vaccinations import (
 from can_tools.scrapers.official.WA.wa_vaccine import WashingtonVaccine
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
 from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
-    WisconsinVaccineAge,
-    WisconsinVaccineEthnicity,
-    WisconsinVaccineRace,
-    WisconsinVaccineSex,
+    WisconsinVaccineStateAge,
+    WisconsinVaccineStateEthnicity,
+    WisconsinVaccineStateRace,
+    WisconsinVaccineStateSex,
+    WisconsinVaccineCountyRace,
+    WisconsinVaccineCountySex,
+    WisconsinVaccineCountyAge,
+    WisconsinVaccineCountyEthnicity,
 )
 from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, WisconsinState
 from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine

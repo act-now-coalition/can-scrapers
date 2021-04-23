@@ -12,16 +12,18 @@ class WisconsinVaccineCounty(TableauDashboard):
     state_fips = int(us.states.lookup("Wisconsin").fips)
     location_type = "county"
     baseurl = "https://bi.wisconsin.gov/t/DHS"
-    viewPath = "VaccinesAdministeredtoWIResidents/VaccinatedWisconsin-County"
+    viewPath = (
+        "VaccinesAdministeredtoWIResidents_16129838459350/VaccinatedWisconsin-County"
+    )
 
-    data_tableau_table = "Map"
+    data_tableau_table = "**Download Table"
     location_name_col = "County-alias"
     timezone = "US/Central"
 
     # map wide form column names into CMUs
     cmus = {
-        "SUM(Number With One Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "SUM(Number With Two Doses)-alias": variables.FULLY_VACCINATED_ALL,
+        "At Least One Dose (#)": variables.INITIATING_VACCINATIONS_ALL,
+        "Completed Series (#)": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -31,17 +33,31 @@ class WisconsinVaccineCounty(TableauDashboard):
         df["location_name"] = df["location_name"].apply(
             lambda s: s[:-7] if s.endswith("County") else s
         )
-        df = df.replace(
-            {"location_name": {"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"}}
-        )  # fix incorrect formatting
-
-        # parse out data columns
-        value_cols = list(set(df.columns) & set(self.cmus.keys()))
-        assert len(value_cols) == len(self.cmus)
+        df = df[["Measure Values-alias", "location_name", "Measure Names-alias"]]
 
         df = (
-            df.melt(id_vars=["location_name"], value_vars=value_cols)
-            .dropna()
+            df.replace(
+                {
+                    "location_name": {
+                        "St Croix": "St. Croix",
+                        "Fond Du Lac": "Fond du Lac",
+                    }
+                }
+            )
+            .query(
+                "`Measure Names-alias` in @self.cmus.keys() and location_name != 'Unknown'"
+            )
+            .rename(
+                columns={
+                    "Measure Values-alias": "value",
+                    "Measure Names-alias": "variable",
+                }
+            )
+        )
+
+        # parse out data columns
+        df = (
+            df.dropna()
             .assign(
                 dt=self._retrieve_dt(self.timezone),
                 vintage=self._retrieve_vintage(),
