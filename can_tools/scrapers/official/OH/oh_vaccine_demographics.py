@@ -15,33 +15,37 @@ class OHVaccineCountyRace(StateDashboard):
     location_type = "county"
     timezone = "US/Eastern"
     url = r"https://public.tableau.com/views/VaccineAdministrationMetricsDashboard/PublicCountyDash?:embed=y&:showVizHome=no&:host_url=https%3A%2F%2Fpublic.tableau.com%2F&:embed_code_version=3&:device=desktop&:tabs=no&:toolbar=no&:showAppBanner=false&iframeSizedToWindow=true&:loadOrderID=0"
-    demographic_col_name = 'Race'
-    demographic = 'race'
-    rename_key = {"black or african american": 'black', 'american indian alaska native':'ai_an','native hawaiian pacific islander':'pacific_islander'}
+    demographic_col_name = "Race"
+    demographic = "race"
+    rename_key = {
+        "black or african american": "black",
+        "american indian alaska native": "ai_an",
+        "native hawaiian pacific islander": "pacific_islander",
+    }
 
     # map wide form column names into CMUs
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
-        "complete": variables.FULLY_VACCINATED_ALL
+        "complete": variables.FULLY_VACCINATED_ALL,
     }
-    
+
     def _extract_data(self, shot_type: str) -> pd.DataFrame:
         ts = TableauScraper()
         ts.loads(self.url)
-        
+
         # set type of metric and demographic (initiated is fetched by default)
         book = ts.getWorkbook()
         # see all possible paramaters
         # params = pd.DataFrame(book.getParameters())
         # shot_vals = params.loc[params["column"] == "View By", "values"].iloc[0]
         # demo_vals = params.loc[params["column"] == "Key Metrics", "values"].iloc[0]
-        assert(self.demographic_col_name in demo_vals)
+        assert self.demographic_col_name in demo_vals
         book.setParameter("Key Metrics", self.demographic_col_name)
 
-        if shot_type == 'complete':
-            print(f'set parameter to: {shot_vals[1]}')
-            book.setParameter("View By",shot_vals[1])
-        
+        if shot_type == "complete":
+            print(f"set parameter to: {shot_vals[1]}")
+            book.setParameter("View By", shot_vals[1])
+
         parts = []
         ws = ts.getWorksheet("New Map")
         counties = ws.getSelectableValues("county")
@@ -54,25 +58,33 @@ class OHVaccineCountyRace(StateDashboard):
             parts.append(df)
             ws = ts.getWorksheet("New Map")
         return pd.concat(parts)
-    
+
     def fetch(self) -> TableauScraper:
-        init = self._extract_data('initiated')
-        complete =  self._extract_data('complete')
+        init = self._extract_data("initiated")
+        complete = self._extract_data("complete")
         return init, complete
 
     def normalize(self, data: TableauScraper) -> pd.DataFrame:
-        df = pd.merge(data[0], data[1], how="left", on=['Selected Demographic-alias','location_name'])
-        df = df[['location_name', 'Selected Demographic-alias', 'initiated', 'complete']]
-        df['Selected Demographic-alias'] = df['Selected Demographic-alias'].str.lower()
-        if self.rename_key: df = df.replace(self.rename_key)
-        
+        df = pd.merge(
+            data[0],
+            data[1],
+            how="left",
+            on=["Selected Demographic-alias", "location_name"],
+        )
+        df = df[
+            ["location_name", "Selected Demographic-alias", "initiated", "complete"]
+        ]
+        df["Selected Demographic-alias"] = df["Selected Demographic-alias"].str.lower()
+        if self.rename_key:
+            df = df.replace(self.rename_key)
+
         # do we want to keep this/add it to the covid_demographics?
         df = df.query("`Selected Demographic-alias` != 'multiracial'")
 
         out = self._reshape_variables(df, self.variables)
         out = (
             df.melt(
-                id_vars=["location_name", 'Selected Demographic-alias'],
+                id_vars=["location_name", "Selected Demographic-alias"],
                 value_vars=self.variables.keys(),
             )
             .dropna()
@@ -88,20 +100,26 @@ class OHVaccineCountyRace(StateDashboard):
         out["vintage"] = self._retrieve_vintage()
 
         return out.drop(columns={self.demographic}).rename(
-            columns={'Selected Demographic-alias': self.demographic}
+            columns={"Selected Demographic-alias": self.demographic}
         )
 
+
 class OHVaccineCountySex(OHVaccineCountyRace):
-    demographic_col_name = 'Sex'
-    demographic = 'sex'
+    demographic_col_name = "Sex"
+    demographic = "sex"
     rename_key = {}
 
+
 class OHVaccineCountyAge(OHVaccineCountyRace):
-    demographic_col_name = 'Age Group'
-    demographic = 'age'
-    rename_key = {'80+':'80_plus'}
+    demographic_col_name = "Age Group"
+    demographic = "age"
+    rename_key = {"80+": "80_plus"}
+
 
 class OHVaccineCountyEthnicity(OHVaccineCountyRace):
-    demographic_col_name = 'Ethnicity'
-    demographic = 'ethnicity'
-    rename_key = {"not hispanic or latino": 'non-hispanic', 'hispanic or latino':'hispanic'}
+    demographic_col_name = "Ethnicity"
+    demographic = "ethnicity"
+    rename_key = {
+        "not hispanic or latino": "non-hispanic",
+        "hispanic or latino": "hispanic",
+    }
