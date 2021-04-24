@@ -21,6 +21,7 @@ class OHVaccineCountyRace(StateDashboard):
         "black or african american": "black",
         "american indian alaska native": "ai_an",
         "native hawaiian pacific islander": "pacific_islander",
+        "multiracial":"multiple"
     }
 
     # map wide form column names into CMUs
@@ -35,10 +36,10 @@ class OHVaccineCountyRace(StateDashboard):
 
         # set type of metric and demographic (initiated is fetched by default)
         book = ts.getWorkbook()
-        # see all possible paramaters
-        # params = pd.DataFrame(book.getParameters())
-        # shot_vals = params.loc[params["column"] == "View By", "values"].iloc[0]
-        # demo_vals = params.loc[params["column"] == "Key Metrics", "values"].iloc[0]
+        # get all possible paramaters
+        params = pd.DataFrame(book.getParameters())
+        shot_vals = params.loc[params["column"] == "View By", "values"].iloc[0]
+        demo_vals = params.loc[params["column"] == "Key Metrics", "values"].iloc[0]
         assert self.demographic_col_name in demo_vals
         book.setParameter("Key Metrics", self.demographic_col_name)
 
@@ -50,6 +51,8 @@ class OHVaccineCountyRace(StateDashboard):
         ws = ts.getWorksheet("New Map")
         counties = ws.getSelectableValues("county")
         for county in counties:
+            if county == "Washington":
+                break
             print("working on county: ", county)
             wb = ws.select("county", county)
             df = wb.getWorksheet("New Demographics").data.assign(location_name=county)
@@ -77,9 +80,6 @@ class OHVaccineCountyRace(StateDashboard):
         df["Selected Demographic-alias"] = df["Selected Demographic-alias"].str.lower()
         if self.rename_key:
             df = df.replace(self.rename_key)
-
-        # do we want to keep this/add it to the covid_demographics?
-        df = df.query("`Selected Demographic-alias` != 'multiracial'")
 
         out = self._reshape_variables(df, self.variables)
         out = (
