@@ -21,7 +21,7 @@ class OHVaccineCountyRace(StateDashboard):
         "black or african american": "black",
         "american indian alaska native": "ai_an",
         "native hawaiian pacific islander": "pacific_islander",
-        "multiracial":"multiple"
+        "multiracial": "multiple",
     }
 
     # map wide form column names into CMUs
