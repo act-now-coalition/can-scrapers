@@ -1,15 +1,13 @@
-import pandas as pd
-import us
-import requests
-import re
 import json
-from bs4 import BeautifulSoup
-from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import (
-    TableauDashboard,
-    TableauMapClick,
-)
+import re
 
+import pandas as pd
+import requests
+import us
+from bs4 import BeautifulSoup
+
+from can_tools.scrapers.base import CMU
+from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
 from can_tools.scrapers.util import requests_retry_session
 
 
@@ -26,7 +24,7 @@ class HawaiiVaccineCounty(TableauDashboard):
     # Hawai'i https://public.tableau.com/shared/7TCBHC568?:display_count=y&:origin=viz_share_link&:embed=y
     filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"  # this is the name of the user action, not the filter function name. doesn't work
     baseurl = "https://public.tableau.com"
-    viewPath = "HawaiiCOVID-19-VaccinationDashboard/VACCINESBYCOUNTY"
+    viewPath = "HawaiiCOVID-19-VaccinationDashboard3/VACCINESBYCOUNTY"
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]

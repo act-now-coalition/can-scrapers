@@ -167,6 +167,7 @@ class StateDashboard(DatasetBase, ABC):
         location_name_column: Optional[str] = None,
         location_column: Optional[str] = None,
         location_names_to_drop: Optional[List[str]] = None,
+        locations_to_drop: Optional[List[str]] = None,
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
         timezone: Optional[str] = None,
@@ -182,6 +183,10 @@ class StateDashboard(DatasetBase, ABC):
             Name of column with location name
         location_column:
             Name of column with location (fips)
+        location_names_to_drop:
+            List of values in `location_name_column` that should be dropped
+        locations_to_drop:
+            List of values in `location_column` that should be dropped
         date_column:
             Name of Column containing date.
         date:
@@ -229,6 +234,9 @@ class StateDashboard(DatasetBase, ABC):
             data["location_name"] = data["location_name"].str.title()
 
         if "location" in data.columns:
+            if locations_to_drop:
+                non_locs = data.loc[:, "location"].isin(locations_to_drop)
+                data = data.loc[~non_locs, :]
             data["location"] = pd.to_numeric(data["location"])
 
         return data
@@ -639,6 +647,8 @@ class TableauDashboard(StateDashboard, ABC):
     viewPath: str
     filterFunctionName: Optional[str] = None
     filterFunctionValue: Optional[str] = None
+    secondaryFilterFunctionName: Optional[str] = None
+    secondaryFilterFunctionValue: Optional[str] = None
     timezone: str
     data_tableau_table: str
     location_name_col: str
@@ -680,6 +690,13 @@ class TableauDashboard(StateDashboard, ABC):
         if self.filterFunctionName is not None:
             params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
             params += self.filterFunctionName + "=" + self.filterFunctionValue
+            if self.secondaryFilterFunctionName is not None:
+                params += (
+                    "&"
+                    + self.secondaryFilterFunctionName
+                    + "="
+                    + self.secondaryFilterValue.replace(" ", "%20")
+                )
             reqg = req.get(fullURL, params=params)
         else:
             reqg = req.get(

@@ -183,6 +183,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
         non_counties = ["Other", "Grand Total"]
         df = (
             self.excel_to_dataframe(data, self.sheet_name)
+            .rename(columns=str.strip)
             .rename(
                 columns={
                     "Age Group": "age",
