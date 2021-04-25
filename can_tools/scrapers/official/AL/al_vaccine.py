@@ -1,8 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
-from can_tools.scrapers import variables
+from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.official.base import ArcGIS
 
 pd.options.mode.chained_assignment = None  # Avoid unnessacary SettingWithCopy warning
@@ -23,7 +22,7 @@ class ALCountyVaccine(ArcGIS):
     }
 
     def fetch(self):
-        service = "Vax_Dashboard_Public_v2a_VIEW"
+        service = "Vax_Dashboard_Public_3_VIEW"
         return self.get_all_jsons(service, 1, "7")
 
     def normalize(self, data):

@@ -1,8 +1,8 @@
-from io import StringIO
 from datetime import timedelta
+from io import StringIO
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import us
 
 from can_tools.scrapers.base import CMU

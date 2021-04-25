@@ -1,10 +1,10 @@
 import random
-import requests
 
 import pandas as pd
+import requests
 import us
 
-from can_tools.scrapers.base import CMU, ALL_STATES_PLUS_DC
+from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 

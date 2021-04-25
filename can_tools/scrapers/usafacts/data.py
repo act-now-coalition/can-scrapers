@@ -1,7 +1,8 @@
-from can_tools.scrapers.base import CMU
 from typing import Any
 
 import pandas as pd
+
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 BASEURL = "https://usafactsstatic.blob.core.windows.net/public/data/"
@@ -82,6 +83,12 @@ class USAFactsCases(FederalDashboard):
         return out.pipe(self.extract_CMU, cmu={"replaceme": cmu}).drop(
             ["variable"], axis="columns"
         )
+
+    def validate(self, df, df_hist):
+        # Overriding validate method to not fail for usa facts because
+        # county cumulative case/death reporting has dips because of local corrections.
+        # TODO(chris): Add option to skip increasing over time validate check.
+        return
 
 
 class USAFactsDeaths(USAFactsCases):

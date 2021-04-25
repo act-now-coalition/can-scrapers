@@ -1,16 +1,19 @@
+import pprint
+from can_tools.validators import cross_section, timeseries
+from can_tools import utils
 from typing import Any, Dict, List, Optional, Type
 
 import os
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Type
 
-import us
 import pandas as pd
+import us
 from sqlalchemy.engine.base import Engine
 
 from can_tools.models import Base
-
 
 # `us` v2.0 removed DC from the `us.STATES` list, so we are creating
 # our own which includes DC. In v3.0, there will be an env option to
@@ -41,6 +44,39 @@ class CMU:
 
 class ValidateDataFailedError(Exception):
     """Error raised when data vailidation fails."""
+
+
+class ValidateRelativeOrderOfCategoriesError(Exception):
+    def __init__(self, category_small, category_large, problems):
+        self.category_small = category_small
+        self.category_large = category_large
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.category_small} > {self.category_large}\n"
+        out += pprint.pformat(self.problems, indent=2)
+        return out
+
+
+class ValidateDecreaseInCumulativeVariableError(Exception):
+    def __init__(self, category, problems):
+        self.category = category
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.category} measured cumulative, but had decrease on these dates:\n"
+        out += pprint.pformat(sorted(self.problems), indent=2)
+        return out
+
+
+class ValidationErrors(Exception):
+    def __init__(self, all_errors: List[Exception]):
+        self.all_errors = all_errors
+
+    def __str__(self):
+        out = "The following errors were found:"
+        out += "\n" + "\n".join([str(x) for x in self.all_errors])
+        return out
 
 
 def _get_base_path() -> Path:
@@ -77,6 +113,15 @@ class DatasetBase(ABC):
     location_type: Optional[str]
     base_path: Path
     source: str
+
+    # this list of tuples specifies categories for which the first
+    # category listed should always be less than or equal to the second
+    # category listed, when the measurement type is cumulative
+    ordered_validation_categories = [
+        ("total_vaccine_initiated", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_initiated"),
+    ]
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         self.execution_dt = pd.to_datetime(execution_dt, utc=True)
@@ -385,12 +430,50 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
+    def _validate_time_series(self, df) -> [List[Exception]]:
+        """Do checks only applicable to time series data"""
+        issues = []
+        if (df["measurement"] == "cumulative").sum() > 0:
+            bad = timeseries.values_increasing_over_time(df)
+            for variable, dates in bad.items():
+                err = ValidateDecreaseInCumulativeVariableError(variable, dates)
+                issues.append(err)
+
+        return issues
+
+    def _validate_order_of_variables(self, df) -> [List[Exception]]:
+        """
+        Returns a list of exceptions that occured while doing checks
+        """
+        issues = []
+        cumulatives = df.query("measurement == 'cumulative'")
+        categories = list(cumulatives["category"].unique())
+        for category_small, category_large in self.ordered_validation_categories:
+            if category_small in categories and category_large in categories:
+                ok, problems = cross_section.cat1_ge_cat2(
+                    cumulatives,
+                    category_large,
+                    category_small,
+                    drop_levels=["unit", "category"],
+                )
+                if not ok:
+                    err = ValidateRelativeOrderOfCategoriesError(
+                        category_small=category_small,
+                        category_large=category_large,
+                        problems=problems,
+                    )
+                    issues.append(err)
+
+        return issues
+
     def validate(self, df, df_hist):
         """
         The `validate` method checks what the tentative clean data looks
         like and then checks whether the updates are sensible -- If they
         are then it returns True otherwise it returns False and stops
         the fetch->normalize->validate->put DAG
+
+        Raises Exceptions if validation fails
 
         Parameters
         ----------
@@ -399,23 +482,21 @@ class DatasetBase(ABC):
         df_hist : pd.DataFrame
             Historical data
 
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
-        return True
+        issues = []
+        if utils.is_time_series(df):
+            issues.extend(self._validate_time_series(df))
+
+        issues.extend(self._validate_order_of_variables(df))
+
+        if len(issues) > 0:
+            raise ValidationErrors(issues)
 
     def _validate(self):
         """
         The `_validate` method loads the appropriate data and then
         checks the data using `validate` and determines whether the
         data has been validated
-
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
         # Load cleaned data
         df = self._read_clean()
@@ -504,7 +585,7 @@ class DatasetBase(ABC):
         """Reprocesses data from fetched data - useful to fix errors after fetch."""
         self._normalize()
 
-        if not self._validate():
-            raise ValidateDataFailedError()
+        # validate will either succeed or raise an Exception
+        self._validate()
 
         self._put(engine)

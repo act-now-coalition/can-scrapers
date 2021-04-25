@@ -1,20 +1,18 @@
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
 import json
-import uuid
-import re
 import logging
-
+import re
+import urllib.parse
+import uuid
 from abc import ABC, abstractmethod
 from base64 import b64decode
 from contextlib import closing
-from urllib.parse import urlparse, parse_qs
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from urllib.parse import parse_qs, urlparse
 
+import jmespath
 import pandas as pd
 import requests
-import urllib.parse
-
 from bs4 import BeautifulSoup
-import jmespath
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
 
@@ -172,6 +170,7 @@ class StateDashboard(DatasetBase, ABC):
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
         timezone: Optional[str] = None,
+        apply_title_case: bool = True,
     ):
         """Renames or adds date and location columns.
 
@@ -189,6 +188,8 @@ class StateDashboard(DatasetBase, ABC):
             Date for data
         timezone:
             Timezone of data if date or date_column not supplied.
+        apply_title_case:
+            If True will make location name title case.
 
         Returns
         -------
@@ -221,9 +222,10 @@ class StateDashboard(DatasetBase, ABC):
             data = data.assign(dt=date)
 
         if location_names_to_drop:
-            data = data.query("location_name != @location_names_to_drop")
+            non_locs = data.loc[:, "location_name"].isin(location_names_to_drop)
+            data = data.loc[~non_locs, :]
 
-        if "location_name" in data.columns:
+        if "location_name" in data.columns and apply_title_case:
             data["location_name"] = data["location_name"].str.title()
 
         if "location" in data.columns:

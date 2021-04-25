@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import us
 
+from can_tools.scrapers import variables
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers.util import requests_retry_session
@@ -88,26 +89,10 @@ class NewMexicoVaccineCounty(NewMexicoBase):
                 measurement="cumulative",
                 unit="doses",
             ),
-            "partiallyVaccinated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "fullyVaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "percentPartiallyVaccinated": CMU(
-                category="total_vaccine_initiated",
-                measurement="current",
-                unit="percentage",
-            ),
-            "percentFullyVaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="current",
-                unit="percentage",
-            ),
+            "partiallyVaccinated": variables.INITIATING_VACCINATIONS_ALL,
+            "fullyVaccinated": variables.FULLY_VACCINATED_ALL,
+            "percentPartiallyVaccinated": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
+            "percentFullyVaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         }
 
         # Move things into long format
@@ -142,7 +127,3 @@ class NewMexicoVaccineCounty(NewMexicoBase):
         out["vintage"] = self._retrieve_vintage()
 
         return out
-
-    def validate(self, df, df_hist) -> bool:
-        "Software never was perfect and won’t get perfect. But is that a license to create garbage? The missing ingredient is our reluctance to quantify quality. - Boris Beizer"
-        return True

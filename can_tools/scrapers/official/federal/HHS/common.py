@@ -1,9 +1,8 @@
 from abc import ABC
-import requests
-
 from typing import Dict
 
 import pandas as pd
+import requests
 
 from can_tools.scrapers.official.base import FederalDashboard
 
