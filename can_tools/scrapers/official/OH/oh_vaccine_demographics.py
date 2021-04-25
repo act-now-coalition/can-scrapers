@@ -51,8 +51,6 @@ class OHVaccineCountyRace(StateDashboard):
         ws = ts.getWorksheet("New Map")
         counties = ws.getSelectableValues("county")
         for county in counties:
-            if county == "Washington":
-                break
             print("working on county: ", county)
             wb = ws.select("county", county)
             df = wb.getWorksheet("New Demographics").data.assign(location_name=county)
