@@ -54,6 +54,21 @@ class NCVaccine(TableauDashboard):
 
         return frames
 
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+        self.timeran = dt.datetime.now()
+
+        age_df = self._normalize_age(df[0])
+        race_df = self._normalize_race(df[1])
+        gender_df = self._normalize_gender(df[2])     
+        ethnicity_df = self._normalize_ethnicity(df[3])
+
+        out_df = pd.concat(
+            [age_df, race_df, gender_df, ethnicity_df], ignore_index=True
+        )
+        out_df["location_name"] = "North Carolina"
+
+        return out_df
+
     def _normalize_age(self, df: pd.DataFrame) -> pd.DataFrame:
         age_df = df
         age_df.rename(
@@ -210,18 +225,3 @@ class NCVaccine(TableauDashboard):
         ]
 
         return ethnicity_df
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        self.timeran = dt.datetime.now()
-
-        age_df = self._normalize_age(df[0])
-        race_df = self._normalize_race(df[1])
-        gender_df = self._normalize_gender(df[2])     
-        ethnicity_df = self._normalize_ethnicity(df[3])
-
-        out_df = pd.concat(
-            [age_df, race_df, gender_df, ethnicity_df], ignore_index=True
-        )
-        out_df["location_name"] = "North Carolina"
-
-        return out_df
