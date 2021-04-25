@@ -62,7 +62,7 @@ class OHVaccineCountyRace(StateDashboard):
             ws = ts.getWorksheet("New Map")
         return pd.concat(parts)
 
-    def fetch(self) -> TableauScraper:
+    def fetch(self) -> tuple:
         init = self._extract_data("initiated")
         complete = self._extract_data("complete")
         return init, complete
