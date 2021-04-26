@@ -120,7 +120,11 @@ class StateDashboard(DatasetBase, ABC):
         return worked, rows_inserted, rows_deleted
 
     def _reshape_variables(
-        self, data: pd.DataFrame, variable_map: Dict[str, CMU]
+        self,
+        data: pd.DataFrame,
+        variable_map: Dict[str, CMU],
+        id_vars: Optional[List[str]] = None,
+        **kwargs,
     ) -> pd.DataFrame:
         """Reshape columns in data to be long form definitions defined in `variable_map`.
 
@@ -130,6 +134,10 @@ class StateDashboard(DatasetBase, ABC):
             Input data
         variable_map : Union[str,int]
             Map from column name to output variables
+        id_vars: Optional[List[str]], (default=None)
+            Variables that should be included as "id_vars" when melting from wide to long
+        kwargs:
+            Other kwargs to pass to `self.extract_CMU`
 
         Returns
         -------
@@ -139,7 +147,8 @@ class StateDashboard(DatasetBase, ABC):
         # parse out data columns
         value_cols = list(set(data.columns) & set(variable_map.keys()))
         assert len(value_cols) == len(variable_map)
-        id_vars = []
+        if id_vars is None:
+            id_vars = []
         if "location_name" in data.columns:
             id_vars.append("location_name")
         if "location" in data.columns:
@@ -157,7 +166,7 @@ class StateDashboard(DatasetBase, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=variable_map)
+            .pipe(self.extract_CMU, cmu=variable_map, **kwargs)
             .drop(["variable"], axis=1)
         )
 
