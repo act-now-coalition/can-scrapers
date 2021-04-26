@@ -195,6 +195,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
     source = "https://www.maine.gov/covid19/vaccines/dashboard"
     source_name = "Covid-19 Response Office of the Governor"
     powerbi_url = "https://wabi-us-east-a-primary-api.analysis.windows.net"
+
     def construct_body(self, resource_key, ds_id, model_id, report_id):
         body = {}
 
@@ -335,7 +336,9 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location", "race"], value_vars=crename.keys()).dropna()
 
         # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename, ["category", "measurement", "unit", "age", "sex", "ethnicity"])
+        out = self.extract_CMU(
+            out, crename, ["category", "measurement", "unit", "age", "sex", "ethnicity"]
+        )
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 
@@ -355,6 +358,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
 
         return out.loc[:, cols_to_keep]
 
+
 class MaineGenderVaccines(MicrosoftBIDashboard):
     has_location = True
     location_type = "state"
@@ -363,6 +367,7 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
     source = "https://www.maine.gov/covid19/vaccines/dashboard"
     source_name = "Covid-19 Response Office of the Governor"
     powerbi_url = "https://wabi-us-east-a-primary-api.analysis.windows.net"
+
     def construct_body(self, resource_key, ds_id, model_id, report_id):
         body = {}
 
@@ -468,7 +473,7 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
         gender_info_replace = {
             "Male": "male",
             "Female": "female",
-            "Not Provided": "unknown"
+            "Not Provided": "unknown",
         }
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows, columns=row_names)
@@ -493,7 +498,11 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location", "sex"], value_vars=crename.keys()).dropna()
 
         # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename, ["category", "measurement", "unit", "age", "race", "ethnicity"])
+        out = self.extract_CMU(
+            out,
+            crename,
+            ["category", "measurement", "unit", "age", "race", "ethnicity"],
+        )
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 
@@ -513,6 +522,7 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
 
         return out.loc[:, cols_to_keep]
 
+
 class MaineAgeVaccines(MicrosoftBIDashboard):
     has_location = True
     location_type = "state"
@@ -521,6 +531,7 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
     source = "https://www.maine.gov/covid19/vaccines/dashboard"
     source_name = "Covid-19 Response Office of the Governor"
     powerbi_url = "https://wabi-us-east-a-primary-api.analysis.windows.net"
+
     def construct_body(self, resource_key, ds_id, model_id, report_id):
         body = {}
 
@@ -631,7 +642,7 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
             "Age 50-59": "50-59",
             "Age 60-69": "60-69",
             "Age 70-79": "70-79",
-            "Age 80 and Older": "80_plus"
+            "Age 80 and Older": "80_plus",
         }
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows, columns=row_names)
@@ -655,7 +666,11 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
         out = df.melt(id_vars=["location", "age"], value_vars=crename.keys()).dropna()
 
         # Add CMU, dt, vintage
-        out = self.extract_CMU(out, crename, ["category", "measurement", "unit", "sex", "race", "ethnicity"])
+        out = self.extract_CMU(
+            out,
+            crename,
+            ["category", "measurement", "unit", "sex", "race", "ethnicity"],
+        )
         out["dt"] = self._retrieve_dt("US/Eastern")
         out["vintage"] = self._retrieve_vintage()
 
@@ -674,6 +689,3 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
         ]
 
         return out.loc[:, cols_to_keep]
-
-
-
