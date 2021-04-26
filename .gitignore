@@ -145,3 +145,4 @@ node_modules
 .DS_Store
 
 _ignore_
+_build/
