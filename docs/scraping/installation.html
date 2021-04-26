@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer Installation &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Structure" href="structure.html" />
+    <link rel="prev" title="Data Scraping" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="developer-installation">
+<h1>Developer Installation<a class="headerlink" href="#developer-installation" title="Permalink to this headline">¶</a></h1>
+<p>This page provides information to help developers get their python environment
+set up.</p>
+<p>The first step will be to use git to clone the can-scrapers repository.</p>
+<blockquote>
+<div><p>If you have not installed git, please install it either from the <a class="reference external" href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">official
+instructions</a>
+or by installing <a class="reference external" href="https://desktop.github.com/">GitHub Desktop</a></p>
+</div></blockquote>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/covid-projections/can-scrapers.git
+</pre></div>
+</div>
+<p>We recommend that you use a Python virtual environment to keep your work on the
+can_scrapers tooling separate from your system default Python environment or
+environments used for other projects.</p>
+<div class="section" id="using-conda">
+<h2>Using Conda<a class="headerlink" href="#using-conda" title="Permalink to this headline">¶</a></h2>
+<p>To use Conda manage a virtual environment for this project, follow these steps:</p>
+<blockquote>
+<div><p>Note: all instructions of the form <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">something</span></code> require that you open your
+shell/command prompt/terminal and execute the command <code class="docutils literal notranslate"><span class="pre">something</span></code></p>
+</div></blockquote>
+<ol class="simple">
+<li><p>Install <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a> or
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">Miniconda</a></p></li>
+<li><p>Create a new conda environment for this project: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">can-scrapers</span> <span class="pre">python=3.8</span></code></p></li>
+<li><p>Activate the conda environment: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">can-scrapers</span></code></p></li>
+<li><p>Change directories to the “can-scrapers” repository you cloned previously: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">/path/to/can-scrapers</span></code> (note you will need to change <code class="docutils literal notranslate"><span class="pre">/path/to</span></code>)</p></li>
+<li><p>Install the requirements: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements-dev.txt</span></code></p></li>
+<li><p>Set up <code class="docutils literal notranslate"><span class="pre">can_tools</span></code> library in developer mode: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p>Deactivate and activate the conda environment one more time (we’ve found in
+practice that the recently installed libraries/tools aren’t immediately
+available after installation): <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">conda</span> <span class="pre">deactivate</span></code> and then <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">can-scrapers</span></code></p></li>
+</ol>
+<p>At this point you should be fully set up with a development environment suitable
+for working on this project</p>
+<p>You can test your setup by running some of the tests.</p>
+<p>For example, to run the tests for the <code class="docutils literal notranslate"><span class="pre">Massachusetts</span></code> run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pytest</span> <span class="pre">-v</span> <span class="pre">-k</span> <span class="pre">Mass</span> <span class="pre">.</span></code></p>
+<div class="section" id="optional-steps">
+<h3>Optional Steps<a class="headerlink" href="#optional-steps" title="Permalink to this headline">¶</a></h3>
+<p>Below are a few optional steps/tips that we’ve found help us be more efficient in our development process</p>
+<div class="section" id="setup-ipython-profile">
+<h4>Setup IPython profile<a class="headerlink" href="#setup-ipython-profile" title="Permalink to this headline">¶</a></h4>
+<p>I (Spencer) often work with a text editor and IPython terminal. It is my happy place</p>
+<p>To make things a bit more convenient when working on this project, I created a custom ipython-profile specifically for the can-scrapers conda environment</p>
+<p>This custom ipython-profile does a few things:</p>
+<ul class="simple">
+<li><p>Imports common third-party packages like pandas and sqlalchemy</p></li>
+<li><p>Sets up a dev sqlite3 database and engine, bootstrapping it with all the metadata tables from <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap/*.csv</span></code> files</p></li>
+<li><p>Imports all scrapers</p></li>
+<li><p>Sets up autoreload so when I make an edit in my text editor, code is refreshed and I can simply re-execute corresponding method or function</p></li>
+</ul>
+<p>Here’s how I did it using conda on a unix based system (MacOS or Linux)</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>conda activate can-scrapers
+<span class="nb">cd</span> <span class="nv">$CONDA_PREFIX</span>
+mkdir -p ./etc/conda/activate.d
+mkdir -p ./etc/conda/deactivate.d
+touch ./etc/conda/activate.d/env_vars.sh <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;alias ipython=&quot;ipython --profile=can_scrapers&quot;&#39;</span> &gt;&gt; ./etc/conda/activate.d/env_vars.sh
+touch ./etc/conda/deactivate.d/env_vars.sh <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;unalias ipython&#39;</span> &gt;&gt; ./etc/conda/deactivate.d/env_vars.sh
+</pre></div>
+</div>
+<p>I also created a file at <code class="docutils literal notranslate"><span class="pre">~/.ipython/profile_can_scrapers/ipython_config.py</span></code> with the following contents:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">InteractiveShellApp</span><span class="o">.</span><span class="n">exec_lines</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">r</span><span class="s2">&quot;</span><span class="si">%a</span><span class="s2">utoreload 2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;import pandas as pd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;import sqlalchemy as sa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;import requests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;from can_tools.scrapers import *&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;from can_tools.models import create_dev_engine, CovidObservation, Base, bootstrap, _bootstrap_csv_to_orm, CovidProvider, TemptableOfficialHasLocation, build_insert_from_temp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;engine, Session = create_dev_engine(verbose=False)&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">TerminalIPythonApp</span><span class="o">.</span><span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;autoreload&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now when I activate my conda environment with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">can-scrapers</span></code> and then start an ipython session with <code class="docutils literal notranslate"><span class="pre">ipython</span></code> all the code in <code class="docutils literal notranslate"><span class="pre">c.InteractiveShellApp.exec_lines</span></code> is automatically executed</p>
+<p>If you want to customize or change what is run upon start of IPython, modify the lines of code in <code class="docutils literal notranslate"><span class="pre">c.InteractiveShellApp.exec_lines</span></code></p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Data Scraping</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Developer Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="writing_scrapers.html">Writing Scrapers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/index.html">CAN Scraper Infrastructure</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Data Scraping</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Data Scraping</a></li>
+      <li>Next: <a href="structure.html" title="next chapter">Structure</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/scraping/installation.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
