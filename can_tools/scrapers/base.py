@@ -224,6 +224,7 @@ class DatasetBase(ABC):
             "sex",
         ],
         var_name: str = "variable",
+        skip_columns: List[str] = [],
     ) -> pd.DataFrame:
         """
         Adds columns "category", "measurement", and "unit" to df
@@ -242,6 +243,9 @@ class DatasetBase(ABC):
         var_name: str
             The name of the column in `df` that should be used to lookup
             items from the `cmu` dict for unpacking columns
+        skip_columns: List[str] (default=[])
+            Can be set instead of ``columns`` if there are a small number
+            of columns that should not be set
 
         Returns
         -------
@@ -252,6 +256,8 @@ class DatasetBase(ABC):
         variable_column = df[var_name]
         out = df.copy()
         for col in columns:
+            if col in skip_columns:
+                continue
             out[col] = variable_column.map(lambda x: cmu[x].__getattribute__(col))
         return out
 
