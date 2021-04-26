@@ -624,7 +624,7 @@ class DatasetBase(ABC):
     def find_unknown_demographic_id(self, engine: Engine, df: pd.DataFrame):
         dems = pd.read_sql("select * from covid_demographics", engine)
         merged = df.merge(dems, on=["sex", "age", "race", "ethnicity"], how="left")
-        bad = merged["id"].isna()
+        bad = list(merged["id"].isna())
         return df.loc[bad, :]
 
     def fetch_normalize(self):
