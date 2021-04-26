@@ -1,3 +1,4 @@
+from typing import Tuple
 import pandas as pd
 import us
 from tableauscraper import TableauScraper
@@ -60,12 +61,12 @@ class OHVaccineCountyRace(StateDashboard):
             ws = ts.getWorksheet("New Map")
         return pd.concat(parts)
 
-    def fetch(self) -> tuple:
+    def fetch(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         init = self._extract_data("initiated")
         complete = self._extract_data("complete")
         return init, complete
 
-    def normalize(self, data: TableauScraper) -> pd.DataFrame:
+    def normalize(self, data: Tuple[pd.DataFrame, pd.DataFrame]) -> pd.DataFrame:
         df = pd.merge(
             data[0],
             data[1],
@@ -79,7 +80,6 @@ class OHVaccineCountyRace(StateDashboard):
         if self.rename_key:
             df = df.replace(self.rename_key)
 
-        out = self._reshape_variables(df, self.variables)
         out = (
             df.melt(
                 id_vars=["location_name", "Selected Demographic-alias"],
