@@ -5,7 +5,6 @@ all,all,all,all
 0-10,all,all,all
 0-17,all,all,all
 0-19,all,all,all
-0-19,all,all,
 0-20,all,all,all
 5-17,all,all,all
 5-9,all,all,all
@@ -153,5 +152,3 @@ all,latinx,all,all
 unknown,all,all,female
 unknown,all,all,male
 unknown,all,all,unknown
-75_plus,all,all,all
-65-74,all,all,all
