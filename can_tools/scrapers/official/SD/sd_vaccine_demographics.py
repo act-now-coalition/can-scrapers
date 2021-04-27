@@ -194,7 +194,7 @@ class SDVaccineSex(MicrosoftBIDashboard):
             # Dump records into a DataFrame and transform
             county = pd.DataFrame.from_records(data_rows)
             county[self.demographic] = value
-            dfs.append(county.query("county == 'Codington'"))
+            dfs.append(county)
 
         df = pd.concat(dfs)
 
