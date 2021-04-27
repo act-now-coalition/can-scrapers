@@ -5,7 +5,7 @@ import requests
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES, CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -39,7 +39,7 @@ class CDCStateVaccine(FederalDashboard):
         return response.json()
 
     def _filter_rows(self, df):
-        state_abbr_list = [x.abbr for x in ALL_STATES_PLUS_DC]
+        state_abbr_list = [x.abbr for x in ALL_STATES_PLUS_TERRITORIES]
         return df.loc[df["Location"].isin(state_abbr_list), :]
 
     def normalize(self, data):

@@ -20,6 +20,7 @@ from can_tools.models import Base
 # include `DC` in the `us.STATES` list and, if we upgrade, we should
 # activate that option and replace this with just `us.STATES`
 ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
+ALL_STATES_PLUS_TERRITORIES = us.states.STATES_AND_TERRITORIES + [us.states.DC]
 
 
 class CMU:
