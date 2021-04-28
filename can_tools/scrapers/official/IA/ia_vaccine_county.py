@@ -26,7 +26,7 @@ class IowaCountyVaccine(StateDashboard):
     # 3) Hover over the table in the top right corner, a button should appear
     # 4) Inspect the Network tab in the browser, then click the link
     # 5) The token will be in the request headers under 'x-domo-embed-token`
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJmIjoxNjE5NDY0MDMzLCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE5NDkyODQzLCJpYXQiOjE2MTk0NjQwNDMsImp0aSI6ImY0YmMxZWY3LTg0MGUtNGI3Ni05NDc1LTM1YzcwN2YyNjA3YyJ9.BPAtSaGfj5ONhzSnrRmkuN_kCp53fDTulFcgvbUtrLM"
+    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjUyNjM5Mzc0IiwibmJmIjoxNjE5NjE4MDU5LCJpc3MiOiJhcGlHYXRld2F5IiwiZW1iIjpbIntcInRva2VuXCI6XCIxd0I5alwiLFwibGlua1R5cGVcIjpcIlNFQVJDSEFCTEVcIixcInBlcm1pc3Npb25zXCI6W1wiUkVBRFwiXX0iXSwiZXhwIjoxNjE5NjQ2ODY5LCJpYXQiOjE2MTk2MTgwNjksImp0aSI6IjFjYjQ2MGUyLTFkNTYtNGNiZS04ZmYyLWM0MjIxMDY4YzhhYyJ9.0qlcf0Ay3sUMF-VxkJrVB25tnd4jibExSgAQGjYSaxE"
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
