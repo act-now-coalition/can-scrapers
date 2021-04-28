@@ -224,6 +224,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                 "COVID Vaccination Summary Measures",
                                                 0,
                                             ),
+                                            ("c1", "COVID Vaccination Attributes", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -233,6 +234,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                 "Race",
                                                 "race",
                                             ),
+                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
                                         ],
                                         [],
                                         [
@@ -288,15 +290,23 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
 
         # Build dict of dicts with relevant info
-        col_mapping = {x["Value"]: x["Name"] for x in descriptor}
-        col_keys = list(col_mapping.keys())
+        row_names = [
+            "race",
+            "janssen_vaccine_completed",
+            "moderna_vaccine_initiated",
+            "moderna_vaccine_completed",
+            "pfizer_vaccine_initiated",
+            "pfizer_vaccine_completed"
+        ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
-        row_names = [col_mapping[desc["N"]] for desc in data[0]["S"]]
-        row_names[0] = "race"
         for record in data:
-            data_rows.append(record["C"])
+            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
+            else:
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
+            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],record["M"][1]["DM3"][1]["C"][2], record["M"][1]["DM3"][2]["C"][1],record["M"][1]["DM3"][2]["C"][2]))
 
         # Dump records into a DataFrame
         race_info_replace = {
@@ -313,22 +323,30 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         # Title case and remove the word county
         df["location"] = self.state_fips
 
-        # # Change into percentage
-        # for col in [
-        #     "total_vaccine_initiated_percent",
-        #     "total_vaccine_completed_percent",
-        # ]:
-        #     df.loc[:, col] = 100 * df.loc[:, col]
-
         # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
+            "janssen_vaccine_completed": CMU(
+                category="janssen_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
+            "moderna_vaccine_initiated": CMU(
+                category="moderna_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "moderna_vaccine_completed": CMU(
+                category="moderna_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_initiated": CMU(
+                category="pfizer_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_completed": CMU(
+                category="pfizer_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -396,6 +414,7 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
                                                 "COVID Vaccination Summary Measures",
                                                 0,
                                             ),
+                                            ("c1", "COVID Vaccination Attributes", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -405,6 +424,8 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
                                                 "Gender",
                                                 "sex",
                                             ),
+                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
+
                                         ],
                                         [],
                                         [
@@ -459,16 +480,24 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
         descriptor = foo["descriptor"]["Select"]
         data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
 
-        # Build dict of dicts with relevant info
-        col_mapping = {x["Value"]: x["Name"] for x in descriptor}
-        col_keys = list(col_mapping.keys())
+        row_names = [
+            "sex",
+            "janssen_vaccine_completed",
+            "moderna_vaccine_initiated",
+            "moderna_vaccine_completed",
+            "pfizer_vaccine_initiated",
+            "pfizer_vaccine_completed"
+        ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
-        row_names = [col_mapping[desc["N"]] for desc in data[0]["S"]]
-        row_names[0] = "sex"
         for record in data:
-            data_rows.append(record["C"])
+            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
+            else:
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
+            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],record["M"][1]["DM3"][1]["C"][2], record["M"][1]["DM3"][2]["C"][1],record["M"][1]["DM3"][2]["C"][2]))
+
 
         gender_info_replace = {
             "Male": "male",
@@ -484,13 +513,28 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
 
         # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
+            "janssen_vaccine_completed": CMU(
+                category="janssen_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
+            "moderna_vaccine_initiated": CMU(
+                category="moderna_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "moderna_vaccine_completed": CMU(
+                category="moderna_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_initiated": CMU(
+                category="pfizer_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_completed": CMU(
+                category="pfizer_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -560,6 +604,7 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
                                                 "COVID Vaccination Summary Measures",
                                                 0,
                                             ),
+                                            ("c1", "COVID Vaccination Attributes", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -569,6 +614,7 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
                                                 "Age Group",
                                                 "age",
                                             ),
+                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
                                         ],
                                         [],
                                         [
@@ -623,15 +669,35 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
         descriptor = foo["descriptor"]["Select"]
         data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
 
-        # Build dict of dicts with relevant info
-        col_mapping = {x["Value"]: x["Name"] for x in descriptor}
-        col_keys = list(col_mapping.keys())
+        row_names = [
+            "age",
+            "janssen_vaccine_completed",
+            "moderna_vaccine_initiated",
+            "moderna_vaccine_completed",
+            "pfizer_vaccine_initiated",
+            "pfizer_vaccine_completed"
+        ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
-        row_names = [col_mapping[desc["N"]] for desc in data[0]["S"]]
         for record in data:
-            data_rows.append(record["C"])
+            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
+            else:
+                j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
+            if(len(record["M"][1]["DM3"][1]["C"])> 2):
+                moderna2 = record["M"][1]["DM3"][1]["C"][2]
+            else:
+                moderna2 = 0
+            if(len(record["M"][1]["DM3"][2]["C"]) > 1):
+                pfizer1 = record["M"][1]["DM3"][2]["C"][1]
+                pfizer2 = 0
+                if(len(record["M"][1]["DM3"][2]["C"]) > 2):
+                    pfizer2 = record["M"][1]["DM3"][2]["C"][2]
+            else:
+                pfizer1 = 0
+                pfizer2 = 0
+            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],moderna2, pfizer1, pfizer2))
 
         age_info_replace = {
             "Age 15 and Younger": "0-15",
@@ -650,15 +716,29 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
         # Title case and remove the word county
         df["location"] = self.state_fips
 
-        # Reshape
         crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
+            "janssen_vaccine_completed": CMU(
+                category="janssen_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
+            "moderna_vaccine_initiated": CMU(
+                category="moderna_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "moderna_vaccine_completed": CMU(
+                category="moderna_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_initiated": CMU(
+                category="pfizer_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "pfizer_vaccine_completed": CMU(
+                category="pfizer_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
