@@ -13,4 +13,6 @@ libraries
    :caption: Contents:
 
    installation
-   architecture
+   structure
+   writing_scrapers
+   faq

@@ -31,7 +31,10 @@ from can_tools.scrapers.official.DC.dc_vaccines import (
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
 )
-from can_tools.scrapers.official.federal.CDC.cdc_state_vaccines import CDCStateVaccine
+from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
+    CDCStateVaccine,
+    CDCUSAVaccine,
+)
 from can_tools.scrapers.official.federal.CDC.cdc_county_vaccines import CDCCountyVaccine
 from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
     CDCVariantTracker,
@@ -102,6 +105,12 @@ from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
 from can_tools.scrapers.official.NY.ny_vaccine import NewYorkVaccineCounty
 from can_tools.scrapers.official.OH.oh_vaccine import OhioVaccineCounty
+from can_tools.scrapers.official.OH.oh_vaccine_demographics import (
+    OHVaccineCountyRace,
+    OHVaccineCountySex,
+    OHVaccineCountyAge,
+    OHVaccineCountyEthnicity,
+)
 from can_tools.scrapers.official.OR.or_vaccine import OregonVaccineCounty
 from can_tools.scrapers.official.PA.pa_vaccines import (
     PennsylvaniaCountyVaccines,

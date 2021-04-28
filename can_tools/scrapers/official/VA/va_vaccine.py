@@ -243,5 +243,4 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
         out["unit"] = "people"
         # out["category"] = "vaccine"
         out["vintage"] = self._retrieve_vintage()
-        out["last_updated"] = self._retrieve_vintage()
         return out

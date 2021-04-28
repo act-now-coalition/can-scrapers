@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="CAN Scraper Infrastructure" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>The overall microservice architecture we use is shown in the diagram below:</p>
+<a class="reference internal image-reference" href="../_images/can_scrapers_overview.png"><img alt="CAN scraping architecture" src="../_images/can_scrapers_overview.png" style="width: 100%;" /></a>
+<p>In, words, these components are</p>
+<ol class="arabic simple">
+<li><p>Scrapers: these are open source scrapers written in Python. The repository is
+here <a class="reference external" href="https://github.com/covid-projections/can-scrapers">https://github.com/covid-projections/can-scrapers</a></p></li>
+<li><p>Database: we store all data in a postgrestql database</p></li>
+<li><p>API: We have REST and GraphQL APIs. They are automatically generated using
+the PostgREST and postgraphile libraries</p></li>
+<li><p>Client Libraries: We have client libraries in Python, R, and Julia that
+integrate with the REST API</p></li>
+<li><p>API Gateway: we have a Kong API gateway that sits in front of all user
+requests and handles things like caching, routing, and authentication</p></li>
+<li><p>Other services: we have a handful of other microservices that perform
+specific functions. These are contained in docker containers that communicate
+over HTTP and are managed by Google Cloud run</p></li>
+</ol>
+<p>We have a few comments about each of the 6 component groups below</p>
+<div class="section" id="scrapers">
+<h2>Scrapers<a class="headerlink" href="#scrapers" title="Permalink to this headline">¶</a></h2>
+<p>We have written about 70 scrapers to gather data from various sources. The
+sources are primarily state and county level dashboards, typically operated by
+the local government itself or the local health department. Other scrapers pull
+in data from sources like the New York Times, HHS, Our World in Data (for
+international data), and CovidTrackingProject.</p>
+</div>
+<div class="section" id="running-scrapers-apache-airflow">
+<h2>Running Scrapers: Apache Airflow<a class="headerlink" href="#running-scrapers-apache-airflow" title="Permalink to this headline">¶</a></h2>
+<p>Inside the <a class="reference external" href="https://github.com/covid-projections/can-scrapers">can-scrapers</a>
+repository there is a services/airflow diretory that contains infrastructure
+code for running all scrapers using Apache Airflow.</p>
+<p>Most of the Airflow DAGs are automatically generated. This happens by importing
+<code class="code docutils literal notranslate"><span class="pre">can_tools</span></code> and checking for all subclases of a particular base class. For
+each of these subclasses we generate a dag that calls <code class="code docutils literal notranslate"><span class="pre">get</span></code> to fetch the
+data and <code class="code docutils literal notranslate"><span class="pre">put</span></code> to store it in the database. The <code class="code docutils literal notranslate"><span class="pre">get</span></code> methods are
+all specialized for each scraper. The <code class="code docutils literal notranslate"><span class="pre">put</span></code> method can also be
+specialized, but often the one from the base class is sufficient.</p>
+<p>Each DAG runs once every two hours. We assign a random execution time to each
+DAG so that they don’t all try to run at the exact same time. This helps us
+better utilize compute resources.</p>
+</div>
+<div class="section" id="database">
+<h2>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h2>
+<p>When airflow runs a scraper from can_tools, all data ends up in a postgresql
+database. The database has three main schemas:</p>
+<ol class="arabic simple">
+<li><p>data: this stores the raw data in a mostly normalized way.</p></li>
+<li><p>meta: This schema stores metadata such as lookup tables for variable id ↔
+variable name and state/county metadata</p></li>
+<li><p>api: this is the schema that determines the user facing API. It mostly
+contains SQL views that join together tables from data and meta schemas to
+control the user experience</p></li>
+</ol>
+<p>The client libraries/APIs (see below) only access the <code class="code docutils literal notranslate"><span class="pre">api</span></code> schema</p>
+<p>We run the database using Google Cloud SQL.</p>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p>We provide REST and GraphQL APIs to our users</p>
+<div class="section" id="rest-api">
+<h3>REST API<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h3>
+<p>The REST API is automatically generated using
+<a class="reference external" href="http://postgrest.org/en/v7.0.0/">PostgREST</a>. PostgREST authenticates to the
+database via read-only credentials and automatically generates endpoints for
+each table or view in the <code class="code docutils literal notranslate"><span class="pre">api</span></code> schema.</p>
+<p>PostgREST also auto-generates documentation as a swagger/OpenAPI json file. We
+use this on our website to populate the doc page, in the client libraries to
+auto-generate classes for each endpoint, and to create a postman collection as
+part of their featured list of covid APIs
+(<a class="reference external" href="https://postman-toolboxes.github.io/covid-19/#featured-collections">https://postman-toolboxes.github.io/covid-19/#featured-collections</a>)</p>
+</div>
+<div class="section" id="graphql-api">
+<h3>GraphQL API<a class="headerlink" href="#graphql-api" title="Permalink to this headline">¶</a></h3>
+<p>We also have a complete GraphQL API. This is also automatically generated, but
+by the [postgraphile](<a class="reference external" href="https://www.graphile.org/postgraphile/">https://www.graphile.org/postgraphile/</a>) library.</p>
+<p>The endpoint is <a class="reference external" href="https://api.covidcountydata.org/graphql">https://api.covidcountydata.org/graphql</a> and an interactive
+GraphiQL playground can be found at <a class="reference external" href="https://api.covidcountydata.org/graphiql">https://api.covidcountydata.org/graphiql</a></p>
+</div>
+<div class="section" id="client-libraries">
+<h3>Client Libraries<a class="headerlink" href="#client-libraries" title="Permalink to this headline">¶</a></h3>
+<p>Using the swagger.json file produced by PostgREST we have auto-generated client
+libraries in Python, R, and Julia</p>
+<p>They all provide the same set of core features, including</p>
+<ul class="simple">
+<li><p>Declarative query building: users specify what data they would like to end up
+with and we do the work of making all requests, merging/aligning datasets,
+converting to long form, and returning a dataframe with all data</p></li>
+<li><p>API key handling: there is a register method in each client library that
+handles requesting and storing API keys. If a user calls register and gives
+their email address, the API key will be looked up or generated and returned
+to the user. The API key is then stored in the user’s home directory and will
+be used for all subsequent API interactions, even in future programming
+sessions. Users also have the option to manually pass an API key (perhaps
+looked up from an environment variable) when creating a client</p></li>
+<li><p>Documentation/introspection: the library also hooks into each language’s
+native system for documentation and introspection. For example, in Python each
+API endpoint is an method on the Client class. These methods can be searched
+interactively using tab completion. Also if you are in IPython or Jupyter you
+can use <cite>?</cite> to get the auto-generated documentation directly from the
+swagger.json file</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="api-gateway">
+<h2>API Gateway<a class="headerlink" href="#api-gateway" title="Permalink to this headline">¶</a></h2>
+<p>We route all requests to <a class="reference external" href="https://api.covidcountydata.org/XXXX">https://api.covidcountydata.org/XXXX</a> through a single
+API gateway</p>
+<p>This gateway is creating using the open source <a class="reference external" href="https://konghq.com/kong/">Kong API
+gateway</a> library and handles a variety of tasks for
+us:</p>
+<ul class="simple">
+<li><p>Generating API keys for users: using key-auth plugin
+(<a class="reference external" href="https://docs.konghq.com/hub/kong-inc/key-auth/">https://docs.konghq.com/hub/kong-inc/key-auth/</a></p></li>
+<li><p>Checking API keys on each request: again using key-auth plugin</p></li>
+<li><p>Logging/tracking: All requests are logged with a custom microservice (see
+below) and stored in our Postgres database. This happens using the Kong
+http-log plugin (<a class="reference external" href="https://docs.konghq.com/hub/kong-inc/http-log/">https://docs.konghq.com/hub/kong-inc/http-log/</a>)</p></li>
+<li><p>Routing: we have a variety of servers/services running. Kong will inspect the
+requested url and headers and route to the correct underlying server.</p></li>
+<li><p>Caching: certain requests/endpoints can be cached by the server to avoid
+un-necessary hits to the database. This is done using the Kong proxy-cache
+plugin (<a class="reference external" href="https://docs.konghq.com/hub/kong-inc/proxy-cache/">https://docs.konghq.com/hub/kong-inc/proxy-cache/</a>)</p></li>
+<li><p>request or response transformation: some of the backend microservices require
+certain headers to be set. In these cases we use the request transformer
+(<a class="reference external" href="https://docs.konghq.com/hub/kong-inc/request-transformer">https://docs.konghq.com/hub/kong-inc/request-transformer</a>) and response
+transformer (<a class="reference external" href="https://docs.konghq.com/hub/kong-inc/response-transformer">https://docs.konghq.com/hub/kong-inc/response-transformer</a>)
+plugins.</p></li>
+</ul>
+</div>
+<div class="section" id="other-services">
+<h2>Other Services<a class="headerlink" href="#other-services" title="Permalink to this headline">¶</a></h2>
+<p>We have a few other microservices that support our APIs</p>
+<p>These are all contained in docker containers and run an HTTP server for
+processing requests</p>
+<p>Each of these is deployed and auto-scaled using Google Cloud Run</p>
+<p>The microservices are:</p>
+<ul class="simple">
+<li><p>Audit server: we prototyped a feature on our website to allow crowd-sourced
+auditing of or data. Users would visit the audit page of the site, we would
+select a specific scraper for them to audit. Once selected, we would show the
+scrapers current data as well as open an iframe containing the scraper’s url
+so users can verify that each datapoint we were extracting from the source was
+correct. Users could then fill out a form on the website. The form’s contents
+were sent to this audit server and logged in our database. It didn’t gain
+traction or make it out of PoC</p></li>
+<li><p>clean_swagger: the swagger file generated by PostgREST is a little messy. We
+have simple python service that obtains the raw PostgREST swagger.json and
+cleans it up before returning to places like the client library, website, or
+postman collection.</p></li>
+<li><p>client-microservice: we are about to launch a dataset customizer feature to
+our web page. This is basically a GUI version of the client libraries. On the
+website users can select which datasets they’d like and what filters (e.g.
+geography, time windows) they want to apply. Once the request is built up by
+web users, the site sends a request to this microservice, which is a very thin
+wrapper around our Python client. The Python client will request the data,
+prepare the return and send back to the frontend for a clean/custom download</p></li>
+<li><p>latest_downloads: we have a download csv feature on the website. This is
+similar to CANs API and is a thin layer that sits on top of a cloud storage
+bucket. We had user feedback that we wanted to customize the filename of the
+downloaded files to include the date the data was downloaded. This
+latest_downloads microservice gets a request for a particular dataset to
+download, fetches the most recent version of that from cloud storage bucket,
+and then returns it to the user with the current date added to the file name.
+Probably overkill to have a whole microservice for this, but it weighed in at
+less than 40 lines of code, so it was a pretty easy solution to implement and
+maintain.</p></li>
+<li><p>metrics-from-kong: this microservice implements our custom logging middleware.
+All requests to the API are relayed from Kong to this micro service where we
+can process the request and store the output in our database</p></li>
+<li><p>nha_data_injest: this is a microservice that handles scraping data from the
+Nevada Health association pdfs CAN has been receiving. It wraps one of the
+scrapers in can_tools and exposes it as a triggerable cloud function so it
+can process files on demand, as they come in</p></li>
+<li><p>postgraphile: This is the microservice that runs the postgraphile library
+providing our GraphQL API</p></li>
+<li><p>postgrest: This is the microservice that runs the PostgREST library and
+provides our REST api</p></li>
+<li><p>report_generator: This microservice is responsible for reporting when new
+variables first entered our database. The output is rendered at the bottom of
+<a class="reference external" href="https://covidcountydata.org/data">https://covidcountydata.org/data</a> to provide a “changelog” for when new data
+came into the system.</p></li>
+<li><p>variable_names: this microservice provides support for the custom data
+downloader feature we are about to release. For each endpoint it returns a
+list of unique variable names contained within the dataset. This allows the
+front-end to allow filtering in/out variables within a dataset. It is a
+microservice so we can simplify front-end coding and so that this variable
+list can be cached by Kong and we can avoid unnecessary trips to the database
+for this info.</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../scraping/index.html">Data Scraping</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CAN Scraper Infrastructure</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#infrastructure">Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#services">Services</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">CAN Scraper Infrastructure</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">CAN Scraper Infrastructure</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/infrastructure/overview.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

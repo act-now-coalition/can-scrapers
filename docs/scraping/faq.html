@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CAN Scraper Infrastructure" href="../infrastructure/index.html" />
+    <link rel="prev" title="Writing Scrapers" href="writing_scrapers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="faq">
+<h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
+<p>This document contains a list of questions we’ve heard developers ask about how the system works, how to write a scraper, or anything else related to our data engineering efforts. Our intention is for this document to be updated frequently and be a living resource of common questions and their answers.</p>
+<p>In code snippets below you will see references to a few variables (<code class="docutils literal notranslate"><span class="pre">d</span></code>, <code class="docutils literal notranslate"><span class="pre">engine</span></code>, <code class="docutils literal notranslate"><span class="pre">df</span></code>), these are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">d</span></code>: an instance of a scraper</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine</span></code>: a sqlalchemy engine, most often the sqlite based dev engine</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">df</span></code>: a clean/normalized DataFrame that is the output of the <code class="docutils literal notranslate"><span class="pre">normalize</span></code> method</p></li>
+</ul>
+<div class="section" id="location-id-sql-error">
+<h2>Location_id sql error<a class="headerlink" href="#location-id-sql-error" title="Permalink to this headline">¶</a></h2>
+<p><em>How to diagnose this problem:</em> when calling <code class="docutils literal notranslate"><span class="pre">d.put(engine,</span> <span class="pre">df)</span></code> you will see an error that looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IntegrityError</span><span class="p">:</span> <span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span> <span class="n">constraint</span> <span class="n">failed</span><span class="p">:</span> <span class="n">covid_observations</span><span class="o">.</span><span class="n">location_id</span>
+</pre></div>
+</div>
+<p>There are two possible cases for handling locations: using a <code class="docutils literal notranslate"><span class="pre">location_name</span></code> column with state or county name or using a <code class="docutils literal notranslate"><span class="pre">location</span></code> column with fips codes</p>
+<div class="section" id="location-name-column">
+<h3><code class="docutils literal notranslate"><span class="pre">location_name</span></code> column<a class="headerlink" href="#location-name-column" title="Permalink to this headline">¶</a></h3>
+<p>If you have a <code class="docutils literal notranslate"><span class="pre">location_name</span></code> column, chances are you have a misspelled county name, a row that isn’t a county (<code class="docutils literal notranslate"><span class="pre">All</span></code> or <code class="docutils literal notranslate"><span class="pre">Total</span></code> are common issues)</p>
+<p><em>How to fix this problem:</em> Try the following method: <code class="docutils literal notranslate"><span class="pre">d.find_unknown_location_id(engine,</span> <span class="pre">df)</span></code></p>
+<p>It will return rows of your DataFrame for which we do not recognize the county name</p>
+<p>You can compare this list against the list of counties for that state, which you can obtain via:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">locs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;select * from locations&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">state_locs</span> <span class="o">=</span> <span class="n">locs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">locs</span><span class="p">[</span><span class="s2">&quot;state_fips&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">d</span><span class="o">.</span><span class="n">state_fips</span><span class="p">,</span> <span class="p">:]</span>
+</pre></div>
+</div>
+<p>Most often, the fix in this situation is to fix spelling/capitalization for a county name (to match what is in <code class="docutils literal notranslate"><span class="pre">state_locs</span></code>) or delete the offending rows if they are obviously not counties</p>
+</div>
+<div class="section" id="location-column">
+<h3><code class="docutils literal notranslate"><span class="pre">location</span></code> column<a class="headerlink" href="#location-column" title="Permalink to this headline">¶</a></h3>
+<p>If instead you have a <code class="docutils literal notranslate"><span class="pre">location</span></code> column, check to make sure that each row of the <code class="docutils literal notranslate"><span class="pre">location</span></code> column maps into a known location for that state</p>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">state_locs</span></code> DataFrame from the code snippet above to see all known locations for the state</p>
+</div>
+</div>
+<div class="section" id="variable-id-sql-error">
+<h2>variable_id sql error<a class="headerlink" href="#variable-id-sql-error" title="Permalink to this headline">¶</a></h2>
+<p><em>How to diagnose this problem:</em> when calling <code class="docutils literal notranslate"><span class="pre">d.put(engine,</span> <span class="pre">df)</span></code> you will see an error that looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IntegrityError</span><span class="p">:</span> <span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span> <span class="n">constraint</span> <span class="n">failed</span><span class="p">:</span> <span class="n">covid_observations</span><span class="o">.</span><span class="n">variable_id</span>
+</pre></div>
+</div>
+<p><em>How to fix this problem:</em> Try the following method: <code class="docutils literal notranslate"><span class="pre">d.find_unknown_location_id(engine,</span> <span class="pre">df)</span></code></p>
+<p>It will return rows of your DataFrame for which we do not recognize the variable (recall that a variable_id is defined by a triplet <code class="docutils literal notranslate"><span class="pre">(&quot;category&quot;,</span> <span class="pre">&quot;measurement&quot;,</span> <span class="pre">&quot;unit&quot;)</span></code> – the CMU columns)</p>
+<p>The most common fixes for this problem are:</p>
+<ul class="simple">
+<li><p>Fix spelling on one of the CMU columns</p></li>
+<li><p>Change recorded value of CMU columns to match a value in the file <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code></p></li>
+<li><p>If it is an entirely new type of variable, you may need to add a row to the <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code> file and try to <code class="docutils literal notranslate"><span class="pre">.put</span></code> again</p>
+<ul>
+<li><p>If you are adding a brand new value for any of category, measurement, unit you also need to add the correspoinding value to one of <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_{categories,measurements,units}.csv</span></code></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="demographic-id-sql-error">
+<h2>demographic_id sql error<a class="headerlink" href="#demographic-id-sql-error" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Data Scraping</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Developer Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="writing_scrapers.html">Writing Scrapers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/index.html">CAN Scraper Infrastructure</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Data Scraping</a><ul>
+      <li>Previous: <a href="writing_scrapers.html" title="previous chapter">Writing Scrapers</a></li>
+      <li>Next: <a href="../infrastructure/index.html" title="next chapter">CAN Scraper Infrastructure</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/scraping/faq.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

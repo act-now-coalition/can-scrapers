@@ -1,8 +1,3 @@
-.. CAN Scrapers documentation master file, created by
-   sphinx-quickstart on Fri Nov 13 10:46:54 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to CAN Scrapers's documentation!
 ========================================
 
@@ -10,7 +5,7 @@ This documentation is intended for developers who wish to contribute to the
 CovidActNow (CAN) data engineering effort. The main goal of the CAN data
 engineering team is identify, collect, and distribute high-integrity COVID-19
 data for all US counties. The main metrics of importance are cases, deaths,
-testing statistics, and hospitalizations.
+testing statistics, hospitalizations, and vaccinations.
 
 The efforts of the data engineering team are roughly split into two categories:
 
