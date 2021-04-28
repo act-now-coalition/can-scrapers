@@ -234,7 +234,11 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                 "Race",
                                                 "race",
                                             ),
-                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
+                                            (
+                                                "c1",
+                                                "Vaccine Manufacturer",
+                                                "manufacturer",
+                                            ),
                                         ],
                                         [],
                                         [
@@ -296,17 +300,26 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_initiated",
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
-            "pfizer_vaccine_completed"
+            "pfizer_vaccine_completed",
         ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
         for record in data:
-            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+            if len(record["M"][1]["DM3"][0]["C"]) > 2:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
             else:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
-            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],record["M"][1]["DM3"][1]["C"][2], record["M"][1]["DM3"][2]["C"][1],record["M"][1]["DM3"][2]["C"][2]))
+            data_rows.append(
+                (
+                    record["G0"],
+                    j_j_vacc,
+                    record["M"][1]["DM3"][1]["C"][1],
+                    record["M"][1]["DM3"][1]["C"][2],
+                    record["M"][1]["DM3"][2]["C"][1],
+                    record["M"][1]["DM3"][2]["C"][2],
+                )
+            )
 
         # Dump records into a DataFrame
         race_info_replace = {
@@ -424,8 +437,11 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
                                                 "Gender",
                                                 "sex",
                                             ),
-                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
-
+                                            (
+                                                "c1",
+                                                "Vaccine Manufacturer",
+                                                "manufacturer",
+                                            ),
                                         ],
                                         [],
                                         [
@@ -486,18 +502,26 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_initiated",
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
-            "pfizer_vaccine_completed"
+            "pfizer_vaccine_completed",
         ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
         for record in data:
-            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+            if len(record["M"][1]["DM3"][0]["C"]) > 2:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
             else:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
-            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],record["M"][1]["DM3"][1]["C"][2], record["M"][1]["DM3"][2]["C"][1],record["M"][1]["DM3"][2]["C"][2]))
-
+            data_rows.append(
+                (
+                    record["G0"],
+                    j_j_vacc,
+                    record["M"][1]["DM3"][1]["C"][1],
+                    record["M"][1]["DM3"][1]["C"][2],
+                    record["M"][1]["DM3"][2]["C"][1],
+                    record["M"][1]["DM3"][2]["C"][2],
+                )
+            )
 
         gender_info_replace = {
             "Male": "male",
@@ -614,7 +638,11 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
                                                 "Age Group",
                                                 "age",
                                             ),
-                                            ("c1", "Vaccine Manufacturer", "manufacturer"),
+                                            (
+                                                "c1",
+                                                "Vaccine Manufacturer",
+                                                "manufacturer",
+                                            ),
                                         ],
                                         [],
                                         [
@@ -675,29 +703,38 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_initiated",
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
-            "pfizer_vaccine_completed"
+            "pfizer_vaccine_completed",
         ]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
         for record in data:
-            if(len(record["M"][1]["DM3"][0]["C"]) > 2):
+            if len(record["M"][1]["DM3"][0]["C"]) > 2:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
             else:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
-            if(len(record["M"][1]["DM3"][1]["C"])> 2):
+            if len(record["M"][1]["DM3"][1]["C"]) > 2:
                 moderna2 = record["M"][1]["DM3"][1]["C"][2]
             else:
                 moderna2 = 0
-            if(len(record["M"][1]["DM3"][2]["C"]) > 1):
+            if len(record["M"][1]["DM3"][2]["C"]) > 1:
                 pfizer1 = record["M"][1]["DM3"][2]["C"][1]
                 pfizer2 = 0
-                if(len(record["M"][1]["DM3"][2]["C"]) > 2):
+                if len(record["M"][1]["DM3"][2]["C"]) > 2:
                     pfizer2 = record["M"][1]["DM3"][2]["C"][2]
             else:
                 pfizer1 = 0
                 pfizer2 = 0
-            data_rows.append((record["G0"], j_j_vacc, record["M"][1]["DM3"][1]["C"][1],moderna2, pfizer1, pfizer2))
+            data_rows.append(
+                (
+                    record["G0"],
+                    j_j_vacc,
+                    record["M"][1]["DM3"][1]["C"][1],
+                    moderna2,
+                    pfizer1,
+                    pfizer2,
+                )
+            )
 
         age_info_replace = {
             "Age 15 and Younger": "0-15",
