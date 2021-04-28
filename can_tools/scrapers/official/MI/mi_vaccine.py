@@ -147,6 +147,7 @@ class MichiganVaccineCountyDemographics(MichiganVaccineCounty):
         df.Sex = df.Sex.replace("U", "unknown")
         df["Age Group"] = df["Age Group"].str.replace(" years", "")
         df["Age Group"] = df["Age Group"].str.replace("+", "_plus")
+        df["Age Group"] = df["Age Group"].replace("missing", "unknown")
         return df
 
     def _pivot(self, df):

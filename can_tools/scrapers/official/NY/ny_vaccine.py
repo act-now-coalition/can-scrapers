@@ -19,5 +19,5 @@ class NewYorkVaccineCounty(TableauDashboard):
 
     cmus = {
         "SUM(First Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "SUM(People with completed Vaccine Series )-alias": variables.FULLY_VACCINATED_ALL,
+        "SUM(Series Complete)-alias": variables.FULLY_VACCINATED_ALL,
     }

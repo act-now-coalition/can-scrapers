@@ -31,3 +31,9 @@ PERCENTAGE_PEOPLE_COMPLETING_VACCINE: CMU = CMU(
     measurement="current",
     unit="percentage",
 )
+
+TOTAL_VACCINE_DISTRIBUTED: CMU = CMU(
+    category="total_vaccine_distributed",
+    measurement="cumulative",
+    unit="doses",
+)

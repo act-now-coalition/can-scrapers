@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CAN Scraper Infrastructure &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Overview" href="overview.html" />
+    <link rel="prev" title="FAQ" href="../scraping/faq.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="can-scraper-infrastructure">
+<h1>CAN Scraper Infrastructure<a class="headerlink" href="#can-scraper-infrastructure" title="Permalink to this headline">¶</a></h1>
+<p>In this section you will learn more about the CAN Data Engineering
+infrastructure.</p>
+<p>All CAN scraper infrastructure is hosted in Google Cloud Platform and managed
+with [terraform](<a class="reference external" href="https://www.terraform.io/">https://www.terraform.io/</a>)</p>
+<p>In this repository there are two root-level directories that contain our cloud
+resources:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>: contains the terraform codes necessary to deploy and destroy
+the services</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">services</span></code>: A collection of microservices. Each microservice is contained in
+its own directory and deployed inside docker containers. We use
+[earthly](<a class="reference external" href="https://earthly.dev/">https://earthly.dev/</a>) as a build tool for building all the</p></li>
+</ol>
+<div class="section" id="infrastructure">
+<h2>Infrastructure<a class="headerlink" href="#infrastructure" title="Permalink to this headline">¶</a></h2>
+<p>The infrastructure for can-scrapers is a subset of that used for Covid County Data (CCD)</p>
+<p>The CCD infrastructure is documented in the files below</p>
+<p>We may work on dedicated notes/docs for the can-scrapers infrastructure, but we have not yet</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#scrapers">Scrapers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#running-scrapers-apache-airflow">Running Scrapers: Apache Airflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#database">Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#api">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#api-gateway">API Gateway</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#other-services">Other Services</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="services">
+<h2>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h2>
+<p>Each microservice has config and supporting files in a subdirectory of <code class="docutils literal notranslate"><span class="pre">services/</span></code></p>
+<p>Many of these services were used to support Covid County Data (CCD) before CCD merged with CAN</p>
+<p>We will not document these here, but instead focus on the ones actively in use for CAN purposes</p>
+<p>The services used to support CAN work are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prefect</span></code>: core orchestration system responsible for executing all scrapers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook</span></code>: A webhook server that listens for push events to the main branch of this repo and updates the flows managed by prefect to always match master. This includes auto-updating of the codebase and auto-deployment of new scrapers</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../scraping/index.html">Data Scraping</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CAN Scraper Infrastructure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#infrastructure">Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#services">Services</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../scraping/faq.html" title="previous chapter">FAQ</a></li>
+      <li>Next: <a href="overview.html" title="next chapter">Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/infrastructure/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

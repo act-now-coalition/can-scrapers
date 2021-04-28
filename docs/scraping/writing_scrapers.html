@@ -1,0 +1,493 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Writing Scrapers &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="Structure" href="structure.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="writing-scrapers">
+<h1><a class="toc-backref" href="#id1">Writing Scrapers</a><a class="headerlink" href="#writing-scrapers" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#writing-scrapers" id="id1">Writing Scrapers</a></p>
+<ul>
+<li><p><a class="reference internal" href="#finding-the-right-subclass" id="id2">Finding the right subclass</a></p></li>
+<li><p><a class="reference internal" href="#filling-in-class-level-attributes" id="id3">Filling in class level attributes</a></p></li>
+<li><p><a class="reference internal" href="#writing-the-fetch-method" id="id4">Writing the fetch method</a></p></li>
+<li><p><a class="reference internal" href="#writing-the-normalize-method" id="id5">Writing the normalize method</a></p>
+<ul>
+<li><p><a class="reference internal" href="#covidvariables" id="id6">CovidVariables</a></p></li>
+<li><p><a class="reference internal" href="#coviddemographics" id="id7">CovidDemographics</a></p></li>
+<li><p><a class="reference internal" href="#cmu" id="id8"><code class="docutils literal notranslate"><span class="pre">CMU</span></code></a></p></li>
+<li><p><a class="reference internal" href="#helper-methods" id="id9">Helper Methods</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#running-the-scraper-locally" id="id10">Running the scraper locally</a></p></li>
+<li><p><a class="reference internal" href="#running-the-tests-for-the-scraper" id="id11">Running the tests for the scraper</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>The goal of the <code class="docutils literal notranslate"><span class="pre">can_tools</span></code> package is to make it easy to <em>build</em> and <em>maintain</em> COVID data scrapers</p>
+<p>As noted in <a class="reference internal" href="structure.html#scraper-structure"><span class="std std-ref">Structure</span></a>, we have built a number of tools in an effort to achieve this goal</p>
+<p>This document describes how to build a scraper</p>
+<p>We will analyze the code for the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> scraper, repeated below for convenience:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">us</span>
+
+<span class="kn">from</span> <span class="nn">can_tools.scrapers</span> <span class="kn">import</span> <span class="n">variables</span>
+<span class="kn">from</span> <span class="nn">can_tools.scrapers.official.base</span> <span class="kn">import</span> <span class="n">ArcGIS</span>
+
+
+<span class="k">class</span> <span class="nc">NewJerseyVaccineCounty</span><span class="p">(</span><span class="n">ArcGIS</span><span class="p">):</span>
+    <span class="n">ARCGIS_ID</span> <span class="o">=</span> <span class="s2">&quot;Z0rixLlManVefxqY&quot;</span>
+    <span class="n">has_location</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">location_type</span> <span class="o">=</span> <span class="s2">&quot;county&quot;</span>
+    <span class="n">state_fips</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">us</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="s2">&quot;New Jersey&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fips</span><span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;https://covid19.nj.gov/#live-updates&quot;</span>
+    <span class="n">source_name</span> <span class="o">=</span> <span class="s2">&quot;New Jersey Department of Health&quot;</span>
+    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;VaxCov2&quot;</span>
+
+    <span class="c1"># NOTE: do not delete the `(start|end) variables` comments</span>
+    <span class="c1">#       they are needed to generate documentation</span>
+    <span class="c1"># start variables</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Dose_1&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">INITIATING_VACCINATIONS_ALL</span><span class="p">,</span>
+        <span class="s2">&quot;CompletedVax&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">FULLY_VACCINATED_ALL</span><span class="p">,</span>
+        <span class="s2">&quot;Grand_Total&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">TOTAL_DOSES_ADMINISTERED_ALL</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># end variables</span>
+
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_jsons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">non_counties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OUT OF STATE&quot;</span><span class="p">,</span> <span class="s2">&quot;UNKNOWN&quot;</span><span class="p">,</span> <span class="s2">&quot;MISSING&quot;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcgis_jsons_to_df</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_or_add_date_and_location</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">,</span>
+            <span class="n">location_name_column</span><span class="o">=</span><span class="s2">&quot;County&quot;</span><span class="p">,</span>
+            <span class="n">timezone</span><span class="o">=</span><span class="s2">&quot;US/Eastern&quot;</span><span class="p">,</span>
+            <span class="n">location_names_to_drop</span><span class="o">=</span><span class="n">non_counties</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_variables</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<div class="section" id="finding-the-right-subclass">
+<h2><a class="toc-backref" href="#id2">Finding the right subclass</a><a class="headerlink" href="#finding-the-right-subclass" title="Permalink to this headline">¶</a></h2>
+<p>As we’ve scraped data for the past year, we’ve noticed that a few technologies are used to create the majority of COVID data dashboards</p>
+<p>For the technologies we have come across often, we have created classes that capture key paterns of interaction that can be reused by specific scrapers</p>
+<p>The first step when starting a new scraper is to determine the technology used to create the dashboard, and then find the corresponding subclass</p>
+<p>See <a class="reference internal" href="structure.html#dashboard-parent-classes"><span class="std std-ref">Dashboard Type subclasses</span></a> for a discussion of these classes</p>
+<p>In our example with the <a class="reference external" href="https://covid19.nj.gov/#live-updates">New Jersy Vaccine Scraper</a>, we observed that the dashboard was produced using ArcGIS</p>
+<p>For that reason <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> subclasses from <code class="docutils literal notranslate"><span class="pre">ArcGIS</span></code></p>
+</div>
+<div class="section" id="filling-in-class-level-attributes">
+<h2><a class="toc-backref" href="#id3">Filling in class level attributes</a><a class="headerlink" href="#filling-in-class-level-attributes" title="Permalink to this headline">¶</a></h2>
+<p>After determining the type of dashboard you are planning to scrape and subclassing the appropriate parent, the next is to define some key class-level attributes</p>
+<p>The ones that must be defined include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">has_location:</span> <span class="pre">bool</span></code>: whether there is a column called <code class="docutils literal notranslate"><span class="pre">location</span></code> containing fips code (when <code class="docutils literal notranslate"><span class="pre">has_location</span> <span class="pre">=</span> <span class="pre">True</span></code>) or a column called <code class="docutils literal notranslate"><span class="pre">location_name</span></code> containing county names (when <code class="docutils literal notranslate"><span class="pre">has_location</span> <span class="pre">=</span> <span class="pre">False</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">location_type:</span> <span class="pre">str</span></code>: The type of geography represented in the data. Typically this will be <code class="docutils literal notranslate"><span class="pre">county</span></code> because we aim to scrape state level dashboards that report county level data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state_fips:</span> <span class="pre">int</span></code>: The (at most) two digit fips code for the  state as an integer. This should be found using the method <code class="docutils literal notranslate"><span class="pre">us.states.lookup</span></code> as shown in the example above</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source:</span> <span class="pre">str</span></code>: A URL pointing to the dashboard</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source_name:</span> <span class="pre">str</span></code>: The name of the entity that maintains or publishes the dashboard</p></li>
+</ul>
+<p>We also reccomend that you define a mapping from column names to instances of <code class="docutils literal notranslate"><span class="pre">CMU</span></code> as a class-level attribute called variables (see <a class="reference internal" href="#writing-normalize"><span class="std std-ref">Writing the normalize method</span></a> below for more details)</p>
+<p>There are other class-level attributes that may be required by the dashboard type specific parent class</p>
+<p>For example, for the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> class’ parent – <code class="docutils literal notranslate"><span class="pre">ArcGIS</span></code> – the following are required:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ARCGIS_ID:</span> <span class="pre">str</span></code>: A string identifying the resource id within the ArcGIS system</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service:</span> <span class="pre">str</span></code> A string representing the name of the service containing the data</p></li>
+</ul>
+</div>
+<div class="section" id="writing-the-fetch-method">
+<span id="writing-fetch"></span><h2><a class="toc-backref" href="#id4">Writing the fetch method</a><a class="headerlink" href="#writing-the-fetch-method" title="Permalink to this headline">¶</a></h2>
+<p>The first method you will write is <code class="docutils literal notranslate"><span class="pre">fetch</span></code></p>
+<p>This is responsible for making a network request to fetch a remote resource</p>
+<p>It should not handle parsing or cleaning of the response (other than a simple thing like parsing the JSON body of a <code class="docutils literal notranslate"><span class="pre">requests.Response</span></code>)</p>
+<p>The reason for this is that when scrapers are run, we like to keep track of failures for network requests vs failures in parsing or validation</p>
+<p>For many dashboard types, this fetch method will be very simple and be a call to one or more of the helper methods defined in the dashboard type specific parent class</p>
+<p>This is the case in our <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> scraper where we call out to the <code class="docutils literal notranslate"><span class="pre">get_all_jsons</span></code> method defined in <code class="docutils literal notranslate"><span class="pre">ArcGIS</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_jsons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="writing-the-normalize-method">
+<span id="writing-normalize"></span><h2><a class="toc-backref" href="#id5">Writing the normalize method</a><a class="headerlink" href="#writing-the-normalize-method" title="Permalink to this headline">¶</a></h2>
+<p>The normalize method is responsible for converting the raw data obtained by <code class="docutils literal notranslate"><span class="pre">fetch</span></code> into a clean, structured pandas DataFrame</p>
+<p>This step is often the most work as it requires interpreting/understanding the data presented on the dashboard, understanding the desired DataFrame structure/schema, and writing the necessary data transformation code (usually a sequence of calls to pandas.DataFrame methods) to map from the raw form into the can-scrapers schema</p>
+<p>The output DataFrames <em>must</em> contain the following columns:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 25%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>vintage</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pd.TimeStamp</span></code></p></td>
+<td><p>UTC timestamp for when scraper runs</p></td>
+</tr>
+<tr class="row-odd"><td><p>dt</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pd.TimeStamp</span></code></p></td>
+<td><p>Timestamp capturing date for observed data</p></td>
+</tr>
+<tr class="row-even"><td><p>location</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>County FIPS code</p></td>
+</tr>
+<tr class="row-odd"><td><p>location_name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>County name (if not location column)</p></td>
+</tr>
+<tr class="row-even"><td><p>category</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Category for variable (see below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>measurement</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Measurement for variable (see below)</p></td>
+</tr>
+<tr class="row-even"><td><p>unit</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Unit for variable (see below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>age</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>age group for demographic group (see below)</p></td>
+</tr>
+<tr class="row-even"><td><p>race</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>race group for demographic group (see below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ethnicity</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>ethnicity group for demographic group (see below)</p></td>
+</tr>
+<tr class="row-even"><td><p>sex</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>sex group for demographic group (see below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>value</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>The observed value</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">vintage</span></code>, <code class="docutils literal notranslate"><span class="pre">dt</span></code>,  and <code class="docutils literal notranslate"><span class="pre">location</span></code> (or <code class="docutils literal notranslate"><span class="pre">location_name</span></code> depending on whether the dashboard reports fips codes or county names) columns are typically added using the <code class="docutils literal notranslate"><span class="pre">_rename_or_add_date_and_location</span></code> (from <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code>)</p>
+<div class="section" id="covidvariables">
+<h3><a class="toc-backref" href="#id6">CovidVariables</a><a class="headerlink" href="#covidvariables" title="Permalink to this headline">¶</a></h3>
+<p>The (<code class="docutils literal notranslate"><span class="pre">category</span></code>, <code class="docutils literal notranslate"><span class="pre">measurement</span></code>, <code class="docutils literal notranslate"><span class="pre">unit</span></code>) triplet define what type of data is being observed.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">category</span></code> describes <cite>what</cite> the variable is. Some examples are <code class="docutils literal notranslate"><span class="pre">total_deaths</span></code> or <code class="docutils literal notranslate"><span class="pre">total_vaccine_completed</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">measurement</span></code> describes <cite>how</cite> the data is being reported. Some examples are <code class="docutils literal notranslate"><span class="pre">new</span></code>, <code class="docutils literal notranslate"><span class="pre">cumulative</span></code>, <code class="docutils literal notranslate"><span class="pre">rolling_7day_average</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unit</span></code> describes the units used for the observation. Some examples are <code class="docutils literal notranslate"><span class="pre">people</span></code>, <code class="docutils literal notranslate"><span class="pre">percentage</span></code>, <code class="docutils literal notranslate"><span class="pre">specimens</span></code>, <code class="docutils literal notranslate"><span class="pre">doses</span></code>, etc.</p></li>
+</ul>
+<p>The values used for these three columns must be known in our system</p>
+<p>Known values are recorded in the file <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap/covid_variables.csv</span></code></p>
+<p>Most often, you will be trying to scrape variables that we already know about. In this case, you need to go to the csv file mentioned above and find a row that matches what you are looking for</p>
+</div>
+<div class="section" id="coviddemographics">
+<h3><a class="toc-backref" href="#id7">CovidDemographics</a><a class="headerlink" href="#coviddemographics" title="Permalink to this headline">¶</a></h3>
+<p>The (<code class="docutils literal notranslate"><span class="pre">age</span></code>, <code class="docutils literal notranslate"><span class="pre">race</span></code>, <code class="docutils literal notranslate"><span class="pre">ethnicity</span></code>, <code class="docutils literal notranslate"><span class="pre">sex</span></code>) 4-tuple define what type of data is being observed.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">age</span></code> Categorizes an age group. Examples are <code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">0-16</span></code>, <code class="docutils literal notranslate"><span class="pre">20-30</span></code>, <code class="docutils literal notranslate"><span class="pre">81_plus</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">race</span></code> describes the race of the subpopulation represented. Some examples are <code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">ai_an</span></code>, <code class="docutils literal notranslate"><span class="pre">asian</span></code>, <code class="docutils literal notranslate"><span class="pre">black</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ethnicity</span></code> describes the ethnicity of the subpopulation represented. Some examples are <code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">hispanic</span></code>, <code class="docutils literal notranslate"><span class="pre">unknown</span></code> and  <code class="docutils literal notranslate"><span class="pre">non-hispanic</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sex</span></code> describes the sex of the subpopulation represented. Possible values are <code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">male</span></code>, <code class="docutils literal notranslate"><span class="pre">female</span></code>, <code class="docutils literal notranslate"><span class="pre">unknown</span></code></p></li>
+</ul>
+<p>This 4-tuple describes the demographic group represented in the data</p>
+<p>The reported demographic group must be known in our system</p>
+<p>Known values are recorded in the file <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap/covid_demographics.csv</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When scraping data that does not have a demographic dimension, these columns will all be filled entirely with the string <code class="docutils literal notranslate"><span class="pre">all</span></code></p>
+</div>
+</div>
+<div class="section" id="cmu">
+<h3><a class="toc-backref" href="#id8"><code class="docutils literal notranslate"><span class="pre">CMU</span></code></a><a class="headerlink" href="#cmu" title="Permalink to this headline">¶</a></h3>
+<p>To help fill in the values for the variable dimensions (category, measurement, unit) and the demographic dimensions (age, race, ethnicity, sex); there is a helper class called <code class="docutils literal notranslate"><span class="pre">CMU</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Before we added demographics to our system, we only had the variable dimensions. The name <code class="docutils literal notranslate"><span class="pre">CMU</span></code> was chosen as an acronym for (catgegory, measurement, unit)</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">CMU</span></code> class is documented below:</p>
+<dl class="py class">
+<dt id="can_tools.scrapers.base.CMU">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">can_tools.scrapers.base.</span></code><code class="sig-name descname"><span class="pre">CMU</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cases'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cumulative'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'people'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">race</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ethnicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#can_tools.scrapers.base.CMU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define variable and demographic dimensions for an observation</p>
+<p>Variable dimensions include:</p>
+<ul class="simple">
+<li><p>category: The ‘type’ of variable. Examples are <code class="docutils literal notranslate"><span class="pre">cases</span></code>, <code class="docutils literal notranslate"><span class="pre">total_vaccine_completed</span></code></p></li>
+<li><p>measurement: The form of measurement, e.g. <code class="docutils literal notranslate"><span class="pre">cumulative</span></code>, <code class="docutils literal notranslate"><span class="pre">new</span></code></p></li>
+<li><p>unit: The unit of measurement, e.g. <code class="docutils literal notranslate"><span class="pre">people</span></code>, <code class="docutils literal notranslate"><span class="pre">doses</span></code></p></li>
+</ul>
+<p>Demographic dimensions include:</p>
+<ul class="simple">
+<li><p>age: the age group, e.g. <code class="docutils literal notranslate"><span class="pre">1-10</span></code>, <code class="docutils literal notranslate"><span class="pre">40-49</span></code>, <code class="docutils literal notranslate"><span class="pre">65_plus</span></code></p></li>
+<li><p>race: the race, e.g. <code class="docutils literal notranslate"><span class="pre">white</span></code>, <code class="docutils literal notranslate"><span class="pre">black</span></code></p></li>
+<li><p>ethnicity: the ethnicity, e.g. <code class="docutils literal notranslate"><span class="pre">hispanic</span></code>, <code class="docutils literal notranslate"><span class="pre">non-hispanic</span></code></p></li>
+<li><p>sex: the sex, <code class="docutils literal notranslate"><span class="pre">male</span></code>, <code class="docutils literal notranslate"><span class="pre">female</span></code>, <code class="docutils literal notranslate"><span class="pre">uknown</span></code></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All demographic dimensions allow a value of <code class="docutils literal notranslate"><span class="pre">all</span></code>, which is interpreted
+as the observation corresponding to all groups of that dimension (i.e. if
+age is <code class="docutils literal notranslate"><span class="pre">all</span></code>, then the data represent all ages)</p>
+</div>
+<p>For a complete list of admissible variable 3-tuples see the file
+<code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code></p>
+<p>For a complete list of admissible demographic 4-tuples see the file
+<code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_demographics.csv</span></code></p>
+</dd></dl>
+
+<p>Typically a scraper will define a class attribute called <code class="docutils literal notranslate"><span class="pre">variables</span></code> that is a dictionary mapping from a column name in a wide form dataset we receive from the source into an instance of CMU describing variable and demographic dimensions for the data.</p>
+<p>A few <code class="docutils literal notranslate"><span class="pre">CMU</span></code> come up in many scrapers. These include <code class="docutils literal notranslate"><span class="pre">CMU</span></code> for total people with at least one dose, total people fully vaccinated, etc. Instead of repeating the instantiation of these <code class="docutils literal notranslate"><span class="pre">CMU</span></code> instances in every scraper, we instead have a helper module <code class="docutils literal notranslate"><span class="pre">can_tools.scrapers.variables</span></code> that contains common definitions as module level constants</p>
+<p>These were used in the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> scraper we’ve been working with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Dose_1&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">INITIATING_VACCINATIONS_ALL</span><span class="p">,</span>
+        <span class="s2">&quot;CompletedVax&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">FULLY_VACCINATED_ALL</span><span class="p">,</span>
+        <span class="s2">&quot;Grand_Total&quot;</span><span class="p">:</span> <span class="n">variables</span><span class="o">.</span><span class="n">TOTAL_DOSES_ADMINISTERED_ALL</span><span class="p">,</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="helper-methods">
+<h3><a class="toc-backref" href="#id9">Helper Methods</a><a class="headerlink" href="#helper-methods" title="Permalink to this headline">¶</a></h3>
+<p>Now we have all the pieces we need in order to fill in the necessary rows of a normalized DataFrame</p>
+<p>There are a few helper methods on the <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code> class (and therefore its subclasses) that we often use: <code class="docutils literal notranslate"><span class="pre">_rename_or_add_date_and_location</span></code> and <code class="docutils literal notranslate"><span class="pre">_reshape_variables</span></code></p>
+<p>These are documented in  <a class="reference internal" href="structure.html#state-dashboard"><span class="std std-ref">StateDashboard</span></a> and shown in the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty.normalize</span></code> method below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">non_counties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OUT OF STATE&quot;</span><span class="p">,</span> <span class="s2">&quot;UNKNOWN&quot;</span><span class="p">,</span> <span class="s2">&quot;MISSING&quot;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcgis_jsons_to_df</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_or_add_date_and_location</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">,</span>
+            <span class="n">location_name_column</span><span class="o">=</span><span class="s2">&quot;County&quot;</span><span class="p">,</span>
+            <span class="n">timezone</span><span class="o">=</span><span class="s2">&quot;US/Eastern&quot;</span><span class="p">,</span>
+            <span class="n">location_names_to_drop</span><span class="o">=</span><span class="n">non_counties</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_variables</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="running-the-scraper-locally">
+<h2><a class="toc-backref" href="#id10">Running the scraper locally</a><a class="headerlink" href="#running-the-scraper-locally" title="Permalink to this headline">¶</a></h2>
+<p>After writing a <code class="docutils literal notranslate"><span class="pre">fetch</span></code> and <code class="docutils literal notranslate"><span class="pre">normalize</span></code> method, you can run your scraper</p>
+<p>We could do this as follows:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">can_tools.scrapers</span> <span class="kn">import</span> <span class="n">NewJerseyVaccineCounty</span>
+
+<span class="c1"># create scraper</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">NewJerseyVaccineCounty</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl>
+<dt># fetch raw resource</dt><dd><p>raw = d.fetch()</p>
+<p># normalize the raw resource into a conformable DataFrame
+df = d.normalize(raw)</p>
+</dd>
+</dl>
+<p>At this point you should have a normalized DataFrame, ready to be injected into the CAN database.</p>
+<p>While running locally, we suggest you create an in-memory sqlite database and attempt to <code class="docutils literal notranslate"><span class="pre">put</span></code> your data</p>
+<p>We have helper methods set up for you to do this:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">can_tools.models</span> <span class="kn">import</span> <span class="n">create_dev_engine</span>
+
+<span class="c1"># create a sqlalchemy engine and session connected to</span>
+<span class="c1"># in memory sqlite db</span>
+<span class="n">engine</span><span class="p">,</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">create_dev_engine</span><span class="p">()</span>
+
+<span class="c1"># put the DataFrame into the db</span>
+<span class="n">d</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If at this stage you have any problems inserting the data, see the <a class="reference internal" href="faq.html#faq"><span class="std std-ref">FAQ</span></a> page</p>
+</div>
+<div class="section" id="running-the-tests-for-the-scraper">
+<h2><a class="toc-backref" href="#id11">Running the tests for the scraper</a><a class="headerlink" href="#running-the-tests-for-the-scraper" title="Permalink to this headline">¶</a></h2>
+<p>There are a few tests that are automatically defined for you</p>
+<p>We use the <code class="docutils literal notranslate"><span class="pre">pytest</span></code> framework</p>
+<p>If you wanted to run the full test suite, you could run the <code class="docutils literal notranslate"><span class="pre">pytest</span></code> command from the <code class="docutils literal notranslate"><span class="pre">can_tools</span></code> directory</p>
+<p>To select a subset of tests to run, use the <code class="docutils literal notranslate"><span class="pre">-k</span></code> flag for <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p>
+<p>For example, to run only the tests for our <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> scraper, I would run</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pytest -k NewJerseyVaccineCounty
+</pre></div>
+</div>
+<p>This would produce output similar to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>❯ pytest -k NewJerseyVaccineCounty
+============================================ test session starts =============================================
+platform linux -- Python 3.9.1, pytest-6.1.2, py-1.10.0, pluggy-0.13.1
+rootdir: /home/sglyon/valorum/covid/can-scrapers
+plugins: xdist-2.2.1, forked-1.3.0, parallel-0.1.0
+collected 370 items / 365 deselected / 5 selected
+
+tests/test_datasets.py .....                                                                           [100%]
+
+============================================== warnings summary ==============================================
+../../../anaconda3/envs/can-scrapers/lib/python3.9/site-packages/us/states.py:86: 46 warnings
+/home/sglyon/anaconda3/envs/can-scrapers/lib/python3.9/site-packages/us/states.py:86: DeprecationWarning: PY_SSIZE_T_CLEAN will be required for &#39;#&#39; formats
+   val = jellyfish.metaphone(val)
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=============================== 5 passed, 365 deselected, 46 warnings in 2.16s ===============================
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Data Scraping</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Developer Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Writing Scrapers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/index.html">CAN Scraper Infrastructure</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Data Scraping</a><ul>
+      <li>Previous: <a href="structure.html" title="previous chapter">Structure</a></li>
+      <li>Next: <a href="faq.html" title="next chapter">FAQ</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/scraping/writing_scrapers.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -47,6 +47,11 @@ class StateDashboard(DatasetBase, ABC):
         Must be set by subclasses. True if location code (fips code) appears in data
     state_fips: int
         Must be set by subclasses. The two digit state fips code (as an int)
+    source: str
+        Must be set by subclasses. URL pointing to dashboard
+    source_name: str
+        Must be set by subclasses. Name of entity managing dataset, e.g.
+        "New York State Department of Health"
 
     """
 
@@ -115,7 +120,11 @@ class StateDashboard(DatasetBase, ABC):
         return worked, rows_inserted, rows_deleted
 
     def _reshape_variables(
-        self, data: pd.DataFrame, variable_map: Dict[str, CMU]
+        self,
+        data: pd.DataFrame,
+        variable_map: Dict[str, CMU],
+        id_vars: Optional[List[str]] = None,
+        **kwargs,
     ) -> pd.DataFrame:
         """Reshape columns in data to be long form definitions defined in `variable_map`.
 
@@ -125,6 +134,10 @@ class StateDashboard(DatasetBase, ABC):
             Input data
         variable_map : Union[str,int]
             Map from column name to output variables
+        id_vars: Optional[List[str]], (default=None)
+            Variables that should be included as "id_vars" when melting from wide to long
+        kwargs:
+            Other kwargs to pass to `self.extract_CMU`
 
         Returns
         -------
@@ -134,7 +147,8 @@ class StateDashboard(DatasetBase, ABC):
         # parse out data columns
         value_cols = list(set(data.columns) & set(variable_map.keys()))
         assert len(value_cols) == len(variable_map)
-        id_vars = []
+        if id_vars is None:
+            id_vars = []
         if "location_name" in data.columns:
             id_vars.append("location_name")
         if "location" in data.columns:
@@ -152,7 +166,7 @@ class StateDashboard(DatasetBase, ABC):
                     x["value"].astype(str).str.replace(",", "")
                 ),
             )
-            .pipe(self.extract_CMU, cmu=variable_map)
+            .pipe(self.extract_CMU, cmu=variable_map, **kwargs)
             .drop(["variable"], axis=1)
         )
 
@@ -167,6 +181,7 @@ class StateDashboard(DatasetBase, ABC):
         location_name_column: Optional[str] = None,
         location_column: Optional[str] = None,
         location_names_to_drop: Optional[List[str]] = None,
+        location_names_to_replace: Optional[Dict[str, str]] = None,
         locations_to_drop: Optional[List[str]] = None,
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
@@ -185,6 +200,9 @@ class StateDashboard(DatasetBase, ABC):
             Name of column with location (fips)
         location_names_to_drop:
             List of values in `location_name_column` that should be dropped
+        location_names_to_replace:
+            Dict mapping from old location_name spelling/capitalization
+            to new location_name
         locations_to_drop:
             List of values in `location_column` that should be dropped
         date_column:
@@ -232,6 +250,11 @@ class StateDashboard(DatasetBase, ABC):
 
         if "location_name" in data.columns and apply_title_case:
             data["location_name"] = data["location_name"].str.title()
+
+        if location_names_to_replace:
+            data["location_name"] = data["location_name"].replace(
+                location_names_to_replace
+            )
 
         if "location" in data.columns:
             if locations_to_drop:
