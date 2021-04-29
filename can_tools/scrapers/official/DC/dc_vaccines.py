@@ -73,8 +73,11 @@ class DCVaccineDemographics(DCVaccine):
         # return a dictionary of labelled dataframes for each demographic
         dfs = {}
         for p in params:
-            book = workbook.setParameter("Demographic", p)
-            df = book.worksheets[0].data
+            # it appears that 'setting' a parameter to it's default/first value causes issues,
+            # so we can get the first parameter's data without setting anything, as that data is already present
+            if p != params[0]:
+                workbook = workbook.setParameter("Demographic", p)
+            df = workbook.getWorksheet("Demographics ").data
             dfs[p.replace(" ", "")] = df
         return dfs
 
@@ -96,6 +99,10 @@ class DCVaccineDemographics(DCVaccine):
                     "Cross-alias",
                 }
             )
+
+            # there are 2 'other' categories, only one has actual data (captial OTHER)
+            # i've removed the second one, as it breaks the summation
+            df = df[df[name] != "Other"]
             df[name] = df[name].str.lower()
 
             # sum partially and fully vaccinated people to find at least one dose
