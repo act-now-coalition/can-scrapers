@@ -301,6 +301,9 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
             "pfizer_vaccine_completed",
+            "total_vaccine_initiated",
+            "total_vaccine_completed",
+
         ]
 
         # Iterate through all of the rows and store relevant data
@@ -318,6 +321,8 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                     record["M"][1]["DM3"][1]["C"][2],
                     record["M"][1]["DM3"][2]["C"][1],
                     record["M"][1]["DM3"][2]["C"][2],
+                    j_j_vacc + record["M"][0]["DM2"][0]["C"][0],
+                    record["M"][0]["DM2"][0]["C"][1]
                 )
             )
 
@@ -360,6 +365,16 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
             ),
             "pfizer_vaccine_completed": CMU(
                 category="pfizer_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_initiated": CMU(
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_completed": CMU(
+                category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -503,6 +518,8 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
             "pfizer_vaccine_completed",
+            "total_vaccine_initiated",
+            "total_vaccine_completed"
         ]
 
         # Iterate through all of the rows and store relevant data
@@ -520,6 +537,8 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
                     record["M"][1]["DM3"][1]["C"][2],
                     record["M"][1]["DM3"][2]["C"][1],
                     record["M"][1]["DM3"][2]["C"][2],
+                    j_j_vacc + record["M"][0]["DM2"][0]["C"][0],
+                    record["M"][0]["DM2"][0]["C"][1]
                 )
             )
 
@@ -559,6 +578,16 @@ class MaineGenderVaccines(MicrosoftBIDashboard):
             ),
             "pfizer_vaccine_completed": CMU(
                 category="pfizer_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_initiated": CMU(
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_completed": CMU(
+                category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
@@ -704,6 +733,8 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
             "moderna_vaccine_completed",
             "pfizer_vaccine_initiated",
             "pfizer_vaccine_completed",
+            "total_vaccine_initiated",
+            "total_vaccine_completed"
         ]
 
         # Iterate through all of the rows and store relevant data
@@ -713,15 +744,24 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][2]
             else:
                 j_j_vacc = record["M"][1]["DM3"][0]["C"][1]
-            if len(record["M"][1]["DM3"][1]["C"]) > 2:
-                moderna2 = record["M"][1]["DM3"][1]["C"][2]
+            if(len(record["M"][1]["DM3"][1]["C"]) > 1):
+                moderna1 = moderna2 = record["M"][1]["DM3"][1]["C"][1]
+                if len(record["M"][1]["DM3"][1]["C"]) > 2:
+                    moderna2 = record["M"][1]["DM3"][1]["C"][2]
+                else:
+                    moderna2 = 0
             else:
+                moderna1 = 0
                 moderna2 = 0
-            if len(record["M"][1]["DM3"][2]["C"]) > 1:
-                pfizer1 = record["M"][1]["DM3"][2]["C"][1]
-                pfizer2 = 0
-                if len(record["M"][1]["DM3"][2]["C"]) > 2:
-                    pfizer2 = record["M"][1]["DM3"][2]["C"][2]
+            if(len(record["M"][1]["DM3"]) > 2):
+                if len(record["M"][1]["DM3"][2]["C"]) > 1:
+                    pfizer1 = record["M"][1]["DM3"][2]["C"][1]
+                    pfizer2 = 0
+                    if len(record["M"][1]["DM3"][2]["C"]) > 2:
+                        pfizer2 = record["M"][1]["DM3"][2]["C"][2]
+                else:
+                    pfizer1 = 0
+                    pfizer2 = 0
             else:
                 pfizer1 = 0
                 pfizer2 = 0
@@ -729,10 +769,12 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
                 (
                     record["G0"],
                     j_j_vacc,
-                    record["M"][1]["DM3"][1]["C"][1],
+                    moderna1,
                     moderna2,
                     pfizer1,
                     pfizer2,
+                    j_j_vacc + record["M"][0]["DM2"][0]["C"][0],
+                    record["M"][0]["DM2"][0]["C"][1]
                 )
             )
 
@@ -776,6 +818,16 @@ class MaineAgeVaccines(MicrosoftBIDashboard):
             ),
             "pfizer_vaccine_completed": CMU(
                 category="pfizer_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_initiated": CMU(
+                category="total_vaccine_initiated",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_completed": CMU(
+                category="total_vaccine_completed",
                 measurement="cumulative",
                 unit="people",
             ),
