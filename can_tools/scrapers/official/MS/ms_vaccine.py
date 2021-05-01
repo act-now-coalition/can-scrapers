@@ -36,11 +36,11 @@ class MSCountyVaccine(StateDashboard):
     def fetch(self):
         return camelot.read_pdf(self.fetch_url, pages="2", flavor="stream")
 
-    def normalize(self, data):
+    def normalize(self, raw):
         # Clean up dataframe from PDF.
-        data = data[0].df
-        header = data.iloc[1, :].reset_index(drop=True)
-        data = data.iloc[2:].reset_index(drop=True)
+        data = raw[1].df
+        header = data.iloc[4, :].reset_index(drop=True)
+        data = data.iloc[5:, :].reset_index(drop=True)
         data.columns = header.to_list()
 
         data = self._rename_or_add_date_and_location(
