@@ -206,6 +206,7 @@ class SDVaccineSex(MicrosoftBIDashboard):
         # dump into dataframe and pivot
         df = pd.DataFrame.from_records(data_rows)
         df = df.melt(id_vars=["county", "dose_type"], var_name=self.demographic)
+
         # calculate total_vaccine_initiated and total_vaccine_completed values
         init = (
             df.query(
