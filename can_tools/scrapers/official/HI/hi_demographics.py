@@ -74,7 +74,6 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
         dfs = []
         for county in self.counties:
             df = data[county][self.subsheet]
-            print(county, df)
             df = df[
                 [
                     "SUM(Population)-value",
