@@ -54,6 +54,10 @@ from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccineEthnicity,
 )
 from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
+from can_tools.scrapers.official.HI.hi_demographics import (
+    HawaiiVaccineRace,
+    HawaiiVaccineAge,
+)
 
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 
