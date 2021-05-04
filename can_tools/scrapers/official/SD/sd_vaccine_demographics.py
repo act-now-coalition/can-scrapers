@@ -4,7 +4,6 @@ import pandas as pd
 import us
 import os.path
 
-pd.set_option("display.max_rows", 1000)
 from can_tools.scrapers import variables
 from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
