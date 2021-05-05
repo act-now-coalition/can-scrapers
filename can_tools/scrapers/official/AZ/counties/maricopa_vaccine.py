@@ -13,7 +13,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)
     source = "https://www.maricopa.gov/5671/Public-Vaccine-Data"
-    source_name = "ASSIS"
+    source_name = "ASIIS"
     variables = {
         "total_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
