@@ -1,66 +1,66 @@
-import pandas as pd
 import requests
 import us
-from bs4 import BeautifulSoup
-
-from can_tools.scrapers.base import CMU
+import re
+import pandas as pd
+import json
+from bs4 import BeautifulSoup as bs
 from can_tools.scrapers.official.base import CountyDashboard
+from can_tools.scrapers import variables
 
 
 class ArizonaMaricopaVaccine(CountyDashboard):
-    """
-    Fetch county level Covid-19 vaccination data from official Maricopa county website
-    """
-
-    source = "https://www.maricopa.gov/5641/COVID-19-Vaccine"
-    source_name = "Maricopa County"
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Arizona").fips)
+    source = "https://www.maricopa.gov/5671/Public-Vaccine-Data"
+    source_name = "ASSIS"
+    variables = {
+        "total_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+        "1_dose_pf_mod": variables.INITIATING_VACCINATIONS_ALL,
+    }
 
     def fetch(self):
-        # Set url of website
-        url = "https://www.maricopa.gov/5641/COVID-19-Vaccine"
-        request = requests.get(url)
+        url = "https://datawrapper.dwcdn.net/Y9bAu/22/"
+        return requests.get(url)
 
-        if not request.ok:
-            message = f"Could not request data from {url}"
-            raise ValueError(message)
+    def normalize(self, data):
+        # scrape from datawrapper card/dashboard
+        soup = bs(data.text, "lxml")
+        raw_data = soup.find_all("script")[1]
+        raw_data = str(raw_data).replace("\\", "")
 
-        return request.content
-
-    def normalize(self, data) -> pd.DataFrame:
-        # Read data into Beautiful Soup
-        bs = BeautifulSoup(data, "html.parser")
-
-        # Find the doses given
-        doses = bs.find_all("h2", class_="dataNumber")[1::1][0].text.replace(",", "")
-
-        # Create data frame
-        df = pd.DataFrame(
-            {
-                "location_name": ["Maricopa"],
-                "total_vaccine_doses_administered": pd.to_numeric(doses),
-            }
+        # extract relevent json from string
+        raw_json = (
+            "{"
+            + re.findall(r"\"data\":\{.*?\]", raw_data, flags=re.MULTILINE)[1]
+            + "}}"
         )
 
-        # Create dictionary for columns to map
-        crename = {
-            "total_vaccine_doses_administered": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-        }
+        # get only relevent data from this JSON
+        records = json.loads(raw_json)["data"]["changes"]
+        records = [r for r in records if r["column"] == 1]
 
-        # Move things into long format
-        df = df.melt(id_vars=["location_name"], value_vars=crename.keys()).dropna()
+        # dump into df
+        df = pd.DataFrame.from_records(records)
+        df = (
+            df.assign(
+                dt=pd.to_datetime(df["time"], unit="ms").dt.date,
+                value=df["value"].str.replace("r", "").astype(int),
+                variable=df["row"].replace(
+                    {
+                        1: "total_doses_administered",
+                        2: "1_dose_pf_mod",
+                        3: "total_vaccine_completed",
+                        4: "unknown_dose",
+                    }
+                ),
+                location_name="Maricopa",
+                vintage=self._retrieve_vintage(),
+            )
+            .drop(columns={"row", "column", "time", "ignored", "previous"})
+            .query('variable not in ["unknown_dose", "1_dose_pf_mod"]')
+        )
 
-        # Determine the category of each observation
-        out = self.extract_CMU(df, crename)
-
-        # Add rows that don't change
-        out["vintage"] = self._retrieve_vintage()
-        out["dt"] = self._retrieve_dt("US/Arizona")
-
-        return out
+        out = self.extract_CMU(df, self.variables)
+        return out.drop(columns={"variable"})
