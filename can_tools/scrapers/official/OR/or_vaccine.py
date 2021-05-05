@@ -28,6 +28,7 @@ class OregonVaccineCounty(TableauDashboard):
     cmus = {
         "SUM(People Count)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "SUM(Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
+        "SUM(Administrations)-alias":variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     location_name_col = "AGG(County People Count Label)-alias"
@@ -44,13 +45,23 @@ class OregonVaccineCounty(TableauDashboard):
         for county in counties:
             print("making request for: ", county)
             self.filterFunctionValue = county
-            results[county] = self.get_tableau_view()["Cty In Progress"]
+            tables = self.get_tableau_view()
+            results[county] = [
+                tables.get(key) for key in ["Cty In Progress", "Cty All Doses"]
+            ]
         return results
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        df = pd.concat(data.values())
+        # get init / complete table
+        df = pd.concat([d[0] for d in data.values()])
+        # get all doses table
+        doses = pd.concat([d[1] for d in data.values()])[['SUM(Administrations)-alias','AGG(County People Count Label)-alias']]
+        # append total_doses column to main df via join
+        df = pd.merge(df, doses, on=self.location_name_col, how="left")
+        
         df["location_name"] = df[self.location_name_col].str.title()
         # parse out data columns
+        
         value_cols = list(set(df.columns) & set(self.cmus.keys()))
         assert len(value_cols) == len(self.cmus)
 
