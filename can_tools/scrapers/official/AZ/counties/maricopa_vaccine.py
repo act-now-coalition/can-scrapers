@@ -20,13 +20,30 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         "1_dose_pf_mod": variables.INITIATING_VACCINATIONS_ALL,
     }
 
-    def fetch(self):
-        url = "https://datawrapper.dwcdn.net/Y9bAu/22/"
-        return requests.get(url)
+    def _get_url(self, src_data: requests.models.Response) -> str:
+        """
+        the url from the source page automatically redirects to the actual card.
+        this gets the url of the actual dashboard from the redirect.
+        """
 
-    def normalize(self, data):
-        # scrape from datawrapper card/dashboard
-        soup = bs(data.text, "lxml")
+        soup = bs(src_data.text, "lxml")
+        redirect = soup.find("meta")
+        url = re.findall(r"https://.*", redirect["content"])[0]
+        return url
+
+    def fetch(self) -> requests.models.Response:
+        init_url = "https://datawrapper.dwcdn.net/Y9bAu/3/"
+        return requests.get(init_url)
+
+    def normalize(self, data) -> pd.DataFrame:
+        # get the url of the dashboard
+        url = self._get_url(data)
+
+        # make request to the dashboard itself
+        page = requests.get(url)
+        soup = bs(page.text, "lxml")
+
+        # extract the and format script that contains the data/JSON
         raw_data = soup.find_all("script")[1]
         raw_data = str(raw_data).replace("\\", "")
 
