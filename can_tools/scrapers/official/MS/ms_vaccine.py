@@ -40,7 +40,7 @@ class MSCountyVaccine(StateDashboard):
         # Clean up dataframe from PDF.
         data = raw[1].df
         # find header
-        header = data.loc[data.iloc[:, 0] == 'County of Residence'].iloc[0]
+        header = data.loc[data.iloc[:, 0] == "County of Residence"].iloc[0]
         data = data.iloc[5:, :].reset_index(drop=True)
         data.columns = header.to_list()
 
