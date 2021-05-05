@@ -80,4 +80,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         )
 
         out = self.extract_CMU(df, self.variables)
+        
+        # filter results from before march (bad data)
+        out = out[out['dt'] > pd.to_datetime("2021-3-01")]
         return out.drop(columns={"variable"})
