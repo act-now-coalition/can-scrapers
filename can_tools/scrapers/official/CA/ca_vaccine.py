@@ -56,10 +56,10 @@ class CaliforniaVaccineDemographics(CaliforniaVaccineCounty):
         "https://data.chhs.ca.gov/dataset/vaccine-progress-dashboard/"
         "resource/71729331-2f09-4ea4-a52f-a2661972e146"
     )
-    url = ( 
-            "https://data.chhs.ca.gov/dataset/e283ee5a-cf18-4f20-a92c-ee94a2866ccd/"
-            "resource/71729331-2f09-4ea4-a52f-a2661972e146/download/"
-            "covid19vaccinesbycountybydemographic.csv"
+    url = (
+        "https://data.chhs.ca.gov/dataset/e283ee5a-cf18-4f20-a92c-ee94a2866ccd/"
+        "resource/71729331-2f09-4ea4-a52f-a2661972e146/download/"
+        "covid19vaccinesbycountybydemographic.csv"
     )
 
     variables = {
@@ -87,7 +87,7 @@ class CaliforniaVaccineDemographics(CaliforniaVaccineCounty):
 
         # split and format each demographic then re-concat
         dfs = []
-        demos = {'age':'Age Group', 'race':'Race/Ethnicity'}
+        demos = {"age": "Age Group", "race": "Race/Ethnicity"}
         for k, v in demos.items():
             df = data.query("demographic_category == @v").rename(
                 columns={"demographic_value": k}
@@ -96,7 +96,7 @@ class CaliforniaVaccineDemographics(CaliforniaVaccineCounty):
                 df, self.variables, skip_columns=[k], id_vars=[k]
             )
             dfs.append(df)
-        
+
         out = pd.concat(dfs)
         out["race"] = out["race"].str.lower()
         return out.replace(
@@ -106,7 +106,6 @@ class CaliforniaVaccineDemographics(CaliforniaVaccineCounty):
                 "black or african american": "black",
                 "american indian or alaska native": "ai_an",
                 "other race": "other",
-                "multiracial":"multiple",
+                "multiracial": "multiple",
             }
         )
-
