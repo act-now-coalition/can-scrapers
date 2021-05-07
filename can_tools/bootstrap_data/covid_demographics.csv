@@ -42,6 +42,7 @@ all,all,all,all
 30-39,all,all,female
 30-39,all,all,male
 30-39,all,all,unknown
+30-49,all,all,all
 31-40,all,all,all
 35-39,all,all,all
 35-44,all,all,all
@@ -111,6 +112,7 @@ all,asian,all,all
 all,asian,hispanic,all
 all,asian,non-hispanic,all
 all,asian,unknown,all
+all,hispanic,all,all
 all,black,all,all
 all,black,hispanic,all
 all,black,non-hispanic,all
