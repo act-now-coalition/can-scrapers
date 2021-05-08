@@ -91,6 +91,7 @@ class TexasCountyVaccine(TexasVaccineParent):
 class TexasStateVaccine(TexasCountyVaccine):
     has_location = True
     location_type = "state"
+    # just statewide daat
 
     def normalize(self, data) -> pd.DataFrame:
         # Read excel file and set date
@@ -204,7 +205,10 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .dropna(subset=["value"])
         )
 
-        return df
+        # TEMPORARY AS OF 5/8/2021 UPDATE TO BETTER FIX IF FORMAT REMAINS THE SAME
+        return df.query(
+            "age not in ['Asian','Black', 'Hispanic', 'unknown', 'Other', 'White']"
+        )
 
 
 class TXVaccineCountyRace(TXVaccineCountyAge):
