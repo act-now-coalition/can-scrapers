@@ -207,6 +207,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
 
         return df
 
+
 class TXVaccineCountyRace(TXVaccineCountyAge):
     cmu_id_vars = ["race"]
     sheet_name = "By County, Race"
