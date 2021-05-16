@@ -42,25 +42,25 @@ class WYStateVaccinations(GoogleDataStudioDashboard):
         """
 
         WYVacDataDose1 = self.get_dataset(self.bodyDose1, url=self.baseUrl)
-        WYVacDataDose1 = json.loads(WYVacDataDose1[10 : len(WYVacDataDose1) - 1])
+        WYVacDataDose1 = json.loads(WYVacDataDose1[11 : len(WYVacDataDose1) - 1])
         WYVacDataDose2 = self.get_dataset(self.bodyDose2, url=self.baseUrl)
-        WYVacDataDose2 = json.loads(WYVacDataDose2[10 : len(WYVacDataDose2) - 1])
+        WYVacDataDose2 = json.loads(WYVacDataDose2[11 : len(WYVacDataDose2) - 1])
         # add data from the dose 2 request to our list of dictionaries
-        df = WYVacDataDose1["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+        df = WYVacDataDose1["dataResponse"][0]["dataSubset"][0]["dataset"][
             "tableDataset"
         ]["column"]
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][0]
         )
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][1]
         )
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][2]
         )
@@ -179,24 +179,24 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         a dictionary
         """
         WYVacDataDose1 = self.get_dataset(json.loads(self.bodyDose1), url=self.baseUrl)
-        parsedVacDataDose1 = json.loads(WYVacDataDose1[10 : len(WYVacDataDose1) - 1])
+        parsedVacDataDose1 = json.loads(WYVacDataDose1[11 : len(WYVacDataDose1) - 1])
         WYVacDataDose2 = self.get_dataset(json.loads(self.bodyDose2), url=self.baseUrl)
-        parsedVacDataDose2 = json.loads(WYVacDataDose2[10 : len(WYVacDataDose2) - 1])
-        df = parsedVacDataDose1["default"]["dataResponse"][0]["dataSubset"][0][
+        parsedVacDataDose2 = json.loads(WYVacDataDose2[11 : len(WYVacDataDose2) - 1])
+        df = parsedVacDataDose1["dataResponse"][0]["dataSubset"][0][
             "dataset"
         ]["tableDataset"]["column"]
         df.append(
-            parsedVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0][
+            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0][
                 "dataset"
             ]["tableDataset"]["column"][0]
         )
         df.append(
-            parsedVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0][
+            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0][
                 "dataset"
             ]["tableDataset"]["column"][1]
         )
         df.append(
-            parsedVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0][
+            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0][
                 "dataset"
             ]["tableDataset"]["column"][2]
         )
@@ -330,35 +330,35 @@ class WYCountyAgeVaccinations(GoogleDataStudioDashboard):
         WYVacDataTotal = self.get_dataset(
             json.loads(self.bodyTotalPercentage), url=self.baseUrl
         )
-        parsedVacDataTotal = json.loads(WYVacDataTotal[10 : len(WYVacDataTotal) - 1])
+        parsedVacDataTotal = json.loads(WYVacDataTotal[11 : len(WYVacDataTotal) - 1])
         WYVacData18P = self.get_dataset(
             json.loads(self.body18UpPercentage), url=self.baseUrl
         )
-        parsedVacData18P = json.loads(WYVacData18P[10 : len(WYVacData18P) - 1])
+        parsedVacData18P = json.loads(WYVacData18P[11 : len(WYVacData18P) - 1])
         WYVacData65P = self.get_dataset(
             json.loads(self.body65UpPercentage), url=self.baseUrl
         )
-        parsedVacData65P = json.loads(WYVacData65P[10 : len(WYVacData65P) - 1])
-        df = parsedVacDataTotal["default"]["dataResponse"][0]["dataSubset"][0][
+        parsedVacData65P = json.loads(WYVacData65P[11 : len(WYVacData65P) - 1])
+        df = parsedVacDataTotal["dataResponse"][0]["dataSubset"][0][
             "dataset"
         ]["tableDataset"]["column"]
         df.append(
-            parsedVacData18P["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            parsedVacData18P["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][0]
         )
         df.append(
-            parsedVacData18P["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            parsedVacData18P["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][1]
         )
         df.append(
-            parsedVacData65P["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            parsedVacData65P["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][0]
         )
         df.append(
-            parsedVacData65P["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            parsedVacData65P["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][1]
         )
@@ -476,5 +476,3 @@ class WYCountyAgeVaccinations(GoogleDataStudioDashboard):
         return df.drop(["variable"], axis="columns")
 
 
-x = WYCountyVaccinations()
-x.normalize(x.fetch())
