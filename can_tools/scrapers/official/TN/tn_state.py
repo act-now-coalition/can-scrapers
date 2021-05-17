@@ -251,10 +251,10 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "Cat_CaseCount": CMU(
+            "CAT_TOTALCASES": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "CAT_DEATHCOUNT": CMU(
+            "CAT_TOTALDEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
         }
