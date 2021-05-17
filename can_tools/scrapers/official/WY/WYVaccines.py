@@ -42,25 +42,25 @@ class WYStateVaccinations(GoogleDataStudioDashboard):
         """
 
         WYVacDataDose1 = self.get_dataset(self.bodyDose1, url=self.baseUrl)
-        WYVacDataDose1 = json.loads(WYVacDataDose1[10 : len(WYVacDataDose1) - 1])
+        WYVacDataDose1 = json.loads(WYVacDataDose1[11:-1])
         WYVacDataDose2 = self.get_dataset(self.bodyDose2, url=self.baseUrl)
-        WYVacDataDose2 = json.loads(WYVacDataDose2[10 : len(WYVacDataDose2) - 1])
+        WYVacDataDose2 = json.loads(WYVacDataDose2[11:-1])
         # add data from the dose 2 request to our list of dictionaries
-        df = WYVacDataDose1["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+        df = WYVacDataDose1["dataResponse"][0]["dataSubset"][0]["dataset"][
             "tableDataset"
         ]["column"]
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][0]
         )
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][1]
         )
         df.append(
-            WYVacDataDose2["default"]["dataResponse"][0]["dataSubset"][0]["dataset"][
+            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
                 "tableDataset"
             ]["column"][2]
         )
