@@ -68,7 +68,7 @@ class TennesseeAge(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "AR_CASECOUNT": CMU(
+            "AR_TOTALCASES": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
             "AR_TOTALDEATHS": CMU(
