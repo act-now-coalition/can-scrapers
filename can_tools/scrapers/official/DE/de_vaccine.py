@@ -144,25 +144,16 @@ class DelawareCountyVaccine(StateDashboard):
 class DelawareVaccineDemographics(DelawareCountyVaccine):
 
     variables = {
-        "count_at_least_one_dose": v.INITIATING_VACCINATIONS_ALL,
-        "count_fully_vaccinated": v.FULLY_VACCINATED_ALL,
-        f"% of demographic group vaccinated_at_least_one_dose": CMU(
-            category="total_vaccine_initiated",
-            measurement="current",
-            unit="percentage",
-            age="16_plus",
-        ),
-        f"% of demographic group vaccinated_fully_vaccinated": CMU(
-            category="total_vaccine_completed",
-            measurement="current",
-            unit="percentage",
-            age="16_plus",
-        ),
+        "at_least_one_dose": v.INITIATING_VACCINATIONS_ALL,
+        "fully_vaccinated": v.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self) -> Dict[str, Dict[str, requests.models.Response]]:
-        # each combination of county and dose type has its own page (6 pages total) with the url template as below
-        url_template = "https://myhealthycommunity.dhss.delaware.gov/locations/county-{county}/covid19_vaccine_fully_vaccinated/demographics?demographics_stat_type={var}"
+        # each combination of county and dose type has its own page (6 pages total) with the url as below
+        url_template = (
+            "https://myhealthycommunity.dhss.delaware.gov/locations/"
+            "county-{county}/covid19_vaccine_fully_vaccinated/demographics?demographics_stat_type={var}"
+        )
 
         # store responses in dict of dicts like:
         # {'county': {'at_least_one_dose': response, 'fully_vaccinated': response}, ...}
@@ -200,7 +191,7 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
                             "table", class_="c-dash-table__table table table-striped"
                         )
                         table = pd.read_html(str(table))[0].assign(
-                            dose_type=var, location_name=county
+                            variable=var, location_name=county
                         )
                         dfs.append(table)
 
@@ -213,27 +204,19 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
         dfs = []
         for demo in ["sex", "race", "age", "ethnicity"]:
 
-            # get demographic data, convert col names to lowercase
-            df = self._get_demographic(data, demo.title()).drop(
-                columns={f"% of all persons vaccinated"}
+            # get demographic data, create CMU columns
+            df = (
+                self._get_demographic(data, demo.title())
+                .drop(
+                    columns={
+                        f"% of all persons vaccinated",
+                        "% of demographic group vaccinated",
+                    }
+                )
+                .rename(columns={"Count": "value"})
             )
             df.columns = [x.lower() for x in df.columns]
-
-            # pivot data and add/manage columns
-            df = df.melt(id_vars=[demo, "dose_type", "location_name"])
-            df["variable"] = df["variable"] + "_" + df["dose_type"]
-            df = (
-                df.dropna()
-                .assign(
-                    dt=self._retrieve_dtm1d("US/Eastern"),
-                    vintage=self._retrieve_vintage(),
-                    value=lambda x: pd.to_numeric(
-                        x["value"].astype(str).str.replace("%", "")
-                    ),
-                )
-                .pipe(self.extract_CMU, cmu=self.variables, skip_columns=[demo])
-                .drop(columns={"dose_type", "variable"})
-            )
+            df = self.extract_CMU(df, cmu=self.variables, skip_columns=[demo])
 
             # format demographic column and append to list
             df[demo] = df[demo].str.lower().str.replace("*", "")
@@ -241,15 +224,27 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
 
         # combine and format total df
         out = pd.concat(dfs)
+        out = (
+            out.dropna()
+            .assign(
+                dt=self._retrieve_dtm1d("US/Eastern"),
+                vintage=self._retrieve_vintage(),
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .drop(columns={"variable"})
+        )
         out["location_name"] = out["location_name"].str.title().str.replace("-", " ")
         out = out.replace({"65+": "65_plus", "pacific islander": "pacific_islander"})
 
-        # HOW TO HANDLE THESE?
-        out = out.query(
-            "'patient declined to disclose' not in race and 'data not reported' not in race"
+        # combine not reported + declined disclosure into 'unknown' values
+        group_by = [c for c in out.columns if c != "value"]
+        out = out.replace(
+            dict.fromkeys(
+                ["patient declined to disclose", "data not reported"], "unknown"
+            )
         )
-        out = out.query(
-            "'patient declined to disclose' not in ethnicity and 'data not reported' not in ethnicity"
-        )
+        out = out.groupby(group_by, as_index=False).aggregate({"value": "sum"})
 
         return out
