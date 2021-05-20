@@ -311,30 +311,16 @@ class WYCountyAgeVaccinations(GoogleDataStudioDashboard):
             json.loads(self.body65UpPercentage), url=self.baseUrl
         )
         parsedVacData65P = json.loads(WYVacData65P[11 : len(WYVacData65P) - 1])
-        df = parsedVacDataTotal["dataResponse"][0]["dataSubset"][0]["dataset"][
-            "tableDataset"
-        ]["column"]
-        df.append(
-            parsedVacData18P["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][0]
+
+        query = jmespath.compile(
+            "dataResponse[0].dataSubset[0].dataset.tableDataset.column"
         )
-        df.append(
-            parsedVacData18P["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][1]
+
+        return (
+            query.search(parsedVacDataTotal)
+            + query.search(parsedVacData18P)
+            + query.search(parsedVacData65P)
         )
-        df.append(
-            parsedVacData65P["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][0]
-        )
-        df.append(
-            parsedVacData65P["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][1]
-        )
-        return df
 
     def normalize(self, data) -> pd.DataFrame:
         countiesTotal = data[0]["stringColumn"]["values"]
