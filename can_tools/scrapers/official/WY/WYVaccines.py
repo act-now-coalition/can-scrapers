@@ -4,6 +4,7 @@ from typing import Any
 
 import pandas as pd
 import us
+import jmespath
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
@@ -42,30 +43,15 @@ class WYStateVaccinations(GoogleDataStudioDashboard):
         """
 
         WYVacDataDose1 = self.get_dataset(self.bodyDose1, url=self.baseUrl)
-        WYVacDataDose1 = json.loads(WYVacDataDose1[11 : len(WYVacDataDose1) - 1])
+        WYVacDataDose1 = json.loads(WYVacDataDose1[11:-1])
         WYVacDataDose2 = self.get_dataset(self.bodyDose2, url=self.baseUrl)
-        WYVacDataDose2 = json.loads(WYVacDataDose2[11 : len(WYVacDataDose2) - 1])
-        # add data from the dose 2 request to our list of dictionaries
-        df = WYVacDataDose1["dataResponse"][0]["dataSubset"][0]["dataset"][
-            "tableDataset"
-        ]["column"]
-        df.append(
-            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][0]
-        )
-        df.append(
-            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][1]
-        )
-        df.append(
-            WYVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][2]
-        )
+        WYVacDataDose2 = json.loads(WYVacDataDose2[11:-1])
 
-        return df
+        query = jmespath.compile(
+            "dataResponse[0].dataSubset[0].dataset.tableDataset.column"
+        )
+        return query.search(WYVacDataDose1) + query.search(WYVacDataDose2)
+        # add data from the dose 2 request to our list of dictionaries
 
     def normalize(self, data) -> pd.DataFrame:
         """
@@ -179,28 +165,14 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         a dictionary
         """
         WYVacDataDose1 = self.get_dataset(json.loads(self.bodyDose1), url=self.baseUrl)
-        parsedVacDataDose1 = json.loads(WYVacDataDose1[11 : len(WYVacDataDose1) - 1])
+        parsedDose1 = json.loads(WYVacDataDose1[11:-1])
         WYVacDataDose2 = self.get_dataset(json.loads(self.bodyDose2), url=self.baseUrl)
-        parsedVacDataDose2 = json.loads(WYVacDataDose2[11 : len(WYVacDataDose2) - 1])
-        df = parsedVacDataDose1["dataResponse"][0]["dataSubset"][0]["dataset"][
-            "tableDataset"
-        ]["column"]
-        df.append(
-            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][0]
+        parsedDose2 = json.loads(WYVacDataDose2[11:-1])
+
+        query = jmespath.compile(
+            "dataResponse[0].dataSubset[0].dataset.tableDataset.column"
         )
-        df.append(
-            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][1]
-        )
-        df.append(
-            parsedVacDataDose2["dataResponse"][0]["dataSubset"][0]["dataset"][
-                "tableDataset"
-            ]["column"][2]
-        )
-        return df
+        return query.search(parsedDose1) + query.search(parsedDose2)
 
     def normalize(self, data) -> pd.DataFrame:
         countiesVac1 = data[0]["stringColumn"]["values"]

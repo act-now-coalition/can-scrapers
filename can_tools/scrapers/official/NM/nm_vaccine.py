@@ -91,8 +91,6 @@ class NewMexicoVaccineCounty(NewMexicoBase):
             ),
             "partiallyVaccinated": variables.INITIATING_VACCINATIONS_ALL,
             "fullyVaccinated": variables.FULLY_VACCINATED_ALL,
-            "percentPartiallyVaccinated": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
-            "percentFullyVaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
         }
 
         # Move things into long format
