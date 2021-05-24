@@ -3,11 +3,8 @@ import pandas as pd
 import os
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import (
-    TableauDashboard,
-    TableauMapClick,
-)
-from can_tools.scrapers.util import requests_retry_session
+from can_tools.scrapers.official.base import TableauDashboard
+from typing import List
 
 
 class NewYorkVaccineCounty(TableauDashboard):
@@ -43,7 +40,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
         "People with completed Vaccine Series": variables.FULLY_VACCINATED_ALL,
     }
 
-    def fetch(self):
+    def fetch(self) -> List[pd.DataFrame]:
         path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
         counties = list(
             pd.read_csv(path).query(f"state == 36 and location != 36")["name"]
@@ -67,7 +64,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
 
         return results
 
-    def normalize(self, data):
+    def normalize(self, data: List[pd.DataFrame]) -> pd.DataFrame:
         df = pd.concat(data)
         df = (
             df.rename(
