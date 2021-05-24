@@ -22,26 +22,19 @@ class HawaiiVaccineCounty(TableauDashboard):
     state_fips = int(us.states.lookup("Hawaii").fips)
     # https://public.tableau.com/shared/H33ZZ9HCC?:display_count=y&:origin=viz_share_link&:embed=y
     # Hawai'i https://public.tableau.com/shared/7TCBHC568?:display_count=y&:origin=viz_share_link&:embed=y
-    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"  # this is the name of the user action, not the filter function name. doesn't work
+    # filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"  # this is the name of the user action, not the filter function name. doesn't work
     baseurl = "https://public.tableau.com"
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/VACCINESBYCOUNTY"
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
-
-    def fetch(self):
-
-        results = {}
-        for county in self.counties:
-            # Get county data
-            self.filterFunctionValue = county
-            results[county] = self.get_tableau_view()
-        return results
+    data_tableau_table = "County Progress (JUR+PHARM)"
 
     def normalize(self, data):
         dfs = []
         for county in self.counties:
-            df = data[county]["Cumulative Persons"]
+            df = data[county]
+            return df, df.columns
             df.columns = [
                 "total_vaccine_initiated",
                 "alias",
