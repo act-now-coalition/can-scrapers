@@ -1,5 +1,6 @@
 age,race,ethnicity,sex
 all,all,all,all
+0-4,all,all,all
 0-9,all,all,all
 0-5,all,all,all
 0-10,all,all,all
@@ -7,11 +8,13 @@ all,all,all,all
 0-19,all,all,all
 0-20,all,all,all
 5-17,all,all,all
+5-11,all,all,all
 5-9,all,all,all
 12-15,all,all,all
 12-15,all,all,male
 12-15,all,all,female
 12-15,all,all,unknown
+12-17,all,all,all
 12-24,all,all,all
 10-19,all,all,all
 10-14,all,all,all
@@ -29,6 +32,7 @@ all,all,all,all
 16-54,all,all,all
 18-24,all,all,all
 18-29,all,all,all
+18-34,all,all,all
 18-49,all,all,all
 18_plus,all,all,all
 20-24,all,all,all
@@ -51,6 +55,7 @@ all,all,all,all
 31-40,all,all,all
 35-39,all,all,all
 35-44,all,all,all
+35-49,all,all,all
 35-54,all,all,all
 40-44,all,all,all
 40-49,all,all,all

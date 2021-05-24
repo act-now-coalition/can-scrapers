@@ -24,7 +24,10 @@ from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
 
-from can_tools.scrapers.official.DE.de_vaccine import DelawareCountyVaccine
+from can_tools.scrapers.official.DE.de_vaccine import (
+    DelawareCountyVaccine,
+    DelawareVaccineDemographics,
+)
 
 from can_tools.scrapers.official.DC.dc_vaccines import (
     DCVaccine,
