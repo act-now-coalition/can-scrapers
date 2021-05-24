@@ -7,10 +7,12 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     Column,
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -225,6 +227,7 @@ class CovidObservation(Base):
     last_updated = Column(DateTime, nullable=False, default=func.now())
     source_url = Column(String)
     source_name = Column(String)
+    deleted = Column(Boolean, nullable=False, default=False)
     __table_args__ = (
         PrimaryKeyConstraint(
             "dt",
@@ -237,6 +240,8 @@ class CovidObservation(Base):
         {"schema": "data"},
     )
 
+
+Index("covid_observation_deleted", CovidObservation.deleted)
 
 api_covid_us_statement = select(
     [
@@ -259,12 +264,13 @@ api_covid_us_statement = select(
     ]
 ).select_from(
     (
-        CovidObservation.__table__.join(CovidVariable, isouter=True)
+        CovidObservation.__table__
+        .join(CovidVariable, isouter=True)
         .join(Location, isouter=True)
         .join(CovidProvider, isouter=True)
         .join(CovidDemographic, isouter=True)
     )
-)
+).where(CovidObservation.deleted == False)
 
 api_covid_us = create_view(
     "covid_us", api_covid_us_statement, Base.metadata, or_replace=True
