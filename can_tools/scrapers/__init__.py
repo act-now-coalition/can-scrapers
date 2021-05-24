@@ -165,7 +165,12 @@ from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
     WisconsinVaccineCountyEthnicity,
 )
 from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, WisconsinState
-from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
+from can_tools.scrapers.official.WV.wv_vaccine import (
+    WVCountyVaccine,
+    WVCountyVaccineRace,
+    WVCountyVaccineAge,
+    WVCountyVaccineSex,
+)
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
     WYStateVaccinations,
