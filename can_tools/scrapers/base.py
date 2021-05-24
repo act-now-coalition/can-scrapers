@@ -1,25 +1,58 @@
+import pprint
+from can_tools.validators import cross_section, timeseries
+from can_tools import utils
 from typing import Any, Dict, List, Optional, Type
 
 import os
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Type
 
-import us
 import pandas as pd
+import us
 from sqlalchemy.engine.base import Engine
 
 from can_tools.models import Base
-
 
 # `us` v2.0 removed DC from the `us.STATES` list, so we are creating
 # our own which includes DC. In v3.0, there will be an env option to
 # include `DC` in the `us.STATES` list and, if we upgrade, we should
 # activate that option and replace this with just `us.STATES`
 ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
+ALL_STATES_PLUS_TERRITORIES = us.states.STATES_AND_TERRITORIES + [us.states.DC]
 
 
 class CMU:
+    """Define variable and demographic dimensions for an observation
+
+    Variable dimensions include:
+
+    - category: The 'type' of variable. Examples are ``cases``, ``total_vaccine_completed``
+    - measurement: The form of measurement, e.g. ``cumulative``, ``new``
+    - unit: The unit of measurement, e.g. ``people``, ``doses``
+
+    Demographic dimensions include:
+
+    - age: the age group, e.g. ``1-10``, ``40-49``, ``65_plus``
+    - race: the race, e.g. ``white``, ``black``
+    - ethnicity: the ethnicity, e.g. ``hispanic``, ``non-hispanic``
+    - sex: the sex, ``male``, ``female``, ``uknown``
+
+    .. note::
+
+        All demographic dimensions allow a value of ``all``, which is interpreted
+        as the observation corresponding to all groups of that dimension (i.e. if
+        age is ``all``, then the data represent all ages)
+
+    For a complete list of admissible variable 3-tuples see the file
+    ``can_tools/bootstrap_data/covid_variables.csv``
+
+    For a complete list of admissible demographic 4-tuples see the file
+    ``can_tools/bootstrap_data/covid_demographics.csv``
+
+    """
+
     def __init__(
         self,
         category="cases",
@@ -39,8 +72,49 @@ class CMU:
         self.sex = sex
 
 
+class RequestError(Exception):
+    """Error raised when a network request fails"""
+
+    pass
+
+
 class ValidateDataFailedError(Exception):
     """Error raised when data vailidation fails."""
+
+    pass
+
+
+class ValidateRelativeOrderOfCategoriesError(Exception):
+    def __init__(self, category_small, category_large, problems):
+        self.category_small = category_small
+        self.category_large = category_large
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.category_small} > {self.category_large}\n"
+        out += pprint.pformat(self.problems, indent=2)
+        return out
+
+
+class ValidateDecreaseInCumulativeVariableError(Exception):
+    def __init__(self, category, problems):
+        self.category = category
+        self.problems = problems
+
+    def __str__(self):
+        out = f"{self.category} measured cumulative, but had decrease on these dates:\n"
+        out += pprint.pformat(sorted(self.problems), indent=2)
+        return out
+
+
+class ValidationErrors(Exception):
+    def __init__(self, all_errors: List[Exception]):
+        self.all_errors = all_errors
+
+    def __str__(self):
+        out = "The following errors were found:"
+        out += "\n" + "\n".join([str(x) for x in self.all_errors])
+        return out
 
 
 def _get_base_path() -> Path:
@@ -69,6 +143,10 @@ class DatasetBase(ABC):
         single type of geography. It will set the `"location_type"` column
         to this value (when performing the `put`) if `"location_type"` is not
         already set in the df
+
+    source: str
+        A string containing a URL that points to the dashboard or remote
+        resource that will be scraped
     """
 
     autodag: bool = True
@@ -77,6 +155,15 @@ class DatasetBase(ABC):
     location_type: Optional[str]
     base_path: Path
     source: str
+
+    # this list of tuples specifies categories for which the first
+    # category listed should always be less than or equal to the second
+    # category listed, when the measurement type is cumulative
+    ordered_validation_categories = [
+        ("total_vaccine_initiated", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_doses_administered"),
+        ("total_vaccine_completed", "total_vaccine_initiated"),
+    ]
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         self.execution_dt = pd.to_datetime(execution_dt, utc=True)
@@ -171,6 +258,7 @@ class DatasetBase(ABC):
             "sex",
         ],
         var_name: str = "variable",
+        skip_columns: List[str] = [],
     ) -> pd.DataFrame:
         """
         Adds columns "category", "measurement", and "unit" to df
@@ -189,6 +277,9 @@ class DatasetBase(ABC):
         var_name: str
             The name of the column in `df` that should be used to lookup
             items from the `cmu` dict for unpacking columns
+        skip_columns: List[str] (default=[])
+            Can be set instead of ``columns`` if there are a small number
+            of columns that should not be set
 
         Returns
         -------
@@ -199,6 +290,8 @@ class DatasetBase(ABC):
         variable_column = df[var_name]
         out = df.copy()
         for col in columns:
+            if col in skip_columns:
+                continue
             out[col] = variable_column.map(lambda x: cmu[x].__getattribute__(col))
         return out
 
@@ -385,12 +478,50 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
+    def _validate_time_series(self, df) -> List[Exception]:
+        """Do checks only applicable to time series data"""
+        issues = []
+        if (df["measurement"] == "cumulative").sum() > 0:
+            bad = timeseries.values_increasing_over_time(df)
+            for variable, dates in bad.items():
+                err = ValidateDecreaseInCumulativeVariableError(variable, dates)
+                issues.append(err)
+
+        return issues
+
+    def _validate_order_of_variables(self, df) -> List[Exception]:
+        """
+        Returns a list of exceptions that occured while doing checks
+        """
+        issues = []
+        cumulatives = df.query("measurement == 'cumulative'")
+        categories = list(cumulatives["category"].unique())
+        for category_small, category_large in self.ordered_validation_categories:
+            if category_small in categories and category_large in categories:
+                ok, problems = cross_section.cat1_ge_cat2(
+                    cumulatives,
+                    category_large,
+                    category_small,
+                    drop_levels=["unit", "category"],
+                )
+                if not ok:
+                    err = ValidateRelativeOrderOfCategoriesError(
+                        category_small=category_small,
+                        category_large=category_large,
+                        problems=problems,
+                    )
+                    issues.append(err)
+
+        return issues
+
     def validate(self, df, df_hist):
         """
         The `validate` method checks what the tentative clean data looks
         like and then checks whether the updates are sensible -- If they
         are then it returns True otherwise it returns False and stops
         the fetch->normalize->validate->put DAG
+
+        Raises Exceptions if validation fails
 
         Parameters
         ----------
@@ -399,23 +530,25 @@ class DatasetBase(ABC):
         df_hist : pd.DataFrame
             Historical data
 
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
-        return True
+        # TODO (SL, 2021-04-12): we aren't ready with other tooling for dealing
+        # nicely with validation errors and exception lists. Until then we will
+        # disable validation
+        return
+        issues = []
+        if utils.is_time_series(df):
+            issues.extend(self._validate_time_series(df))
+
+        issues.extend(self._validate_order_of_variables(df))
+
+        if len(issues) > 0:
+            raise ValidationErrors(issues)
 
     def _validate(self):
         """
         The `_validate` method loads the appropriate data and then
         checks the data using `validate` and determines whether the
         data has been validated
-
-        Returns
-        -------
-        validated : bool
-            Whether we have validated the data
         """
         # Load cleaned data
         df = self._read_clean()
@@ -489,6 +622,12 @@ class DatasetBase(ABC):
         )
         return df.loc[~good_rows, :]
 
+    def find_unknown_demographic_id(self, engine: Engine, df: pd.DataFrame):
+        dems = pd.read_sql("select * from covid_demographics", engine)
+        merged = df.merge(dems, on=["sex", "age", "race", "ethnicity"], how="left")
+        bad = list(merged["id"].isna())
+        return df.loc[bad, :]
+
     def fetch_normalize(self):
         "Call `self.normalize(self.fetch())`"
         data = self.fetch()
@@ -498,7 +637,7 @@ class DatasetBase(ABC):
         """Reprocesses data from fetched data - useful to fix errors after fetch."""
         self._normalize()
 
-        if not self._validate():
-            raise ValidateDataFailedError()
+        # validate will either succeed or raise an Exception
+        self._validate()
 
         self._put(engine)

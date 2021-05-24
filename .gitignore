@@ -144,3 +144,8 @@ node_modules
 # macOS
 .DS_Store
 
+_ignore_
+_build/
+scratch*
+.idea/
+.virtual_documents/

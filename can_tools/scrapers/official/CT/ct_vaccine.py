@@ -3,11 +3,11 @@ from typing import Any
 import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import SODA
 
 
-class CTCountyVaccine(SODA, DatasetBase):
+class CTCountyVaccine(SODA):
 
     baseurl = "https://data.ct.gov/"
     resource_id = "5g42-tpzq"
@@ -26,20 +26,17 @@ class CTCountyVaccine(SODA, DatasetBase):
         data = data.rename(
             columns={"date": "dt", "county_of_residence": "location_name"}
         )
-        unwanted_loc = ["Total", "Address pending validation", "Residence out of state"]
+        unwanted_loc = [
+            "Total",
+            "Address pending validation",
+            "Residence out of state",
+            "Resident out of state",
+        ]
         data = data.query("location_name not in @unwanted_loc")
 
         crename = {
-            "fully_vaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "initiated_vaccination": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
+            "fully_vaccinated": variables.FULLY_VACCINATED_ALL,
+            "initiated_vaccination": variables.INITIATING_VACCINATIONS_ALL,
         }
         out = data.melt(
             id_vars=["dt", "location_name"], value_vars=crename.keys()

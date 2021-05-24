@@ -1,4 +1,5 @@
 id,location,state_fips,state,name,area,latitude,longitude,fullname,location_type
+iso1:us,0,0,0,United States of America,3797000,37.0902,-84.2781,United States of America,nation
 iso1:us#iso2:us-wv,54,54,54,West Virginia,24041.943,38.647285,-80.618324,West Virginia,state
 iso1:us#iso2:us-fl,12,12,12,Florida,53649.703,28.45743,-82.40915,Florida,state
 iso1:us#iso2:us-il,17,17,17,Illinois,55515.605,40.102875,-89.15261,Illinois,state
@@ -82,7 +83,7 @@ iso1:us#iso2:us-nc#fips:37037,37037,37,37,Chatham,681.7438400000001,35.704994,-7
 iso1:us#iso2:us-ut#fips:49033,49033,49,49,Rich,1028.8818,41.627598,-111.24023000000001,Rich County,county
 iso1:us#iso2:us-ok#fips:40001,40001,40,40,Adair,573.87463,35.898045,-94.65102399999999,Adair County,county
 iso1:us#iso2:us-oh#fips:39085,39085,39,39,Lake,229.27805,41.924118,-81.39264,Lake County,county
-iso1:us#iso2:us-va#fips:51775,51775,51,51,Salem city,14.518981,37.28533,-80.05524399999999,Salem city,county
+iso1:us#iso2:us-va#fips:51775,51775,51,51,Salem,14.518981,37.28533,-80.05524399999999,Salem city,county
 iso1:us#iso2:us-va#fips:51121,51121,51,51,Montgomery,386.85724,37.175533,-80.387794,Montgomery County,county
 iso1:us#iso2:us-tn#fips:47065,47065,47,47,Hamilton,542.3849,35.163470000000004,-85.20184,Hamilton County,county
 iso1:us#iso2:us-nm#fips:35035,35035,35,35,Otero,6612.786999999999,32.6156,-105.751305,Otero County,county
@@ -91,7 +92,7 @@ iso1:us#iso2:us-al#fips:01091,1091,1,1,Marengo,976.92584,32.247593,-87.79109,Mar
 iso1:us#iso2:us-wy#fips:56023,56023,56,56,Lincoln,4075.4753,42.229991999999996,-110.68296000000001,Lincoln County,county
 iso1:us#iso2:us-mo#fips:29011,29011,29,29,Barton,592.0503,37.500797,-94.344086,Barton County,county
 iso1:us#iso2:us-tx#fips:48057,48057,48,48,Calhoun,506.85625999999996,28.44172,-96.579575,Calhoun County,county
-iso1:us#iso2:us-va#fips:51735,51735,51,51,Poquoson city,15.381905,37.12836,-76.303535,Poquoson city,county
+iso1:us#iso2:us-va#fips:51735,51735,51,51,Poquoson,15.381905,37.12836,-76.303535,Poquoson city,county
 iso1:us#iso2:us-wv#fips:54075,54075,54,54,Pocahontas,940.2705699999999,38.332607,-80.010124,Pocahontas County,county
 iso1:us#iso2:us-tx#fips:48077,48077,48,48,Clay,1088.795,33.785903999999995,-98.21292,Clay County,county
 iso1:us#iso2:us-va#fips:51095,51095,51,51,James City,142.37006,37.324837,-76.777885,James City County,county
@@ -324,7 +325,7 @@ iso1:us#iso2:us-ia#fips:19187,19187,19,19,Webster,715.73303,42.43358,-94.1758349
 iso1:us#iso2:us-il#fips:17151,17151,17,17,Pope,368.86624,37.417168,-88.54236999999999,Pope County,county
 iso1:us#iso2:us-tn#fips:47159,47159,47,47,Smith,314.3058,36.256645,-85.94192,Smith County,county
 iso1:us#iso2:us-va#fips:51089,51089,51,51,Henry,382.36404,36.78148,-79.75923,Henry County,county
-iso1:us#iso2:us-va#fips:51510,51510,51,51,Alexandria city,14.934701,38.819252,-77.08367,Alexandria city,county
+iso1:us#iso2:us-va#fips:51510,51510,51,51,Alexandria,14.934701,38.819252,-77.08367,Alexandria city,county
 iso1:us#iso2:us-ia#fips:19101,19101,19,19,Jefferson,435.53795999999994,41.005886,-91.96664,Jefferson County,county
 iso1:us#iso2:us-mt#fips:30049,30049,30,30,Lewis and Clark,3458.4983,47.13201,-112.37337,Lewis and Clark County,county
 iso1:us#iso2:us-ut#fips:49013,49013,49,49,Duchesne,3235.454,40.289394,-110.42958,Duchesne County,county
@@ -357,7 +358,7 @@ iso1:us#iso2:us-sc#fips:45081,45081,45,45,Saluda,452.9661,34.00528,-81.727905,Sa
 iso1:us#iso2:us-mo#fips:29125,29125,29,29,Maries,526.9961,38.162617,-91.9236,Maries County,county
 iso1:us#iso2:us-ar#fips:05001,5001,5,5,Arkansas,988.8463,34.28957,-91.37655,Arkansas County,county
 iso1:us#iso2:us-mo#fips:29109,29109,29,29,Lawrence,611.7585,37.106590000000004,-93.83055,Lawrence County,county
-iso1:us#iso2:us-va#fips:51540,51540,51,51,Charlottesville city,10.245017,38.037659999999995,-78.48538,Charlottesville city,county
+iso1:us#iso2:us-va#fips:51540,51540,51,51,Charlottesville,10.245017,38.037659999999995,-78.48538,Charlottesville city,county
 iso1:us#iso2:us-il#fips:17011,17011,17,17,Bureau,869.1206,41.401306,-89.52837,Bureau County,county
 iso1:us#iso2:us-oh#fips:39145,39145,39,39,Scioto,610.2508,38.814888,-82.99866999999999,Scioto County,county
 iso1:us#iso2:us-nc#fips:37115,37115,37,37,Madison,449.63037,35.86421,-82.71263,Madison County,county
@@ -372,7 +373,7 @@ iso1:us#iso2:us-al#fips:01013,1013,1,1,Butler,776.8649,31.751666999999998,-86.68
 iso1:us#iso2:us-tn#fips:47165,47165,47,47,Sumner,529.4754,36.473442,-86.4598,Sumner County,county
 iso1:us#iso2:us-va#fips:51097,51097,51,51,King and Queen,315.17368,37.717773,-76.90558,King and Queen County,county
 iso1:us#iso2:us-ar#fips:05015,5015,5,5,Carroll,630.0721,36.33737,-93.54097,Carroll County,county
-iso1:us#iso2:us-va#fips:51820,51820,51,51,Waynesboro city,14.970304999999998,38.067158,-78.90142,Waynesboro city,county
+iso1:us#iso2:us-va#fips:51820,51820,51,51,Waynesboro,14.970304999999998,38.067158,-78.90142,Waynesboro city,county
 iso1:us#iso2:us-ak#fips:02220,2220,2,2,Sitka City and Borough,2870.1128,57.193203000000004,-135.3674,Sitka City and Borough,county
 iso1:us#iso2:us-or#fips:41051,41051,41,41,Multnomah,431.121,45.547709999999995,-122.41736599999999,Multnomah County,county
 iso1:us#iso2:us-tn#fips:47061,47061,47,47,Grundy,360.45633,35.393387,-85.71038,Grundy County,county
@@ -432,7 +433,7 @@ iso1:us#iso2:us-co#fips:08097,8097,8,8,Pitkin,970.7344,39.217537,-106.91616,Pitk
 iso1:us#iso2:us-nd#fips:38035,38035,38,38,Grand Forks,1436.2742,47.926003,-97.45085,Grand Forks County,county
 iso1:us#iso2:us-in#fips:18091,18091,18,18,LaPorte,598.2905,41.549009999999996,-86.744736,LaPorte County,county
 iso1:us#iso2:us-in#fips:18057,18057,18,18,Hamilton,394.36078,40.053509999999996,-86.02171,Hamilton County,county
-iso1:us#iso2:us-va#fips:51595,51595,51,51,Emporia city,6.904155,36.696182,-77.53596999999999,Emporia city,county
+iso1:us#iso2:us-va#fips:51595,51595,51,51,Emporia,6.904155,36.696182,-77.53596999999999,Emporia city,county
 iso1:us#iso2:us-ok#fips:40081,40081,40,40,Lincoln,952.4038,35.703117,-96.88139,Lincoln County,county
 iso1:us#iso2:us-ks#fips:20071,20071,20,20,Greeley,778.4308,38.480404,-101.80597,Greeley County,county
 iso1:us#iso2:us-ga#fips:13145,13145,13,13,Harris,463.84055,32.73155,-84.91243,Harris County,county
@@ -457,7 +458,7 @@ iso1:us#iso2:us-az#fips:04027,4027,4,4,Yuma,5514.026999999999,32.77394,-113.9109
 iso1:us#iso2:us-ga#fips:13129,13129,13,13,Gordon,356.4548,34.509665999999996,-84.87386,Gordon County,county
 iso1:us#iso2:us-ia#fips:19025,19025,19,19,Calhoun,569.8655,42.38617,-94.643684,Calhoun County,county
 iso1:us#iso2:us-fl#fips:12055,12055,12,12,Highlands,1017.67847,27.341079999999998,-81.342354,Highlands County,county
-iso1:us#iso2:us-va#fips:51580,51580,51,51,Covington city,5.468876,37.78106,-79.985435,Covington city,county
+iso1:us#iso2:us-va#fips:51580,51580,51,51,Covington,5.468876,37.78106,-79.985435,Covington city,county
 iso1:us#iso2:us-vt#fips:50017,50017,50,50,Orange,687.0518,44.00339,-72.36969,Orange County,county
 iso1:us#iso2:us-ks#fips:20113,20113,20,20,McPherson,898.31555,38.395813000000004,-97.64749,McPherson County,county
 iso1:us#iso2:us-az#fips:04021,4021,4,4,Pinal,5366.2295,32.91852,-111.36634,Pinal County,county
@@ -726,7 +727,7 @@ iso1:us#iso2:us-ct#fips:09011,9011,9,9,New London,665.1651,41.472652000000004,-7
 iso1:us#iso2:us-oh#fips:39059,39059,39,39,Guernsey,522.2716,40.056664000000005,-81.49786999999999,Guernsey County,county
 iso1:us#iso2:us-mi#fips:26015,26015,26,26,Barry,553.1134,42.582809999999995,-85.31455,Barry County,county
 iso1:us#iso2:us-mo#fips:29209,29209,29,29,Stone,463.8969,36.751003000000004,-93.4737,Stone County,county
-iso1:us#iso2:us-va#fips:51760,51760,51,51,Richmond city,59.925087,37.5314,-77.47600600000001,Richmond city,county
+iso1:us#iso2:us-va#fips:51760,51760,51,51,Richmond City,59.925087,37.5314,-77.47600600000001,Richmond city,county
 iso1:us#iso2:us-nc#fips:37169,37169,37,37,Stokes,449.0295,36.393505,-80.26621,Stokes County,county
 iso1:us#iso2:us-ia#fips:19039,19039,19,19,Clarke,431.18118,41.02919,-93.78409599999999,Clarke County,county
 iso1:us#iso2:us-ia#fips:19065,19065,19,19,Fayette,730.8548599999999,42.86412,-91.84038000000001,Fayette County,county
@@ -767,7 +768,7 @@ iso1:us#iso2:us-in#fips:18165,18165,18,18,Vermillion,256.873,39.854046000000004,
 iso1:us#iso2:us-mi#fips:26143,26143,26,26,Roscommon,519.91437,44.339515999999996,-84.611275,Roscommon County,county
 iso1:us#iso2:us-nc#fips:37005,37005,37,37,Alleghany,234.42593,36.489357,-81.1323,Alleghany County,county
 iso1:us#iso2:us-ca#fips:06035,6035,6,6,Lassen,4541.34,40.721084999999995,-120.62995,Lassen County,county
-iso1:us#iso2:us-va#fips:51610,51610,51,51,Falls Church city,2.0465120999999997,38.884724,-77.175606,Falls Church city,county
+iso1:us#iso2:us-va#fips:51610,51610,51,51,Falls Church,2.0465120999999997,38.884724,-77.175606,Falls Church city,county
 iso1:us#iso2:us-fl#fips:12081,12081,12,12,Manatee,743.65607,27.481682,-82.36877,Manatee County,county
 iso1:us#iso2:us-oh#fips:39119,39119,39,39,Muskingum,664.5685,39.966045,-81.943504,Muskingum County,county
 iso1:us#iso2:us-co#fips:08015,8015,8,8,Chaffee,1013.4429,38.738224,-106.31668,Chaffee County,county
@@ -994,7 +995,7 @@ iso1:us#iso2:us-ia#fips:19185,19185,19,19,Wayne,525.50824,40.739983,-93.33261,Wa
 iso1:us#iso2:us-tx#fips:48165,48165,48,48,Gaines,1502.4153,32.743942,-102.63156,Gaines County,county
 iso1:us#iso2:us-al#fips:01093,1093,1,1,Marion,742.36743,34.138218,-87.88155,Marion County,county
 iso1:us#iso2:us-nc#fips:37189,37189,37,37,Watauga,312.45108,36.235367,-81.709885,Watauga County,county
-iso1:us#iso2:us-va#fips:51770,51770,51,51,Roanoke city,42.522667,37.278458,-79.958176,Roanoke city,county
+iso1:us#iso2:us-va#fips:51770,51770,51,51,Roanoke City,42.522667,37.278458,-79.958176,Roanoke city,county
 iso1:us#iso2:us-tx#fips:48317,48317,48,48,Martin,914.9869,32.30983,-101.96184000000001,Martin County,county
 iso1:us#iso2:us-tx#fips:48037,48037,48,48,Bowie,885.03204,33.446064,-94.42239000000001,Bowie County,county
 iso1:us#iso2:us-ut#fips:49057,49057,49,49,Weber,576.2913,41.270325,-111.876884,Weber County,county
@@ -1021,7 +1022,7 @@ iso1:us#iso2:us-ok#fips:40133,40133,40,40,Seminole,632.85364,35.158367,-96.60285
 iso1:us#iso2:us-sc#fips:45003,45003,45,45,Aiken,1070.7167,33.550014000000004,-81.63298,Aiken County,county
 iso1:us#iso2:us-as:#fips:60020,60020,60,60,Manu'a District,22.248345999999998,-14.219693,-169.50732,Manu'a District,county
 iso1:us#iso2:us-ca#fips:06045,6045,6,6,Mendocino,3506.4778,39.432390000000005,-123.44288,Mendocino County,county
-iso1:us#iso2:us-va#fips:51550,51550,51,51,Chesapeake city,338.5219,36.679375,-76.30179,Chesapeake city,county
+iso1:us#iso2:us-va#fips:51550,51550,51,51,Chesapeake,338.5219,36.679375,-76.30179,Chesapeake city,county
 iso1:us#iso2:us-mp#fips:69120,69120,69,69,Tinian Municipality,41.792194,14.936784,145.60103,Tinian Municipality,county
 iso1:us#iso2:us-pr#fips:72153,72153,72,72,Yauco Municipio,67.71378,18.085669,-66.8579,Yauco Municipio,county
 iso1:us#iso2:us-wy#fips:56037,56037,56,56,Sweetwater,10427.335,41.660328,-108.87568,Sweetwater County,county
@@ -1053,7 +1054,7 @@ iso1:us#iso2:us-mo#fips:29023,29023,29,29,Butler,694.6939,36.71518,-90.40313,But
 iso1:us#iso2:us-la#fips:22047,22047,22,22,Iberville Parish,618.65076,30.270628000000002,-91.365845,Iberville Parish,county
 iso1:us#iso2:us-ms#fips:28125,28125,28,28,Sharkey,431.73467999999997,32.892395,-90.827614,Sharkey County,county
 iso1:us#iso2:us-va#fips:51061,51061,51,51,Fauquier,648.0281,38.744095,-77.8215,Fauquier County,county
-iso1:us#iso2:us-va#fips:51750,51750,51,51,Radford city,9.676716,37.12012,-80.55915,Radford city,county
+iso1:us#iso2:us-va#fips:51750,51750,51,51,Radford,9.676716,37.12012,-80.55915,Radford city,county
 iso1:us#iso2:us-nv#fips:32005,32005,32,32,Douglas,709.74567,38.90513,-119.60902,Douglas County,county
 iso1:us#iso2:us-fl#fips:12037,12037,12,12,Franklin,545.1594,29.810175,-84.79916999999999,Franklin County,county
 iso1:us#iso2:us-in#fips:18055,18055,18,18,Greene,542.4858,39.047146000000005,-87.00477,Greene County,county
@@ -1170,7 +1171,7 @@ iso1:us#iso2:us-co#fips:08083,8083,8,8,Montezuma,2029.4181,37.338024,-108.59579,
 iso1:us#iso2:us-ms#fips:28023,28023,28,28,Clarke,691.60095,32.045372,-88.68796999999999,Clarke County,county
 iso1:us#iso2:us-ia#fips:19125,19125,19,19,Marion,554.5082,41.331455,-93.09385,Marion County,county
 iso1:us#iso2:us-ne#fips:31055,31055,31,31,Douglas,326.42184,41.297092,-96.15406999999999,Douglas County,county
-iso1:us#iso2:us-va#fips:51600,51600,51,51,Fairfax city,6.240677,38.853184000000006,-77.29903,Fairfax city,county
+iso1:us#iso2:us-va#fips:51600,51600,51,51,Fairfax City,6.240677,38.853184000000006,-77.29903,Fairfax city,county
 iso1:us#iso2:us-ok#fips:40057,40057,40,40,Harmon,537.2763,34.74597,-99.84419,Harmon County,county
 iso1:us#iso2:us-mo#fips:29039,29039,29,29,Cedar,474.48584000000005,37.733654,-93.85001,Cedar County,county
 iso1:us#iso2:us-ga#fips:13059,13059,13,13,Clarke,119.22658500000001,33.952187,-83.36715,Clarke County,county
@@ -1233,11 +1234,11 @@ iso1:us#iso2:us-ms#fips:28091,28091,28,28,Marion,542.403,31.230166999999998,-89.
 iso1:us#iso2:us-ms#fips:28039,28039,28,28,George,478.71227999999996,30.85543,-88.64226500000001,George County,county
 iso1:us#iso2:us-il#fips:17085,17085,17,17,Jo Daviess,600.9442,42.362390000000005,-90.21146999999999,Jo Daviess County,county
 iso1:us#iso2:us-in#fips:18059,18059,18,18,Hancock,305.967,39.82253,-85.77315,Hancock County,county
-iso1:us#iso2:us-va#fips:51620,51620,51,51,Franklin city,8.277623,36.684013,-76.9414,Franklin city,county
+iso1:us#iso2:us-va#fips:51620,51620,51,51,Franklin City,8.277623,36.684013,-76.9414,Franklin city,county
 iso1:us#iso2:us-tx#fips:48329,48329,48,48,Midland,900.3882,31.81427,-102.00246,Midland County,county
 iso1:us#iso2:us-ks#fips:20171,20171,20,20,Scott,717.6095,38.481876,-100.90635999999999,Scott County,county
 iso1:us#iso2:us-mt#fips:30013,30013,30,30,Cascade,2698.2654,47.316573999999996,-111.35026599999999,Cascade County,county
-iso1:us#iso2:us-va#fips:51660,51660,51,51,Harrisonburg city,17.339814999999998,38.436256,-78.87331,Harrisonburg city,county
+iso1:us#iso2:us-va#fips:51660,51660,51,51,Harrisonburg,17.339814999999998,38.436256,-78.87331,Harrisonburg city,county
 iso1:us#iso2:us-il#fips:17199,17199,17,17,Williamson,420.2283,37.730354,-88.93001600000001,Williamson County,county
 iso1:us#iso2:us-mt#fips:30029,30029,30,30,Flathead,5087.3706,48.314679999999996,-114.0543,Flathead County,county
 iso1:us#iso2:us-pr#fips:72111,72111,72,72,Peñuelas Municipio,44.618927,18.026617,-66.72813000000001,Peñuelas Municipio,county
@@ -1250,11 +1251,11 @@ iso1:us#iso2:us-tn#fips:47181,47181,47,47,Wayne,734.1341,35.242847,-87.81985,Way
 iso1:us#iso2:us-ne#fips:31013,31013,31,31,Box Butte,1075.3291,42.21038,-103.08178000000001,Box Butte County,county
 iso1:us#iso2:us-pa#fips:42097,42097,42,42,Northumberland,458.02286,40.851524,-76.70988,Northumberland County,county
 iso1:us#iso2:us-tx#fips:48469,48469,48,48,Victoria,882.13635,28.79637,-96.9712,Victoria County,county
-iso1:us#iso2:us-va#fips:51530,51530,51,51,Buena Vista city,6.438375,37.729343,-79.35813,Buena Vista city,county
+iso1:us#iso2:us-va#fips:51530,51530,51,51,Buena Vista City,6.438375,37.729343,-79.35813,Buena Vista city,county
 iso1:us#iso2:us-mi#fips:26147,26147,26,26,St. Clair,721.3605,42.928802000000005,-82.668915,St. Clair County,county
 iso1:us#iso2:us-ne#fips:31173,31173,31,31,Thurston,393.59713999999997,42.15406,-96.53394,Thurston County,county
 iso1:us#iso2:us-vt#fips:50015,50015,50,50,Lamoille,458.88595999999995,44.603703,-72.63892,Lamoille County,county
-iso1:us#iso2:us-va#fips:51067,51067,51,51,Franklin,690.6456,36.991188,-79.88271,Franklin County,county
+iso1:us#iso2:us-va#fips:51067,51067,51,51,Franklin County,690.6456,36.991188,-79.88271,Franklin County,county
 iso1:us#iso2:us-ok#fips:40011,40011,40,40,Blaine,928.5195,35.87778,-98.42893000000001,Blaine County,county
 iso1:us#iso2:us-wa#fips:53037,53037,53,53,Kittitas,2297.3872,47.12444,-120.67671000000001,Kittitas County,county
 iso1:us#iso2:us-in#fips:18135,18135,18,18,Randolph,452.3946,40.164078,-85.00579,Randolph County,county
@@ -1531,7 +1532,7 @@ iso1:us#iso2:us-in#fips:18131,18131,18,18,Pulaski,433.68964000000005,41.045273,-
 iso1:us#iso2:us-mi#fips:26019,26019,26,26,Benzie,319.70905,44.64862,-86.49432,Benzie County,county
 iso1:us#iso2:us-ny#fips:36029,36029,36,36,Erie,1042.7617,42.752758,-78.77819000000001,Erie County,county
 iso1:us#iso2:us-md#fips:24031,24031,24,24,Montgomery,493.0797,39.137383,-77.203064,Montgomery County,county
-iso1:us#iso2:us-va#fips:51685,51685,51,51,Manassas Park city,2.5246994,38.768944,-77.44877,Manassas Park city,county
+iso1:us#iso2:us-va#fips:51685,51685,51,51,Manassas Park,2.5246994,38.768944,-77.44877,Manassas Park city,county
 iso1:us#iso2:us-va#fips:51013,51013,51,51,Arlington,25.998297,38.878338,-77.1007,Arlington County,county
 iso1:us#iso2:us-va#fips:51035,51035,51,51,Carroll,474.76055999999994,36.731964000000005,-80.72783000000001,Carroll County,county
 iso1:us#iso2:us-mo#fips:29183,29183,29,29,St. Charles,560.53076,38.7811,-90.67491,St. Charles County,county
@@ -1572,7 +1573,7 @@ iso1:us#iso2:us-wi#fips:55095,55095,55,55,Polk,914.3510000000001,45.46204,-92.44
 iso1:us#iso2:us-wi#fips:55045,55045,55,55,Green,584.0639,42.67552,-89.60507,Green County,county
 iso1:us#iso2:us-pr#fips:72107,72107,72,72,Orocovis Municipio,63.627304,18.218733,-66.4369,Orocovis Municipio,county
 iso1:us#iso2:us-ny#fips:36079,36079,36,36,Putnam,230.33437,41.427906,-73.74386,Putnam County,county
-iso1:us#iso2:us-va#fips:51700,51700,51,51,Newport News city,68.99455999999999,37.076138,-76.52198,Newport News city,county
+iso1:us#iso2:us-va#fips:51700,51700,51,51,Newport News,68.99455999999999,37.076138,-76.52198,Newport News city,county
 iso1:us#iso2:us-co#fips:08011,8011,8,8,Bent,1512.8982,37.931892,-103.07758000000001,Bent County,county
 iso1:us#iso2:us-ok#fips:40065,40065,40,40,Jackson,802.6798,34.594006,-99.41223000000001,Jackson County,county
 iso1:us#iso2:us-mt#fips:30089,30089,30,30,Sanders,2760.4946,47.756496000000006,-115.180305,Sanders County,county
@@ -1618,7 +1619,7 @@ iso1:us#iso2:us-la#fips:22079,22079,22,22,Rapides Parish,1320.3892,31.1932030000
 iso1:us#iso2:us-ne#fips:31111,31111,31,31,Lincoln,2564.2197,41.050323,-100.744484,Lincoln County,county
 iso1:us#iso2:us-tx#fips:48067,48067,48,48,Cass,936.9976,33.0837,-94.35758,Cass County,county
 iso1:us#iso2:us-tn#fips:47079,47079,47,47,Henry,561.92145,36.325294,-88.300285,Henry County,county
-iso1:us#iso2:us-va#fips:51840,51840,51,51,Winchester city,9.193211,39.17387,-78.17635,Winchester city,county
+iso1:us#iso2:us-va#fips:51840,51840,51,51,Winchester,9.193211,39.17387,-78.17635,Winchester city,county
 iso1:us#iso2:us-nc#fips:37061,37061,37,37,Duplin,814.7866,34.934402,-77.93354000000001,Duplin County,county
 iso1:us#iso2:us-nc#fips:37087,37087,37,37,Haywood,553.57886,35.558884,-82.98131,Haywood County,county
 iso1:us#iso2:us-mn#fips:27037,27037,27,27,Dakota,562.56354,44.670895,-93.062485,Dakota County,county
@@ -1755,7 +1756,7 @@ iso1:us#iso2:us-mn#fips:27059,27059,27,27,Isanti,435.7549,45.56243,-93.29634,Isa
 iso1:us#iso2:us-pa#fips:42049,42049,42,42,Erie,799.0854,42.11795,-80.09638000000001,Erie County,county
 iso1:us#iso2:us-ms#fips:28029,28029,28,28,Copiah,777.3114,31.866915000000002,-90.44876,Copiah County,county
 iso1:us#iso2:us-tx#fips:48467,48467,48,48,Van Zandt,842.5993699999999,32.55879,-95.83691,Van Zandt County,county
-iso1:us#iso2:us-va#fips:51161,51161,51,51,Roanoke,250.55264,37.343586,-79.94399,Roanoke County,county
+iso1:us#iso2:us-va#fips:51161,51161,51,51,Roanoke County,250.55264,37.343586,-79.94399,Roanoke County,county
 iso1:us#iso2:us-va#fips:51015,51015,51,51,Augusta,967.1062,38.17191,-79.14756,Augusta County,county
 iso1:us#iso2:us-ak#fips:02060,2060,2,2,Bristol Bay Borough,481.99698,58.741645999999996,-156.9669,Bristol Bay Borough,county
 iso1:us#iso2:us-ut#fips:49031,49031,49,49,Piute,758.4639999999999,38.335879999999996,-112.12938,Piute County,county
@@ -1768,7 +1769,7 @@ iso1:us#iso2:us-in#fips:18045,18045,18,18,Fountain,395.68106,40.121235,-87.23487
 iso1:us#iso2:us-il#fips:17173,17173,17,17,Shelby,758.53613,39.384926,-88.79885999999999,Shelby County,county
 iso1:us#iso2:us-il#fips:17051,17051,17,17,Fayette,716.4628,39.001125,-89.01791999999999,Fayette County,county
 iso1:us#iso2:us-oh#fips:39127,39127,39,39,Perry,407.94785,39.743187,-82.23795,Perry County,county
-iso1:us#iso2:us-va#fips:51590,51590,51,51,Danville city,42.798767,36.583332,-79.40807,Danville city,county
+iso1:us#iso2:us-va#fips:51590,51590,51,51,Danville,42.798767,36.583332,-79.40807,Danville city,county
 iso1:us#iso2:us-ga#fips:13011,13011,13,13,Banks,232.06392999999997,34.35192,-83.49844,Banks County,county
 iso1:us#iso2:us-ga#fips:13305,13305,13,13,Wayne,641.9585599999999,31.547846000000003,-81.91238,Wayne County,county
 iso1:us#iso2:us-ok#fips:40109,40109,40,40,Oklahoma,708.8815,35.55461,-97.4094,Oklahoma County,county
@@ -1782,7 +1783,7 @@ iso1:us#iso2:us-ky#fips:21023,21023,21,21,Bracken,202.72346000000002,38.680367,-
 iso1:us#iso2:us-wi#fips:55037,55037,55,55,Florence,488.1395,45.871826,-88.40699000000001,Florence County,county
 iso1:us#iso2:us-wv#fips:54087,54087,54,54,Roane,483.57944000000003,38.74295,-81.35449,Roane County,county
 iso1:us#iso2:us-mn#fips:27159,27159,27,27,Wadena,536.295,46.586987,-94.98861,Wadena County,county
-iso1:us#iso2:us-va#fips:51670,51670,51,51,Hopewell city,10.3547125,37.291008000000005,-77.29894,Hopewell city,county
+iso1:us#iso2:us-va#fips:51670,51670,51,51,Hopewell,10.3547125,37.291008000000005,-77.29894,Hopewell city,county
 iso1:us#iso2:us-il#fips:17201,17201,17,17,Winnebago,513.17365,42.337395,-89.16121,Winnebago County,county
 iso1:us#iso2:us-az#fips:04007,4007,4,4,Gila,4758.1577,33.78962,-110.81187,Gila County,county
 iso1:us#iso2:us-md#fips:24045,24045,24,24,Wicomico,374.43323,38.36737,-75.63208,Wicomico County,county
@@ -1829,7 +1830,7 @@ iso1:us#iso2:us-ar#fips:05041,5041,5,5,Desha,768.16156,33.82875,-91.2441,Desha C
 iso1:us#iso2:us-pr#fips:72147,72147,72,72,Vieques Municipio,50.790146,18.125418,-65.43247,Vieques Municipio,county
 iso1:us#iso2:us-tn#fips:47135,47135,47,47,Perry,414.77603,35.663754,-87.86932,Perry County,county
 iso1:us#iso2:us-mn#fips:27163,27163,27,27,Washington,384.42368,45.037929999999996,-92.890114,Washington County,county
-iso1:us#iso2:us-va#fips:51740,51740,51,51,Portsmouth city,33.301753999999995,36.85934,-76.35696999999999,Portsmouth city,county
+iso1:us#iso2:us-va#fips:51740,51740,51,51,Portsmouth,33.301753999999995,36.85934,-76.35696999999999,Portsmouth city,county
 iso1:us#iso2:us-pa#fips:42051,42051,42,42,Fayette,790.3807,39.918907,-79.64012,Fayette County,county
 iso1:us#iso2:us-wv#fips:54023,54023,54,54,Grant,477.38845999999995,39.105988,-79.19506,Grant County,county
 iso1:us#iso2:us-va#fips:51171,51171,51,51,Shenandoah,508.08925999999997,38.856204999999996,-78.57399000000001,Shenandoah County,county
@@ -1910,7 +1911,7 @@ iso1:us#iso2:us-tx#fips:48075,48075,48,48,Childress,696.5345,34.524623999999996,
 iso1:us#iso2:us-mo#fips:29181,29181,29,29,Ripley,629.5527,36.65017,-90.87483,Ripley County,county
 iso1:us#iso2:us-il#fips:17179,17179,17,17,Tazewell,646.4866,40.508076,-89.51626,Tazewell County,county
 iso1:us#iso2:us-tx#fips:48243,48243,48,48,Jeff Davis,2264.6328,30.625357,-104.19187,Jeff Davis County,county
-iso1:us#iso2:us-va#fips:51678,51678,51,51,Lexington city,2.4993243,37.782333,-79.44431999999999,Lexington city,county
+iso1:us#iso2:us-va#fips:51678,51678,51,51,Lexington,2.4993243,37.782333,-79.44431999999999,Lexington city,county
 iso1:us#iso2:us-ar#fips:05135,5135,5,5,Sharp,604.4255,36.173396999999994,-91.47107,Sharp County,county
 iso1:us#iso2:us-co#fips:08069,8069,8,8,Larimer,2595.8628,40.658091999999996,-105.48676,Larimer County,county
 iso1:us#iso2:us-nc#fips:37177,37177,37,37,Tyrrell,390.7888,35.87042,-76.16534399999999,Tyrrell County,county
@@ -2146,7 +2147,7 @@ iso1:us#iso2:us-in#fips:18147,18147,18,18,Spencer,396.78125,38.009696999999996,-
 iso1:us#iso2:us-ky#fips:21099,21099,21,21,Hart,412.57583999999997,37.309096999999994,-85.882126,Hart County,county
 iso1:us#iso2:us-ky#fips:21137,21137,21,21,Lincoln,332.8546,37.457172,-84.65833,Lincoln County,county
 iso1:us#iso2:us-mt#fips:30005,30005,30,30,Blaine,4227.266,48.428284000000005,-108.96763999999999,Blaine County,county
-iso1:us#iso2:us-va#fips:51710,51710,51,51,Norfolk city,53.276737,36.923016,-76.244644,Norfolk city,county
+iso1:us#iso2:us-va#fips:51710,51710,51,51,Norfolk,53.276737,36.923016,-76.244644,Norfolk city,county
 iso1:us#iso2:us-tx#fips:48389,48389,48,48,Reeves,2635.4429999999998,31.308366999999997,-103.71271,Reeves County,county
 iso1:us#iso2:us-va#fips:51155,51155,51,51,Pulaski,319.84902999999997,37.063385,-80.71345,Pulaski County,county
 iso1:us#iso2:us-nc#fips:37179,37179,37,37,Union,632.7448,34.991820000000004,-80.530426,Union County,county
@@ -2193,7 +2194,7 @@ iso1:us#iso2:us-tn#fips:47057,47057,47,47,Grainger,280.59607,36.277508000000005,
 iso1:us#iso2:us-tx#fips:48161,48161,48,48,Freestone,877.7605,31.701748,-96.14496,Freestone County,county
 iso1:us#iso2:us-pa#fips:42087,42087,42,42,Mifflin,411.0592,40.601616,-77.65183,Mifflin County,county
 iso1:us#iso2:us-al#fips:01041,1041,1,1,Crenshaw,608.8856,31.732826,-86.31922,Crenshaw County,county
-iso1:us#iso2:us-va#fips:51520,51520,51,51,Bristol city,12.904041000000001,36.616955,-82.15756,Bristol city,county
+iso1:us#iso2:us-va#fips:51520,51520,51,51,Bristol,12.904041000000001,36.616955,-82.15756,Bristol city,county
 iso1:us#iso2:us-tx#fips:48399,48399,48,48,Runnels,1051.106,31.84512,-99.98271,Runnels County,county
 iso1:us#iso2:us-tx#fips:48443,48443,48,48,Terrell,2358.0376,30.232342,-102.07251,Terrell County,county
 iso1:us#iso2:us-ks#fips:20153,20153,20,20,Rawlins,1069.4528,39.786198,-101.07674,Rawlins County,county
@@ -2276,12 +2277,12 @@ iso1:us#iso2:us-sc#fips:45051,45051,45,45,Horry,1133.0375,33.90927,-78.97668,Hor
 iso1:us#iso2:us-pa#fips:42091,42091,42,42,Montgomery,482.98287999999997,40.21,-75.3702,Montgomery County,county
 iso1:us#iso2:us-id#fips:16061,16061,16,16,Lewis,478.83777000000003,46.23633,-116.42376000000002,Lewis County,county
 iso1:us#iso2:us-pr#fips:72013,72013,72,72,Arecibo Municipio,125.942924,18.434004,-66.674995,Arecibo Municipio,county
-iso1:us#iso2:us-va#fips:51720,51720,51,51,Norton city,7.4775524,36.93155,-82.626,Norton city,county
+iso1:us#iso2:us-va#fips:51720,51720,51,51,Norton,7.4775524,36.93155,-82.626,Norton city,county
 iso1:us#iso2:us-nj#fips:34027,34027,34,34,Morris,460.97475999999995,40.858894,-74.54729499999999,Morris County,county
 iso1:us#iso2:us-mo#fips:29211,29211,29,29,Sullivan,648.0038,40.209587,-93.10978,Sullivan County,county
 iso1:us#iso2:us-ks#fips:20135,20135,20,20,Ness,1074.776,38.48044,-99.908745,Ness County,county
 iso1:us#iso2:us-tx#fips:48039,48039,48,48,Brazoria,1363.3168,29.167818,-95.43465,Brazoria County,county
-iso1:us#iso2:us-va#fips:51790,51790,51,51,Staunton city,19.921162,38.157978,-79.061874,Staunton city,county
+iso1:us#iso2:us-va#fips:51790,51790,51,51,Staunton,19.921162,38.157978,-79.061874,Staunton city,county
 iso1:us#iso2:us-ne#fips:31029,31029,31,31,Chase,894.449,40.530390000000004,-101.69419,Chase County,county
 iso1:us#iso2:us-oh#fips:39113,39113,39,39,Montgomery,461.53375,39.753735,-84.29059000000001,Montgomery County,county
 iso1:us#iso2:us-tx#fips:48447,48447,48,48,Throckmorton,912.5833,33.170696,-99.205795,Throckmorton County,county
@@ -2313,7 +2314,7 @@ iso1:us#iso2:us-ky#fips:21125,21125,21,21,Laurel,434.00300000000004,37.113265999
 iso1:us#iso2:us-tn#fips:47121,47121,47,47,Meigs,195.14177,35.512203,-84.8161,Meigs County,county
 iso1:us#iso2:us-mo#fips:29213,29213,29,29,Taney,632.39197,36.649826000000004,-93.042816,Taney County,county
 iso1:us#iso2:us-ga#fips:13269,13269,13,13,Taylor,376.69912999999997,32.55467,-84.25143,Taylor County,county
-iso1:us#iso2:us-va#fips:51830,51830,51,51,Williamsburg city,8.940619,37.26948,-76.70819,Williamsburg city,county
+iso1:us#iso2:us-va#fips:51830,51830,51,51,Williamsburg,8.940619,37.26948,-76.70819,Williamsburg city,county
 iso1:us#iso2:us-tx#fips:48415,48415,48,48,Scurry,905.4753,32.744354,-100.91334499999999,Scurry County,county
 iso1:us#iso2:us-co#fips:08047,8047,8,8,Gilpin,150.0277,39.861156,-105.52888,Gilpin County,county
 iso1:us#iso2:us-ok#fips:40087,40087,40,40,McClain,570.7364,35.016438,-97.44981,McClain County,county
@@ -2508,7 +2509,7 @@ iso1:us#iso2:us-fl#fips:12083,12083,12,12,Marion,1588.4701,29.202804999999998,-8
 iso1:us#iso2:us-va#fips:51135,51135,51,51,Nottoway,314.4004,37.141166999999996,-78.05386,Nottoway County,county
 iso1:us#iso2:us-nj#fips:34041,34041,34,34,Warren,356.54828,40.853493,-75.0095,Warren County,county
 iso1:us#iso2:us-ny#fips:36021,36021,36,36,Columbia,634.6850599999999,42.24773,-73.62680999999999,Columbia County,county
-iso1:us#iso2:us-va#fips:51690,51690,51,51,Martinsville city,10.956643,36.683525,-79.86365,Martinsville city,county
+iso1:us#iso2:us-va#fips:51690,51690,51,51,Martinsville,10.956643,36.683525,-79.86365,Martinsville city,county
 iso1:us#iso2:us-ok#fips:40023,40023,40,40,Choctaw,770.3348,34.027645,-95.55421,Choctaw County,county
 iso1:us#iso2:us-ks#fips:20041,20041,20,20,Dickinson,847.0961,38.867737,-97.15794,Dickinson County,county
 iso1:us#iso2:us-tx#fips:48427,48427,48,48,Starr,1223.2207,26.530903000000002,-98.740234,Starr County,county
@@ -2603,7 +2604,7 @@ iso1:us#iso2:us-il#fips:17081,17081,17,17,Jefferson,571.22363,38.300779999999996
 iso1:us#iso2:us-sd#fips:46057,46057,46,46,Hamlin,506.97574000000003,44.680620000000005,-97.1786,Hamlin County,county
 iso1:us#iso2:us-wi#fips:55069,55069,55,55,Lincoln,878.73376,45.338417,-89.74231,Lincoln County,county
 iso1:us#iso2:us-ny#fips:36033,36033,36,36,Franklin,1629.2692,44.594376000000004,-74.31067,Franklin County,county
-iso1:us#iso2:us-va#fips:51630,51630,51,51,Fredericksburg city,10.451047,38.29927,-77.48666,Fredericksburg city,county
+iso1:us#iso2:us-va#fips:51630,51630,51,51,Fredericksburg,10.451047,38.29927,-77.48666,Fredericksburg city,county
 iso1:us#iso2:us-wv#fips:54081,54081,54,54,Raleigh,605.3784,37.76247,-81.26467,Raleigh County,county
 iso1:us#iso2:us-nm#fips:35005,35005,35,35,Chaves,6067.38,33.361603,-104.46984,Chaves County,county
 iso1:us#iso2:us-nm#fips:35049,35049,35,35,Santa Fe,1910.4429,35.51453,-105.963974,Santa Fe County,county
@@ -2705,7 +2706,7 @@ iso1:us#iso2:us-sd#fips:46059,46059,46,46,Hand,1436.6985,44.546715,-99.00458,Han
 iso1:us#iso2:us-pa#fips:42081,42081,42,42,Lycoming,1228.8063,41.343884,-77.05526,Lycoming County,county
 iso1:us#iso2:us-id#fips:16057,16057,16,16,Latah,1075.9037,46.81892,-116.73097,Latah County,county
 iso1:us#iso2:us-ga#fips:13237,13237,13,13,Putnam,344.69354,33.321059999999996,-83.37179,Putnam County,county
-iso1:us#iso2:us-va#fips:51640,51640,51,51,Galax city,8.236641,36.665638,-80.91431,Galax city,county
+iso1:us#iso2:us-va#fips:51640,51640,51,51,Galax,8.236641,36.665638,-80.91431,Galax city,county
 iso1:us#iso2:us-nm#fips:35037,35037,35,35,Quay,2874.0525,35.107018,-103.54807,Quay County,county
 iso1:us#iso2:us-tx#fips:48269,48269,48,48,King,910.90344,33.61427,-100.245346,King County,county
 iso1:us#iso2:us-ar#fips:05073,5073,5,5,Lafayette,528.3131,33.240629999999996,-93.61151,Lafayette County,county
@@ -2801,7 +2802,7 @@ iso1:us#iso2:us-tx#fips:48069,48069,48,48,Castro,894.47485,34.53362,-102.25879,C
 iso1:us#iso2:us-md#fips:24043,24043,24,24,Washington,457.7828,39.603621999999994,-77.814674,Washington County,county
 iso1:us#iso2:us-ky#fips:21133,21133,21,21,Letcher,337.94186,37.118534000000004,-82.86125,Letcher County,county
 iso1:us#iso2:us-nj#fips:34033,34033,34,34,Salem,331.87282999999996,39.57383,-75.35735,Salem County,county
-iso1:us#iso2:us-va#fips:51680,51680,51,51,Lynchburg city,48.975840000000005,37.399017,-79.19546,Lynchburg city,county
+iso1:us#iso2:us-va#fips:51680,51680,51,51,Lynchburg,48.975840000000005,37.399017,-79.19546,Lynchburg city,county
 iso1:us#iso2:us-ar#fips:05125,5125,5,5,Saline,723.5983,34.648525,-92.67446,Saline County,county
 iso1:us#iso2:us-wv#fips:54053,54053,54,54,Mason,430.782,38.770912,-82.02901,Mason County,county
 iso1:us#iso2:us-wv#fips:54021,54021,54,54,Gilmer,338.5141,38.915867,-80.84940999999999,Gilmer County,county
@@ -2880,7 +2881,7 @@ iso1:us#iso2:us-nd#fips:38059,38059,38,38,Morton,1925.9531,46.71082,-101.29826,M
 iso1:us#iso2:us-nc#fips:37041,37041,37,37,Chowan,172.66301,36.12898,-76.60275,Chowan County,county
 iso1:us#iso2:us-nc#fips:37021,37021,37,37,Buncombe,656.51917,35.60937,-82.530426,Buncombe County,county
 iso1:us#iso2:us-ca#fips:06063,6063,6,6,Plumas,2553.1492,39.992294,-120.82437,Plumas County,county
-iso1:us#iso2:us-va#fips:51730,51730,51,51,Petersburg city,22.721062,37.20473,-77.392365,Petersburg city,county
+iso1:us#iso2:us-va#fips:51730,51730,51,51,Petersburg,22.721062,37.20473,-77.392365,Petersburg city,county
 iso1:us#iso2:us-vt#fips:50023,50023,50,50,Washington,687.066,44.27499,-72.60951,Washington County,county
 iso1:us#iso2:us-sd#fips:46093,46093,46,46,Meade,3471.0518,44.60528,-102.71417,Meade County,county
 iso1:us#iso2:us-in#fips:18097,18097,18,18,Marion,396.5827,39.782973999999996,-86.135796,Marion County,county
@@ -2893,7 +2894,7 @@ iso1:us#iso2:us-va#fips:51175,51175,51,51,Southampton,599.2161,36.72006599999999
 iso1:us#iso2:us-tx#fips:48183,48183,48,48,Gregg,273.38977,32.486397,-94.81628,Gregg County,county
 iso1:us#iso2:us-ny#fips:36087,36087,36,36,Rockland,173.45009,41.15463,-74.02466,Rockland County,county
 iso1:us#iso2:us-ar#fips:05089,5089,5,5,Marion,596.9769,36.266663,-92.67857,Marion County,county
-iso1:us#iso2:us-va#fips:51800,51800,51,51,Suffolk city,399.16702000000004,36.69716,-76.63478,Suffolk city,county
+iso1:us#iso2:us-va#fips:51800,51800,51,51,Suffolk,399.16702000000004,36.69716,-76.63478,Suffolk city,county
 iso1:us#iso2:us-co#fips:08041,8041,8,8,El Paso,2126.9216,38.827385,-104.52747,El Paso County,county
 iso1:us#iso2:us-mo#fips:29187,29187,29,29,St. Francois,451.90227999999996,37.810707,-90.47386999999999,St. Francois County,county
 iso1:us#iso2:us-tx#fips:48475,48475,48,48,Ward,835.6311,31.513070000000003,-103.10511,Ward County,county
@@ -3049,7 +3050,7 @@ iso1:us#iso2:us-al#fips:01111,1111,1,1,Randolph,580.5691,33.296473999999996,-85.
 iso1:us#iso2:us-nc#fips:37009,37009,37,37,Ashe,425.08594000000005,36.44347,-81.49934,Ashe County,county
 iso1:us#iso2:us-co#fips:08033,8033,8,8,Dolores,1067.2067,37.711723,-108.52412,Dolores County,county
 iso1:us#iso2:us-oh#fips:39089,39089,39,39,Licking,682.46155,40.091503,-82.48344,Licking County,county
-iso1:us#iso2:us-va#fips:51683,51683,51,51,Manassas city,9.849598,38.746807000000004,-77.482635,Manassas city,county
+iso1:us#iso2:us-va#fips:51683,51683,51,51,Manassas City,9.849598,38.746807000000004,-77.482635,Manassas city,county
 iso1:us#iso2:us-ar#fips:05139,5139,5,5,Union,1039.2896,33.168217,-92.598145,Union County,county
 iso1:us#iso2:us-il#fips:17071,17071,17,17,Henderson,378.80896,40.814471999999995,-90.94124599999999,Henderson County,county
 iso1:us#iso2:us-al#fips:01101,1101,1,1,Montgomery,785.36536,32.20288,-86.20446,Montgomery County,county
@@ -3150,7 +3151,7 @@ iso1:us#iso2:us-sc#fips:45043,45043,45,45,Georgetown,813.9215,33.41753,-79.29633
 iso1:us#iso2:us-nd#fips:38041,38041,38,38,Hettinger,1132.2776,46.435703000000004,-102.45424,Hettinger County,county
 iso1:us#iso2:us-ut#fips:49019,49019,49,49,Grand,3672.8684,38.974327,-109.57345,Grand County,county
 iso1:us#iso2:us-ut#fips:49045,49045,49,49,Tooele,6942.182,40.467754,-113.12398,Tooele County,county
-iso1:us#iso2:us-va#fips:51650,51650,51,51,Hampton city,51.45988,37.047962,-76.29729499999999,Hampton city,county
+iso1:us#iso2:us-va#fips:51650,51650,51,51,Hampton,51.45988,37.047962,-76.29729499999999,Hampton city,county
 iso1:us#iso2:us-wi#fips:55011,55011,55,55,Buffalo,675.8135,44.38563,-91.76129,Buffalo County,county
 iso1:us#iso2:us-va#fips:51069,51069,51,51,Frederick,413.18273999999997,39.20366,-78.26383,Frederick County,county
 iso1:us#iso2:us-wv#fips:54041,54041,54,54,Lewis,386.9421,38.988876,-80.495476,Lewis County,county
@@ -3227,7 +3228,7 @@ iso1:us#iso2:us-wi#fips:55029,55029,55,55,Door,481.97900000000004,45.09342,-87.0
 iso1:us#iso2:us-nc#fips:37047,37047,37,37,Columbus,938.15295,34.2616,-78.63930500000001,Columbus County,county
 iso1:us#iso2:us-oh#fips:39053,39053,39,39,Gallia,466.54654000000005,38.817046999999995,-82.30174,Gallia County,county
 iso1:us#iso2:us-tx#fips:48441,48441,48,48,Taylor,915.5675,32.297127,-99.89043000000001,Taylor County,county
-iso1:us#iso2:us-va#fips:51570,51570,51,51,Colonial Heights city,7.519685000000001,37.261684,-77.396805,Colonial Heights city,county
+iso1:us#iso2:us-va#fips:51570,51570,51,51,Colonial Heights,7.519685000000001,37.261684,-77.396805,Colonial Heights city,county
 iso1:us#iso2:us-oh#fips:39031,39031,39,39,Coshocton,563.9784,40.29671,-81.93011,Coshocton County,county
 iso1:us#iso2:us-ne#fips:31135,31135,31,31,Perkins,883.3654,40.857647,-101.627464,Perkins County,county
 iso1:us#iso2:us-tx#fips:48205,48205,48,48,Hartley,1462.0006,35.840244,-102.61005,Hartley County,county
@@ -3245,12 +3246,12 @@ iso1:us#iso2:us-ne#fips:31037,31037,31,31,Colfax,411.66083,41.57496,-97.08894000
 iso1:us#iso2:us-sc#fips:45025,45025,45,45,Chesterfield,799.0128,34.637015999999996,-80.159225,Chesterfield County,county
 iso1:us#iso2:us-tn#fips:47101,47101,47,47,Lewis,282.10152999999997,35.523243,-87.49699,Lewis County,county
 iso1:us#iso2:us-or#fips:41067,41067,41,41,Washington,724.2980299999999,45.553543,-123.09761999999999,Washington County,county
-iso1:us#iso2:us-va#fips:51810,51810,51,51,Virginia Beach city,244.7309,36.779984000000006,-76.02521,Virginia Beach city,county
+iso1:us#iso2:us-va#fips:51810,51810,51,51,Virginia Beach,244.7309,36.779984000000006,-76.02521,Virginia Beach city,county
 iso1:us#iso2:us-mt#fips:30057,30057,30,30,Madison,3588.2793,45.32529,-111.91378999999999,Madison County,county
 iso1:us#iso2:us-va#fips:51103,51103,51,51,Lancaster,133.30202,37.704840000000004,-76.41266999999999,Lancaster County,county
 iso1:us#iso2:us-mo#fips:29013,29013,29,29,Bates,836.7231400000001,38.257217,-94.33925,Bates County,county
 iso1:us#iso2:us-nh#fips:33001,33001,33,33,Belknap,401.8578,43.519108,-71.42537,Belknap County,county
-iso1:us#iso2:us-va#fips:51159,51159,51,51,Richmond,191.48439,37.942894,-76.73056,Richmond County,county
+iso1:us#iso2:us-va#fips:51159,51159,51,51,Richmond County,191.48439,37.942894,-76.73056,Richmond County,county
 iso1:us#iso2:us-ak#fips:02230,2230,2,2,Skagway Municipality,433.9477,59.56038,-135.33827,Skagway Municipality,county
 iso1:us#iso2:us-ak#fips:02105,2105,2,2,Hoonah-Angoon Census Area,6556.696,58.25346,-136.32072,Hoonah-Angoon Census Area,county
 iso1:us#iso2:us-wa#fips:53021,53021,53,53,Franklin,1241.6381,46.53458,-118.906944,Franklin County,county

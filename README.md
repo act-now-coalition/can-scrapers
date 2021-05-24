@@ -1,5 +1,7 @@
 # Covid Act Now Scraping Tools
 
+developer-docs: https://covid-projections.github.io/can-scrapers/index.html
+
 
 ## Creating a development environment for scraping
 
@@ -7,9 +9,8 @@
 2. Create conda environment for this project, `conda create -n can-scrapers python=3`
 3. Activate the environment, `conda activate can-scrapers`
 4. Move your command line or terminal into the `can-scrapers` directory
-6. Install required packages, `pip install -r requirements-dev.txt`
-5. (Windows users only) Install required package, `conda install fiona`
-7. Install development version of package, `pip install -e .`
+5. (Windows/Mac users only) Install required package, `conda install fiona`
+6. Install required dependencies, `pip install -e .`
 
 ### Database setup
 

@@ -2,6 +2,7 @@ import re
 import tempfile
 import pandas as pd
 import camelot
+import pandas as pd
 import requests
 import us
 import textract
@@ -16,8 +17,10 @@ class FloridaCountyVaccine(StateDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
-    fetch_url_for_counties = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine-county" \
-                             "/vaccine_county_report_latest.pdf"
+    fetch_url_for_counties = (
+        "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine-county"
+        "/vaccine_county_report_latest.pdf"
+    )
 
     source_name = "Florida Department of Health"
 
@@ -27,16 +30,29 @@ class FloridaCountyVaccine(StateDashboard):
         county_names = []
         results = requests.get(self.fetch_url_for_counties)
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_file = '{}/vaccine_county_report_latest.pdf'.format(tmp_dir)
-            with open(tmp_file, 'wb') as f:
+            tmp_file = "{}/vaccine_county_report_latest.pdf".format(tmp_dir)
+            with open(tmp_file, "wb") as f:
                 f.write(results.content)
                 pdf_pages_headers = textract.process(tmp_file)
-                county_names = re.findall(r"COVID-19: (?P<countyName>.*?) vaccine summary",
-                                          pdf_pages_headers.decode("utf-8"))
-                county_names = list(map(lambda x: x if not x.endswith(" County") else x[:-7], county_names))
+                county_names = re.findall(
+                    r"COVID-19: (?P<countyName>.*?) vaccine summary",
+                    pdf_pages_headers.decode("utf-8"),
+                )
+                county_names = list(
+                    map(
+                        lambda x: x if not x.endswith(" County") else x[:-7],
+                        county_names,
+                    )
+                )
 
-        county_demographics_data = camelot.read_pdf(self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=10)
-        return {"vaccine_data": vaccine_data, "county_demographics_data": county_demographics_data, "county_names": county_names}
+        county_demographics_data = camelot.read_pdf(
+            self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=10
+        )
+        return {
+            "vaccine_data": vaccine_data,
+            "county_demographics_data": county_demographics_data,
+            "county_names": county_names,
+        }
 
     def normalize_group(self, df, demographic, dgroup, group_rename, cmu):
         keep_vals = list(group_rename.keys())
@@ -66,25 +82,41 @@ class FloridaCountyVaccine(StateDashboard):
         dfs_age_demographics = []
         if "county_demographics_data" in data:
             for i in range(len(data["county_demographics_data"])):
-                dfs_age_demographics.append(self._truncate_demographics_age_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+                dfs_age_demographics.append(
+                    self._truncate_demographics_age_data(
+                        data["county_demographics_data"][i].df, data["county_names"][i]
+                    )
+                )
         df_age_demographics = pd.concat(dfs_age_demographics)
 
         dfs_race_demographics = []
         if "county_demographics_data" in data:
             for i in range(len(data["county_demographics_data"])):
-                dfs_race_demographics.append(self._truncate_demographics_race_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+                dfs_race_demographics.append(
+                    self._truncate_demographics_race_data(
+                        data["county_demographics_data"][i].df, data["county_names"][i]
+                    )
+                )
         df_race_demographics = pd.concat(dfs_race_demographics)
 
         dfs_sex_demographics = []
         if "county_demographics_data" in data:
             for i in range(len(data["county_demographics_data"])):
-                dfs_sex_demographics.append(self._truncate_demographics_sex_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+                dfs_sex_demographics.append(
+                    self._truncate_demographics_sex_data(
+                        data["county_demographics_data"][i].df, data["county_names"][i]
+                    )
+                )
         df_sex_demographics = pd.concat(dfs_sex_demographics)
 
         dfs_etn_demographics = []
         if "county_demographics_data" in data:
             for i in range(len(data["county_demographics_data"])):
-                dfs_etn_demographics.append(self._truncate_demographics_etn_data(data["county_demographics_data"][i].df, data["county_names"][i]))
+                dfs_etn_demographics.append(
+                    self._truncate_demographics_etn_data(
+                        data["county_demographics_data"][i].df, data["county_names"][i]
+                    )
+                )
         df_etn_demographics = pd.concat(dfs_etn_demographics)
 
         # # Ignore data from unknown region (no fips code) and fix naming convention for problem counties, and total state vals
@@ -144,7 +176,14 @@ class FloridaCountyVaccine(StateDashboard):
         # out = self.extract_CMU(out, crename)
 
         out: pd.DataFrame = pd.concat(
-            [df_age_demographics, df_etn_demographics, df_race_demographics, df_sex_demographics], axis=0, ignore_index=True
+            [
+                df_age_demographics,
+                df_etn_demographics,
+                df_race_demographics,
+                df_sex_demographics,
+            ],
+            axis=0,
+            ignore_index=True,
         ).dropna()
         out["vintage"] = self._retrieve_vintage()
         out["dt"] = self._get_date()
@@ -212,9 +251,9 @@ class FloridaCountyVaccine(StateDashboard):
             "total_people_vaccinated_total",
         ]
 
-        data.loc[:, 'location_name'] = county_name
+        data.loc[:, "location_name"] = county_name
         startIndex = data.query("age == 'Age group'").index[0] + 1
-        result = data[startIndex: startIndex+8]
+        result = data[startIndex : startIndex + 8]
         result["race"] = result["ethnicity"] = result["sex"] = "all"
         age_replace = {
             "16-24 years": "16-24",
@@ -241,9 +280,9 @@ class FloridaCountyVaccine(StateDashboard):
             "total_people_vaccinated_total",
         ]
 
-        data.loc[:, 'location_name'] = county_name
+        data.loc[:, "location_name"] = county_name
         startIndex = data.query("race == 'Race'").index[0] + 1
-        result = data[startIndex: startIndex+6]
+        result = data[startIndex : startIndex + 6]
         result.drop(result[result.race == ""].index, inplace=True)
         result["age"] = result["ethnicity"] = result["sex"] = "all"
         race_replace = {
@@ -266,9 +305,9 @@ class FloridaCountyVaccine(StateDashboard):
             "total_people_vaccinated_total",
         ]
 
-        data.loc[:, 'location_name'] = county_name
+        data.loc[:, "location_name"] = county_name
         startIndex = data.query("sex == 'Gender'").index[0] + 1
-        result = data[startIndex: startIndex+3]
+        result = data[startIndex : startIndex + 3]
         result["age"] = result["ethnicity"] = result["race"] = "all"
         gender_replace = {
             "Female": "female",
@@ -288,9 +327,9 @@ class FloridaCountyVaccine(StateDashboard):
             "total_people_vaccinated_total",
         ]
 
-        data.loc[:, 'location_name'] = county_name
+        data.loc[:, "location_name"] = county_name
         startIndex = data.query("ethnicity == 'Ethnicity'").index[0] + 1
-        result = data[startIndex: startIndex+3]
+        result = data[startIndex : startIndex + 3]
         result["age"] = result["sex"] = result["race"] = "all"
         ethnicity_replace = {
             "Hispanic": "hispanic",

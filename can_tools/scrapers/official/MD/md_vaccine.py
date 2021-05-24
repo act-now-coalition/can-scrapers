@@ -1,12 +1,10 @@
-import pandas as pd
-
 import us
 
-from can_tools.scrapers import CMU, DatasetBase
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
-class MarylandCountyVaccines(ArcGIS, DatasetBase):
+class MarylandCountyVaccines(ArcGIS):
     """
     Fetch county level covid data from Maryland's ARCGIS dashboard
     """
@@ -18,62 +16,31 @@ class MarylandCountyVaccines(ArcGIS, DatasetBase):
     source = "https://coronavirus.maryland.gov/#Vaccine"
     source_name = "Maryland Department of Health"
 
+    variables = {
+        "firstdose": variables.INITIATING_VACCINATIONS_ALL,
+        "fullyvaccinated": variables.FULLY_VACCINATED_ALL,
+    }
+
     def fetch(self):
         return self.get_all_jsons("MD_COVID19_VaccinationByCounty", 0, "")
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         df.columns = [x.lower() for x in list(df)]
-        df = df.rename(columns={"county": "location_name"}).query(
-            "location_name != 'Unknown'"
+
+        # singledose was added only after J&J vaccines started.
+        # If it appears it will only be reported in the fully vacinated
+        # column. We also wanted to include it in `firstdose` b/c we
+        # report "people with at least one dose"
+        if "singledose" in list(df):
+            df["firstdose"] += df["singledose"]
+
+        out = self._rename_or_add_date_and_location(
+            df,
+            location_name_column="county",
+            location_names_to_drop=["Unknown"],
+            timezone="US/Eastern",
+            apply_title_case=False,
         )
 
-        crename = {
-            "firstdose": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "seconddose": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "percentfirstdose": CMU(
-                category="total_vaccine_initiated",
-                measurement="current",
-                unit="percentage",
-            ),
-            "percentseconddose": CMU(
-                category="total_vaccine_completed",
-                measurement="current",
-                unit="percentage",
-            ),
-        }
-
-        out = (
-            df.melt(id_vars=["location_name"], value_vars=crename.keys())
-            .assign(
-                dt=self._retrieve_dt("US/Eastern"), vintage=self._retrieve_vintage()
-            )
-            .dropna()
-        )
-        out.loc[:, "value"] = pd.to_numeric(out["value"])
-
-        # Extract category information and add other variable context
-        out = self.extract_CMU(out, crename)
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-        return out.loc[:, cols_to_keep]
+        return self._reshape_variables(out, self.variables)

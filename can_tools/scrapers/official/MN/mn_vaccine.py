@@ -4,8 +4,8 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import CMU
-from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
+from can_tools.scrapers.util import flatten_dict
 
 
 class MinnesotaCountyVaccines(MicrosoftBIDashboard):
@@ -20,7 +20,11 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     source = "https://mn.gov/covid19/vaccine/data/index.jsp"
     source_name = "Minnesota Covid-19 Response"
     powerbi_url = "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net"
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiMzEwMTQ2ZDktZjk4MS00ZmQ3LTgyODktNmJmZDYxMWFhNDhlIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+
+    # get the iframe link manually to bypass captcha
+    # this will need to be updated periodically -- find the iframe in the page source html
+
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiYmMzZjE3OGYtZTNjZi00ZTZjLTk2ZTAtZDg0MGU2MDBhZjU0IiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
 
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}

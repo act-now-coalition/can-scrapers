@@ -1,19 +1,16 @@
 import io
-
 from abc import ABC
 
-import pandas as pd
-import us
 import lxml.html
+import pandas as pd
 import requests
+import us
 
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import StateDashboard
 
 # the crename keys became long so I store them in another file
-from can_tools.scrapers.official.TX.tx_vaccine_crenames import (
-    crename,
-)
+from can_tools.scrapers.official.TX.tx_vaccine_crenames import crename
 
 
 class TexasVaccineParent(StateDashboard, ABC):
@@ -94,6 +91,7 @@ class TexasCountyVaccine(TexasVaccineParent):
 class TexasStateVaccine(TexasCountyVaccine):
     has_location = True
     location_type = "state"
+    # just statewide data
 
     def normalize(self, data) -> pd.DataFrame:
         # Read excel file and set date
@@ -144,6 +142,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
     sheet_name = "By County, Age"
     replacers = {
         "age": {
+            "12-15 years": "12-15",
             "16-49 years": "16-49",
             "50-64 years": "50-64",
             "65-79 years": "65-79",
@@ -186,6 +185,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
         non_counties = ["Other", "Grand Total"]
         df = (
             self.excel_to_dataframe(data, self.sheet_name)
+            .rename(columns=str.strip)
             .rename(
                 columns={
                     "Age Group": "age",
@@ -193,6 +193,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
                     "County Name": "location_name",
                 }
             )
+            .rename(columns=str.strip)
             .melt(
                 id_vars=["dt", "location_name"] + self.cmu_id_vars,
                 value_vars=list(self.cmus.keys()),

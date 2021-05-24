@@ -4,8 +4,8 @@ import pandas as pd
 import us
 
 from can_tools.scrapers import CMU
-from can_tools.scrapers.util import flatten_dict
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
+from can_tools.scrapers.util import flatten_dict
 
 
 class NevadaCountyVaccines(MicrosoftBIDashboard):
@@ -84,7 +84,7 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
                                     "From": self.construct_from(
                                         [
                                             ("c", "Counties", 0),
-                                            ("s", "Sheet1", 0),
+                                            ("s", "Vaccinations by Patient County", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
@@ -169,7 +169,6 @@ class NevadaCountyVaccines(MicrosoftBIDashboard):
             .rename(columns=col_mapping)
             .rename(columns={"county": "location_name"})
         )
-
         # Reshape
         crename = {
             "doses_initiated": CMU(

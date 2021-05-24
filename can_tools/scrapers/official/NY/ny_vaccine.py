@@ -1,7 +1,6 @@
-import pandas as pd
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
 
@@ -19,14 +18,6 @@ class NewYorkVaccineCounty(TableauDashboard):
     timezone = "US/Eastern"
 
     cmus = {
-        "SUM(First Dose)-alias": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "SUM(People with completed Vaccine Series )-alias": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
+        "SUM(First Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "SUM(Series Complete)-alias": variables.FULLY_VACCINATED_ALL,
     }
