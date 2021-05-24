@@ -1,7 +1,13 @@
 import us
+import pandas as pd
+import os
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import TableauDashboard
+from can_tools.scrapers.official.base import (
+    TableauDashboard,
+    TableauMapClick,
+)
+from can_tools.scrapers.util import requests_retry_session
 
 
 class NewYorkVaccineCounty(TableauDashboard):
@@ -21,3 +27,74 @@ class NewYorkVaccineCounty(TableauDashboard):
         "SUM(First Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "SUM(Series Complete)-alias": variables.FULLY_VACCINATED_ALL,
     }
+
+
+class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
+    viewPath = "Gender_Age_Public/VaccinationbyAge"
+    filterFunctionName = (
+        "[federated.1nz68qa0ypytxa16suf0a0hhpoyr].[none:PAT_ZIP_COUNTY_DESC:nk]"
+    )
+    secondaryFilterFunctionName = "[Parameters].[Parameter 1]"
+    demographic = "age"
+    data_tableau_table = "Demographics by Age"
+
+    variables = {
+        "People with at least one Vaccine Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "People with completed Vaccine Series": variables.FULLY_VACCINATED_ALL,
+    }
+
+    def fetch(self):
+        path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
+        counties = list(
+            pd.read_csv(path).query(f"state == 36 and location != 36")["name"]
+        )
+
+        # set filters for each dose type for each county
+        results = []
+        for county in counties:
+            self.filterFunctionValue = county
+            for dose in [
+                "People with at least one Vaccine Dose",
+                "People with completed Vaccine Series",
+            ]:
+                self.secondaryFilterValue = dose
+                tables = self.get_tableau_view()
+                results.append(
+                    tables[self.data_tableau_table].assign(
+                        location_name=county, variable=dose
+                    )
+                )
+
+        return results
+
+    def normalize(self, data):
+        df = pd.concat(data)
+        df = (
+            df.rename(
+                columns={
+                    "SUM(Vaccination)-alias": "value",
+                    "Demo Value-alias": self.demographic,
+                }
+            )
+            .loc[:, ["location_name", "value", "variable", self.demographic]]
+            .pipe(self.extract_CMU, self.variables, skip_columns=[self.demographic])
+            .assign(
+                dt=self._retrieve_dt("US/Eastern"),
+                vintage=self._retrieve_vintage(),
+                value=lambda x: pd.to_numeric(
+                    x["value"].astype(str).str.replace(",", "")
+                ),
+            )
+            .replace({"75+": "75_plus"})
+        )
+
+        if self.demographic == "sex":
+            df["sex"] = df["sex"].str.lower()
+
+        return df.drop(columns=["variable"])
+
+
+class NewYorkVaccineCountySex(NewYorkVaccineCountyAge):
+    viewPath = "Gender_Age_Public/VaccinationbyGender"
+    demographic = "sex"
+    data_tableau_table = "Demographics by Gender"
