@@ -11,7 +11,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
     subsheet = "Race Progess"
     demographic = "race"
     demographic_col_name = "Race-alias"
-    filterFunctionName = '[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]'
+    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
@@ -80,7 +80,7 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
                 [
                     "SUM(Population)-value",
                     "AGG(initiated doses (pharm+vams))-alias",
-                    'AGG(completed doses (pharm + vams))-alias',
+                    "AGG(completed doses (pharm + vams))-alias",
                     f"AGG(% initiating (pharm + vams))-alias",
                     f"AGG(% completing (pharm + vams))-alias",
                     self.demographic_col_name,
