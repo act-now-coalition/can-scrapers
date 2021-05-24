@@ -120,7 +120,7 @@ class WisconsinVaccineCountyRace(WisconsinVaccineCounty):
     demographic_worksheet = "Race vax/unvax county"
     demographic_column = "Race-alias"
     demographic = "race"
-    fullUrl = "https://bi.wisconsin.gov/t/DHS/views/VaccinesAdministeredtoWIResidents_16129838459350/VaccinatedWisconsin-County"
+    fullUrl = "https://bi.wisconsin.gov/t/DHS/views/VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
