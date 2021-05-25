@@ -108,7 +108,11 @@ from can_tools.scrapers.official.NE.ne_vaccines import (
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
-from can_tools.scrapers.official.NY.ny_vaccine import NewYorkVaccineCounty
+from can_tools.scrapers.official.NY.ny_vaccine import (
+    NewYorkVaccineCounty,
+    NewYorkVaccineCountyAge,
+    NewYorkVaccineCountySex,
+)
 from can_tools.scrapers.official.OH.oh_vaccine import OhioVaccineCounty
 from can_tools.scrapers.official.OH.oh_vaccine_demographics import (
     OHVaccineCountyRace,
