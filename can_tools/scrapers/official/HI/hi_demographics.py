@@ -11,6 +11,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
     subsheet = "Race Progess"
     demographic = "race"
     demographic_col_name = "Race-alias"
+    filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
@@ -28,7 +29,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
         )
         out[self.demographic] = out[self.demographic].str.lower()
         out["dt"] = self._retrieve_dtm1d("US/Hawaii")
-        return out.replace({"nhpi": "pacific_islander", "70+": "70_plus"})
+        return out.replace({"nhpi": "pacific_islander", "75+": "75_plus"})
 
     def normalize(self, data):
         dfs = []
@@ -66,9 +67,10 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
 
 class HawaiiVaccineAge(HawaiiVaccineRace):
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/AGE"
-    subsheet = "New Age Progress"
+    subsheet = "Age progress (with pharm)"
     demographic = "age"
-    demographic_col_name = "Age Bins (decades updated)-alias"
+    demographic_col_name = "Age Bins (match Pharm)-alias"
+    filterFunctionName = "[sqlproxy.051olb00k3oo5j1gc5hz61tlutb7].[none:County:nk]"
 
     def normalize(self, data):
         dfs = []
@@ -77,25 +79,22 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
             df = df[
                 [
                     "SUM(Population)-value",
-                    "SUM(1 Dose Count (persons initiated))-alias",
-                    "AGG(AGE LOD % persons initiated)-alias",
-                    "AGG(AGE LOD % persons completed)-alias",
+                    "AGG(initiated doses (pharm+vams))-alias",
+                    "AGG(completed doses (pharm + vams))-alias",
+                    f"AGG(% initiating (pharm + vams))-alias",
+                    f"AGG(% completing (pharm + vams))-alias",
                     self.demographic_col_name,
                 ]
             ]
             df.columns = [
                 "population",
                 "total_vaccine_initiated",
+                "total_vaccine_completed",
                 "total_vaccine_initiated_percentage",
                 "total_vaccine_completed_percentage",
                 self.demographic,
             ]
             df = df[df[self.demographic] != 0]
-
-            # calculate total_vaccine_completed cumulative people
-            df["total_vaccine_completed"] = (
-                df["population"] * df["total_vaccine_completed_percentage"]
-            )
 
             # make percentages from proportions
             df["total_vaccine_initiated_percentage"] = (
