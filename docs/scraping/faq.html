@@ -4,11 +4,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>FAQ &#8212; CAN Scrapers  documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -32,7 +33,7 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="faq">
+  <section id="faq">
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
 <p>This document contains a list of questions we’ve heard developers ask about how the system works, how to write a scraper, or anything else related to our data engineering efforts. Our intention is for this document to be updated frequently and be a living resource of common questions and their answers.</p>
 <p>In code snippets below you will see references to a few variables (<code class="docutils literal notranslate"><span class="pre">d</span></code>, <code class="docutils literal notranslate"><span class="pre">engine</span></code>, <code class="docutils literal notranslate"><span class="pre">df</span></code>), these are</p>
@@ -41,14 +42,14 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">engine</span></code>: a sqlalchemy engine, most often the sqlite based dev engine</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">df</span></code>: a clean/normalized DataFrame that is the output of the <code class="docutils literal notranslate"><span class="pre">normalize</span></code> method</p></li>
 </ul>
-<div class="section" id="location-id-sql-error">
+<section id="location-id-sql-error">
 <h2>Location_id sql error<a class="headerlink" href="#location-id-sql-error" title="Permalink to this headline">¶</a></h2>
 <p><em>How to diagnose this problem:</em> when calling <code class="docutils literal notranslate"><span class="pre">d.put(engine,</span> <span class="pre">df)</span></code> you will see an error that looks like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IntegrityError</span><span class="p">:</span> <span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span> <span class="n">constraint</span> <span class="n">failed</span><span class="p">:</span> <span class="n">covid_observations</span><span class="o">.</span><span class="n">location_id</span>
 </pre></div>
 </div>
 <p>There are two possible cases for handling locations: using a <code class="docutils literal notranslate"><span class="pre">location_name</span></code> column with state or county name or using a <code class="docutils literal notranslate"><span class="pre">location</span></code> column with fips codes</p>
-<div class="section" id="location-name-column">
+<section id="location-name-column">
 <h3><code class="docutils literal notranslate"><span class="pre">location_name</span></code> column<a class="headerlink" href="#location-name-column" title="Permalink to this headline">¶</a></h3>
 <p>If you have a <code class="docutils literal notranslate"><span class="pre">location_name</span></code> column, chances are you have a misspelled county name, a row that isn’t a county (<code class="docutils literal notranslate"><span class="pre">All</span></code> or <code class="docutils literal notranslate"><span class="pre">Total</span></code> are common issues)</p>
 <p><em>How to fix this problem:</em> Try the following method: <code class="docutils literal notranslate"><span class="pre">d.find_unknown_location_id(engine,</span> <span class="pre">df)</span></code></p>
@@ -59,14 +60,14 @@
 </pre></div>
 </div>
 <p>Most often, the fix in this situation is to fix spelling/capitalization for a county name (to match what is in <code class="docutils literal notranslate"><span class="pre">state_locs</span></code>) or delete the offending rows if they are obviously not counties</p>
-</div>
-<div class="section" id="location-column">
+</section>
+<section id="location-column">
 <h3><code class="docutils literal notranslate"><span class="pre">location</span></code> column<a class="headerlink" href="#location-column" title="Permalink to this headline">¶</a></h3>
 <p>If instead you have a <code class="docutils literal notranslate"><span class="pre">location</span></code> column, check to make sure that each row of the <code class="docutils literal notranslate"><span class="pre">location</span></code> column maps into a known location for that state</p>
 <p>You can use the <code class="docutils literal notranslate"><span class="pre">state_locs</span></code> DataFrame from the code snippet above to see all known locations for the state</p>
-</div>
-</div>
-<div class="section" id="variable-id-sql-error">
+</section>
+</section>
+<section id="variable-id-sql-error">
 <h2>variable_id sql error<a class="headerlink" href="#variable-id-sql-error" title="Permalink to this headline">¶</a></h2>
 <p><em>How to diagnose this problem:</em> when calling <code class="docutils literal notranslate"><span class="pre">d.put(engine,</span> <span class="pre">df)</span></code> you will see an error that looks like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IntegrityError</span><span class="p">:</span> <span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span> <span class="n">constraint</span> <span class="n">failed</span><span class="p">:</span> <span class="n">covid_observations</span><span class="o">.</span><span class="n">variable_id</span>
@@ -84,12 +85,12 @@
 </ul>
 </li>
 </ul>
-</div>
-<div class="section" id="demographic-id-sql-error">
+</section>
+<section id="demographic-id-sql-error">
 <h2>demographic_id sql error<a class="headerlink" href="#demographic-id-sql-error" title="Permalink to this headline">¶</a></h2>
 <p><strong>TODO</strong></p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -157,7 +158,7 @@
       &copy;2020-2021, CAN Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
