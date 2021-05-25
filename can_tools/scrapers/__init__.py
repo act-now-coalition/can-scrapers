@@ -24,7 +24,10 @@ from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
 from can_tools.scrapers.official.DC.dc_cases import DCCases
 from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
 
-from can_tools.scrapers.official.DE.de_vaccine import DelawareCountyVaccine
+from can_tools.scrapers.official.DE.de_vaccine import (
+    DelawareCountyVaccine,
+    DelawareVaccineDemographics,
+)
 
 from can_tools.scrapers.official.DC.dc_vaccines import (
     DCVaccine,
@@ -105,7 +108,11 @@ from can_tools.scrapers.official.NE.ne_vaccines import (
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
-from can_tools.scrapers.official.NY.ny_vaccine import NewYorkVaccineCounty
+from can_tools.scrapers.official.NY.ny_vaccine import (
+    NewYorkVaccineCounty,
+    NewYorkVaccineCountyAge,
+    NewYorkVaccineCountySex,
+)
 from can_tools.scrapers.official.OH.oh_vaccine import OhioVaccineCounty
 from can_tools.scrapers.official.OH.oh_vaccine_demographics import (
     OHVaccineCountyRace,
@@ -165,7 +172,12 @@ from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
     WisconsinVaccineCountyEthnicity,
 )
 from can_tools.scrapers.official.WI.wi_state import WisconsinCounties, WisconsinState
-from can_tools.scrapers.official.WV.wv_vaccine import WVCountyVaccine
+from can_tools.scrapers.official.WV.wv_vaccine import (
+    WVCountyVaccine,
+    WVCountyVaccineRace,
+    WVCountyVaccineAge,
+    WVCountyVaccineSex,
+)
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
     WYStateVaccinations,
