@@ -17,3 +17,4 @@ xlrd==1.2.0
 lxml==4.6.2
 sentry-sdk==1.0.0
 jmespath==0.10.0
+textract==1.6.3
