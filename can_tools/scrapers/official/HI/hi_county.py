@@ -6,6 +6,7 @@ import requests
 import us
 from bs4 import BeautifulSoup
 
+from can_tools.scrapers import variables as v
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
 from can_tools.scrapers.util import requests_retry_session
@@ -30,63 +31,41 @@ class HawaiiVaccineCounty(TableauDashboard):
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
     data_tableau_table = "County Progress (JUR+PHARM)"
 
+    variables = {
+        "initiated": v.INITIATING_VACCINATIONS_ALL,
+        "completed": v.FULLY_VACCINATED_ALL,
+    }
+
     def normalize(self, data):
-        dfs = []
-        for county in self.counties:
-            df = data[county]
-            return df, df.columns
-            df.columns = [
-                "total_vaccine_initiated",
-                "alias",
-                "total_vaccine_completed",
-                "total_vaccines_administered",
-                "sum_daily_count",
-                "measure_name",
-                "dt",
-                "date",
+
+        # population is total county population
+        df = (
+            data.rename(
+                columns={
+                    "SUM(Population)-alias": "population",
+                    f"AGG(% initiating (pharm + vams))-alias": "percent_initiating",
+                    f"AGG(% completing (pharm + vams))-alias": "percent_completing",
+                    "County-alias": "location_name",
+                }
+            )
+            .loc[
+                :,
+                [
+                    "population",
+                    "percent_initiating",
+                    "percent_completing",
+                    "location_name",
+                ],
             ]
-
-            df["location_name"] = county
-            df.dt = pd.to_datetime(df.dt)
-            dfs.append(df)
-
-        df = pd.concat(dfs)
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "sum_daily_count": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-        }
-
-        out = df.melt(id_vars=["location_name", "dt"], value_vars=crename.keys())
-        out = self.extract_CMU(out, crename)
-        out["vintage"] = self._retrieve_vintage()
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, cols_to_keep]
+            .query("location_name != 0")
+            .assign(
+                initiated=lambda x: x["population"] * x["percent_initiating"],
+                completed=lambda x: x["population"] * x["percent_completing"],
+                dt=self._retrieve_dtm1d("US/Hawaii"),
+            )
+        )
+        out = self._reshape_variables(df, self.variables)
+        return out
 
     def get_filters(self):
         url = f"{self.baseurl}/views/{self.viewPath}"
