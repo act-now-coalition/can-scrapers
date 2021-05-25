@@ -47,6 +47,11 @@ class StateDashboard(DatasetBase, ABC):
         Must be set by subclasses. True if location code (fips code) appears in data
     state_fips: int
         Must be set by subclasses. The two digit state fips code (as an int)
+    source: str
+        Must be set by subclasses. URL pointing to dashboard
+    source_name: str
+        Must be set by subclasses. Name of entity managing dataset, e.g.
+        "New York State Department of Health"
 
     """
 
@@ -176,6 +181,7 @@ class StateDashboard(DatasetBase, ABC):
         location_name_column: Optional[str] = None,
         location_column: Optional[str] = None,
         location_names_to_drop: Optional[List[str]] = None,
+        location_names_to_replace: Optional[Dict[str, str]] = None,
         locations_to_drop: Optional[List[str]] = None,
         date_column: Optional[str] = None,
         date: Optional[pd.Timestamp] = None,
@@ -194,6 +200,9 @@ class StateDashboard(DatasetBase, ABC):
             Name of column with location (fips)
         location_names_to_drop:
             List of values in `location_name_column` that should be dropped
+        location_names_to_replace:
+            Dict mapping from old location_name spelling/capitalization
+            to new location_name
         locations_to_drop:
             List of values in `location_column` that should be dropped
         date_column:
@@ -241,6 +250,11 @@ class StateDashboard(DatasetBase, ABC):
 
         if "location_name" in data.columns and apply_title_case:
             data["location_name"] = data["location_name"].str.title()
+
+        if location_names_to_replace:
+            data["location_name"] = data["location_name"].replace(
+                location_names_to_replace
+            )
 
         if "location" in data.columns:
             if locations_to_drop:

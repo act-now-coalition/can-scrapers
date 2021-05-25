@@ -3,7 +3,7 @@ from abc import ABC
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
 
@@ -124,7 +124,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows).dropna()
-        df = df.query("location_name != '' & location_name != 'Out-of-State'")
+        df = df.query("location_name != '' & location_name != 'Out-of-State*'")
 
         # Initiated is not at least one dose for PA -- it is a count of
         # individuals that are currently partially covered by a vaccine
@@ -191,6 +191,20 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
     powerbi_dem_column: str
     demographic: str
     value_renamer: dict
+    locations_to_drop = [
+        "",
+        "Out-Of-State",
+        "Out-Of-State*",
+        "Out-of-State",
+        "Out-of-State*",
+    ]
+    location_names_to_replace = {"Mckean": "McKean"}
+
+    # Reshape
+    variables = {
+        "initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully Covered": variables.FULLY_VACCINATED_ALL,
+    }
 
     def _query(self):
         return {
@@ -262,27 +276,13 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         resource_key = self.get_resource_key(dashboard_frame)
         ds_id, model_id, report_id = self.get_model_data(resource_key)
 
-        # Get the post url
         url = self.powerbi_query_url()
-
-        # Build post headers
         headers = self.construct_headers(resource_key)
-
-        # Build post body
         body = self.construct_body(resource_key, ds_id, model_id, report_id)
-
         res = self.sess.post(url, json=body, headers=headers)
-
         return res.json()
 
-    def clean_pa_location_names(self, df):
-        return df.query(
-            "location_name != '' & "
-            "location_name != 'Out-Of-State' & "
-            "location_name != 'Out-of-State'"
-        ).replace({"location_name": {"Mckean": "McKean"}})
-
-    def normalize_preprocess(self, resjson):
+    def normalize(self, resjson):
         # Extract components we care about from json
         foo = resjson["results"][0]["result"]["data"]
         descriptor = foo["descriptor"]["Select"]
@@ -290,8 +290,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
 
         # Build dict of dicts with relevant info
         col_mapping = {x["Value"]: x["Name"] for x in descriptor}
-        col_keys = list(col_mapping.keys())
-        value_dicts = foo["dsr"]["DS"][0]["ValueDicts"]
+        vds = foo["dsr"]["DS"][0]["ValueDicts"]
 
         # Iterate through all of the rows and store relevant data
         data_rows = []
@@ -310,38 +309,6 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         # Dump records into a DataFrame
         df = pd.DataFrame.from_records(data_rows).dropna().rename(columns=col_mapping)
 
-        return df, value_dicts
-
-    def normalize_postprocess(self, df, untracked_cats, crename):
-        out = self.extract_CMU(df, crename, columns=untracked_cats)
-        out["dt"] = self._retrieve_dt("US/Eastern")
-        out["vintage"] = self._retrieve_vintage()
-        out.loc[:, "location_type"] = "county"
-        out.loc[:, "location_type"] = out.loc[:, "location_type"].where(
-            out.loc[:, "location_name"] != "Pennsylvania",
-            "state",
-        )
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "location_type",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-
-        return out.loc[:, cols_to_keep].dropna()
-
-    def normalize(self, resjson):
-        df, vds = self.normalize_preprocess(resjson)
-
         # Replace indexes with values
         county_replacer = {i: vd for i, vd in enumerate(vds["D0"])}
         coverage_replacer = {i: vd for i, vd in enumerate(vds["D1"])}
@@ -355,62 +322,37 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
                     self.demographic: dem_replacer,
                 }
             )
-            .rename(
-                columns={
-                    "county": "location_name",
-                    "coverage": "variable",
-                    "count": "value",
-                }
-            )
-            .replace(
-                {
-                    "variable": {
-                        "Partially Covered": "total_vaccine_initiated",
-                        "Fully Covered": "total_vaccine_completed",
-                    },
-                    self.demographic: self.value_renamer,
-                }
-            )
             .pivot_table(
-                index=["location_name", self.demographic],
-                columns="variable",
-                values="value",
+                index=["county", self.demographic],
+                columns="coverage",
+                values="count",
+                aggfunc="sum",
             )
+            # .fillna(0)
+            .assign(initiated=lambda x: x.sum(axis=1))  # initiated = partial+full
             .reset_index()
+            .rename_axis(columns=None)
         )
-        df = self.clean_pa_location_names(df)
-
-        # Initiated is not at least one dose for PA
-        df["total_vaccine_initiated"] = df.eval(
-            "total_vaccine_initiated + total_vaccine_completed"
+        out = self._rename_or_add_date_and_location(
+            df,
+            location_name_column="county",
+            location_names_to_drop=self.locations_to_drop,
+            location_names_to_replace=self.location_names_to_replace,
+            timezone="US/Eastern",
         )
-        df = df.melt(id_vars=["location_name", self.demographic])
-
-        # Reshape
-        crename = {
-            "total_vaccine_initiated": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "total_vaccine_completed": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-
-        categories = [
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "sex",
-            "race",
-            "ethnicity",
-        ]
-        categories.remove(self.demographic)
-        return self.normalize_postprocess(df, categories, crename)
+        out["location_name"] = out["location_name"].replace()
+        out["location_type"] = "county"
+        out.loc[:, "location_type"] = out.loc[:, "location_type"].where(
+            out.loc[:, "location_name"] != "Pennsylvania",
+            "state",
+        )
+        out = self._reshape_variables(
+            out,
+            self.variables,
+            skip_columns=[self.demographic],
+            id_vars=[self.demographic, "location_type"],
+        )
+        return out.replace({self.demographic: self.value_renamer})
 
 
 class PennsylvaniaVaccineAge(PennsylvaniaVaccineDemographics):

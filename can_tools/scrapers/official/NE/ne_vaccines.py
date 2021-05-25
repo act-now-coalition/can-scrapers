@@ -28,7 +28,7 @@ class NebraskaVaccineSex(StateDashboard):
     # table to query to find corresponding data
     table_id = 5
     # dict to change demographic variables to match CMU formatting
-    key_replace = {}
+    key_replace = {"sex": {"unknown or other": "unknown"}}
     # params for the fetch request
     params = {
         "f": "json",

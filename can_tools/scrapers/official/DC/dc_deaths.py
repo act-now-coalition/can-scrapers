@@ -154,6 +154,10 @@ class DCDeaths(DCBase):
         #   numpy.datetime64('2020-06-07T00:00:00.100000000')
         #   numpy.datetime64('2020-06-07T00:00:00.000000000')
         # We drop one of them
-        bad = df["dt"] == np.datetime64("2020-06-07T00:00:00.100000000")
+        bad_dates = [
+            np.datetime64("2021-04-11T00:00:00.100000000"),
+            np.datetime64("2020-06-07T00:00:00.100000000"),
+        ]
+        bad = df["dt"].isin(bad_dates)
 
         return df.loc[~bad, :]

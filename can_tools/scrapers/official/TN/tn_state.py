@@ -68,7 +68,7 @@ class TennesseeAge(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "AR_CASECOUNT": CMU(
+            "AR_TOTALCASES": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
             "AR_TOTALDEATHS": CMU(
@@ -109,24 +109,24 @@ class TennesseeAgeByCounty(TennesseeBase):
     )
     has_location = False
     location_type = "county"
+    url = (
+        "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
+        "novel-coronavirus/datasets/Public-Dataset-Daily-County-Age-Group.XLSX"
+    )
 
     def fetch(self) -> requests.Response:
         # Set url of downloadable dataset
-        url = (
-            "https://www.tn.gov/content/dam/tn/health/documents/cedep/"
-            "novel-coronavirus/datasets/Public-Dataset-Daily-County-Age-Group.XLSX"
-        )
-        request = self.session.get(url)
+        request = self.session.get(self.url)
 
         return request
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data.content, parse_dates=["DATE"])
+        df = pd.read_excel(data.content, parse_dates=["date"])
 
         # Rename columns
         df = df.rename(
-            columns={"DATE": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"}
+            columns={"date": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"}
         )
 
         # Drop the information that we won't be keeping track of
@@ -145,7 +145,7 @@ class TennesseeAgeByCounty(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "CASE_COUNT": CMU(
+            "TOTAL_CASES": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
         }
@@ -251,10 +251,10 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
         # Create dictionary for columns to map
         crename = {
-            "Cat_CaseCount": CMU(
+            "CAT_TOTALCASES": CMU(
                 category="cases", measurement="cumulative", unit="people"
             ),
-            "CAT_DEATHCOUNT": CMU(
+            "CAT_TOTALDEATHS": CMU(
                 category="deaths", measurement="cumulative", unit="people"
             ),
         }

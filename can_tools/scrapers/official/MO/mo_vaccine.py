@@ -26,7 +26,7 @@ class MissouriVaccineCounty(TableauDashboard):
                 columns={
                     "Measure Values-alias": "value",
                     "Measure Names-alias": "variable",
-                    "Jurisdiction-value": "location_name",
+                    "Jurisdiction1-value": "location_name",
                 }
             )
             .loc[:, ["value", "variable", "location_name"]]

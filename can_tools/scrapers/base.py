@@ -20,9 +20,39 @@ from can_tools.models import Base
 # include `DC` in the `us.STATES` list and, if we upgrade, we should
 # activate that option and replace this with just `us.STATES`
 ALL_STATES_PLUS_DC = us.STATES + [us.states.DC]
+ALL_STATES_PLUS_TERRITORIES = us.states.STATES_AND_TERRITORIES + [us.states.DC]
 
 
 class CMU:
+    """Define variable and demographic dimensions for an observation
+
+    Variable dimensions include:
+
+    - category: The 'type' of variable. Examples are ``cases``, ``total_vaccine_completed``
+    - measurement: The form of measurement, e.g. ``cumulative``, ``new``
+    - unit: The unit of measurement, e.g. ``people``, ``doses``
+
+    Demographic dimensions include:
+
+    - age: the age group, e.g. ``1-10``, ``40-49``, ``65_plus``
+    - race: the race, e.g. ``white``, ``black``
+    - ethnicity: the ethnicity, e.g. ``hispanic``, ``non-hispanic``
+    - sex: the sex, ``male``, ``female``, ``uknown``
+
+    .. note::
+
+        All demographic dimensions allow a value of ``all``, which is interpreted
+        as the observation corresponding to all groups of that dimension (i.e. if
+        age is ``all``, then the data represent all ages)
+
+    For a complete list of admissible variable 3-tuples see the file
+    ``can_tools/bootstrap_data/covid_variables.csv``
+
+    For a complete list of admissible demographic 4-tuples see the file
+    ``can_tools/bootstrap_data/covid_demographics.csv``
+
+    """
+
     def __init__(
         self,
         category="cases",
@@ -113,6 +143,10 @@ class DatasetBase(ABC):
         single type of geography. It will set the `"location_type"` column
         to this value (when performing the `put`) if `"location_type"` is not
         already set in the df
+
+    source: str
+        A string containing a URL that points to the dashboard or remote
+        resource that will be scraped
     """
 
     autodag: bool = True
@@ -444,7 +478,7 @@ class DatasetBase(ABC):
         df = self.normalize(data)
         return self._store_clean(df)
 
-    def _validate_time_series(self, df) -> [List[Exception]]:
+    def _validate_time_series(self, df) -> List[Exception]:
         """Do checks only applicable to time series data"""
         issues = []
         if (df["measurement"] == "cumulative").sum() > 0:
@@ -455,7 +489,7 @@ class DatasetBase(ABC):
 
         return issues
 
-    def _validate_order_of_variables(self, df) -> [List[Exception]]:
+    def _validate_order_of_variables(self, df) -> List[Exception]:
         """
         Returns a list of exceptions that occured while doing checks
         """
@@ -591,7 +625,7 @@ class DatasetBase(ABC):
     def find_unknown_demographic_id(self, engine: Engine, df: pd.DataFrame):
         dems = pd.read_sql("select * from covid_demographics", engine)
         merged = df.merge(dems, on=["sex", "age", "race", "ethnicity"], how="left")
-        bad = merged["id"].isna()
+        bad = list(merged["id"].isna())
         return df.loc[bad, :]
 
     def fetch_normalize(self):
