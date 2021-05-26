@@ -52,7 +52,7 @@ FROM
         _unit_regex => 'doses',
         _location_type_regex => 'county',
         _measurement_regex => 'cumulative',
-        _state_fips_ => 12);
+        _state_fips => 12);
 ```
 
 This would return data between May 20, 2021 and May 24, 2021 (inclusive) for counties in Florida where the "vaccine" is part of the variable name and unit and measurement are cumulative doses. This data would also have been scraped from the Florida state dashboard
@@ -87,7 +87,7 @@ FROM
         _unit_regex => 'doses',
         _location_type_regex => 'county',
         _measurement_regex => 'cumulative',
-        _state_fips_ => 12);
+        _state_fips => 12);
 ```
 
 ### `undelete_by_delete_batch_id`
@@ -110,7 +110,6 @@ FROM
 ```
 
 This will return a single row and column letting us know how many rows were updated
-
 
 ## Timeseries scrapers
 

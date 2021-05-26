@@ -31,7 +31,6 @@ We may work on dedicated notes/docs for the can-scrapers infrastructure, but we 
    :caption: Contents:
 
    overview
-   deleting_data
 
 Services
 --------------

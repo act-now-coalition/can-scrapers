@@ -15,7 +15,8 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Overview" href="overview.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="Writing Scrapers" href="writing_scrapers.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -74,7 +75,7 @@
         <span class="n">_unit_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;doses&#39;</span><span class="p">,</span>
         <span class="n">_location_type_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;county&#39;</span><span class="p">,</span>
         <span class="n">_measurement_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;cumulative&#39;</span><span class="p">,</span>
-        <span class="n">_state_fips_</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
+        <span class="n">_state_fips</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>This would return data between May 20, 2021 and May 24, 2021 (inclusive) for counties in Florida where the “vaccine” is part of the variable name and unit and measurement are cumulative doses. This data would also have been scraped from the Florida state dashboard</p>
@@ -102,7 +103,7 @@
         <span class="n">_unit_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;doses&#39;</span><span class="p">,</span>
         <span class="n">_location_type_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;county&#39;</span><span class="p">,</span>
         <span class="n">_measurement_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;cumulative&#39;</span><span class="p">,</span>
-        <span class="n">_state_fips_</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
+        <span class="n">_state_fips</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
 </pre></div>
 </div>
 </section>
@@ -149,20 +150,24 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../scraping/index.html">Data Scraping</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">CAN Scraper Infrastructure</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="index.html#infrastructure">Infrastructure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#services">Services</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Data Scraping</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Developer Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structure.html">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="writing_scrapers.html">Writing Scrapers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deleting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">FAQ</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/index.html">CAN Scraper Infrastructure</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">CAN Scraper Infrastructure</a><ul>
-      <li>Previous: <a href="overview.html" title="previous chapter">Overview</a></li>
+  <li><a href="index.html">Data Scraping</a><ul>
+      <li>Previous: <a href="writing_scrapers.html" title="previous chapter">Writing Scrapers</a></li>
+      <li>Next: <a href="faq.html" title="next chapter">FAQ</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -197,7 +202,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/infrastructure/deleting_data.md.txt"
+      <a href="../_sources/scraping/deleting_data.md.txt"
           rel="nofollow">Page source</a>
     </div>
 
