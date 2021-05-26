@@ -1,80 +1,43 @@
 DROP FUNCTION IF EXISTS select_scraped_data (int, text, text, int, date, date, int, text, text, text);
 
-CREATE OR REPLACE FUNCTION select_scraped_data (_limit int = 5000, _provider text = 'state', _variable_regex text = '.+', _state_fips int = NULL, _start_date date = NULL, _end_date date = NULL, _location int = NULL, _location_type_regex text = '.+', _unit_regex text = '.+', _measurement_regex text = '.+')
-    RETURNS TABLE (
-        is_deleted boolean,
-        delete_batch_id bigint,
-        provider varchar,
-        dt date,
-        location_id varchar,
-        LOCATION int8,
-        location_type varchar,
-        variable_name varchar,
-        measurement varchar,
-        unit varchar,
-        age varchar,
-        race varchar,
-        ethnicity varchar,
-        sex varchar,
-        last_updated timestamp,
-        source_url text,
-        source_name text,
-        value numeric)
-    LANGUAGE plpgsql
-    AS $$
+CREATE OR REPLACE FUNCTION public.delete_scraped_data(_provider text DEFAULT 'state'::text, _variable_regex text DEFAULT '.+'::text, _state_fips integer DEFAULT NULL::integer, _start_date date DEFAULT NULL::date, _end_date date DEFAULT NULL::date, _location integer DEFAULT NULL::integer, _location_type_regex text DEFAULT '.+'::text, _unit_regex text DEFAULT '.+'::text, _measurement_regex text DEFAULT '.+'::text, OUT rows_changed integer, OUT delete_batch_id bigint)
+ RETURNS record
+ LANGUAGE plpgsql
+AS $function$
 DECLARE
-    loc_where text := CASE WHEN _location IS NOT NULL THEN
-        format('and location = %s', _location)
+    myquery text;
+    provider_where text := format('where provider_id in (select id from meta.covid_providers where name ~ %L)', _provider);
+    location_id_and text := CASE WHEN _location IS NOT NULL THEN
+        format('and location_id in (select id from meta.locations where location = %s)', _location)
     WHEN _state_fips IS NOT NULL THEN
-        format('and meta.locations.state_fips = %s', _state_fips)
+        format('and location_id in(select id from meta.locations where state_fips = %s and location_type ~ %L)', _state_fips, _location_type_regex)
     ELSE
         ''
     END;
-    start_date_where text := CASE WHEN _start_date IS NOT NULL THEN
+    start_date_and text := CASE WHEN _start_date IS NOT NULL THEN
         format('and dt >= %L::DATE', _start_date)
     ELSE
         ''
     END;
-    end_date_where text := CASE WHEN _end_date IS NOT NULL THEN
+    end_date_and text := CASE WHEN _end_date IS NOT NULL THEN
         format('and dt <= %L::DATE', _end_date)
     ELSE
         ''
     END;
-    myquery text := format('select
-     covid_observations.deleted as is_deleted,
-     covid_observations.delete_batch_id,
-  	covid_providers.name AS provider,
-     covid_observations.dt,
-     locations.id AS location_id,
-     locations.location,
-     locations.location_type,
-     covid_variables.category AS variable_name,
-     covid_variables.measurement,
-     covid_variables.unit,
-     covid_demographics.age,
-     covid_demographics.race,
-     covid_demographics.ethnicity,
-     covid_demographics.sex,
-     covid_observations.last_updated,
-     covid_observations.source_url,
-     covid_observations.source_name,
-     covid_observations.value
-    FROM data.covid_observations
-      LEFT JOIN meta.covid_variables ON covid_variables.id = covid_observations.variable_id
-      LEFT JOIN meta.locations ON locations.id::text = covid_observations.location_id::text
-      LEFT JOIN meta.covid_providers ON covid_providers.id = covid_observations.provider_id
-      LEFT JOIN meta.covid_demographics ON covid_demographics.id = covid_observations.demographic_id
-      where meta.covid_providers.name ~ %L
-      and meta.covid_variables.category ~ %L
-      and location_type ~ %L
-      and unit ~ %L
-      and measurement ~ %L
-      %s
-      %s
-      %s
-      limit %L;', _provider, _variable_regex, _location_type_regex, _unit_regex, _measurement_regex, loc_where, start_date_where, end_date_where, _limit);
+    variables_and text := format('and variable_id in (select id from meta.covid_variables where category ~ %L and unit ~ %L and measurement ~ %L)', _variable_regex, _unit_regex, _measurement_regex);
 BEGIN
+    SELECT
+        nextval('data.delete_batch_id_seq') INTO delete_batch_id;
+    myquery := format('update data.covid_observations
+      set deleted = TRUE, delete_batch_id = %s
+          %s
+          %s
+          %s
+          %s
+          %s
+      ', delete_batch_id, provider_where, location_id_and, start_date_and, end_date_and, variables_and);
     RAISE NOTICE 'query: %', myquery;
-    RETURN query EXECUTE myquery;
+    EXECUTE myquery;
+    get diagnostics rows_changed = row_count;
 END;
-$$
+$function$

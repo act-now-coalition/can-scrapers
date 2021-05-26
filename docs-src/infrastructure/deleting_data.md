@@ -50,7 +50,7 @@ FROM
         _start_date => '2021-05-20',
         _end_date => '2021-05-24',
         _unit_regex => 'doses',
-        _location_type => 'county',
+        _location_type_regex => 'county',
         _measurement_regex => 'cumulative',
         _state_fips_ => 12);
 ```
@@ -85,7 +85,7 @@ FROM
         _start_date => '2021-05-20',
         _end_date => '2021-05-24',
         _unit_regex => 'doses',
-        _location_type => 'county',
+        _location_type_regex => 'county',
         _measurement_regex => 'cumulative',
         _state_fips_ => 12);
 ```
@@ -110,3 +110,12 @@ FROM
 ```
 
 This will return a single row and column letting us know how many rows were updated
+
+
+## Timeseries scrapers
+
+Note that when a scraper returns a timeseries, some deleted data may have the `value` and `last_updated` columns update
+
+When this happens we will also mark `deleted` as FALSE and set `delete_batch_id` to NULL
+
+In effect, we make the assumption that if a scraper is trying to insert a data point, it should not begin as deleted
