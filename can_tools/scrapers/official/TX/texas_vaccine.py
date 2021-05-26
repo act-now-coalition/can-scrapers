@@ -91,6 +91,7 @@ class TexasCountyVaccine(TexasVaccineParent):
 class TexasStateVaccine(TexasCountyVaccine):
     has_location = True
     location_type = "state"
+    # just statewide data
 
     def normalize(self, data) -> pd.DataFrame:
         # Read excel file and set date
@@ -141,6 +142,7 @@ class TXVaccineCountyAge(TexasVaccineParent):
     sheet_name = "By County, Age"
     replacers = {
         "age": {
+            "12-15 years": "12-15",
             "16-49 years": "16-49",
             "50-64 years": "50-64",
             "65-79 years": "65-79",

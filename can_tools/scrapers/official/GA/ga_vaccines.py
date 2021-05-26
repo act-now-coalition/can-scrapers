@@ -154,6 +154,7 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
+        df["COUNTS"] = pd.to_numeric(df["COUNTS"], errors="coerce")
         df = (
             df.pivot_table(
                 index="COUNTYFIPS", columns=self.column_names, values="COUNTS"

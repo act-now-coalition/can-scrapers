@@ -30,7 +30,7 @@ class NewJerseyVaccineCounty(ArcGIS):
         return self.get_all_jsons(self.service, 0, 7)
 
     def normalize(self, data: Any) -> pd.DataFrame:
-        non_counties = ["OUT OF STATE", "UNKNOWN", "MISSING"]
+        non_counties = ["OUT OF STATE", "UNKNOWN", "MISSING", "TOTALS"]
         df = self.arcgis_jsons_to_df(data)
         df = self._rename_or_add_date_and_location(
             df,

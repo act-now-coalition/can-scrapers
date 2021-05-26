@@ -41,7 +41,6 @@ class HawaiiVaccineCounty(TableauDashboard):
     def normalize(self, data):
         dfs = []
         for county in self.counties:
-
             df = data[county]["Cumulative Persons"]
             df.columns = [
                 "total_vaccine_initiated",

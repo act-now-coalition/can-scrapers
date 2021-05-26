@@ -34,6 +34,7 @@ class MichiganVaccineCounty(StateDashboard):
             "Number of Doses": "value",
         }
         cmus = {
+            "J&JFirstDose": _make_cmu("janssen_vaccine_completed"),
             "ModernaFirstDose": _make_cmu("moderna_vaccine_initiated"),
             "ModernaSecondDose": _make_cmu("moderna_vaccine_completed"),
             "PfizerFirstDose": _make_cmu("pfizer_vaccine_initiated"),
@@ -53,6 +54,7 @@ class MichiganVaccineCounty(StateDashboard):
             data.rename(columns=colnames)
             .loc[:, ["location_name", "dt", "variable", "value"]]
             .query("location_name not in @not_counties")
+            .assign(dt=lambda x: pd.to_datetime(x["dt"]))
             .pivot_table(
                 index=["dt", "location_name"],
                 columns="variable",

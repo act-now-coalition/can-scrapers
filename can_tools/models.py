@@ -7,10 +7,12 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     Column,
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -225,6 +227,8 @@ class CovidObservation(Base):
     last_updated = Column(DateTime, nullable=False, default=func.now())
     source_url = Column(String)
     source_name = Column(String)
+    deleted = Column(Boolean, nullable=False, default=False)
+    delete_batch_id = Column(BigInteger)
     __table_args__ = (
         PrimaryKeyConstraint(
             "dt",
@@ -238,32 +242,38 @@ class CovidObservation(Base):
     )
 
 
-api_covid_us_statement = select(
-    [
-        CovidProvider.name.label("provider"),
-        CovidObservation.dt,
-        Location.id.label("location_id"),
-        Location.location,
-        Location.location_type,
-        CovidVariable.category.label("variable_name"),
-        CovidVariable.measurement,
-        CovidVariable.unit,
-        CovidDemographic.age,
-        CovidDemographic.race,
-        CovidDemographic.ethnicity,
-        CovidDemographic.sex,
-        CovidObservation.last_updated,
-        CovidObservation.source_url,
-        CovidObservation.source_name,
-        CovidObservation.value,
-    ]
-).select_from(
-    (
-        CovidObservation.__table__.join(CovidVariable, isouter=True)
-        .join(Location, isouter=True)
-        .join(CovidProvider, isouter=True)
-        .join(CovidDemographic, isouter=True)
+Index("covid_observation_deleted", CovidObservation.deleted)
+
+api_covid_us_statement = (
+    select(
+        [
+            CovidProvider.name.label("provider"),
+            CovidObservation.dt,
+            Location.id.label("location_id"),
+            Location.location,
+            Location.location_type,
+            CovidVariable.category.label("variable_name"),
+            CovidVariable.measurement,
+            CovidVariable.unit,
+            CovidDemographic.age,
+            CovidDemographic.race,
+            CovidDemographic.ethnicity,
+            CovidDemographic.sex,
+            CovidObservation.last_updated,
+            CovidObservation.source_url,
+            CovidObservation.source_name,
+            CovidObservation.value,
+        ]
     )
+    .select_from(
+        (
+            CovidObservation.__table__.join(CovidVariable, isouter=True)
+            .join(Location, isouter=True)
+            .join(CovidProvider, isouter=True)
+            .join(CovidDemographic, isouter=True)
+        )
+    )
+    .where(CovidObservation.deleted == False)
 )
 
 api_covid_us = create_view(
@@ -404,6 +414,8 @@ def build_insert_from_temp(
                 value=statement.excluded.value,
                 last_updated=statement.excluded.last_updated,
                 provider_id=statement.excluded.provider_id,
+                deleted=False,
+                delete_batch_id=None,
             ),
         )
 

@@ -13,7 +13,7 @@ class WisconsinVaccineCounty(TableauDashboard):
     location_type = "county"
     baseurl = "https://bi.wisconsin.gov/t/DHS"
     viewPath = (
-        "VaccinesAdministeredtoWIResidents_16129838459350/VaccinatedWisconsin-County"
+        "VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
     )
 
     data_tableau_table = "**Download Table"

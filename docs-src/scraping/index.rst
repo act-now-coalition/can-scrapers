@@ -15,4 +15,5 @@ libraries
    installation
    structure
    writing_scrapers
+   deleting_data
    faq

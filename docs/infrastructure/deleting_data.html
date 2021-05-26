@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Deleting Data &#8212; CAN Scrapers  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Overview" href="overview.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="deleting-data">
+<h1>Deleting Data<a class="headerlink" href="#deleting-data" title="Permalink to this headline">¶</a></h1>
+<p>From time to time some incorrect data makes it into the database</p>
+<p>This eventually ends up in the parquet file and then on the CAN website and into the CAN API</p>
+<p>We have a system for deleting data</p>
+<p>The system is documented on this page</p>
+<section id="sql-in-production">
+<h2>SQL in Production<a class="headerlink" href="#sql-in-production" title="Permalink to this headline">¶</a></h2>
+<p>Right now our strategy for deleting bad data is to write SQL against our production database</p>
+<p>To make this process easier and less scary, we have written three SQL functions that should be used to handle deleting records</p>
+<section id="select-scraped-data">
+<h3><code class="docutils literal notranslate"><span class="pre">select_scraped_data</span></code><a class="headerlink" href="#select-scraped-data" title="Permalink to this headline">¶</a></h3>
+<p>The first SQL function is called <code class="docutils literal notranslate"><span class="pre">select_scraped_data</span></code> and can be called as follows:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">select_scraped_data</span><span class="p">(...</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">...args</span></code> is a placeholder for optional arguments that can be used to filter/narrow down the returned results.</p>
+<p>Each optional argument should be given in format <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">=&gt;</span> <span class="pre">value</span></code>.</p>
+<p>The optional argument are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_limit</span></code>(int default = 5000): The maximum number of rows to be returned by the query</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_provider</span></code>(textdefault = ‘state’): The type of provider. Should one of the items in <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_providers.csv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_variable_regex</span></code>(TEXT default = ‘.+’): A regular expression for filtering on the name of the variable (applied to the <code class="docutils literal notranslate"><span class="pre">category</span></code> column from <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_state_fips</span></code>(int default = NULL): An integer representing the state fips code</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_location</span></code>(int default = NULL): A single fips code – if this is given <code class="docutils literal notranslate"><span class="pre">_state_fips</span></code> is ignored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_start_date</span></code>(date default = NULL): A starting date for data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_end_date</span></code>(date default = NULL): An ending date for data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_location_type_regex</span></code>(text default = ‘.+’): A location type. One of <code class="docutils literal notranslate"><span class="pre">nation</span></code>, <code class="docutils literal notranslate"><span class="pre">state</span></code>, or <code class="docutils literal notranslate"><span class="pre">county</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_unit_regex</span></code>(text default = ‘.+’): A regular expression used to filter on the <code class="docutils literal notranslate"><span class="pre">unit</span></code> column (applied to the <code class="docutils literal notranslate"><span class="pre">unit</span></code> column from <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_measurement_regex</span></code>(text default = ‘.+’): A regular expression used to filter on the <code class="docutils literal notranslate"><span class="pre">measurement</span></code> column (applied to the <code class="docutils literal notranslate"><span class="pre">measurement</span></code> column from <code class="docutils literal notranslate"><span class="pre">can_tools/bootstrap_data/covid_variables.csv</span></code>)</p></li>
+</ul>
+<p>An example of how this can be used is given below:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">select_scraped_data</span> <span class="p">(</span><span class="n">_provider</span> <span class="o">=&gt;</span> <span class="s1">&#39;state&#39;</span><span class="p">,</span>
+        <span class="n">_variable_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;.*vaccine.*&#39;</span><span class="p">,</span>
+        <span class="n">_start_date</span> <span class="o">=&gt;</span> <span class="s1">&#39;2021-05-20&#39;</span><span class="p">,</span>
+        <span class="n">_end_date</span> <span class="o">=&gt;</span> <span class="s1">&#39;2021-05-24&#39;</span><span class="p">,</span>
+        <span class="n">_unit_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;doses&#39;</span><span class="p">,</span>
+        <span class="n">_location_type_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;county&#39;</span><span class="p">,</span>
+        <span class="n">_measurement_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;cumulative&#39;</span><span class="p">,</span>
+        <span class="n">_state_fips_</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This would return data between May 20, 2021 and May 24, 2021 (inclusive) for counties in Florida where the “vaccine” is part of the variable name and unit and measurement are cumulative doses. This data would also have been scraped from the Florida state dashboard</p>
+</section>
+<section id="delete-scraped-data">
+<h3><code class="docutils literal notranslate"><span class="pre">delete_scraped_data</span></code><a class="headerlink" href="#delete-scraped-data" title="Permalink to this headline">¶</a></h3>
+<p>The second helper function is called <code class="docutils literal notranslate"><span class="pre">delete_scraped_data</span></code></p>
+<p>It takes all the same optional arguments as <code class="docutils literal notranslate"><span class="pre">select_scraped_data</span></code></p>
+<p>when this routine is called two things happen:</p>
+<ol class="simple">
+<li><p>All rows that would be returned by the equivalent call to <code class="docutils literal notranslate"><span class="pre">select_scraped_data</span></code> are updated so that the <code class="docutils literal notranslate"><span class="pre">deleted</span></code> column is set to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code> AND the <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code> is set to a constant integer representing this call to the <code class="docutils literal notranslate"><span class="pre">delete_scraped_data</span></code> function</p></li>
+<li><p>Two integers are returned representing first the number of rows changed and second the <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code></p></li>
+</ol>
+<p>Only rows where <code class="docutils literal notranslate"><span class="pre">deleted</span> <span class="pre">=</span> <span class="pre">FALSE</span></code> makes it into the <code class="docutils literal notranslate"><span class="pre">api.covid_us</span></code> table, and therefore into the parquet file</p>
+<p>The purpose of the <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code> column is to make it easier to undo an incorrect change.</p>
+<p>After using <code class="docutils literal notranslate"><span class="pre">select_scraped_data</span></code> to identify rows that should be deleted, simply change the function name to <code class="docutils literal notranslate"><span class="pre">delete_scraped_data</span></code> to do the deletion</p>
+<p>Continuing the example from above, to delete that Florida data we would execute</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">delete_scraped_data</span><span class="p">(</span><span class="n">_provider</span> <span class="o">=&gt;</span> <span class="s1">&#39;state&#39;</span><span class="p">,</span>
+        <span class="n">_variable_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;.*vaccine.*&#39;</span><span class="p">,</span>
+        <span class="n">_start_date</span> <span class="o">=&gt;</span> <span class="s1">&#39;2021-05-20&#39;</span><span class="p">,</span>
+        <span class="n">_end_date</span> <span class="o">=&gt;</span> <span class="s1">&#39;2021-05-24&#39;</span><span class="p">,</span>
+        <span class="n">_unit_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;doses&#39;</span><span class="p">,</span>
+        <span class="n">_location_type_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;county&#39;</span><span class="p">,</span>
+        <span class="n">_measurement_regex</span> <span class="o">=&gt;</span> <span class="s1">&#39;cumulative&#39;</span><span class="p">,</span>
+        <span class="n">_state_fips_</span> <span class="o">=&gt;</span> <span class="mi">12</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="undelete-by-delete-batch-id">
+<h3><code class="docutils literal notranslate"><span class="pre">undelete_by_delete_batch_id</span></code><a class="headerlink" href="#undelete-by-delete-batch-id" title="Permalink to this headline">¶</a></h3>
+<p>The final helper function we have written makes it easy to undo a delete operation</p>
+<p><code class="docutils literal notranslate"><span class="pre">undelete_by_delete_batch_id</span></code> accepts a single argument, an integer for the <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code></p>
+<p>When this function is called, all rows of data will have <code class="docutils literal notranslate"><span class="pre">deleted</span></code> set to <code class="docutils literal notranslate"><span class="pre">FALSE</span></code> and the <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code> will be set back to <code class="docutils literal notranslate"><span class="pre">NULL</span></code></p>
+<p>Suppose we were given a <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code> of 42 when calling the <code class="docutils literal notranslate"><span class="pre">delete_scraped_data</span></code> in our Florida example above…</p>
+<p>To undo this deletion we need to call</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">undelete_by_delete_batch_id</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This will return a single row and column letting us know how many rows were updated</p>
+</section>
+</section>
+<section id="timeseries-scrapers">
+<h2>Timeseries scrapers<a class="headerlink" href="#timeseries-scrapers" title="Permalink to this headline">¶</a></h2>
+<p>Note that when a scraper returns a timeseries, some deleted data may have the <code class="docutils literal notranslate"><span class="pre">value</span></code> and <code class="docutils literal notranslate"><span class="pre">last_updated</span></code> columns update</p>
+<p>When this happens we will also mark <code class="docutils literal notranslate"><span class="pre">deleted</span></code> as FALSE and set <code class="docutils literal notranslate"><span class="pre">delete_batch_id</span></code> to NULL</p>
+<p>In effect, we make the assumption that if a scraper is trying to insert a data point, it should not begin as deleted</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">CAN Scrapers</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../scraping/index.html">Data Scraping</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CAN Scraper Infrastructure</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#infrastructure">Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#services">Services</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">CAN Scraper Infrastructure</a><ul>
+      <li>Previous: <a href="overview.html" title="previous chapter">Overview</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, CAN Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/infrastructure/deleting_data.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
