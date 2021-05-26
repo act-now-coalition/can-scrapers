@@ -9,6 +9,7 @@ import os
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
+
 class NCVaccineAge(TableauDashboard):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
@@ -20,8 +21,10 @@ class NCVaccineAge(TableauDashboard):
     baseurl = "https://public.tableau.com"
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Demographics"
     timezone = "US/Eastern"
-    filterFunctionName = "[Parameters].[Parameter 3 1]" # county 
-    secondaryFilterFunctionName = "[Parameters].[Param.DemographicMetric (copy)_1353894643018190853]" # dose type
+    filterFunctionName = "[Parameters].[Parameter 3 1]"  # county
+    secondaryFilterFunctionName = (
+        "[Parameters].[Param.DemographicMetric (copy)_1353894643018190853]"  # dose type
+    )
 
     # map wide form column names into CMUs
     variables = {
@@ -48,30 +51,38 @@ class NCVaccineAge(TableauDashboard):
         dfs = []
         # get each county
         for county in counties:
-            print('working on: ', county)
-            self.filterFunctionValue = county + " County"   
+            print("working on: ", county)
+            self.filterFunctionValue = county + " County"
             # get both initiated and completed vals
-            for dose_val in ['3', '4']:
+            for dose_val in ["3", "4"]:
                 print("dose key: ", dose_val)
                 self.secondaryFilterValue = dose_val
                 df = self.get_tableau_view()[self.worksheet]
                 dfs.append(df.assign(location_name=county))
-        
+
         return pd.concat(dfs)
-        
+
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         df = (
-            data.rename(columns={self.demo_rename:self.demo_col, 'AGG(calc.RunningSum.DemographicMetric)-alias':'value', 'ATTR(text.tooltips)-alias':'variable', 'Week of-value':'dt'})
-            .loc[:, ['location_name', 'dt', 'variable', 'value', self.demo_col]]
+            data.rename(
+                columns={
+                    self.demo_rename: self.demo_col,
+                    "AGG(calc.RunningSum.DemographicMetric)-alias": "value",
+                    "ATTR(text.tooltips)-alias": "variable",
+                    "Week of-value": "dt",
+                }
+            )
+            .loc[:, ["location_name", "dt", "variable", "value", self.demo_col]]
             .query(f"variable != '%missing%' and {self.demo_col} != 'Suppressed'")
             .replace(self.demo_replacements)
             .assign(
-                value=lambda x: pd.to_numeric(x['value'].astype(str)) * 100,
+                value=lambda x: pd.to_numeric(x["value"].astype(str)) * 100,
                 vintage=self._retrieve_vintage(),
             )
             .pipe(self.extract_CMU, self.variables, skip_columns=[self.demo_col])
         )
-        return df.drop(columns={'variable'})
+        return df.drop(columns={"variable"})
+
 
 class NCVaccineRace(NCVaccineAge):
     worksheet = "Race_Percent_Pop_County"
