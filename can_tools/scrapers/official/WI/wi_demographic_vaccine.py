@@ -166,7 +166,6 @@ class WisconsinVaccineCountyRace(WisconsinVaccineCounty):
         dfs = []
         # for each county, extract data from subsheet and rename columns, append to list of dfs
         for c in counties:
-            print("c:", c)
             county_ws = ws.select("County", f"{c} County")
             df = county_ws.getWorksheet(self.demographic_worksheet).data
             df = df[
