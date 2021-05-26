@@ -4,11 +4,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Structure &#8212; CAN Scrapers  documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -32,10 +33,10 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="structure">
+  <section id="structure">
 <span id="scraper-structure"></span><h1>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
 <p>Each scraper in <code class="docutils literal notranslate"><span class="pre">can-scrapers</span></code> is a Python class within the <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers</span></code> Python package</p>
-<div class="section" id="organization">
+<section id="organization">
 <h2>Organization<a class="headerlink" href="#organization" title="Permalink to this headline">¶</a></h2>
 <p>The scrapers are organized in a few sub-directories of <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers</span></code>:</p>
 <ul class="simple">
@@ -50,8 +51,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">usafacts/</span></code>: scrapers for the county-level data provided by usafacts</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">uscensus/</span></code>: scrapers that obtain demographic data from the US Census</p></li>
 </ul>
-</div>
-<div class="section" id="class-hierarchy">
+</section>
+<section id="class-hierarchy">
 <h2>Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Permalink to this headline">¶</a></h2>
 <p>Let’s consider an example scraper and its lineage: the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> class found in <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers/official/NJ/nj_vaccine.py</span></code></p>
 <p>Let <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">&lt;:</span> <span class="pre">B</span></code> represent the phrase “A is a subclass of B”</p>
@@ -61,7 +62,7 @@
 </div>
 <p>Each of the parent classes has a specific purpose and adds in functionality</p>
 <p>We’ll start at the top of the hierarchy and work our way down</p>
-<div class="section" id="datasetbase">
+<section id="datasetbase">
 <h3>DatasetBase<a class="headerlink" href="#datasetbase" title="Permalink to this headline">¶</a></h3>
 <p>Each scraper must be a subclass of the core <code class="docutils literal notranslate"><span class="pre">DatasetBase</span></code> class.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">DatasetBase</span></code> class is defined in <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers/base.py</span></code> and does a number of things:</p>
@@ -84,8 +85,8 @@
 <p>For this reason, there are other abstract classes that inherit from <code class="docutils literal notranslate"><span class="pre">DatasetBase</span></code></p>
 <p>These include: <code class="docutils literal notranslate"><span class="pre">StateDashbord</span></code>, <code class="docutils literal notranslate"><span class="pre">CountyDashboard</span></code>, <code class="docutils literal notranslate"><span class="pre">FederalDashboard</span></code></p>
 <p>We’ll talk about these next</p>
-</div>
-<div class="section" id="statedashboard">
+</section>
+<section id="statedashboard">
 <span id="state-dashboard"></span><h3>StateDashboard<a class="headerlink" href="#statedashboard" title="Permalink to this headline">¶</a></h3>
 <p>The majority of our scrapers collect data from a state maintained dashboard</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code> class (defined in <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers/official/base.py</span></code>) adds some tools to make getting data from these sources easier:</p>
@@ -95,8 +96,8 @@
 <li><p>Methods <code class="docutils literal notranslate"><span class="pre">_rename_or_add_date_and_location</span></code> and <code class="docutils literal notranslate"><span class="pre">_reshape_variables</span></code>: tools for cleaning data (see below)</p></li>
 </ul>
 <dl class="py function">
-<dt id="can_tools.scrapers.official.base.StateDashboard._rename_or_add_date_and_location">
-<code class="sig-prename descclassname"><span class="pre">can_tools.scrapers.official.base.StateDashboard.</span></code><code class="sig-name descname"><span class="pre">_rename_or_add_date_and_location</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_name_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_names_to_drop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations_to_drop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas._libs.tslibs.timestamps.Timestamp</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_title_case</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#can_tools.scrapers.official.base.StateDashboard._rename_or_add_date_and_location" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="can_tools.scrapers.official.base.StateDashboard._rename_or_add_date_and_location">
+<span class="sig-prename descclassname"><span class="pre">can_tools.scrapers.official.base.StateDashboard.</span></span><span class="sig-name descname"><span class="pre">_rename_or_add_date_and_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_name_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_names_to_drop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_names_to_replace</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations_to_drop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_column</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas._libs.tslibs.timestamps.Timestamp</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_title_case</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#can_tools.scrapers.official.base.StateDashboard._rename_or_add_date_and_location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renames or adds date and location columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -105,6 +106,8 @@
 <li><p><strong>location_name_column</strong> – Name of column with location name</p></li>
 <li><p><strong>location_column</strong> – Name of column with location (fips)</p></li>
 <li><p><strong>location_names_to_drop</strong> – List of values in <cite>location_name_column</cite> that should be dropped</p></li>
+<li><p><strong>location_names_to_replace</strong> – Dict mapping from old location_name spelling/capitalization
+to new location_name</p></li>
 <li><p><strong>locations_to_drop</strong> – List of values in <cite>location_column</cite> that should be dropped</p></li>
 <li><p><strong>date_column</strong> – Name of Column containing date.</p></li>
 <li><p><strong>date</strong> – Date for data</p></li>
@@ -122,14 +125,16 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="can_tools.scrapers.official.base.StateDashboard._reshape_variables">
-<code class="sig-prename descclassname"><span class="pre">can_tools.scrapers.official.base.StateDashboard.</span></code><code class="sig-name descname"><span class="pre">_reshape_variables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="writing_scrapers.html#can_tools.scrapers.base.CMU" title="can_tools.scrapers.base.CMU"><span class="pre">can_tools.scrapers.base.CMU</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="headerlink" href="#can_tools.scrapers.official.base.StateDashboard._reshape_variables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="can_tools.scrapers.official.base.StateDashboard._reshape_variables">
+<span class="sig-prename descclassname"><span class="pre">can_tools.scrapers.official.base.StateDashboard.</span></span><span class="sig-name descname"><span class="pre">_reshape_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="writing_scrapers.html#can_tools.scrapers.base.CMU" title="can_tools.scrapers.base.CMU"><span class="pre">can_tools.scrapers.base.CMU</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_vars</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="headerlink" href="#can_tools.scrapers.official.base.StateDashboard._reshape_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reshape columns in data to be long form definitions defined in <cite>variable_map</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> – Input data</p></li>
 <li><p><strong>variable_map</strong> (<em>Union</em><em>[</em><em>str</em><em>,</em><em>int</em><em>]</em>) – Map from column name to output variables</p></li>
+<li><p><strong>id_vars</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>(</em><em>default=None</em><em>)</em>) – Variables that should be included as “id_vars” when melting from wide to long</p></li>
+<li><p><strong>kwargs</strong> – Other kwargs to pass to <cite>self.extract_CMU</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -145,8 +150,8 @@
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">CountyDashboard</span></code> and <code class="docutils literal notranslate"><span class="pre">FederalDashboard</span></code> inherit from <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code> and update the <code class="docutils literal notranslate"><span class="pre">provider</span></code> attribute. These are also defined in <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers/official/base.py</span></code></p>
 </div>
-</div>
-<div class="section" id="dashboard-type-subclasses">
+</section>
+<section id="dashboard-type-subclasses">
 <span id="dashboard-parent-classes"></span><h3>Dashboard Type subclasses<a class="headerlink" href="#dashboard-type-subclasses" title="Permalink to this headline">¶</a></h3>
 <p>The next level in the hierarchy is a subclass for a specific type of dashboard technology</p>
 <p>In the <code class="docutils literal notranslate"><span class="pre">NewJerseyVaccineCounty</span></code> example, this was the <code class="docutils literal notranslate"><span class="pre">ArcGIS</span></code> class</p>
@@ -168,23 +173,19 @@
 <p class="admonition-title">Note</p>
 <p>The technology-specific parent classes are defined in <code class="docutils literal notranslate"><span class="pre">can_tools/scrapers/official/base.py</span></code></p>
 </div>
-</div>
-</div>
-<div class="section" id="scraper-lifecycle">
+</section>
+</section>
+<section id="scraper-lifecycle">
 <span id="id1"></span><h2>Scraper Lifecycle<a class="headerlink" href="#scraper-lifecycle" title="Permalink to this headline">¶</a></h2>
 <p>With all that in mind, we now lay out the lifecycle of a scraper when it runs in production</p>
 <p>We will do this by writing code needed for running the scraper</p>
-<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">scraper</span> <span class="o">=</span> <span class="n">NewJerseyVaccineCounty</span><span class="p">()</span>
-<span class="n">raw</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
-<span class="n">clean</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
-<span class="n">scraper</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
-<span class="n">scraper</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">scraper</span> <span class="o">=</span> <span class="n">NewJerseyVaccineCounty</span><span class="p">()</span>
+<span class="linenos">2</span><span class="n">raw</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
+<span class="linenos">3</span><span class="n">clean</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<span class="linenos">4</span><span class="n">scraper</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
+<span class="linenos">5</span><span class="n">scraper</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 <p>The line by line description of this code is</p>
 <ol class="arabic simple">
 <li><p>Create an instance of the scraper class. We can optionally pass <code class="docutils literal notranslate"><span class="pre">execution_dt</span></code> as an argument</p></li>
@@ -193,8 +194,8 @@
 <li><p>Call the <code class="docutils literal notranslate"><span class="pre">.validate(clean)</span></code> method to check the data. There is a default <code class="docutils literal notranslate"><span class="pre">validate</span></code> method in <code class="docutils literal notranslate"><span class="pre">DatasetBase</span></code>, but you can override if you know something specific needs to be checked for the scraper you are working on</p></li>
 <li><p>Call <code class="docutils literal notranslate"><span class="pre">.put(engine,</span> <span class="pre">clean)</span></code> to store the data in the database backing the sqlalchemy Engine <code class="docutils literal notranslate"><span class="pre">engine</span></code>. This is written in <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code> and should not need to be overwridden in child classes</p></li>
 </ol>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -262,7 +263,7 @@
       &copy;2020-2021, CAN Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
