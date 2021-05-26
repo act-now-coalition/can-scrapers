@@ -243,34 +243,37 @@ class CovidObservation(Base):
 
 Index("covid_observation_deleted", CovidObservation.deleted)
 
-api_covid_us_statement = select(
-    [
-        CovidProvider.name.label("provider"),
-        CovidObservation.dt,
-        Location.id.label("location_id"),
-        Location.location,
-        Location.location_type,
-        CovidVariable.category.label("variable_name"),
-        CovidVariable.measurement,
-        CovidVariable.unit,
-        CovidDemographic.age,
-        CovidDemographic.race,
-        CovidDemographic.ethnicity,
-        CovidDemographic.sex,
-        CovidObservation.last_updated,
-        CovidObservation.source_url,
-        CovidObservation.source_name,
-        CovidObservation.value,
-    ]
-).select_from(
-    (
-        CovidObservation.__table__
-        .join(CovidVariable, isouter=True)
-        .join(Location, isouter=True)
-        .join(CovidProvider, isouter=True)
-        .join(CovidDemographic, isouter=True)
+api_covid_us_statement = (
+    select(
+        [
+            CovidProvider.name.label("provider"),
+            CovidObservation.dt,
+            Location.id.label("location_id"),
+            Location.location,
+            Location.location_type,
+            CovidVariable.category.label("variable_name"),
+            CovidVariable.measurement,
+            CovidVariable.unit,
+            CovidDemographic.age,
+            CovidDemographic.race,
+            CovidDemographic.ethnicity,
+            CovidDemographic.sex,
+            CovidObservation.last_updated,
+            CovidObservation.source_url,
+            CovidObservation.source_name,
+            CovidObservation.value,
+        ]
     )
-).where(CovidObservation.deleted == False)
+    .select_from(
+        (
+            CovidObservation.__table__.join(CovidVariable, isouter=True)
+            .join(Location, isouter=True)
+            .join(CovidProvider, isouter=True)
+            .join(CovidDemographic, isouter=True)
+        )
+    )
+    .where(CovidObservation.deleted == False)
+)
 
 api_covid_us = create_view(
     "covid_us", api_covid_us_statement, Base.metadata, or_replace=True
