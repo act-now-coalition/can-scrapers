@@ -140,3 +140,4 @@ class HawaiiVaccineCounty(TableauDashboard):
             "dashboardPresModel"
         ]["userActions"]
         return (info, fdat, user_actions)
+        
