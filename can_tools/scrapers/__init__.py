@@ -89,7 +89,7 @@ from can_tools.scrapers.official.ME.me_vaccines import (
     MaineCountyVaccines,
     MaineRaceVaccines,
     MaineGenderVaccines,
-    MaineAgeVaccines
+    MaineAgeVaccines,
 )
 from can_tools.scrapers.official.MN.mn_vaccine import MinnesotaCountyVaccines
 from can_tools.scrapers.official.MO.mo_vaccine import MissouriVaccineCounty
