@@ -390,10 +390,15 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                 data_rows.append(row)
 
         # combine into dataframe
-        df = pd.DataFrame.from_records(data_rows).fillna(0)
+        df = pd.DataFrame.from_records(data_rows)
+        # they report j&j doses in either the initiated or completed column--the other is empty (NA)
+        df['jj_complete'] = df['jj_complete'].fillna(0)
+        df['jj_init'] = df['jj_init'].fillna(0)
+
         # format, calculate total_vacccine_initiated + map CMU
         out = (
-            df.assign(
+            df.dropna()
+            .assign(
                 initiated_total=lambda x: x["first_dose_total"]
                 + x["jj_complete"]
                 + x["jj_init"],
