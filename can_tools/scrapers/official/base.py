@@ -673,6 +673,7 @@ class TableauDashboard(StateDashboard, ABC):
     secondaryFilterFunctionName: Optional[str] = None
     secondaryFilterFunctionValue: Optional[str] = None
     thirdFilterFunctionName: Optional[str] = None
+    thirdFilterFunctionValue: Optional[str] = None
     timezone: str
     data_tableau_table: str
     location_name_col: str
