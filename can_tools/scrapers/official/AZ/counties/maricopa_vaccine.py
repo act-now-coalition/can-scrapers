@@ -45,8 +45,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         # if the page must re-direct more than once, find the next re-direct url 
         # re-call fn until found end page
         if len(raw_data) == 0:
-            new_data = requests.get(url)
-            new_url = self._get_url(new_data)
+            new_url = self._get_url(page)
             return self._get_json(new_url)
 
         raw_data = str(raw_data[1]).replace("\\", "")
