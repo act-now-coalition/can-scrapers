@@ -2,15 +2,19 @@ import pandas as pd
 import us
 import datetime as dt
 from can_tools.scrapers.base import CMU
+from bs4 import BeautifulSoup
+import json
+import re
 
 import requests
 import os
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import TableauDashboard
+from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
+from can_tools.scrapers.util import requests_retry_session
 
 
-class NCVaccineAge(TableauDashboard):
+class NCVaccine(TableauDashboard):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
     source_name = (
@@ -19,19 +23,46 @@ class NCVaccineAge(TableauDashboard):
     state_fips = int(us.states.lookup("North Carolina").fips)
     location_type = "county"
     baseurl = "https://public.tableau.com"
+    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
+
+    data_tableau_table = "County Map"
+    location_name_col = "County -alias"
+    timezone = "US/Eastern"
+    filterFunctionName = "[Parameters].[Param.Program (copy)_419679211994820608]"  # fetch from all providers
+
+    # map wide form column names into CMUs
+    cmus = {
+        "AGG(Calc.Tooltip At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "AGG(Calc.Tooltip Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
+    }
+
+    def fetch(self):
+        self.filterFunctionValue = "3"
+        return self.get_tableau_view()[self.data_tableau_table]
+
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = super().normalize(df)
+        df.location_name = df.location_name.str.replace(
+            " County", ""
+        ).str.strip()  # Strip whitespace
+        df.loc[df["location_name"] == "Mcdowell", "location_name"] = "McDowell"
+        return df
+
+
+class NCVaccineAge(NCVaccine):
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Demographics"
     timezone = "US/Eastern"
     filterFunctionName = "[Parameters].[Parameter 3 1]"  # county
     secondaryFilterFunctionName = (
         "[Parameters].[Param.DemographicMetric (copy)_1353894643018190853]"  # dose type
     )
+    thirdFilterFunctionName = "[Parameters].[Parameter 2]"  # specify providers
 
     # map wide form column names into CMUs
     variables = {
         " Population Vaccinated with at Least One Dose": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
         " Population Fully Vaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
     }
-
     worksheet = "Age_Percent_Pop_County"
     demo_col = "age"
     demo_rename = "Age Group-alias"
@@ -40,7 +71,6 @@ class NCVaccineAge(TableauDashboard):
         "75+": "75_plus",
         "0-17 (16-17)": "0-17",
     }
-    all_demo_cols = ["age", "race", "ethnicity", "sex"]
 
     def fetch(self):
         path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
@@ -48,6 +78,7 @@ class NCVaccineAge(TableauDashboard):
             pd.read_csv(path).query(f"state == 37 and location != 37")["name"]
         )
 
+        self.thirdFilterFunctionValue = "3"
         dfs = []
         # get each county
         for county in counties:

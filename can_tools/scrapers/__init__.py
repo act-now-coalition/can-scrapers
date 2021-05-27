@@ -95,6 +95,7 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
 
 # from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.NC.nc_vaccine import (
+    NCVaccine,
     NCVaccineAge,
     NCVaccineRace,
     NCVaccineSex,

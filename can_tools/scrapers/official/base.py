@@ -672,6 +672,7 @@ class TableauDashboard(StateDashboard, ABC):
     filterFunctionValue: Optional[str] = None
     secondaryFilterFunctionName: Optional[str] = None
     secondaryFilterFunctionValue: Optional[str] = None
+    thirdFilterFunctionName: Optional[str] = None
     timezone: str
     data_tableau_table: str
     location_name_col: str
@@ -720,6 +721,13 @@ class TableauDashboard(StateDashboard, ABC):
                     + "="
                     + self.secondaryFilterValue.replace(" ", "%20")
                 )
+                if self.thirdFilterFunctionName is not None:
+                    params += (
+                        "&"
+                        + self.thirdFilterFunctionName
+                        + "="
+                        + self.thirdFilterFunctionValue
+                    )
             reqg = req.get(fullURL, params=params)
         else:
             reqg = req.get(
