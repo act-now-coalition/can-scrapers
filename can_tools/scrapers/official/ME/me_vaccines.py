@@ -395,8 +395,6 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         df["jj_complete"] = df["jj_complete"].fillna(0)
         df["jj_init"] = df["jj_init"].fillna(0)
 
-        return df
-
         # format, calculate total_vacccine_initiated + map CMU
         out = (
             df.dropna()
