@@ -392,8 +392,8 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         # combine into dataframe
         df = pd.DataFrame.from_records(data_rows)
         # they report j&j doses in either the initiated or completed column--the other is empty (NA)
-        df['jj_complete'] = df['jj_complete'].fillna(0)
-        df['jj_init'] = df['jj_init'].fillna(0)
+        df["jj_complete"] = df["jj_complete"].fillna(0)
+        df["jj_init"] = df["jj_init"].fillna(0)
 
         return df
 
@@ -433,15 +433,16 @@ class MaineAgeVaccines(MaineRaceVaccines):
     demographic = "age"
     demographic_query_name = "Age Group"
     demographic_key = {
-        "0": "12-15",
-        "1": "16-19",
-        "2": "20-29",
-        "3": "30-39",
+        "9": "0-11",
+        "8": "12-15",
+        "7": "16-19",
+        "6": "20-29",
+        "5": "30-39",
         "4": "40-49",
-        "5": "50-59",
-        "6": "60-69",
-        "7": "70-79",
-        "8": "80_plus",
+        "3": "50-59",
+        "2": "60-69",
+        "1": "70-79",
+        "0": "80_plus",
     }
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
@@ -480,6 +481,19 @@ class MaineAgeVaccines(MaineRaceVaccines):
                                             ("c1", "COVID Vaccination Attributes", 0),
                                         ]
                                     ),
+                                    "OrderBy": [
+                                        {
+                                            "Direction": 2,
+                                            "Expression": {
+                                                "Column": {
+                                                    "Expression": {
+                                                        "SourceRef": {"Source": "p"}
+                                                    },
+                                                    "Property": "Age Group",
+                                                }
+                                            },
+                                        }
+                                    ],
                                     "Select": self.construct_select(
                                         [
                                             (
@@ -540,37 +554,6 @@ class MaineAgeVaccines(MaineRaceVaccines):
                                                 }
                                             }
                                         },
-                                        {
-                                            "Condition": {
-                                                "Not": {
-                                                    "Expression": {
-                                                        "In": {
-                                                            "Expressions": [
-                                                                {
-                                                                    "Column": {
-                                                                        "Expression": {
-                                                                            "SourceRef": {
-                                                                                "Source": "p"
-                                                                            }
-                                                                        },
-                                                                        "Property": "Age Group"
-                                                                    }
-                                                                }
-                                                            ],
-                                                            "Values": [
-                                                                [
-                                                                    {
-                                                                        "Literal": {
-                                                                            "Value": "'Age 11 and Younger'"
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            ]
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
                                     ],
                                 }
                             }
