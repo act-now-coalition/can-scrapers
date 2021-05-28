@@ -395,6 +395,8 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         df['jj_complete'] = df['jj_complete'].fillna(0)
         df['jj_init'] = df['jj_init'].fillna(0)
 
+        return df
+
         # format, calculate total_vacccine_initiated + map CMU
         out = (
             df.dropna()
@@ -431,14 +433,154 @@ class MaineAgeVaccines(MaineRaceVaccines):
     demographic = "age"
     demographic_query_name = "Age Group"
     demographic_key = {
-        "0": "0-11",
-        "1": "12-15",
-        "2": "16-19",
-        "3": "20-29",
-        "4": "30-39",
-        "5": "40-49",
-        "6": "50-59",
+        "0": "12-15",
+        "1": "16-19",
+        "2": "20-29",
+        "3": "30-39",
+        "4": "40-49",
+        "5": "50-59",
         "6": "60-69",
         "7": "70-79",
         "8": "80_plus",
     }
+
+    def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
+        body = {}
+
+        # Set version
+        body["version"] = "1.0.0"
+        body["cancelQueries"] = []
+        body["modelId"] = model_id
+
+        body["queries"] = [
+            {
+                "Query": {
+                    "Commands": [
+                        {
+                            "SemanticQueryDataShapeCommand": {
+                                "Query": {
+                                    "Version": 2,
+                                    "From": self.construct_from(
+                                        [
+                                            (
+                                                "i",
+                                                "Patient Geographic Attributes",
+                                                0,
+                                            ),
+                                            (
+                                                "p",
+                                                "Patient Census Demographic Attributes",
+                                                0,
+                                            ),
+                                            (
+                                                "c",
+                                                "COVID Vaccination Summary Measures",
+                                                0,
+                                            ),
+                                            ("c1", "COVID Vaccination Attributes", 0),
+                                        ]
+                                    ),
+                                    "Select": self.construct_select(
+                                        [
+                                            (
+                                                "i",
+                                                "Geographic County Name",
+                                                "county",
+                                            ),
+                                            (
+                                                "p",
+                                                f"{self.demographic_query_name}",
+                                                "demographic",
+                                            ),
+                                            (
+                                                "c1",
+                                                "Vaccine Manufacturer",
+                                                "manufacturer",
+                                            ),
+                                        ],
+                                        [],
+                                        [
+                                            (
+                                                "c",
+                                                "First Dose",
+                                                "total_vaccine_initiated",
+                                            ),
+                                            (
+                                                "c",
+                                                "Final Dose",
+                                                "total_vaccine_completed",
+                                            ),
+                                        ],
+                                    ),
+                                    "Where": [
+                                        {
+                                            "Condition": {
+                                                "In": {
+                                                    "Expressions": [
+                                                        {
+                                                            "Column": {
+                                                                "Expression": {
+                                                                    "SourceRef": {
+                                                                        "Source": "i"
+                                                                    }
+                                                                },
+                                                                "Property": "Geographic County Name",
+                                                            }
+                                                        }
+                                                    ],
+                                                    "Values": [
+                                                        [
+                                                            {
+                                                                "Literal": {
+                                                                    "Value": f"'{counties} County, ME'"
+                                                                }
+                                                            }
+                                                        ]
+                                                    ],
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Condition": {
+                                                "Not": {
+                                                    "Expression": {
+                                                        "In": {
+                                                            "Expressions": [
+                                                                {
+                                                                    "Column": {
+                                                                        "Expression": {
+                                                                            "SourceRef": {
+                                                                                "Source": "p"
+                                                                            }
+                                                                        },
+                                                                        "Property": "Age Group"
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "Values": [
+                                                                [
+                                                                    {
+                                                                        "Literal": {
+                                                                            "Value": "'Age 11 and Younger'"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ],
+                                }
+                            }
+                        }
+                    ]
+                },
+                "QueryId": "",
+                "ApplicationContext": self.construct_application_context(
+                    ds_id, report_id
+                ),
+            }
+        ]
+        return body
