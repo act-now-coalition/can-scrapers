@@ -397,7 +397,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
 
         # format, calculate total_vacccine_initiated + map CMU
         out = (
-            df.dropna()
+            df.dropna()  # counties that don't have age 0-11 return NA for value
             .assign(
                 initiated_total=lambda x: x["first_dose_total"]
                 + x["jj_complete"]
