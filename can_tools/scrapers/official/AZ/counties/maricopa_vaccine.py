@@ -40,8 +40,15 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         soup = bs(page.text, "lxml")
 
         # extract the and format script that contains the data/JSON
-        raw_data = soup.find_all("script")[1]
-        raw_data = str(raw_data).replace("\\", "")
+        raw_data = soup.find_all("script")
+
+        # if the page must re-direct more than once, find the next re-direct url
+        # re-call fn until found end page
+        if len(raw_data) == 0:
+            new_url = self._get_url(page)
+            return self._get_json(new_url)
+
+        raw_data = str(raw_data[1]).replace("\\", "")
 
         # extract relevent json from string
         raw_json = (
