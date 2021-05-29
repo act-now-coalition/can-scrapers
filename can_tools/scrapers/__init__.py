@@ -159,7 +159,10 @@ from can_tools.scrapers.official.VT.vt_vaccinations import (
     VermontCountyVaccine,
     VermontStateVaccine,
 )
-from can_tools.scrapers.official.WA.wa_vaccine import WashingtonVaccine
+from can_tools.scrapers.official.WA.wa_vaccine import (
+    WashingtonVaccine,
+    WashingtonVaccineCountyRace,
+)
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
 from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
     WisconsinVaccineStateAge,
