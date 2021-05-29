@@ -85,6 +85,12 @@ from can_tools.scrapers.official.MI.mi_vaccine import (
     MichiganVaccineCounty,
     MichiganVaccineCountyDemographics,
 )
+from can_tools.scrapers.official.ME.me_vaccines import (
+    MaineCountyVaccines,
+    MaineRaceVaccines,
+    MaineGenderVaccines,
+    MaineAgeVaccines,
+)
 from can_tools.scrapers.official.MN.mn_vaccine import (
     MinnesotaCountyVaccines,
     MinnesotaCountyAgeVaccines,
