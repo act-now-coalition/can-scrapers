@@ -4,11 +4,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>CAN Scraper Infrastructure &#8212; CAN Scrapers  documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -32,7 +33,7 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="can-scraper-infrastructure">
+  <section id="can-scraper-infrastructure">
 <h1>CAN Scraper Infrastructure<a class="headerlink" href="#can-scraper-infrastructure" title="Permalink to this headline">¶</a></h1>
 <p>In this section you will learn more about the CAN Data Engineering
 infrastructure.</p>
@@ -47,7 +48,7 @@ the services</p></li>
 its own directory and deployed inside docker containers. We use
 [earthly](<a class="reference external" href="https://earthly.dev/">https://earthly.dev/</a>) as a build tool for building all the</p></li>
 </ol>
-<div class="section" id="infrastructure">
+<section id="infrastructure">
 <h2>Infrastructure<a class="headerlink" href="#infrastructure" title="Permalink to this headline">¶</a></h2>
 <p>The infrastructure for can-scrapers is a subset of that used for Covid County Data (CCD)</p>
 <p>The CCD infrastructure is documented in the files below</p>
@@ -66,8 +67,8 @@ its own directory and deployed inside docker containers. We use
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="services">
+</section>
+<section id="services">
 <h2>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h2>
 <p>Each microservice has config and supporting files in a subdirectory of <code class="docutils literal notranslate"><span class="pre">services/</span></code></p>
 <p>Many of these services were used to support Covid County Data (CCD) before CCD merged with CAN</p>
@@ -77,8 +78,8 @@ its own directory and deployed inside docker containers. We use
 <li><p><code class="docutils literal notranslate"><span class="pre">prefect</span></code>: core orchestration system responsible for executing all scrapers</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook</span></code>: A webhook server that listens for push events to the main branch of this repo and updates the flows managed by prefect to always match master. This includes auto-updating of the codebase and auto-deployment of new scrapers</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -142,7 +143,7 @@ its own directory and deployed inside docker containers. We use
       &copy;2020-2021, CAN Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

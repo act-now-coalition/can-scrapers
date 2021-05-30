@@ -7,7 +7,7 @@ from can_tools.scrapers.official.base import ArcGIS
 
 class MontanaCountyVaccine(ArcGIS):
     ARCGIS_ID = "qnjIrwR8z5Izc0ij"
-    has_location = True
+    has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Montana").fips)
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
@@ -32,12 +32,12 @@ class MontanaCountyVaccine(ArcGIS):
         df = (
             self.arcgis_jsons_to_df(data)
             .fillna(0)
-            .rename(columns={"ALLFIPS": "location", "Date_Reported": "dt"})
+            .rename(columns={"NAME": "location_name", "Date_Reported": "dt"})
         )
 
         # Capitalize start of words and replace wrong names
-        df.loc[:, "location"] = (
-            df.loc[:, "location"]
+        df.loc[:, "location_name"] = (
+            df.loc[:, "location_name"]
             .str.title()
             .replace({"Lewis & Clark": "Lewis and Clark", "Mccone": "McCone"})
         )
@@ -46,7 +46,8 @@ class MontanaCountyVaccine(ArcGIS):
 
         # this matches the values in the dashboard
 
-        return self._transform_df(df)
+        df = self._transform_df(df)
+        return df[df["location_name"] != "Montana"]
 
     def _transform_df(self, data):
         """

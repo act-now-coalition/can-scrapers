@@ -228,6 +228,7 @@ class CovidObservation(Base):
     source_url = Column(String)
     source_name = Column(String)
     deleted = Column(Boolean, nullable=False, default=False)
+    delete_batch_id = Column(BigInteger)
     __table_args__ = (
         PrimaryKeyConstraint(
             "dt",
@@ -413,6 +414,8 @@ def build_insert_from_temp(
                 value=statement.excluded.value,
                 last_updated=statement.excluded.last_updated,
                 provider_id=statement.excluded.provider_id,
+                deleted=False,
+                delete_batch_id=None,
             ),
         )
 

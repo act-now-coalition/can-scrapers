@@ -40,8 +40,15 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         soup = bs(page.text, "lxml")
 
         # extract the and format script that contains the data/JSON
-        raw_data = soup.find_all("script")[1]
-        raw_data = str(raw_data).replace("\\", "")
+        raw_data = soup.find_all("script")
+
+        # if the page must re-direct more than once, find the next re-direct url
+        # re-call fn until found end page
+        if len(raw_data) == 0:
+            new_url = self._get_url(page)
+            return self._get_json(new_url)
+
+        raw_data = str(raw_data[1]).replace("\\", "")
 
         # extract relevent json from string
         raw_json = (
@@ -79,21 +86,25 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         # dump rows into df
         rows = records + records_init
         df = pd.DataFrame.from_records(rows)
-        df = df.assign(
-            dt=pd.to_datetime(df["time"], unit="ms").dt.date,
-            value=df["value"].str.replace("r", "").astype(int),
-            variable=df["row"].replace(
-                {
-                    1: "total_doses_administered",
-                    3: "total_vaccine_completed",
-                }
-            ),
-            location_name="Maricopa",
-            vintage=self._retrieve_vintage(),
-        ).drop(columns={"row", "column", "time", "ignored", "previous"})
+        df = df.query("value != 'All'")
 
-        out = self.extract_CMU(df, self.variables)
+        df = (
+            df.assign(
+                dt=pd.to_datetime(df["time"], unit="ms").dt.date,
+                value=df["value"].str.replace("r", "").astype(int),
+                variable=df["row"].replace(
+                    {
+                        1: "total_doses_administered",
+                        3: "total_vaccine_completed",
+                    }
+                ),
+                location_name="Maricopa",
+                vintage=self._retrieve_vintage(),
+            )
+            .drop(columns={"row", "column", "time", "ignored", "previous"})
+            .pipe(self.extract_CMU, cmu=self.variables)
+        )
 
         # filter results from before march (bad data)
-        out = out[out["dt"] > pd.to_datetime("2021-3-01")]
+        out = df[df["dt"] > pd.to_datetime("2021-3-01")]
         return out.drop(columns={"variable"})
