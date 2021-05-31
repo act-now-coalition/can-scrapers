@@ -1,18 +1,10 @@
 import pandas as pd
 import us
-import datetime as dt
-from can_tools.scrapers.base import CMU
-from bs4 import BeautifulSoup
-import json
-import re
-
-import requests
 import os
+import multiprocessing as mp
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
-from can_tools.scrapers.util import requests_retry_session
-
+from can_tools.scrapers.official.base import TableauDashboard
 
 class NCVaccine(TableauDashboard):
     has_location = False
@@ -57,12 +49,14 @@ class NCVaccineAge(NCVaccine):
         "[Parameters].[Param.DemographicMetric (copy)_1353894643018190853]"  # dose type
     )
     thirdFilterFunctionName = "[Parameters].[Parameter 2]"  # specify providers
+    thirdFilterFunctionValue = "3"
 
     # map wide form column names into CMUs
     variables = {
         " Population Vaccinated with at Least One Dose": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
         " Population Fully Vaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
     }
+    
     worksheet = "Age_Percent_Pop_County"
     demo_col = "age"
     demo_rename = "Age Group-alias"
@@ -75,23 +69,36 @@ class NCVaccineAge(NCVaccine):
     def fetch(self):
         path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
         counties = list(
-            pd.read_csv(path).query(f"state == 37 and location != 37")["name"]
+            pd.read_csv(path).query("state == @self.state_fips and location != @self.state_fips")["name"]
         )
-
-        self.thirdFilterFunctionValue = "3"
-        dfs = []
-        # get each county
+        
+        numprocs = 10 # set s.t 100 % numprocs = 0
+        return_list = mp.Manager().list() # global list each process reports back to
+        procs = []
+        curr = 0 # current location in array (of counties)
+        by = int(len(counties)/numprocs) # number of counties per process
+        
+        for i in range(0, numprocs):
+            print('starting proc ', i, ' for indices: [', curr, ',', curr+by-1, ']')
+            proc = mp.Process(target=self._get_data, args=(counties[curr : curr + by], return_list))
+            curr += by
+            procs.append(proc)
+            proc.start()
+        
+        for proc in procs:
+            proc.join()
+        
+        return pd.concat(return_list)
+        
+    def _get_data(self, counties, data):
         for county in counties:
-            print("working on: ", county)
             self.filterFunctionValue = county + " County"
-            # get both initiated and completed vals
             for dose_val in ["3", "4"]:
-                print("dose key: ", dose_val)
+                print('working on:', county, 'dose: ', dose_val)
                 self.secondaryFilterValue = dose_val
                 df = self.get_tableau_view()[self.worksheet]
-                dfs.append(df.assign(location_name=county))
-
-        return pd.concat(dfs)
+                data.append(df.assign(location_name=county))
+                
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         df = (
