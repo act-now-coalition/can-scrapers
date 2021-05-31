@@ -39,7 +39,6 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
             results[county] = self.get_tableau_view()
         return results
 
-
     def normalize(self, data):
         dfs = []
         for county in self.counties:
