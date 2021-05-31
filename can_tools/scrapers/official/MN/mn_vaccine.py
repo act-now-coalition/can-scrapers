@@ -446,7 +446,7 @@ class MinnesotaCountySexVaccines(MinnesotaCountyAgeVaccines):
                                         [
                                             # Selects
                                             ("m", "County", "county"),
-                                            ("d","gender","demo"),
+                                            ("d", "gender", "demo"),
                                         ],
                                         [
                                             # Aggregations
