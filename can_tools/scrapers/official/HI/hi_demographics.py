@@ -31,6 +31,15 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
         out["dt"] = self._retrieve_dtm1d("US/Hawaii")
         return out.replace({"nhpi": "pacific_islander", "75+": "75_plus"})
 
+    def fetch(self):
+        results = {}
+        for county in self.counties:
+            # Get county data
+            self.filterFunctionValue = county
+            results[county] = self.get_tableau_view()
+        return results
+
+
     def normalize(self, data):
         dfs = []
         for county in self.counties:
