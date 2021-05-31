@@ -6,6 +6,7 @@ import multiprocessing as mp
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
+
 class NCVaccine(TableauDashboard):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
@@ -56,7 +57,7 @@ class NCVaccineAge(NCVaccine):
         " Population Vaccinated with at Least One Dose": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
         " Population Fully Vaccinated": variables.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,
     }
-    
+
     worksheet = "Age_Percent_Pop_County"
     demo_col = "age"
     demo_rename = "Age Group-alias"
@@ -69,36 +70,39 @@ class NCVaccineAge(NCVaccine):
     def fetch(self):
         path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
         counties = list(
-            pd.read_csv(path).query("state == @self.state_fips and location != @self.state_fips")["name"]
+            pd.read_csv(path).query(
+                "state == @self.state_fips and location != @self.state_fips"
+            )["name"]
         )
-        
-        numprocs = 10 # set s.t 100 % numprocs = 0
-        return_list = mp.Manager().list() # global list each process reports back to
+
+        numprocs = 10  # set s.t 100 % numprocs = 0
+        return_list = mp.Manager().list()  # global list each process reports back to
         procs = []
-        curr = 0 # current location in array (of counties)
-        by = int(len(counties)/numprocs) # number of counties per process
-        
+        curr = 0  # current location in array (of counties)
+        by = int(len(counties) / numprocs)  # number of counties per process
+
         for i in range(0, numprocs):
-            print('starting proc ', i, ' for indices: [', curr, ',', curr+by-1, ']')
-            proc = mp.Process(target=self._get_data, args=(counties[curr : curr + by], return_list))
+            print("starting proc ", i, " for indices: [", curr, ",", curr + by - 1, "]")
+            proc = mp.Process(
+                target=self._get_data, args=(counties[curr : curr + by], return_list)
+            )
             curr += by
             procs.append(proc)
             proc.start()
-        
+
         for proc in procs:
             proc.join()
-        
+
         return pd.concat(return_list)
-        
+
     def _get_data(self, counties, data):
         for county in counties:
             self.filterFunctionValue = county + " County"
             for dose_val in ["3", "4"]:
-                print('working on:', county, 'dose: ', dose_val)
+                print("working on:", county, "dose: ", dose_val)
                 self.secondaryFilterValue = dose_val
                 df = self.get_tableau_view()[self.worksheet]
                 data.append(df.assign(location_name=county))
-                
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         df = (
