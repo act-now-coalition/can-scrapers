@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -12,17 +12,10 @@ class MontanaCountyVaccine(ArcGIS):
     state_fips = int(us.states.lookup("Montana").fips)
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
     source_name = "Montana Department of Health & Human Services"
-    crename = {
-        "Dose_1": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "Dose_2": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
+    variables = {
+        "Dose_1": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully_Vaxed": variables.FULLY_VACCINATED_ALL,
+        "Total_Doses_Admin": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self):
@@ -62,10 +55,10 @@ class MontanaCountyVaccine(ArcGIS):
             loc_col_type = "location_name"
 
         out = data.melt(
-            id_vars=["dt", loc_col_type], value_vars=self.crename.keys()
+            id_vars=["dt", loc_col_type], value_vars=self.variables.keys()
         ).dropna()
         out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_CMU(out, self.crename)
+        out = self.extract_CMU(out, self.variables)
         out["vintage"] = self._retrieve_vintage()
 
         cols_to_keep = [
@@ -87,17 +80,9 @@ class MontanaCountyVaccine(ArcGIS):
 class MontanaStateVaccine(MontanaCountyVaccine):
     location_type = "state"
     has_location = True
-    crename = {
-        "Total_Montanans_Immunized": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "Total_Doses_Administered": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
+    variables = {
+        "Total_Montanans_Immunized": variables.FULLY_VACCINATED_ALL,
+        "Total_Doses_Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self):
