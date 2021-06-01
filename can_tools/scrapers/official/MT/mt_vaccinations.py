@@ -18,10 +18,15 @@ class MontanaCountyVaccine(ArcGIS):
             measurement="cumulative",
             unit="people",
         ),
-        "Dose_2": CMU(
+        "Fully_Vaxed": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
             unit="people",
+        ),
+        "Total_Doses_Admin": CMU(
+            category="total_vaccine_doses_administered",
+            measurement="cumulative",
+            unit="doses",
         ),
     }
 
