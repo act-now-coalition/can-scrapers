@@ -19,8 +19,6 @@ class IowaCountyVaccine(StateDashboard):
     source_name = "Iowa Department of Public Health"
 
     dashboard_link = "https://public.domo.com/embed/pages/1wB9j"
-    card_id = "1179017552"
-    # csv_link = "https://public.domo.com/embed/pages/1wB9j/cards/1179017552/export"
     csv_link = "https://public.domo.com/embed/pages/1wB9j/cards/1698180896/export"
 
     variables = {
