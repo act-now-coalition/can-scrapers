@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import variables as v
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -13,9 +13,9 @@ class MontanaCountyVaccine(ArcGIS):
     source = "https://montana.maps.arcgis.com/apps/MapSeries/index.html?appid=7c34f3412536439491adcc2103421d4b"
     source_name = "Montana Department of Health & Human Services"
     variables = {
-        "Dose_1": v.INITIATING_VACCINATIONS_ALL,
-        "Fully_Vaxed": v.FULLY_VACCINATED_ALL,
-        "Total_Doses_Admin": v.TOTAL_DOSES_ADMINISTERED_ALL,
+        "Dose_1": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully_Vaxed": variables.FULLY_VACCINATED_ALL,
+        "Total_Doses_Admin": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self):
@@ -81,8 +81,8 @@ class MontanaStateVaccine(MontanaCountyVaccine):
     location_type = "state"
     has_location = True
     variables = {
-        "Total_Montanans_Immunized": v.FULLY_VACCINATED_ALL,
-        "Total_Doses_Administered": v.TOTAL_DOSES_ADMINISTERED_ALL,
+        "Total_Montanans_Immunized": variables.FULLY_VACCINATED_ALL,
+        "Total_Doses_Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def fetch(self):
