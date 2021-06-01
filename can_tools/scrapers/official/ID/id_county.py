@@ -1,6 +1,5 @@
-import pandas as pd
 import us
-
+import pandas as pd
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 
@@ -12,8 +11,11 @@ class IdahoCountyVaccine(TableauDashboard):
     source_name = "Idaho Official Government Website"
     data_tableau_table = "Vax Rate / County Chart"
     baseurl = "https://public.tableau.com"
-    viewPath = "COVID-19VaccineDataDashboard/VaccineUptake"
-    filterFunctionName = "[Parameters].[Map (copy)]"
+    viewPath = "COVID-19VaccineDataDashboard/VaccineUptakeIdahoIIS"
+    filterFunctionName = "[Parameters].[Map (copy)]"  # set to county level
+    secondaryFilterFunctionName = (
+        "[federated.1kzfta61gthwho1b6d51b1t54x4v].[none:dose_number:nk]"  # dose type
+    )
     filterFunctionValue = "County"
     state_fips = int(us.states.lookup("Idaho").fips)
 
@@ -21,6 +23,15 @@ class IdahoCountyVaccine(TableauDashboard):
         "1": variables.INITIATING_VACCINATIONS_ALL,
         "2": variables.FULLY_VACCINATED_ALL,
     }
+
+    def fetch(self):
+        # get both 1 dose and complete data
+        self.secondaryFilterValue = "1"
+        one_dose = super().fetch()
+        self.secondaryFilterValue = "2"
+        complete = super().fetch()
+
+        return pd.concat([one_dose, complete])
 
     def normalize(self, data):
         df = data.rename(
