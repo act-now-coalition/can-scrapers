@@ -178,8 +178,6 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
                         "dataset": [
                             {
                                 "datasourceId": "f264378a-4e61-41cf-9017-ba25e1a3ba22",
-                                "parameterOverrides": [],
-                                "revisionNumber": 0,
                             }
                         ],
                         "filters": [
@@ -251,8 +249,6 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
                     "requestContext": {
                         "reportContext": {
                             "componentId": "cd-994c4yu7ic",
-                            "displayType": "simple-barchart",
-                            "mode": "VIEW",
                             "pageId": "26374700",
                             "reportId": "59351f95-49e8-4440-b752-4d9b919dca88",
                         }
@@ -266,10 +262,11 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         return response
 
     def normalize(self, data) -> pd.DataFrame:
-        json_body = re.findall(r"\{\"dataSubset\":\[.*", data, flags=re.MULTILINE)
-        # last 3 chars are extra brackets -- remove them so JSON library can handle
-        rawdata = json.loads(json_body[0][:-3])
-        columns = rawdata["dataSubset"][0]["dataset"]["tableDataset"]["column"]
+        # extract json from response
+        search = r"\{\"dataResponse\":\[.*\}\]\}"
+        json_body = json.loads(re.findall(search, data, flags=re.MULTILINE)[0])
+        rawdata = json_body["dataResponse"][0]["dataSubset"]
+        columns = rawdata[0]["dataset"]["tableDataset"]["column"]
 
         # create df from lists of values (assumes they are in the correct order b/c there are no direct labels)
         # data are returned in the order that they are queried (in 'request_body') so they should not change
