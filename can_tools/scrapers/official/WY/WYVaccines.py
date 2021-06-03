@@ -1,12 +1,16 @@
+import enum
 import json
 from datetime import datetime
 from typing import Any
 
 import pandas as pd
+import requests
+import re
 import us
 import jmespath
 
 from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
 
 
@@ -144,9 +148,6 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
     a dictionary
     """
 
-    # JSONs to pass to API to get county level vaccine dosage informtation
-    bodyDose1 = '{"dataRequest":[{"requestContext":{"reportContext":{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f","pageId":"26374700","mode":"VIEW","componentId":"cd-7lx3egj1fc","displayType":"simple-barchart"}},"datasetSpec":{"dataset":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","revisionNumber":0,"parameterOverrides":[]}],"queryFields":[{"name":"qt_mmzjd7f4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2024258922_"}},{"name":"qt_9eem98f4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_n236049110_","aggregation":1}},{"name":"qt_ic77p9f4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_n2032582864_","aggregation":1}}],"sortData":[{"sortColumn":{"name":"qt_mmzjd7f4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2024258922_"}},"sortDir":0}],"includeRowsCount":true,"paginateInfo":{"startRow":1,"rowsCount":25},"blendConfig":{"blockDatasource":{"datasourceBlock":{"id":"block_za7tkpckic","type":1,"inputBlockIds":[],"outputBlockIds":[],"fields":[]},"blocks":[{"id":"block_0a7tkpckic","type":5,"inputBlockIds":[],"outputBlockIds":[],"fields":[],"queryBlockConfig":{"joinQueryConfig":{"joinKeys":[],"queries":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","concepts":[]}]}}}],"delegatedAccessEnabled":true,"isUnlocked":true,"isCacheable":false}},"filters":[{"filterDefinition":{"filterExpression":{"include":false,"conceptType":0,"concept":{"ns":"t0","name":"qt_cn2odwj1fc"},"filterConditionType":"EQ","stringValues":["Wyoming"],"numberValues":[],"queryTimeTransformation":{"dataTransformation":{"sourceFieldName":"_2024258922_"}}}},"dataSubsetNs":{"datasetNs":"d0","tableNs":"t0","contextNs":"c0"},"version":3}],"features":[],"dateRanges":[],"contextNsCount":1,"calculatedField":[],"needGeocoding":false,"geoFieldMask":[],"geoVertices":100000},"useDataColumn":true}]}'
-    bodyDose2 = '{"dataRequest":[{"requestContext":{"reportContext":{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f","pageId":"26374700","mode":"VIEW","componentId":"cd-x520hag4hc","displayType":"simple-barchart"}},"datasetSpec":{"dataset":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","revisionNumber":0,"parameterOverrides":[]}],"queryFields":[{"name":"qt_y520hag4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2024258922_"}},{"name":"qt_98tnwag4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_950921146_","aggregation":6}},{"name":"qt_u2iluag4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_n1692847680_","aggregation":6}}],"sortData":[{"sortColumn":{"name":"qt_y520hag4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2024258922_"}},"sortDir":0}],"includeRowsCount":true,"paginateInfo":{"startRow":1,"rowsCount":25},"blendConfig":{"blockDatasource":{"datasourceBlock":{"id":"block_qhkukpckic","type":1,"inputBlockIds":[],"outputBlockIds":[],"fields":[]},"blocks":[{"id":"block_rhkukpckic","type":5,"inputBlockIds":[],"outputBlockIds":[],"fields":[],"queryBlockConfig":{"joinQueryConfig":{"joinKeys":[],"queries":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","concepts":[]}]}}}],"delegatedAccessEnabled":true,"isUnlocked":true,"isCacheable":false}},"filters":[{"filterDefinition":{"filterExpression":{"include":false,"conceptType":0,"concept":{"ns":"t0","name":"qt_cn2odwj1fc"},"filterConditionType":"EQ","stringValues":["Wyoming"],"numberValues":[],"queryTimeTransformation":{"dataTransformation":{"sourceFieldName":"_2024258922_"}}}},"dataSubsetNs":{"datasetNs":"d0","tableNs":"t0","contextNs":"c0"},"version":3}],"features":[],"dateRanges":[],"contextNsCount":1,"calculatedField":[],"needGeocoding":false,"geoFieldMask":[],"geoVertices":100000},"useDataColumn":true}]}'
     state_fips = int(us.states.lookup("Wyoming").fips)
     execution_dt = pd.Timestamp.now()
     source = (
@@ -159,116 +160,131 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
     has_location = False
     location_type = "county"
 
+    variables = {
+        "initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "completed": variables.FULLY_VACCINATED_ALL,
+    }
+
     def fetch(self):
         """
         Pulls Wyoming county vaccine data, cleans and up the Json Strig that is returned before returning that object as
         a dictionary
         """
-        WYVacDataDose1 = self.get_dataset(json.loads(self.bodyDose1), url=self.baseUrl)
-        parsedDose1 = json.loads(WYVacDataDose1[11:-1])
-        WYVacDataDose2 = self.get_dataset(json.loads(self.bodyDose2), url=self.baseUrl)
-        parsedDose2 = json.loads(WYVacDataDose2[11:-1])
+        request_body = {
+            "dataRequest": [
+                {
+                    "datasetSpec": {
+                        "contextNsCount": 1,
+                        "dataset": [
+                            {
+                                "datasourceId": "f264378a-4e61-41cf-9017-ba25e1a3ba22",
+                                "parameterOverrides": [],
+                                "revisionNumber": 0,
+                            }
+                        ],
+                        "filters": [
+                            {
+                                "dataSubsetNs": {
+                                    "contextNs": "c0",
+                                    "datasetNs": "d0",
+                                    "tableNs": "t0",
+                                },
+                                "filterDefinition": {
+                                    "filterExpression": {
+                                        "concept": {
+                                            "name": "qt_cn2odwj1fc",
+                                            "ns": "t0",
+                                        },
+                                        "conceptType": 0,
+                                        "filterConditionType": "EQ",
+                                        "include": False,
+                                        "numberValues": [],
+                                        "queryTimeTransformation": {
+                                            "dataTransformation": {
+                                                "sourceFieldName": "_2024258922_"
+                                            }
+                                        },
+                                        "stringValues": ["Wyoming"],
+                                    }
+                                },
+                                "version": 3,
+                            }
+                        ],
+                        "queryFields": [
+                            {
+                                "datasetNs": "d0",
+                                "dataTransformation": {
+                                    "sourceFieldName": "_2024258922_"
+                                },
+                                "name": "qt_aa5c4yu7ic",
+                                "tableNs": "t0",
+                            },
+                            {
+                                "datasetNs": "d0",
+                                "dataTransformation": {
+                                    "aggregation": 6,
+                                    "sourceFieldName": "_n274042269_",
+                                },
+                                "name": "qt_pweig0u7ic",
+                                "tableNs": "t0",
+                            },
+                            {
+                                "datasetNs": "d0",
+                                "dataTransformation": {
+                                    "aggregation": 6,
+                                    "sourceFieldName": "_n274042238_",
+                                },
+                                "name": "qt_rrtnz0u7ic",
+                                "tableNs": "t0",
+                            },
+                            {
+                                "datasetNs": "d0",
+                                "dataTransformation": {
+                                    "aggregation": 6,
+                                    "sourceFieldName": "_n1110901404_",
+                                },
+                                "name": "qt_oh3q30u7ic",
+                                "tableNs": "t0",
+                            },
+                        ],
+                    },
+                    "requestContext": {
+                        "reportContext": {
+                            "componentId": "cd-994c4yu7ic",
+                            "displayType": "simple-barchart",
+                            "mode": "VIEW",
+                            "pageId": "26374700",
+                            "reportId": "59351f95-49e8-4440-b752-4d9b919dca88",
+                        }
+                    },
+                    "useDataColumn": True,
+                },
+            ]
+        }
 
-        query = jmespath.compile(
-            "dataResponse[0].dataSubset[0].dataset.tableDataset.column"
-        )
-        return query.search(parsedDose1) + query.search(parsedDose2)
+        response = self.get_dataset(request_body, url=self.baseUrl)
+        return response
 
     def normalize(self, data) -> pd.DataFrame:
-        countiesVac1 = data[0]["stringColumn"]["values"]
-        countiesNullIndexVac1 = data[0]["nullIndex"]
-        countiesSupplyVac1 = data[1]["doubleColumn"]["values"]
-        countiesSupplyNullIndexVac1 = data[1]["nullIndex"]
-        countiesAllocVac1 = data[2]["doubleColumn"]["values"]
-        countiesAllocNullIndexVac1 = data[2]["nullIndex"]
+        json_body = re.findall(r"\{\"dataSubset\":\[.*", data, flags=re.MULTILINE)
+        # last 3 chars are extra brackets -- remove them so JSON library can handle
+        rawdata = json.loads(json_body[0][:-3])
+        columns = rawdata["dataSubset"][0]["dataset"]["tableDataset"]["column"]
 
-        # sorting null index lists so there is no chance of an index out of bounds error when we insert 0 values for
-        # null indexes
-        countiesNullIndexVac1.sort()
-        countiesAllocNullIndexVac1.sort()
-        countiesSupplyNullIndexVac1.sort()
+        # create df from lists of values (assumes they are in the correct order b/c there are no direct labels)
+        # data are returned in the order that they are queried (in 'request_body') so they should not change
+        df = pd.DataFrame({"location_name": columns[0]["stringColumn"]["values"]})
+        for i, name in enumerate(["one_dose_only", "two_dose_only", "jj_doses"]):
+            df[name] = columns[i + 1]["doubleColumn"]["values"]
 
-        # inserting values of 0 for the indexes corresponding with the null value indexes
-        for value in countiesNullIndexVac1:
-            countiesVac1.insert(value, 0)
-        for value in countiesSupplyNullIndexVac1:
-            countiesSupplyVac1.insert(value, 0)
-        for value in countiesAllocNullIndexVac1:
-            countiesAllocVac1.insert(value, 0)
-
-        # create dose 1 data frame
-        countyVaccineDataFrameVac1 = pd.DataFrame(
-            {
-                "location_name": countiesVac1,
-                "supplyVac1": countiesSupplyVac1,
-                "administeredVac1": countiesAllocVac1,
-            }
+        out = df.assign(
+            initiated=lambda x: x["one_dose_only"] + x["jj_doses"],
+            completed=lambda x: x["two_dose_only"] + x["jj_doses"],
+            dt=self._retrieve_dtm1d("US/Mountain"),
+            vintage=self._retrieve_vintage(),
         )
 
-        countiesVac2 = data[3]["stringColumn"]["values"]
-        countiesNullIndexVac2 = data[3]["nullIndex"]
-        countiesSupplyVac2 = data[4]["doubleColumn"]["values"]
-        countiesSupplyNullIndexVac2 = data[4]["nullIndex"]
-        countiesAllocVac2 = data[5]["doubleColumn"]["values"]
-        countiesAllocNullIndexVac2 = data[5]["nullIndex"]
-
-        # sorting null index lists so there is no chance of an index out of bounds error when we insert 0 values
-        countiesNullIndexVac2.sort()
-        countiesAllocNullIndexVac2.sort()
-        countiesSupplyNullIndexVac2.sort()
-
-        # inserting values of 0 for the indexes corresponding with the null value indexes
-        for value in countiesNullIndexVac2:
-            countiesVac2.insert(value, 0)
-        for value in countiesSupplyNullIndexVac2:
-            countiesSupplyVac2.insert(value, 0)
-        for value in countiesAllocNullIndexVac2:
-            countiesAllocVac2.insert(value, 0)
-
-        # create dose 2 dataframe
-        countyVaccineDataFrameVac2 = pd.DataFrame(
-            {
-                "location_name": countiesVac2,
-                "supplyVac2": countiesSupplyVac2,
-                "administeredVac2": countiesAllocVac2,
-            }
-        )
-
-        # merge dose 1 data frame with dose 2 dataframe
-        countyVaccineDataFrame = countyVaccineDataFrameVac1.merge(
-            countyVaccineDataFrameVac2, on="location_name", how="outer"
-        )
-
-        countyVaccineDataFrame["dt"] = self.execution_dt
-        countyVaccineDataFrame["totalSupply"] = (
-            countyVaccineDataFrame["supplyVac2"] + countyVaccineDataFrame["supplyVac1"]
-        )
-
-        crename = {
-            "totalSupply": CMU(
-                category="total_vaccine_allocated",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "administeredVac1": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "administeredVac2": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-        out = countyVaccineDataFrame.melt(
-            id_vars=["dt", "location_name"], value_vars=crename.keys()
-        ).dropna()
-
-        out["value"] = out["value"].astype(int)
-        out["vintage"] = self._retrieve_vintage()
-        df = self.extract_CMU(out, crename)
-        return df.drop(["variable"], axis="columns")
+        return self._reshape_variables(out, variable_map=self.variables)
 
 
 class WYCountyAgeVaccinations(GoogleDataStudioDashboard):
