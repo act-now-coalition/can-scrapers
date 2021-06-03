@@ -149,14 +149,12 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
     """
 
     state_fips = int(us.states.lookup("Wyoming").fips)
-    execution_dt = pd.Timestamp.now()
     source = (
         "https://health.wyo.gov/publichealth/immunization/wyoming-covid-19-vaccine-information/"
         "covid-19-vaccine-distribution-data/"
     )
     source_name = "Wyoming Department of Health"
     baseUrl = "https://datastudio.google.com/batchedDataV2"
-    resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = False
     location_type = "county"
 
