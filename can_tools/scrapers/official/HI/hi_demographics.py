@@ -75,7 +75,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
 
 class HawaiiVaccineAge(HawaiiVaccineRace):
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/AGE"
-    subsheet = "Age progress (with pharm)"
+    subsheet = "Age progress (with pharm) (mobile new)"
     demographic = "age"
     demographic_col_name = "Age Bins (match Pharm)-alias"
     filterFunctionName = "[sqlproxy.051olb00k3oo5j1gc5hz61tlutb7].[none:County:nk]"
