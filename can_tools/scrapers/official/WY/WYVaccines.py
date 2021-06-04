@@ -163,6 +163,13 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         "completed": variables.FULLY_VACCINATED_ALL,
     }
 
+    key_names = {
+        "qt_aa5c4yu7ic": "location_name",
+        "qt_pweig0u7ic": "one_dose_only",
+        "qt_rrtnz0u7ic": "two_dose_only",
+        "qt_oh3q30u7ic": "jj_doses",
+    }
+
     def fetch(self):
         """
         Pulls Wyoming county vaccine data, cleans and up the Json Strig that is returned before returning that object as
@@ -263,22 +270,29 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         # extract json from response
         search = r"\{\"dataResponse\":\[.*\}\]\}"
         json_body = json.loads(re.findall(search, data, flags=re.MULTILINE)[0])
-        rawdata = json_body["dataResponse"][0]["dataSubset"]
-        columns = rawdata[0]["dataset"]["tableDataset"]["column"]
+        rawdata = json_body["dataResponse"][0]["dataSubset"][0]["dataset"]
+        columns = rawdata["tableDataset"]["column"]
 
-        # create df from lists of values (assumes they are in the correct order b/c there are no direct labels)
-        # data are returned in the order that they are queried (in 'request_body') so they should not change
-        df = pd.DataFrame({"location_name": columns[0]["stringColumn"]["values"]})
-        for i, name in enumerate(["one_dose_only", "two_dose_only", "jj_doses"]):
-            df[name] = columns[i + 1]["doubleColumn"]["values"]
+        # get the order of the variables from request, map them to readable values
+        variable_names = rawdata["tableDataset"]["columnInfo"]
+        variable_names = [v["name"] for v in variable_names]
+        variable_names = [self.key_names.get(item, item) for item in variable_names]
 
+        # variable_names and columns have same order, build df from both
+        df = pd.DataFrame()
+        for name, data in zip(variable_names, columns):
+            if "stringColumn" in data.keys():
+                df[name] = data["stringColumn"]["values"]
+            else:
+                df[name] = data["doubleColumn"]["values"]
+
+        # create variables to match our def'ns
         out = df.assign(
             initiated=lambda x: x["one_dose_only"] + x["jj_doses"],
             completed=lambda x: x["two_dose_only"] + x["jj_doses"],
             dt=self._retrieve_dtm1d("US/Mountain"),
             vintage=self._retrieve_vintage(),
         )
-
         return self._reshape_variables(out, variable_map=self.variables)
 
 
