@@ -38,13 +38,22 @@ class MSCountyVaccine(StateDashboard):
 
     def normalize(self, raw):
         # Clean up dataframe from PDF.
-        data = raw[1].df
+        data = raw[0].df
         # find header
         header_loc = data.index[data.iloc[:, 0] == "County of Residence"].values[0]
         header = data.loc[[header_loc]].iloc[0]
         # grab all data from after the header
         data = data.iloc[header_loc + 1 :, :].reset_index(drop=True)
         data.columns = header.to_list()
+        data = data.loc[
+            :,
+            [
+                "County of Residence",
+                "People Receiving at least One Dose**",
+                "People Fully Vaccinated***",
+                "Total Doses Administered",
+            ],
+        ]
 
         data = self._rename_or_add_date_and_location(
             data,
