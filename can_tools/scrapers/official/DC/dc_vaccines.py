@@ -33,15 +33,15 @@ class DCVaccine(TableauDashboard):
         df = (
             # keep only DC residents (in and out of state)
             data.query(
-                "`Measure Names-alias` in" 
+                "`Measure Names-alias` in"
                 "['Fully Vaccinated', 'Fully/Partially Vaccinated', 'Total Administered']"
-                "and `Table Names-value` in" 
+                "and `Table Names-value` in"
                 "['DC Resident (outside DC)', 'DC Resident (within DC)']"
             )
             .assign(
                 value=lambda x: pd.to_numeric(
                     x["Measure Values-alias"].str.replace(",", ""), errors="coerce"
-                )   
+                )
             )
             .rename(columns={"Measure Names-alias": "variable"})
         )
@@ -112,6 +112,9 @@ class DCVaccineDemographics(DCVaccine):
             "SUM(Vaccinated)-alias": "value",
             colname: groupname,
         }
+
+        # remove "all" rows from demographic cols
+        df = df[df[colname] != r"%all%"]
         return (
             df.rename(columns=renames)
             .loc[:, list(renames.values())]
@@ -148,4 +151,5 @@ class DCVaccineDemographics(DCVaccine):
         }
         for k, col in demo_cols.items():
             dfs.append(self._normalize_demo_group(data[k], col))
-        return pd.concat(dfs, ignore_index=True, axis=0)
+        out = pd.concat(dfs, ignore_index=True, axis=0)
+        return out
