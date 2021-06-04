@@ -149,20 +149,25 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
     """
 
     state_fips = int(us.states.lookup("Wyoming").fips)
-    execution_dt = pd.Timestamp.now()
     source = (
         "https://health.wyo.gov/publichealth/immunization/wyoming-covid-19-vaccine-information/"
         "covid-19-vaccine-distribution-data/"
     )
     source_name = "Wyoming Department of Health"
     baseUrl = "https://datastudio.google.com/batchedDataV2"
-    resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = False
     location_type = "county"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
         "completed": variables.FULLY_VACCINATED_ALL,
+    }
+
+    key_names = {
+        "qt_aa5c4yu7ic": "location_name",
+        "qt_pweig0u7ic": "one_dose_only",
+        "qt_rrtnz0u7ic": "two_dose_only",
+        "qt_oh3q30u7ic": "jj_doses",
     }
 
     def fetch(self):
@@ -178,8 +183,6 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
                         "dataset": [
                             {
                                 "datasourceId": "f264378a-4e61-41cf-9017-ba25e1a3ba22",
-                                "parameterOverrides": [],
-                                "revisionNumber": 0,
                             }
                         ],
                         "filters": [
@@ -251,8 +254,6 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
                     "requestContext": {
                         "reportContext": {
                             "componentId": "cd-994c4yu7ic",
-                            "displayType": "simple-barchart",
-                            "mode": "VIEW",
                             "pageId": "26374700",
                             "reportId": "59351f95-49e8-4440-b752-4d9b919dca88",
                         }
@@ -266,24 +267,32 @@ class WYCountyVaccinations(GoogleDataStudioDashboard):
         return response
 
     def normalize(self, data) -> pd.DataFrame:
-        json_body = re.findall(r"\{\"dataSubset\":\[.*", data, flags=re.MULTILINE)
-        # last 3 chars are extra brackets -- remove them so JSON library can handle
-        rawdata = json.loads(json_body[0][:-3])
-        columns = rawdata["dataSubset"][0]["dataset"]["tableDataset"]["column"]
+        # extract json from response
+        search = r"\{\"dataResponse\":\[.*\}\]\}"
+        json_body = json.loads(re.findall(search, data, flags=re.MULTILINE)[0])
+        rawdata = json_body["dataResponse"][0]["dataSubset"][0]["dataset"]
+        columns = rawdata["tableDataset"]["column"]
 
-        # create df from lists of values (assumes they are in the correct order b/c there are no direct labels)
-        # data are returned in the order that they are queried (in 'request_body') so they should not change
-        df = pd.DataFrame({"location_name": columns[0]["stringColumn"]["values"]})
-        for i, name in enumerate(["one_dose_only", "two_dose_only", "jj_doses"]):
-            df[name] = columns[i + 1]["doubleColumn"]["values"]
+        # get the order of the variables from request, map them to readable values
+        variable_names = rawdata["tableDataset"]["columnInfo"]
+        variable_names = [v["name"] for v in variable_names]
+        variable_names = [self.key_names.get(item, item) for item in variable_names]
 
+        # variable_names and columns have same order, build df from both
+        df = pd.DataFrame()
+        for name, data in zip(variable_names, columns):
+            if "stringColumn" in data.keys():
+                df[name] = data["stringColumn"]["values"]
+            else:
+                df[name] = data["doubleColumn"]["values"]
+
+        # create variables to match our def'ns
         out = df.assign(
             initiated=lambda x: x["one_dose_only"] + x["jj_doses"],
             completed=lambda x: x["two_dose_only"] + x["jj_doses"],
             dt=self._retrieve_dtm1d("US/Mountain"),
             vintage=self._retrieve_vintage(),
         )
-
         return self._reshape_variables(out, variable_map=self.variables)
 
 
