@@ -151,5 +151,4 @@ class DCVaccineDemographics(DCVaccine):
         }
         for k, col in demo_cols.items():
             dfs.append(self._normalize_demo_group(data[k], col))
-        out = pd.concat(dfs, ignore_index=True, axis=0)
-        return out
+        return pd.concat(dfs, ignore_index=True, axis=0)
