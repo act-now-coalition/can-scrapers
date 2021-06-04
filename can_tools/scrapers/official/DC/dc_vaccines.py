@@ -14,11 +14,12 @@ class DCVaccine(TableauDashboard):
     location_type = "state"
     baseurl = "https://dataviz1.dc.gov/t/OCTO"
     viewPath = "Vaccine_Public/Administration"
-    data_tableau_table = "TimeTable"
+    data_tableau_table = "Sheet 29"
 
     variables = {
-        "FULLY VACCINATED": variables.FULLY_VACCINATED_ALL,
-        "PARTIALLY/FULLY VACCINATED": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
+        "Fully/Partially Vaccinated": variables.INITIATING_VACCINATIONS_ALL,
+        "Total Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def _get_date(self):
@@ -29,27 +30,38 @@ class DCVaccine(TableauDashboard):
         return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
 
     def normalize(self, data):
-        df = data
-        df["Measure Values-alias"] = pd.to_numeric(
-            df["Measure Values-alias"].str.replace(",", ""), errors="coerce"
-        )
-        df = df.loc[df["Resident_Type-value"] == "DC Resident"][
-            ["Measure Values-alias", "Measure Names-alias"]
-        ]
-        df["location"] = self.state_fips
         df = (
-            df.pivot(
-                index="location",
-                columns="Measure Names-alias",
-                values="Measure Values-alias",
+            # keep only DC residents (in and out of state)
+            data.query(
+                "`Measure Names-alias` in" 
+                "['Fully Vaccinated', 'Fully/Partially Vaccinated', 'Total Administered']"
+                "and `Table Names-value` in" 
+                "['DC Resident (outside DC)', 'DC Resident (within DC)']"
             )
-            .reset_index()
-            .rename_axis(None, axis=1)
+            .assign(
+                value=lambda x: pd.to_numeric(
+                    x["Measure Values-alias"].str.replace(",", ""), errors="coerce"
+                )   
+            )
+            .rename(columns={"Measure Names-alias": "variable"})
         )
-        df["dt"] = self._get_date()
 
-        out = self._reshape_variables(df, self.variables)
-        return out
+        # combine DC resident (within DC) and DC resident (outside DC) into one variable
+        out = (
+            df.loc[:, ["value", "variable"]]
+            .groupby("variable")
+            .sum()
+            .reset_index()
+            .assign(
+                vintage=self._retrieve_vintage(),
+                dt=self._get_date(),
+                location=self.state_fips,
+            )
+        )
+
+        # transform
+        out = self.extract_CMU(df=out, cmu=self.variables)
+        return out.drop(columns="variable")
 
 
 class DCVaccineDemographics(DCVaccine):
