@@ -38,7 +38,7 @@ class MSCountyVaccine(StateDashboard):
 
     def normalize(self, raw):
         # Clean up dataframe from PDF.
-        data = raw[0].df
+        data = raw[1].df
         # find header
         header_loc = data.index[data.iloc[:, 0] == "County of Residence"].values[0]
         header = data.loc[[header_loc]].iloc[0]
