@@ -111,7 +111,7 @@ class FloridaCountyVaccineDemographics(FloridaCountyVaccine):
                 county_names = [x.replace(" County", "") for x in county_names]
 
         county_demographics_data = camelot.read_pdf(
-            self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=10
+            self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=9
         )
         return {
             "county_demographics_data": county_demographics_data,
@@ -227,6 +227,7 @@ class FloridaCountyVaccineDemographics(FloridaCountyVaccine):
         out.loc[:, "location_name"] = county_name
         startIndex = out.query("sex == 'Gender'").index[0] + 1
         result = out[startIndex : startIndex + 3]
+        print(result)
         result["age"] = result["ethnicity"] = result["race"] = "all"
         gender_replace = {
             "Female": "female",
