@@ -227,7 +227,6 @@ class FloridaCountyVaccineDemographics(FloridaCountyVaccine):
         out.loc[:, "location_name"] = county_name
         startIndex = out.query("sex == 'Gender'").index[0] + 1
         result = out[startIndex : startIndex + 3]
-        print(result)
         result["age"] = result["ethnicity"] = result["race"] = "all"
         gender_replace = {
             "Female": "female",
