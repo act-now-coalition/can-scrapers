@@ -8,7 +8,8 @@ import us
 import textract
 
 from can_tools.scrapers.official.base import StateDashboard
-from can_tools.scrapers import variables as v
+from can_tools.scrapers import variables, CMU
+from typing import Any, Dict
 
 
 class FloridaCountyVaccine(StateDashboard):
@@ -17,19 +18,75 @@ class FloridaCountyVaccine(StateDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Florida").fips)
     fetch_url = "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine/vaccine_report_latest.pdf"
+    source_name = "Florida Department of Health"
+    variables = {
+        "total_people_vaccinated": variables.INITIATING_VACCINATIONS_ALL,
+        "series_complete_total": variables.FULLY_VACCINATED_ALL,
+    }
+
+    def fetch(self) -> camelot.core.TableList:
+        return camelot.read_pdf(self.fetch_url, pages="2-end", flavor="stream")
+
+    def normalize(self, data: Any) -> pd.DataFrame:
+        # locate where the table starts and parse data
+        # loop is needed for if table overflows onto second page
+        dfs = []
+        for chunk in data:
+            df = chunk.df
+            header_loc = df.index[df.iloc[:, 0] == "County of residence"].values[0]
+            df = df.iloc[header_loc + 2 :, :].reset_index(drop=True)
+            dfs.append(df)
+
+        # combine and set colnames
+        df = pd.concat(dfs)
+        df.columns = [
+            "location_name",
+            "first_dose_new",
+            "series_complete_new",
+            "total_people_vaccinated_new",
+            "first_dose_total",
+            "series_complete_total",
+            "total_people_vaccinated",
+        ]
+
+        df = self._rename_or_add_date_and_location(
+            data=df,
+            location_name_column="location_name",
+            location_names_to_drop=["Unknown", "Out-Of-State", "Total"],
+            location_names_to_replace={"Desoto": "DeSoto", "Dade": "Miami-Dade"},
+            date=self._get_date(),
+        )
+        out = self._reshape_variables(data=df, variable_map=self.variables)
+        return out
+
+    def _get_date(self):
+        """
+        retrieve the date that the PDF was last updated minus one day, return as date.
+        if connection to source cannot be made, use yesterday's date.
+        """
+        res = requests.get(self.fetch_url)
+        # if the connection fails, use yesterday's date as date
+        if not res.ok:
+            dt = self._retrieve_dtm1d("US/Eastern")
+        else:
+            dt = pd.to_datetime(
+                res.headers["Last-Modified"], format="%a, %d %b %Y %H:%M:%S GMT"
+            ) - pd.Timedelta(days=1)
+        return dt.date()
+
+
+class FloridaCountyVaccineDemographics(FloridaCountyVaccine):
+
+    variables = {
+        "series_complete_total": variables.FULLY_VACCINATED_ALL,
+        "total_people_vaccinated_total": variables.INITIATING_VACCINATIONS_ALL,
+    }
     fetch_url_for_counties = (
         "http://ww11.doh.state.fl.us/comm/_partners/covid19_report_archive/vaccine-county"
         "/vaccine_county_report_latest.pdf"
     )
 
-    source_name = "Florida Department of Health"
-
-    variables = {
-        "series_complete_total": v.FULLY_VACCINATED_ALL,
-        "total_people_vaccinated_total": v.INITIATING_VACCINATIONS_ALL,
-    }
-
-    def fetch(self):
+    def fetch(self) -> Dict[str, camelot.core.TableList]:
         county_names = []
         results = requests.get(self.fetch_url_for_counties)
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -44,7 +101,7 @@ class FloridaCountyVaccine(StateDashboard):
                 county_names = [x.replace(" County", "") for x in county_names]
 
         county_demographics_data = camelot.read_pdf(
-            self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=10
+            self.fetch_url_for_counties, pages="1-end", flavor="stream", row_tol=9
         )
         return {
             "county_demographics_data": county_demographics_data,
@@ -86,21 +143,6 @@ class FloridaCountyVaccine(StateDashboard):
         out.loc[out["location_name"] == "Florida", "location_type"] = "state"
 
         return out
-
-    def _get_date(self):
-        """
-        retrieve the date that the PDF was last updated minus one day, return as date.
-        if connection to source cannot be made, use yesterday's date.
-        """
-        res = requests.get(self.fetch_url)
-        # if the connection fails, use yesterday's date as date
-        if not res.ok:
-            dt = self._retrieve_dtm1d("US/Eastern")
-        else:
-            dt = pd.to_datetime(
-                res.headers["Last-Modified"], format="%a, %d %b %Y %H:%M:%S GMT"
-            ) - pd.Timedelta(days=1)
-        return dt.date()
 
     def _truncate_demographics_age_data(self, data, county_name):
 

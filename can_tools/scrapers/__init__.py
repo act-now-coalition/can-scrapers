@@ -51,7 +51,10 @@ from can_tools.scrapers.official.federal.HHS.facility import (
 from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )
-from can_tools.scrapers.official.FL.fl_vaccine import FloridaCountyVaccine
+from can_tools.scrapers.official.FL.fl_vaccine import (
+    FloridaCountyVaccine,
+    FloridaCountyVaccineDemographics,
+)
 from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccine,
     GeorgiaCountyVaccineAge,
