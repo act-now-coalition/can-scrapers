@@ -441,7 +441,7 @@ def _bootstrap_csv_to_orm(cls: Type[Base], engine: Engine):
 
 
 def bootstrap(
-    sess: sa.orm.session.Session, delete_first: bool = True
+    sess: sa.orm.session.Session, delete_first: bool = False
 ) -> Dict[str, List[Base]]:
     tables: List[Type[Base]] = [
         CovidCategory,
