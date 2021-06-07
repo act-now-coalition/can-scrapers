@@ -22,16 +22,6 @@ class FloridaCountyVaccine(StateDashboard):
     variables = {
         "total_people_vaccinated": variables.INITIATING_VACCINATIONS_ALL,
         "series_complete_total": variables.FULLY_VACCINATED_ALL,
-        "total_people_vaccinated_new": CMU(
-            category="total_vaccine_initiated",
-            measurement="new",
-            unit="people",
-        ),
-        "series_complete_new": CMU(
-            category="total_vaccine_completed",
-            measurement="new",
-            unit="people",
-        ),
     }
 
     def fetch(self) -> camelot.core.TableList:
