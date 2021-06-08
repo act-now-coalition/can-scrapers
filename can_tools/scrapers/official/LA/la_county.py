@@ -1,7 +1,7 @@
 import pandas as pd
 import us
 import numpy as np
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ArcGIS
 
 
@@ -31,16 +31,8 @@ class LAVaccineCounty(ArcGIS):
         )
 
         crename = {
-            "SeriesInt": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "SeriesComp": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
+            "SeriesInt": variables.INITIATING_VACCINATIONS_ALL,
+            "SeriesComp": variables.FULLY_VACCINATED_ALL,
         }
 
         result = self.extract_CMU(melted, crename)
@@ -52,193 +44,69 @@ class LAVaccineCounty(ArcGIS):
 
 class LAVaccineCountyDemographics(LAVaccineCounty):
     variables = {
-        "PercInt_Black_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="black",
-        ),
-        "PercInt_White_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="white",
-        ),
-        "PercInt_Other_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="other",
-        ),
-        "PercInt_RaceUnk_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="unknown",
-        ),
-        "PercComp_Black_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            race="black",
-        ),
-        "PercComp_Other_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            race="other",
-        ),
-        "PercComp_RaceUnk_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            race="unknown",
-        ),
-        "PercComp_White_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            race="white",
-        ),
-        "PercInt_5to17_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="5-17",
-        ),
-        "PercInt_18to29_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="18-29",
-        ),
-        "PercInt_30to39_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="30-39",
-        ),
-        "PercInt_40to49_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="40-49",
-        ),
-        "PercInt_50to59_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="50-59",
-        ),
-        "PercInt_60to69_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="60-69",
-        ),
-        "PercInt_70plus_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="70_plus",
-        ),
-        "PercInt_AgeUnk_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="unknown",
-        ),
-        "PercComp_5to17_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="5-17",
-        ),
-        "PercComp_18to29_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="18-29",
-        ),
-        "PercComp_30to39_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="30-39",
-        ),
-        "PercComp_40to49_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="40-49",
-        ),
-        "PercComp_50to59_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="50-59",
-        ),
-        "PercComp_60to69_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="60-69",
-        ),
-        "PercComp_70plus_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            age="70_plus",
-        ),
-        "PercInt_Female_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="female",
-        ),
-        "PercInt_Male_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="male",
-        ),
-        "PercInt_SexUnk_value": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="unknown",
-        ),
-        "PercComp_Female_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            sex="female",
-        ),
-        "PercComp_Male_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            sex="male",
-        ),
-        "PercComp_SexUnk_value": CMU(
-            category="total_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-            sex="unknown",
-        ),
+        "PercInt": variables.INITIATING_VACCINATIONS_ALL,
+        "PercComp": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, data):
-        df = self.arcgis_jsons_to_df(data)
-        # Multiply each of these columns by the population column
-        init_col_names = [x.replace("_value", "") for x in self.variables.keys()]
+        data = self.arcgis_jsons_to_df(data)
+        demographcis = {
+            "sex": ["Female", "Male", "SexUnk"],
+            "race": ["Black", "White", "RaceUnk", "Other"],
+            "age": [
+                "5to17",
+                "18to29",
+                "30to39",
+                "40to49",
+                "50to59",
+                "60to69",
+                "70plus",
+            ],
+        }
 
-        for col in init_col_names:
-            df[col + "_value"] = np.floor((df[col] / 100) * df["Total_2018pop"])
+        # loop through each demographic and each dose type the concat together
+        dfs = []
+        for demo, cols in demographcis.items():
+            for dose, dose_prefix in {
+                "SeriesInt": "PercInt_",
+                "SeriesComp": "PercComp_",
+            }.items():
+                # get location and total dose value
+                columns = ["PFIPS", dose]
+                # add the prefix (PercInt_ or PercComp_) to find the corresponding column
+                var_cols = [(dose_prefix + c) for c in cols]
+                columns.extend(var_cols)
+                df = data.loc[:, columns]
 
-        df = self._rename_or_add_date_and_location(
-            df, location_column="PFIPS", timezone="US/Eastern"
+                # divide percentages by 100 then multiply by the total doses
+                # to get # of individuals by demographic
+                df[var_cols] = df[var_cols].multiply(0.01 * df[dose], axis="index")
+
+                # melt and split variable and demographic column into two + extract variables
+                df = df.drop(columns={dose}).melt(id_vars=["PFIPS"])
+                df[["variable", demo]] = df["variable"].str.split("_", expand=True)
+                df = self.extract_CMU(df=df, cmu=self.variables, skip_columns=[demo])
+
+                # demographic value formatting
+                df[demo] = df[demo].str.lower()
+                if demo == "age":
+                    df[demo] = df[demo].str.replace("to", "-")
+                dfs.append(df)
+
+        return (
+            pd.concat(dfs)
+            .assign(
+                value=lambda x: x["value"].astype(int),
+                dt=self._retrieve_dt("US/Eastern"),
+                vintage=self._retrieve_vintage(),
+            )
+            .replace(
+                {
+                    "sexunk": "unknown",
+                    "70plus": "70_plus",
+                    "raceunk": "unknown",
+                }
+            )
+            .drop(columns={"variable"})
+            .rename(columns={'PFIPS': 'location'})
         )
-        df = self._reshape_variables(df, self.variables)
-
-        return df
