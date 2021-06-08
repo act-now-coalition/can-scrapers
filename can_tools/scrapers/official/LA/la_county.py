@@ -108,5 +108,5 @@ class LAVaccineCountyDemographics(LAVaccineCounty):
                 }
             )
             .drop(columns={"variable"})
-            .rename(columns={'PFIPS': 'location'})
+            .rename(columns={"PFIPS": "location"})
         )
