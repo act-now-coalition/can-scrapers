@@ -168,9 +168,10 @@ class WVCountyVaccine(MicrosoftBIDashboard):
             if "C" not in record:
                 continue
 
-            data_rows.append(
-                {"location_name": record["C"][0], column_name: record["C"][1]}
-            )
+            if len(record["C"]) > 1:
+                data_rows.append(
+                    {"location_name": record["C"][0], column_name: record["C"][1]}
+                )
 
         return pd.DataFrame(data_rows).set_index("location_name")
 
@@ -185,7 +186,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
 
         data = self._rename_or_add_date_and_location(
             data,
-            location_name_column="location_name",
+            location_name_column="index",
             timezone="US/Eastern",
             apply_title_case=False,
         )

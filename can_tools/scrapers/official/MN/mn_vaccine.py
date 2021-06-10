@@ -26,7 +26,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     # get the iframe link manually to bypass captcha
     # this will need to be updated periodically -- find the iframe in the page source html
 
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiMzc4MGIwN2EtOGE3Zi00NWU5LTg5ZGYtY2YzYjc1MzI1ZjIwIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiNjljY2Y1ZGMtYzQxNi00ODBkLTg4OTAtYjU1ZjViOTBlNzhiIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
 
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}

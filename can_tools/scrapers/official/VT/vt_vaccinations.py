@@ -141,7 +141,9 @@ class VermontCountyVaccine(ArcGIS):
         weekly_df = self.extract_CMU(weekly_df, crename)
         weekly_df = weekly_df.drop(columns={"variable"})
 
-        return pd.concat([cumulative_df, weekly_df], ignore_index=True)
+        return pd.concat([cumulative_df, weekly_df], ignore_index=True).query(
+            "location_name != 'Unknown/Out of State'"
+        )
 
     def _get_clean_data(self, data):
         """
