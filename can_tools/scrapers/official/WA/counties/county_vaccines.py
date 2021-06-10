@@ -20,7 +20,7 @@ class WAKingCountyVaccine(TableauDashboard):
         "Fully vaccinted": variables.FULLY_VACCINATED_ALL,
         "At least 1 dose": variables.INITIATING_VACCINATIONS_ALL,
     }
-    
+
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         cols = {"SUM(N)-alias": "value", "Measure-value": "variable"}
         return (
