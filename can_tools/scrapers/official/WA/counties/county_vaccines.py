@@ -12,22 +12,15 @@ class WAKingCountyVaccine(TableauDashboard):
     source_name = "Public Health Seattle & King County"
     state_fips = int(us.states.lookup("Washington").fips)
     location_type = "county"
-    baseurl = "https://tableaupub.kingcounty.gov"
+    baseurl = "https://tableaupub.kingcounty.gov/t/Public"
     viewPath = "COVIDVaccinePublicDashboardV2/FrontPage"
     data_tableau_table = "People table"
     timezone = "US/Pacific"
-
-    url = f"https://tableaupub.kingcounty.gov/t/Public/views/COVIDVaccinePublicDashboardV2/FrontPage?:embed=y&:showVizHome=no&:host_url=https%3A%2F%2Ftableaupub.kingcounty.gov%2F&:embed_code_version=3&:tabs=yes&:toolbar=yes&:showAppBanner=false&:display_spinner=no&:loadOrderID=0"
-    # map wide form column names into CMUs
     variables = {
         "Fully vaccinted": variables.FULLY_VACCINATED_ALL,
         "At least 1 dose": variables.INITIATING_VACCINATIONS_ALL,
     }
-
-    def fetch(self) -> pd.DataFrame:
-        tables = self.get_tableau_view(url=self.url)
-        return tables[self.data_tableau_table]
-
+    
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         cols = {"SUM(N)-alias": "value", "Measure-value": "variable"}
         return (
