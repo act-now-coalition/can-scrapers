@@ -16,6 +16,7 @@ from can_tools.scrapers.official.AZ.az_vaccine import (
 from can_tools.scrapers.official.AZ.counties.maricopa_vaccine import (
     ArizonaMaricopaVaccine,
 )
+from can_tools.scrapers.official.AZ.counties.pima_vaccine import ArizonaPimaVaccine
 from can_tools.scrapers.official.CA.ca_vaccine import (
     CaliforniaVaccineCounty,
     CaliforniaVaccineDemographics,
@@ -168,6 +169,10 @@ from can_tools.scrapers.official.VA.va_vaccine import (
     VirginiaVaccine,
     VirginiaCountyVaccineDemographics,
 )
+from can_tools.scrapers.official.VA.counties.fairfax_vaccine import (
+    VirginiaFairfaxVaccine,
+)
+
 from can_tools.scrapers.official.VT.vt_vaccinations import (
     VermontCountyVaccine,
     VermontStateVaccine,
