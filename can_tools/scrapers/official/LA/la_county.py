@@ -50,6 +50,8 @@ class LAVaccineCountyDemographics(LAVaccineCounty):
 
     def normalize(self, data):
         data = self.arcgis_jsons_to_df(data)
+
+        # formatted as: {'demographic':[demographic value columns], ...}
         demographcis = {
             "sex": ["Female", "Male", "SexUnk"],
             "race": ["Black", "White", "RaceUnk", "Other"],
@@ -77,6 +79,9 @@ class LAVaccineCountyDemographics(LAVaccineCounty):
                 var_cols = [(dose_prefix + c) for c in cols]
                 columns.extend(var_cols)
                 df = data.loc[:, columns]
+
+                # percentages track the % of all vaccines that are from a certain demographic group
+                # so, multiply % * (number of vaccinations (for init or complete)) to get true value
 
                 # divide percentages by 100 then multiply by the total doses
                 # to get # of individuals by demographic
