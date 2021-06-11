@@ -38,7 +38,7 @@ class MassachusettsVaccineDemographics(StateDashboard):
         # scrape each demographic type then combine
         demos = {
             "Sex - municipality": "sex",
-            "Race and Ethnicity - muni.": "race",
+            "Race and ethnicity - muni.": "race",
             "Age - municipality": "age",
         }
         for sheet, demo in demos.items():
