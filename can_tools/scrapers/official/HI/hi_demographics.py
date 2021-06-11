@@ -52,7 +52,6 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
                     self.demographic_col_name,
                 ]
             ]
-            return df
             df.columns = [
                 "total_vaccine_initiated",
                 "total_vaccine_completed",
@@ -71,7 +70,6 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
             dfs.append(df)
 
         df = pd.concat(dfs)
-        return df
         return self._wrangle(df)
 
 
