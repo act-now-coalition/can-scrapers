@@ -8,7 +8,7 @@ pd.set_option("display.max_rows", 500)
 
 class HawaiiVaccineRace(HawaiiVaccineCounty):
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/RACE"
-    subsheet = "Race Progess"
+    subsheet = "Race Progess [MOBILE]"
     demographic = "race"
     demographic_col_name = "Race-alias"
     filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"
@@ -52,6 +52,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
                     self.demographic_col_name,
                 ]
             ]
+            return df
             df.columns = [
                 "total_vaccine_initiated",
                 "total_vaccine_completed",
@@ -70,6 +71,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
             dfs.append(df)
 
         df = pd.concat(dfs)
+        return df
         return self._wrangle(df)
 
 
