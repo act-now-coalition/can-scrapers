@@ -151,6 +151,8 @@ def create_main_flow(flows: List[Flow], project_name):
         parquet_flow = StartFlowRun(
             flow_name="UpdateParquetFiles", project_name=project_name, wait=True
         )
+        # Always run parquet flow
+        parquet_flow.trigger = prefect.triggers.all_finished
 
         for task in tasks:
             task.set_downstream(parquet_flow)
