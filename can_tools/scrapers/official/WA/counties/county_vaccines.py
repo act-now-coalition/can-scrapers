@@ -1,5 +1,7 @@
 import json
 import pandas as pd
+import json
+import os
 import us
 from typing import Dict, List
 from can_tools.scrapers import variables
@@ -22,12 +24,22 @@ class WAKingCountyVaccine(TableauDashboard):
     }
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+
+        with open(os.path.dirname(__file__) + "\\secret.json") as f:
+            key = json.load(f)["key"]
+        backfill = self._fill_county_history_from_api(
+            fips="53055",
+            api_key=key,
+            start_date="2021-02-04",
+            end_date="2021-06-12",
+        )
+
         cols = {"SUM(N)-alias": "value", "Measure-value": "variable"}
-        return (
+        out = (
             data.rename(columns=cols)
             .loc[:, cols.values()]
             .assign(
-                location=53055,
+                location=53033,
                 dt=self._retrieve_dtm1d(self.timezone),
                 vintage=self._retrieve_vintage(),
                 value=lambda x: pd.to_numeric(x["value"]),
@@ -35,6 +47,7 @@ class WAKingCountyVaccine(TableauDashboard):
             .pipe(self.extract_CMU, cmu=self.variables)
             .drop(columns={"variable"})
         )
+        return pd.concat([out, backfill])
 
 
 class WAPierceCountyVaccine(ArcGIS):
@@ -53,12 +66,23 @@ class WAPierceCountyVaccine(ArcGIS):
         return self.get_all_jsons("Vaccine_Weekly_Metrics", 0, 9)
 
     def normalize(self, data) -> pd.DataFrame:
+
+
+        with open(os.path.dirname(__file__) + "\\secret.json") as f:
+            key = json.load(f)["key"]
+        backfill = self._fill_county_history_from_api(
+            fips="53055",
+            api_key=key,
+            start_date="2021-02-04",
+            end_date="2021-06-04",
+        )
+
         cols = {
             "PCResFullyVacc": "vaccine_completed",
             "AllPCVacc": "vaccine_intiatied",
             "DateReportedThru": "dt",
         }
-        return (
+        out = (
             self.arcgis_jsons_to_df(data)
             .rename(columns=cols)
             .loc[:, cols.values()]
@@ -68,3 +92,4 @@ class WAPierceCountyVaccine(ArcGIS):
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
         )
+        return pd.concat([out, backfill])
