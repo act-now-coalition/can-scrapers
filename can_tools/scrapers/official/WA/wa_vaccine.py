@@ -59,7 +59,7 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
 
     source = "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard"
     powerbi_url = "https://wabi-us-gov-virginia-api.analysis.usgovcloudapi.net"
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiZDkzMGJhYjMtZmUzMS00NDkzLWE5MTAtNGFjZjYzMmVlYzg5IiwidCI6IjExZDBlMjE3LTI2NGUtNDAwYS04YmEwLTU3ZGNjMTI3ZDcyZCJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiNDkzMjdkZDgtN2RkNi00YmM1LWI2NTUtMWMyYjEyYzhhMTdmIiwidCI6IjExZDBlMjE3LTI2NGUtNDAwYS04YmEwLTU3ZGNjMTI3ZDcyZCJ9"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
