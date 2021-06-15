@@ -25,6 +25,7 @@ from can_tools.models import (
     build_insert_from_temp,
 )
 from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers import variables
 from can_tools.scrapers.util import requests_retry_session
 
 _logger = logging.getLogger(__name__)
@@ -263,6 +264,60 @@ class StateDashboard(DatasetBase, ABC):
             data["location"] = pd.to_numeric(data["location"])
 
         return data
+
+    def _fill_county_history_from_api(
+        self,
+        fips: str,
+        api_key: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """
+        Retrieves historical scraper data from county timeseries endpoint for specific county.
+        Collects CMU(total_vaccine_initiated/completed, all, all, all, all) data
+
+        Parameters
+        ----------
+        fips :
+            FIPS of county to fetch
+        api_key :
+            API key to access endpoint
+        start_date:
+            date at which to start data collection
+        start_date:
+            date at which to end data collection
+
+        Returns
+        -------
+        data:
+            formatted DataFrame of historial data.
+        """
+        req = requests_retry_session()
+        query = f"https://api.covidactnow.org/v2/county/{fips}.timeseries.json?apiKey={api_key}"
+        data = req.get(query).json()["actualsTimeseries"]
+        df = pd.DataFrame.from_records(data)
+        df = (
+            df.loc[:, ["date", "vaccinationsInitiated", "vaccinationsCompleted"]]
+            .rename(columns={"date": "dt", "county": "location_name"})
+            .assign(location=fips, dt=lambda x: pd.to_datetime(x["dt"]).dt.date)
+        )
+
+        if start_date is not None:
+            start_date = pd.to_datetime(start_date).date()
+            df = df.loc[df["dt"] >= start_date]
+        if end_date is not None:
+            end_date = pd.to_datetime(end_date).date()
+            df = df.loc[df["dt"] <= end_date]
+
+        backfill_variables = {
+            "vaccinationsInitiated": variables.INITIATING_VACCINATIONS_ALL,
+            "vaccinationsCompleted": variables.FULLY_VACCINATED_ALL,
+        }
+        out = self._reshape_variables(
+            data=df,
+            variable_map=backfill_variables,
+        )
+        return out
 
 
 class CountyDashboard(StateDashboard, ABC):
