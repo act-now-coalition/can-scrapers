@@ -176,6 +176,10 @@ from can_tools.scrapers.official.WA.wa_vaccine import (
     WashingtonVaccine,
     WashingtonVaccineCountyRace,
 )
+from can_tools.scrapers.official.WA.counties.county_vaccines import (
+    WAKingCountyVaccine,
+    WAPierceCountyVaccine,
+)
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
 from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
     WisconsinVaccineStateAge,
