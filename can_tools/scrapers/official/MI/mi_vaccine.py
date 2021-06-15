@@ -152,15 +152,6 @@ class MichiganVaccineCountyDemographics(MichiganVaccineCounty):
         df["Age Group"] = df["Age Group"].replace("missing", "unknown")
         return df
 
-    def _pivot(self, df):
-        out = df.pivot_table(
-            columns=["Dose Number"],
-            values="Doses Administered",
-            index=["location_name", "Sex", "Age Group", "dt"],
-            aggfunc=sum,
-        ).rename_axis(None, axis=1)
-        return out
-
     def normalize(self, data):
         columns = {"Age Group": "age", "Doses Administered": "value", "Sex": "sex"}
         df = (
@@ -169,42 +160,29 @@ class MichiganVaccineCountyDemographics(MichiganVaccineCounty):
                 location_name_column="Person's Residence in County",
                 location_names_to_drop=["No County", "Non-Michigan Resident"],
                 date_column="Week Ending Date",
-            ).drop(
+            )
+            .drop(
                 columns=[
                     "Person's Residence in Preparedness Region",
                     "Person's Residence in Local Health Department Jurisdiction",
                 ]
             )
             .pipe(self._clean_columns)
-            .assign(
-                variable=lambda x: x["Dose Number"] + " " + x["Vaccine Type"]
-            )
+            .assign(variable=lambda x: x["Dose Number"] + " " + x["Vaccine Type"])
             .rename(columns=columns)
-            .loc[:, list(columns.values()) + ['variable', "location_name"]]
+            .loc[:, list(columns.values()) + ["variable", "location_name", "dt"]]
         )
 
         # combine jj first dose and jj second dose into single entries
+        # and combine Wayne county with Detroit city
         # rename one of the vars so all cols match --> combine with a sum
         group_by = [c for c in df.columns if c not in ["value"]]
         out = (
-            df.replace("Second Dose J&J", "First Dose J&J")
-            .groupby(group_by, as_index=False).aggregate({"value": "sum"})
-            .pipe(
-                self.extract_CMU,
-                cmu=self.variables, skip_columns=['age', 'sex']
-            )
-            .assign(
-                vintage=self._retrieve_vintage()
-            )
+            df.replace({"Second Dose J&J": "First Dose J&J", "Detroit": "Wayne"})
+            .groupby(group_by, as_index=False)
+            .aggregate({"value": "sum"})
+            .pipe(self.extract_CMU, cmu=self.variables, skip_columns=["age", "sex"])
+            .assign(vintage=self._retrieve_vintage())
+            .drop(columns={"variable"})
         )
-
-        return out.head()
-        
-        
-        out = df
-        # combine Wayne county and Detroit records
-        # rename Detroit entries to Wayne so that the rows we want get combined
-        group_by = [c for c in out.columns if c not in ["value"]]
-        out = out.replace("Detroit", "Wayne")
-        out = out.groupby(group_by, as_index=False).aggregate({"value": "sum"})
         return out
