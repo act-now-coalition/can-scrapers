@@ -28,10 +28,10 @@ class WAKingCountyVaccine(TableauDashboard):
         with open(os.path.dirname(__file__) + "\\secret.json") as f:
             key = json.load(f)["key"]
         backfill = self._fill_county_history_from_api(
-            fips="53055",
+            fips="53033",
             api_key=key,
             start_date="2021-02-04",
-            end_date="2021-06-12",
+            end_date="2021-06-13",
         )
 
         cols = {"SUM(N)-alias": "value", "Measure-value": "variable"}
@@ -70,7 +70,7 @@ class WAPierceCountyVaccine(ArcGIS):
         with open(os.path.dirname(__file__) + "\\secret.json") as f:
             key = json.load(f)["key"]
         backfill = self._fill_county_history_from_api(
-            fips="53055",
+            fips="53053",
             api_key=key,
             start_date="2021-02-04",
             end_date="2021-06-04",
@@ -86,7 +86,7 @@ class WAPierceCountyVaccine(ArcGIS):
             .rename(columns=cols)
             .loc[:, cols.values()]
             .assign(
-                location=53033,
+                location=53053,
                 dt=lambda x: pd.to_datetime(x["dt"], unit="ms").dt.date,
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
