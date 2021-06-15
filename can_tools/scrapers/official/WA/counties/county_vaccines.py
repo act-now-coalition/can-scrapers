@@ -67,7 +67,6 @@ class WAPierceCountyVaccine(ArcGIS):
 
     def normalize(self, data) -> pd.DataFrame:
 
-
         with open(os.path.dirname(__file__) + "\\secret.json") as f:
             key = json.load(f)["key"]
         backfill = self._fill_county_history_from_api(

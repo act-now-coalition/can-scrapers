@@ -279,12 +279,12 @@ class StateDashboard(DatasetBase, ABC):
         Parameters
         ----------
         fips :
-            FIPS of county to fetch 
-        api_key : 
+            FIPS of county to fetch
+        api_key :
             API key to access endpoint
-        start_date: 
+        start_date:
             date at which to start data collection
-        start_date: 
+        start_date:
             date at which to end data collection
 
         Returns
@@ -293,18 +293,13 @@ class StateDashboard(DatasetBase, ABC):
             formatted DataFrame of historial data.
         """
         req = requests_retry_session()
-        query = (
-            f"https://api.covidactnow.org/v2/county/{fips}.timeseries.json?apiKey={api_key}"
-        )
+        query = f"https://api.covidactnow.org/v2/county/{fips}.timeseries.json?apiKey={api_key}"
         data = req.get(query).json()["actualsTimeseries"]
         df = pd.DataFrame.from_records(data)
         df = (
             df.loc[:, ["date", "vaccinationsInitiated", "vaccinationsCompleted"]]
             .rename(columns={"date": "dt", "county": "location_name"})
-            .assign(
-                location=fips,
-                dt=lambda x: pd.to_datetime(x['dt']).dt.date
-            )
+            .assign(location=fips, dt=lambda x: pd.to_datetime(x["dt"]).dt.date)
         )
 
         if start_date is not None:
@@ -313,7 +308,7 @@ class StateDashboard(DatasetBase, ABC):
         if end_date is not None:
             end_date = pd.to_datetime(end_date).date()
             df = df.loc[df["dt"] <= end_date]
-        
+
         backfill_variables = {
             "vaccinationsInitiated": variables.INITIATING_VACCINATIONS_ALL,
             "vaccinationsCompleted": variables.FULLY_VACCINATED_ALL,
