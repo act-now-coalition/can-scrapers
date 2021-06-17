@@ -8,7 +8,6 @@ from can_tools.scrapers.official.AL.al_vaccine import (
 )
 from can_tools.scrapers.official.AK.ak_vaccine import (
     AlaskaCountyVaccine,
-    AlaskaVaccineDemographics,
 )
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
