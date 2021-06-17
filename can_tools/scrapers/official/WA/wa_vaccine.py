@@ -23,7 +23,7 @@ class WashingtonVaccine(StateDashboard):
     }
 
     async def _get_from_browser(self):
-        async with with_page(headless=False) as page:
+        async with with_page(headless=True) as page:
             await page.goto(
                 "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard#downloads"
             )
