@@ -142,7 +142,7 @@ from can_tools.scrapers.official.PA.pa_vaccines import (
     PennsylvaniaVaccineSex,
 )
 
-from can_tools.scrapers.official.PA.philadelhpia_vaccine import PhiladelphaVaccine
+from can_tools.scrapers.official.PA.philadelhpia_vaccine import PhiladelphiaVaccine
 
 from can_tools.scrapers.official.SD.sd_vaccines import SDVaccineCounty
 from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
