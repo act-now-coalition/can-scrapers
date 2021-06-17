@@ -12,20 +12,18 @@ from can_tools.scrapers.util import requests_retry_session
 
 
 class IowaCountyVaccine(StateDashboard):
-    has_location = False
+    has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Iowa").fips)
     source = "https://coronavirus.iowa.gov/pages/vaccineinformation#VaccineInformation"
     source_name = "Iowa Department of Public Health"
 
     dashboard_link = "https://public.domo.com/embed/pages/1wB9j"
-    card_id = "1179017552"
-    csv_link = "https://public.domo.com/embed/pages/1wB9j/cards/1179017552/export"
+    csv_link = "https://public.domo.com/embed/pages/1wB9j/cards/1698180896/export"
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
-        "total_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
     _req = None
 
@@ -50,7 +48,7 @@ class IowaCountyVaccine(StateDashboard):
             {
                 "request": json.dumps(
                     {
-                        "fileName": "Vaccine Series by County of Vaccine Provider.csv",
+                        "fileName": "Total Doses Administered by Recipient County of Residence.csv",
                         "accept": "text/csv",
                         "type": "file",
                     }
@@ -64,19 +62,16 @@ class IowaCountyVaccine(StateDashboard):
     def normalize(self, data):
         df = data.rename(
             columns={
-                "Two-Dose Series Initiated": "total_vaccine_initiated",
-                "Two-Dose Series Completed": "total_vaccine_completed",
-                "Single-Dose Series Completed": "single_complete",
-                "Total Doses Administered": "total_administered",
+                "First Dose Given": "total_vaccine_initiated",
+                "2-Dose Vaccinations Completed": "total_vaccine_completed",
+                "1-Dose Vaccinations Completed": "single_complete",
             }
-        )
+        ).dropna()
 
         df = self._rename_or_add_date_and_location(
             df,
-            location_name_column="County",
+            location_column="RECIP_ADDRESS_COUNTY",
             timezone="US/Central",
-            apply_title_case=True,
-            location_names_to_drop=["Out of State"],
         )
         # Count single dose vaccine as both initiated and completed
         df.total_vaccine_initiated += df.total_vaccine_completed + df.single_complete
