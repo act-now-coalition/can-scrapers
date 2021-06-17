@@ -18,8 +18,8 @@ class DCVaccine(TableauDashboard):
 
     variables = {
         "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
-        "Fully/Partially Vaccinated": variables.INITIATING_VACCINATIONS_ALL,
-        "Total Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "Total Administrations": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def _get_date(self):
@@ -34,8 +34,8 @@ class DCVaccine(TableauDashboard):
             # keep only DC residents (in and out of state)
             data.query(
                 "`Measure Names-alias` in"
-                "['Fully Vaccinated', 'Fully/Partially Vaccinated', 'Total Administered']"
-                "and `Type of Resident-value` in"
+                "['Fully Vaccinated', 'At Least One Dose', 'Total Administrations']"
+                "and `Type of Resident1-value` in"
                 "['DC Resident (outside DC)', 'DC Resident (within DC)', 'DC Resident (Federal Entity)']"
             )
             .assign(
