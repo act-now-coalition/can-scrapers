@@ -23,7 +23,7 @@ class WashingtonVaccine(StateDashboard):
     }
 
     async def _get_from_browser(self):
-        async with with_page(headless=True) as page:
+        async with with_page(headless=False) as page:
             await page.goto(
                 "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard#downloads"
             )
@@ -59,7 +59,7 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
 
     source = "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard"
     powerbi_url = "https://wabi-us-gov-virginia-api.analysis.usgovcloudapi.net"
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiNDkzMjdkZDgtN2RkNi00YmM1LWI2NTUtMWMyYjEyYzhhMTdmIiwidCI6IjExZDBlMjE3LTI2NGUtNDAwYS04YmEwLTU3ZGNjMTI3ZDcyZCJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiMTA5OTI0MzktMDAzNy00MGQ1LWEwZGYtOTVlZGQ2MzQzZmNjIiwidCI6IjExZDBlMjE3LTI2NGUtNDAwYS04YmEwLTU3ZGNjMTI3ZDcyZCJ9"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
