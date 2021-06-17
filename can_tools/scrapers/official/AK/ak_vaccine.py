@@ -28,15 +28,20 @@ class AlaskaCountyVaccine(ArcGIS):
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
         return (
-            df.loc[:,['ADJ_BORO_1', 'All_DoseOne_Count', 'All_VaxCom_Count']]
+            df.loc[:, ["ADJ_BORO_1", "All_DoseOne_Count", "All_VaxCom_Count"]]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="ADJ_BORO_1",
-                location_names_to_replace={"Yakutat Plus Hoonah-Angoon": "Yakutat City and Borough", "Bristol Bay Plus Lake And Peninsula": "Bristol Bay Borough"},
-                timezone="US/Alaska", 
+                location_names_to_replace={
+                    "Yakutat Plus Hoonah-Angoon": "Yakutat City and Borough",
+                    "Bristol Bay Plus Lake And Peninsula": "Bristol Bay Borough",
+                },
+                timezone="US/Alaska",
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
             .assign(
-                location_name=lambda x: x['location_name'].str.replace("And", "and").str.replace("Of", "of")
+                location_name=lambda x: x["location_name"]
+                .str.replace("And", "and")
+                .str.replace("Of", "of")
             )
         )
