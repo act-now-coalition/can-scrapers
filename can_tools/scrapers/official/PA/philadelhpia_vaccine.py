@@ -63,35 +63,21 @@ class PhiladelphiaVaccine(TableauDashboard):
 
         req = requests_retry_session()
         fullURL = self.baseurl + "/views/" + self.viewPath
-        if url is not None:
-            fullURL = url
-        if self.filterFunctionName is not None:
-            params = ":language=en&:display_count=y&:origin=viz_share_link&:embed=y&:showVizHome=n&:jsdebug=y&"
-            params += self.filterFunctionName + "=" + self.filterFunctionValue
-            if self.secondaryFilterFunctionName is not None:
-                params += (
-                    "&"
-                    + self.secondaryFilterFunctionName
-                    + "="
-                    + self.secondaryFilterValue.replace(" ", "%20")
-                )
-            reqg = req.get(fullURL, params=params)
-        else:
-            reqg = req.get(
-                fullURL,
-                params={
-                    ":language": "en",
-                    ":display_count": "y",
-                    ":origin": "viz_share_link",
-                    ":embed": "y",
-                    ":showVizHome": "n",
-                    ":jsdebug": "y",
-                    ":apiID": "host4",
-                    "#navType": "1",
-                    "navSrc": "Parse",
-                },
-                headers={"Accept": "text/javascript"},
-            )
+        reqg = req.get(
+            fullURL,
+            params={
+                ":language": "en",
+                ":display_count": "y",
+                ":origin": "viz_share_link",
+                ":embed": "y",
+                ":showVizHome": "n",
+                ":jsdebug": "y",
+                ":apiID": "host4",
+                "#navType": "1",
+                "navSrc": "Parse",
+            },
+            headers={"Accept": "text/javascript"},
+        )
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
