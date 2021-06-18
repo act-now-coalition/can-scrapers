@@ -77,11 +77,8 @@ class IowaCountyVaccine(StateDashboard):
         df.total_vaccine_initiated += df.total_vaccine_completed + df.single_complete
         df.total_vaccine_completed += df.single_complete
 
-        out = (
-            df.pipe(self._reshape_variables, variable_map=self.variables)
-            .assign(
-                location=lambda x: x['location'].astype(int)
-            )
+        out = df.pipe(self._reshape_variables, variable_map=self.variables).assign(
+            location=lambda x: x["location"].astype(int)
         )
 
         return out
