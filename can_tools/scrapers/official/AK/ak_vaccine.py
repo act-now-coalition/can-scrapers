@@ -27,15 +27,11 @@ class AlaskaCountyVaccine(ArcGIS):
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
-        return (
+        out = (
             df.loc[:, ["ADJ_BORO_1", "All_DoseOne_Count", "All_VaxCom_Count"]]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="ADJ_BORO_1",
-                location_names_to_replace={
-                    "Yakutat Plus Hoonah-Angoon": "Yakutat City and Borough",
-                    "Bristol Bay Plus Lake And Peninsula": "Bristol Bay Borough",
-                },
                 timezone="US/Alaska",
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
@@ -44,4 +40,7 @@ class AlaskaCountyVaccine(ArcGIS):
                 .str.replace("And", "and")
                 .str.replace("Of", "of")
             )
+        )
+        return out.query(
+            'location_name not in ["Yakutat Plus Hoonah-Angoon", "Bristol Bay Plus Lake and Peninsula"]'
         )
