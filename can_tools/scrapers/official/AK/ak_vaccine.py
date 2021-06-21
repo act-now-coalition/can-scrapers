@@ -41,5 +41,6 @@ class AlaskaCountyVaccine(ArcGIS):
                 .str.replace("Of", "of")
             )
         )
-        return out.query('location_name not in ["Yakutat Plus Hoonah-Angoon", "Bristol Bay Plus Lake and Peninsula"]')
-
+        return out.query(
+            'location_name not in ["Yakutat Plus Hoonah-Angoon", "Bristol Bay Plus Lake and Peninsula"]'
+        )
