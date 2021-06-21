@@ -76,6 +76,18 @@ make start
 
 Now any time a push is made to the master branch of the repo, a push event will be sent to the server and the webhook will cause a git pull
 
-**Notes**:
+**Maintenance**:
 
-Any time the server restarts, you should do `mount ~/scraper-outputs` to run gcsfuse and link the ~/scraper-outputs directory to the cloud storage bucket
+When the server restarts, or if gcsfuse is killed it is necessary to remount the file system. Symptoms of this can include:
+
+* Scrapers failing on the `create_scraper` task with the message, 
+  >`[Errno 107] Transport endpoint is not connected: '/home/sglyon/scraper-outputs.`
+* The Prefect console reading a message like, `Jun 21 10:14:55 prefect kernel ...  Killed process ... (gcsfuse)`
+
+The steps to fix this are to:
+* SSH into the prefect virtual machine in the Google Cloud Platform
+* Navigate to `/home/sglyon/`
+* If `ls: cannot access 'scraper-outputs': Permission denied` occurs, gain access to Spencer's account using `sudo su sglyon`
+* Un-mount the current filesystem using `fusermount -u scraper-outputs`
+* Re-mount the filesystem using `mount ~/scraper-outputs`. This runs gcsfuse and links the ~/scraper-outputs directory to the cloud storage bucket
+* Check the Prefect server dashboard to ensure that the flows have commenced. 
