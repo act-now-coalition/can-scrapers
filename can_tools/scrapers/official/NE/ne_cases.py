@@ -2,7 +2,7 @@ import pandas as pd
 import us
 import requests
 
-from can_tools.scrapers import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -16,14 +16,7 @@ class NebraskaCases(StateDashboard):
         "https://gis.ne.gov/Enterprise/rest/services/C19Combine/FeatureServer/0/query"
     )
     source_name = "Nebraska Department of Health and Human Services"
-
-    variables = {
-        "attributes.PosCases": CMU(
-            category="cases",
-            measurement="cumulative",
-            unit="people",
-        )
-    }
+    variables = {"attributes.PosCases": variables.CUMULATIVE_CASES_PEOPLE}
 
     def fetch(self) -> requests.models.Response:
         params = {
