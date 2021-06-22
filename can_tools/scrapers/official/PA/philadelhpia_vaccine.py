@@ -14,6 +14,7 @@ class PhiladelphiaVaccine(TableauDashboard):
     state_fips = int(states.lookup("Pennsylvania").fips)
     has_location = True
     location_type = "county"
+    provider = "county"
     source = (
         "https://www.phila.gov/programs/coronavirus-disease-2019-covid-19/data/vaccine/"
     )
