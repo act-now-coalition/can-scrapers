@@ -57,18 +57,18 @@ class NebraskaCases(StateDashboard):
             .set_index("county")
             .join(county_pops, how="left")
             .reset_index()
-            # calculate each health region's population (sum pop'n of each county in each region)
-            # find % of region's total population for each county
-            # multiply % by region's total cases to get estimated number of cases for each county
             .assign(
+                # calculate health region populations by summing county populations
                 region_population=lambda x: (
                     x["health_region"].map(
                         x.groupby("health_region").sum()["county_population"].to_dict()
                     )
                 ),
+                # calculate proportion of total health region population for each county
                 county_percent_pop=lambda x: (
                     x["county_population"] / x["region_population"]
                 ),
+                # multiply proportion by region's total cases to get estimated number of cases for each county
                 county_cases=lambda x: x["region_cases"] * x["county_percent_pop"],
             )
             # add date, melt into CMU variables
