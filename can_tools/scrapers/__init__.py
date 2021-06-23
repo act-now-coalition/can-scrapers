@@ -116,8 +116,6 @@ from can_tools.scrapers.official.NE.ne_vaccines import (
     NebraskaVaccineAge,
 )
 
-from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
-
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
@@ -155,7 +153,7 @@ from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
 from can_tools.scrapers.official.TN.tn_state import (
     TennesseeAge,
     TennesseeAgeByCounty,
-    # TennesseeRaceEthnicitySex,
+    TennesseeRaceEthnicitySex,
 )
 from can_tools.scrapers.official.TN.tn_vaccine import TennesseeVaccineCounty
 from can_tools.scrapers.official.TX.texas_vaccine import (
