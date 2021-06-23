@@ -23,17 +23,17 @@ class NebraskaCases(StateDashboard):
             "f": "json",
             "where": "0=0",
             "returnGeometry": "false",
-            "outFields": "name,PosCases",
+            "outFields": "name,Counties_S,PosCases",
         }
         return requests.get(self.fetch_url, params=params)
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
         return (
             pd.json_normalize(data.json()["features"])
-            .pipe(
-                self._rename_or_add_date_and_location,
-                location_name_column="attributes.name",
-                timezone="US/Central",
-            )
-            .pipe(self._reshape_variables, variable_map=self.variables)
+            # .pipe(
+                # self._rename_or_add_date_and_location,
+                # location_name_column="attributes.name",
+                # timezone="US/Central",
+            # )
+            # .pipe(self._reshape_variables, variable_map=self.variables)
         )
