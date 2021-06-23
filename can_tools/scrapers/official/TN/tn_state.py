@@ -298,4 +298,5 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         out["location"] = self.state_fips
         out["vintage"] = self._retrieve_vintage()
 
-        return out
+        # 2 duplicate rows causing db insertion to fail
+        return out.drop_duplicates()

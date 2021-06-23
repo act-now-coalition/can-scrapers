@@ -155,7 +155,7 @@ from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
 from can_tools.scrapers.official.TN.tn_state import (
     TennesseeAge,
     TennesseeAgeByCounty,
-    # TennesseeRaceEthnicitySex,
+    TennesseeRaceEthnicitySex,
 )
 from can_tools.scrapers.official.TN.tn_vaccine import TennesseeVaccineCounty
 from can_tools.scrapers.official.TX.texas_vaccine import (
