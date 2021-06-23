@@ -10,7 +10,7 @@ DECLARE
 	location_id_and text := CASE WHEN _location IS NOT NULL THEN
 		format('and location_id in (select id from meta.locations where location = %s)', _location)
 	WHEN _state_fips IS NOT NULL THEN
-		format('and location_id in(select id from meta.locations where state_fips = %s and location_type ~ %L', _state_fips, _location_type_regex)
+		format('and location_id in(select id from meta.locations where state_fips = %s and location_type ~ %L)', _state_fips, _location_type_regex)
 	ELSE
 		''
 	END;
