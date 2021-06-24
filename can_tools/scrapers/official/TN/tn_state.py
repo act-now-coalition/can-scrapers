@@ -222,7 +222,7 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
         )
 
         # Drop the information that we won't be keeping track of
-        cat_detail_not_keep = ["Pending"]
+        cat_detail_not_keep = ["PENDING", "YES", "NO", "Pending", "Yes", "No"]
         df = df.query("category_detail not in @cat_detail_not_keep")
 
         # Translate race, ethnicity, and gender (sex) to standard names
