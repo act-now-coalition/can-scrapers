@@ -37,3 +37,9 @@ TOTAL_VACCINE_DISTRIBUTED: CMU = CMU(
     measurement="cumulative",
     unit="doses",
 )
+
+CUMULATIVE_CASES_PEOPLE: CMU = CMU(
+    category="cases",
+    measurement="cumulative",
+    unit="people",
+)
