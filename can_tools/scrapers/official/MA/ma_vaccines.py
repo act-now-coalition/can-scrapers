@@ -48,14 +48,11 @@ class MassachusettsVaccineDemographics(StateDashboard):
                     df = pd.read_excel(data, sheet, header=[1])
                 except:
                     df = pd.read_excel(data, "Race and Ethnicity - muni.", header=[1])
-            else:        
+            else:
                 df = pd.read_excel(data, sheet, header=[1])
-            
-            df = (
-                df.replace("*", 0)
-                .rename(
-                    columns={"Sex": "sex", "Age Group": "age", "Race/Ethnicity": "race"}
-                )
+
+            df = df.replace("*", 0).rename(
+                columns={"Sex": "sex", "Age Group": "age", "Race/Ethnicity": "race"}
             )
 
             # sum each town in county to get county total
