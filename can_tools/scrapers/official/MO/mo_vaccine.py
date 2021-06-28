@@ -20,7 +20,12 @@ class MissouriVaccineCounty(TableauDashboard):
             "COVID-19 Vaccine Regimen Initiated": variables.INITIATING_VACCINATIONS_ALL,
             "COVID-19 Vaccine Regimen Completed": variables.FULLY_VACCINATED_ALL,
         }
-        non_counties = ["St. Louis City", "Kansas City", "Joplin"]  # noqa
+        non_counties = [
+            "St. Louis City",
+            "Kansas City",
+            "Joplin",
+            "Unknown Jurisdiction",
+        ]  # noqa
         return (
             data.rename(
                 columns={
