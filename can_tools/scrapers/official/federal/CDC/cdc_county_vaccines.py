@@ -20,6 +20,8 @@ class CDCCountyVaccine(FederalDashboard):
 
     variables = {
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
+        "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
+        "Administered_Dose1_Pop_Pct": variables.PERCENTAGE_PEOPLE_INITIATING_VACCINE,
         "Series_Complete_18Plus": CMU(
             category="total_vaccine_completed",
             measurement="cumulative",
