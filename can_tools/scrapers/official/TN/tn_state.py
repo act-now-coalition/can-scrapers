@@ -122,11 +122,11 @@ class TennesseeAgeByCounty(TennesseeBase):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data.content, parse_dates=["date"])
+        df = pd.read_excel(data.content, parse_dates=["DATE"])
 
         # Rename columns
         df = df.rename(
-            columns={"date": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"}
+            columns={"DATE": "dt", "COUNTY": "location_name", "AGE_GROUP": "age"}
         )
 
         # Drop the information that we won't be keeping track of
