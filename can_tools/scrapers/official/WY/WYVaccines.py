@@ -2,19 +2,21 @@ import enum
 import json
 from datetime import datetime
 from typing import Any
+from numpy import source
 
 import pandas as pd
 import requests
 import re
 import us
 import jmespath
+from bs4 import BeautifulSoup as bs
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import GoogleDataStudioDashboard
+from can_tools.scrapers.official.base import GoogleDataStudioDashboard, StateDashboard
 
 
-class WYStateVaccinations(GoogleDataStudioDashboard):
+class WYStateVaccinations(StateDashboard):
     state_fips = int(us.states.lookup("Wyoming").fips)
     execution_dt = pd.Timestamp.now()
     source = (
@@ -22,124 +24,68 @@ class WYStateVaccinations(GoogleDataStudioDashboard):
         "vaccine-distribution-data/"
     )
     source_name = "Wyoming Department of Health"
-    baseUrl = "https://datastudio.google.com/batchedDataV2"
-    resource_id = "a51cf808-9bf3-44a0-bd26-4337aa9f8700"
     has_location = True
     location_type = "state"
-    # These Jsons are big, and very messy. I have not taken the time to go through and see what exactly in here is
-    # necessary and what is 'fluff.' That is on my to do list
-    bodyDose1 = '{"dataRequest":[{"requestContext":{"reportContext":{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f","pageId":"26374700","mode":"VIEW","componentId":"cd-kv0749i1fc","displayType":"simple-linechart"}},"datasetSpec":{"dataset":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","revisionNumber":0,"parameterOverrides":[]}],"queryFields":[{"name":"qt_rvc2lvf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}},{"name":"qt_c5rkvvf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_943306672_","aggregation":6}},{"name":"qt_6bb2lvf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_1336940214_","aggregation":6}}],"sortData":[{"sortColumn":{"name":"qt_rvc2lvf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}},"sortDir":0}],"includeRowsCount":false,"blendConfig":{"blockDatasource":{"datasourceBlock":{"id":"block_az4tkpckic","type":1,"inputBlockIds":[],"outputBlockIds":[],"fields":[]},"blocks":[{"id":"block_bz4tkpckic","type":5,"inputBlockIds":[],"outputBlockIds":[],"fields":[],"queryBlockConfig":{"joinQueryConfig":{"joinKeys":[],"queries":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","concepts":[]}]}}}],"delegatedAccessEnabled":true,"isUnlocked":true,"isCacheable":false}},"filters":[],"features":[],"dateRanges":[],"contextNsCount":1,"dateRangeDimensions":[{"name":"qt_xl2mnvf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}}],"calculatedField":[],"needGeocoding":false,"geoFieldMask":[],"geoVertices":100000},"useDataColumn":true}]}'
-    bodyDose1 = json.loads(bodyDose1)
-    # bodyDose1["dataRequest"][0]["datasetSpec"]["dateRanges"][0][
-    #     "endDate"
-    # ] = datetime.now().strftime("%Y%m%d")
 
-    bodyDose2 = '{"dataRequest":[{"requestContext":{"reportContext":{"reportId":"30f32fc5-970a-4943-994d-6cccaea3c04f","pageId":"26374700","mode":"VIEW","componentId":"cd-v0498vf4hc","displayType":"simple-linechart"}},"datasetSpec":{"dataset":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","revisionNumber":0,"parameterOverrides":[]}],"queryFields":[{"name":"qt_w0498vf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}},{"name":"qt_bkpyfwf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_1137649425_","aggregation":6}},{"name":"qt_iovaiwf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_n316847366_","aggregation":6}}],"sortData":[{"sortColumn":{"name":"qt_w0498vf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}},"sortDir":0}],"includeRowsCount":false,"blendConfig":{"blockDatasource":{"datasourceBlock":{"id":"block_aidukpckic","type":1,"inputBlockIds":[],"outputBlockIds":[],"fields":[]},"blocks":[{"id":"block_bidukpckic","type":5,"inputBlockIds":[],"outputBlockIds":[],"fields":[],"queryBlockConfig":{"joinQueryConfig":{"joinKeys":[],"queries":[{"datasourceId":"1ad449b7-1654-4568-b8c2-b436564337fc","concepts":[]}]}}}],"delegatedAccessEnabled":true,"isUnlocked":true,"isCacheable":false}},"filters":[],"features":[],"dateRanges":[],"contextNsCount":1,"dateRangeDimensions":[{"name":"qt_z0498vf4hc","datasetNs":"d0","tableNs":"t0","dataTransformation":{"sourceFieldName":"_2122702_"}}],"calculatedField":[],"needGeocoding":false,"geoFieldMask":[],"geoVertices":100000},"useDataColumn":true}]}'
-    bodyDose2 = json.loads(bodyDose2)
-    # bodyDose2["dataRequest"][0]["datasetSpec"]["dateRanges"][0][
-    #     "endDate"
-    # ] = datetime.now().strftime("%Y%m%d")
+    variables = {
+        "total_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+    }
 
     def fetch(self):
-        """
-        Pulls Wyoming state vaccine data, cleans and up the Json Strig that is returned before returning that object as
-        a list of dictionaries
-        """
+        header = {
+            "Referer": "https://google.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+        }
+        return requests.get(self.source, headers=header).text
 
-        WYVacDataDose1 = self.get_dataset(self.bodyDose1, url=self.baseUrl)
-        WYVacDataDose1 = json.loads(WYVacDataDose1[11:-1])
-        WYVacDataDose2 = self.get_dataset(self.bodyDose2, url=self.baseUrl)
-        WYVacDataDose2 = json.loads(WYVacDataDose2[11:-1])
-
-        query = jmespath.compile(
-            "dataResponse[0].dataSubset[0].dataset.tableDataset.column"
-        )
-        return query.search(WYVacDataDose1) + query.search(WYVacDataDose2)
-        # add data from the dose 2 request to our list of dictionaries
+    def _extract_regex(self, match, data):
+        end = re.findall(f"{match}: <strong>(.*?)</strong>", data)[0]
+        return pd.to_numeric(end.replace(",", ""))
 
     def normalize(self, data) -> pd.DataFrame:
-        """
-        Cleans and normalizes the data we recieve from the Google api
-        """
-        datesListVac1 = data[0]["dateColumn"]["values"]
-        nullValuesSupplyListVac1 = data[1]["nullIndex"]
-        valuesSupplyListVac1 = data[1]["doubleColumn"]["values"]
-        nullValuesAdminListVac1 = data[2]["nullIndex"]
-        valuesAdminListVac1 = data[2]["doubleColumn"]["values"]
+        # find data in page
+        soup = bs(data, "lxml")
+        data = soup.select(
+            "div.et_pb_module.et_pb_text.et_pb_text_0.et_pb_text_align_left.et_pb_bg_layout_light"
+        )[0]
+        data = data.find_all("p")
+        data = [str(p) for p in data]
 
-        # sorts the Null Values index lists so we dont get an out of bounds error when we insert values of 0 in their places
-        nullValuesAdminListVac1.sort()
-        nullValuesSupplyListVac1.sort()
-        for value in nullValuesSupplyListVac1:
-            valuesSupplyListVac1.insert(value, 0)
-        for value in nullValuesAdminListVac1:
-            valuesAdminListVac1.insert(value, 0)
+        # extract data from strings with regex -- assert that we collect correct values
+        assert bool(re.search("Overall Totals", data[1]))
+        doses_admin = self._extract_regex("Total Doses Administered", data[1])
 
-        # creating dataframe for dose 1 county level data
-        stateVaccineDataFrameVac1 = pd.DataFrame(
+        assert bool(re.search("Two-Dose Vaccines", data[2]))
+        pfiz_mod_1_dose = self._extract_regex("First Doses Administered", data[2])
+        pfiz_mod_2_dose = self._extract_regex("Second Doses Administered", data[2])
+
+        assert bool(re.search("One-Dose Vaccine", data[3]))
+        jj_doses = self._extract_regex("Doses Administered", data[3])
+
+        records = [
+            {"variable": "total_doses_administered", "value": doses_admin},
             {
-                "dt": datesListVac1,
-                "supplyVac1": valuesSupplyListVac1,
-                "administeredVac1": valuesAdminListVac1,
-            }
-        )
-
-        datesListVac2 = data[3]["dateColumn"]["values"]
-        nullValuesSupplyListVac2 = data[4]["nullIndex"]
-        valuesSupplyListVac2 = data[4]["doubleColumn"]["values"]
-        nullValuesAdminListVac2 = data[5]["nullIndex"]
-        valuesAdminListVac2 = data[5]["doubleColumn"]["values"]
-        nullValuesAdminListVac2.sort()
-        nullValuesSupplyListVac2.sort()
-        for value in nullValuesSupplyListVac2:
-            valuesSupplyListVac2.insert(value, 0)
-        for value in nullValuesAdminListVac2:
-            valuesAdminListVac2.insert(value, 0)
-
-        # creating data frame for second dose of vaccines
-        stateVaccineDataFrameVac2 = pd.DataFrame(
+                "variable": "total_vaccine_initiated",
+                "value": pfiz_mod_1_dose + jj_doses,
+            },
             {
-                "dt": datesListVac2,
-                "supplyVac2": valuesSupplyListVac2,
-                "administeredVac2": valuesAdminListVac2,
-            }
-        )
-
-        # merges two data frames together
-        stateVaccineDataFrame = stateVaccineDataFrameVac1.merge(
-            stateVaccineDataFrameVac2, on="dt", how="outer"
-        )
-        # sums the first dose allocation and the second dose allocations together
-        stateVaccineDataFrame["supplyTotal"] = (
-            stateVaccineDataFrame["supplyVac2"] + stateVaccineDataFrame["supplyVac1"]
-        )
-        # create cumulative vaccine supply variable
-        stateVaccineDataFrame["supplyCumulative"] = [
-            stateVaccineDataFrame["supplyTotal"].loc[0:x].sum()
-            for x in range(len(stateVaccineDataFrame["supplyTotal"]))
+                "variable": "total_vaccine_completed",
+                "value": pfiz_mod_2_dose + jj_doses,
+            },
         ]
-        stateVaccineDataFrame["location"] = self.state_fips
-        stateVaccineDataFrame["dt"] = pd.to_datetime(stateVaccineDataFrame["dt"])
-        crename = {
-            "supplyCumulative": CMU(
-                category="total_vaccine_allocated",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "administeredVac1": CMU(
-                category="total_vaccine_initiated", measurement="new", unit="people"
-            ),
-            "administeredVac2": CMU(
-                category="total_vaccine_completed", measurement="new", unit="people"
-            ),
-        }
-        out = stateVaccineDataFrame.melt(
-            id_vars=["dt", "location"], value_vars=crename.keys()
-        ).dropna()
-        out["value"] = out["value"].astype(int)
-        out["vintage"] = self._retrieve_vintage()
-        out = self.extract_CMU(out, crename)
-        return out.drop(["variable"], axis="columns")
+
+        return (
+            pd.DataFrame.from_records(records)
+            .assign(
+                dt=self._retrieve_dtm1d(),
+                vintage=self._retrieve_vintage(),
+                location=56,
+            )
+            .pipe(self.extract_CMU, cmu=self.variables)
+            .drop(columns={"variable"})
+        )
 
 
 class WYCountyVaccinations(GoogleDataStudioDashboard):

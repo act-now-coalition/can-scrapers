@@ -210,14 +210,14 @@ class TennesseeRaceEthnicitySex(TennesseeBase):
 
     def normalize(self, data) -> pd.DataFrame:
         # Read data into data frame
-        df = pd.read_excel(data.content, parse_dates=["Date"])
+        df = pd.read_excel(data.content, parse_dates=["DATE"])
 
         # Rename columns
         df = df.rename(
             columns={
-                "Date": "dt",
+                "DATE": "dt",
                 "CAT_DETAIL": "category_detail",
-                "Category": "category_name",
+                "CATEGORY": "category_name",
             }
         )
 
