@@ -29,7 +29,7 @@ class HawaiiVaccineCounty(TableauDashboard):
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
-    data_tableau_table = "County Progress (JUR+PHARM)"
+    data_tableau_table = "County Progress (JUR+PHARM) (mobile)"
 
     variables = {
         "initiated": v.INITIATING_VACCINATIONS_ALL,
@@ -43,8 +43,8 @@ class HawaiiVaccineCounty(TableauDashboard):
             data.rename(
                 columns={
                     "SUM(Population)-alias": "population",
-                    f"AGG(% initiating (pharm + vams))-alias": "percent_initiating",
-                    f"AGG(% completing (pharm + vams))-alias": "percent_completing",
+                    f"AGG(% initiating )-alias": "percent_initiating",
+                    f"AGG(% completing)-alias": "percent_completing",
                     "County-alias": "location_name",
                 }
             )
