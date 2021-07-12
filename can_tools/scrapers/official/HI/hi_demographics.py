@@ -77,7 +77,7 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/AGE"
     subsheet = "Age progress (with pharm) (mobile new)"
     demographic = "age"
-    demographic_col_name = "Age Bins (match Pharm)-alias"
+    demographic_col_name = "Age Bins (12+ to all)-alias"
     filterFunctionName = "[sqlproxy.051olb00k3oo5j1gc5hz61tlutb7].[none:County:nk]"
 
     def normalize(self, data):
@@ -87,10 +87,10 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
             df = df[
                 [
                     "SUM(Population)-value",
-                    "AGG(initiated doses (pharm+vams))-alias",
-                    "AGG(completed doses (pharm + vams))-alias",
-                    f"AGG(% initiating (pharm + vams))-alias",
-                    f"AGG(% completing (pharm + vams))-alias",
+                    "AGG(initiated doses )-alias",
+                    "AGG(completed doses)-alias",
+                    f"AGG(% initiating )-alias",
+                    f"AGG(% completing)-alias",
                     self.demographic_col_name,
                 ]
             ]
@@ -114,5 +114,5 @@ class HawaiiVaccineAge(HawaiiVaccineRace):
             df["location_name"] = county
             dfs.append(df)
 
-        df = pd.concat(dfs)
+        df = pd.concat(dfs).replace("%null%", float("nan")).dropna()
         return self._wrangle(df)
