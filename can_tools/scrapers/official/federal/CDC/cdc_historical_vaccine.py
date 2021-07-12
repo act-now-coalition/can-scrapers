@@ -8,7 +8,7 @@ class CDCCountyVaccine2(FederalDashboard):
     location_type = "county"
     source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
     source_name = "Centers for Disease Control and Prevention"
-    provider = "cdc"
+    provider = "cdc2"
 
     variables = {
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
@@ -16,7 +16,9 @@ class CDCCountyVaccine2(FederalDashboard):
     }
 
     def fetch(self):
-        return pd.read_csv("https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD")
+        return pd.read_csv(
+            "https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD"
+        )
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         out = self._rename_or_add_date_and_location(
