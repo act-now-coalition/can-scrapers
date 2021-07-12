@@ -63,8 +63,11 @@ class IowaCountyVaccine(StateDashboard):
         df = data.rename(
             columns={
                 "First Dose Given": "total_vaccine_initiated",
+                "First Dose Given (Merged from datasource: ec049a78-938f-43ce-8c53-e977ad7594bd)": "total_vaccine_initiated",
                 "2-Dose Vaccinations Completed": "total_vaccine_completed",
+                "2-Dose Vaccinations Completed (Merged from datasource: ec049a78-938f-43ce-8c53-e977ad7594bd)": "total_vaccine_completed",
                 "1-Dose Vaccinations Completed": "single_complete",
+                "1-Dose Vaccinations Completed (Merged from datasource: ec049a78-938f-43ce-8c53-e977ad7594bd)": "single_complete",
             }
         ).dropna()
 

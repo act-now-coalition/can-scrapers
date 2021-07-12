@@ -49,14 +49,12 @@ class ArizonaMaricopaVaccine(CountyDashboard):
             return self._get_json(new_url)
 
         raw_data = str(raw_data[1]).replace("\\", "")
-
         # extract relevent json from string
         raw_json = (
             "{"
-            + re.findall(r"\"data\":\{.*?\]", raw_data, flags=re.MULTILINE)[1]
+            + re.findall(r"\"data\":\{\"changes.*?\]", raw_data, flags=re.MULTILINE)[0]
             + "}}"
         )
-
         # get only relevent data from this JSON
         return json.loads(raw_json)["data"]["changes"]
 
