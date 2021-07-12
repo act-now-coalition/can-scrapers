@@ -51,19 +51,14 @@ class OHVaccineCountyRace(StateDashboard):
         parts = []
         ws = ts.getWorksheet("New Map")
         counties = ws.getSelectableValues("county")
-
-        # TEMP: remove counties with no data s.t others' flows through without failing scraper
         for county in counties:
             print("working on county: ", county)
-            try:
-                wb = ws.select("county", county)
-            except:
-                continue
+            wb = ws.select("county", county)
             df = wb.getWorksheet("New Demographics").data.assign(location_name=county)
             df = df.rename(columns={"SUM(Chosen Dose Status Metric)-alias": shot_type})
-            if county in wb.getWorksheet("New County or Statewide").data.iloc[0, 0]:
-                parts.append(df)
-                ws = ts.getWorksheet("New Map")
+            assert county in wb.getWorksheet("New County or Statewide").data.iloc[0, 0]
+            parts.append(df)
+            ws = ts.getWorksheet("New Map")
         return pd.concat(parts)
 
     def fetch(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
