@@ -2,6 +2,7 @@ name,priority
 county,1000
 state,2000
 cdc,2150
+cdc2,500
 hhs,2300
 federal,2500
 usafacts,3000
