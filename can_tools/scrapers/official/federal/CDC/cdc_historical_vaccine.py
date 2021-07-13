@@ -24,4 +24,5 @@ class CDCCountyVaccine2(FederalDashboard):
         out = self._rename_or_add_date_and_location(
             data, location_column="FIPS", date_column="Date", locations_to_drop=["UNK"]
         )
-        return self._reshape_variables(out, self.variables)
+        out = self._reshape_variables(out, self.variables)
+        return out.query("location != 78020")
