@@ -1,71 +1,35 @@
+from can_tools.models import Location
+from typing import Dict
 import pandas as pd
+import requests
 import us
 
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import TableauDashboard
+from can_tools.scrapers.official.base import ArcGIS
 
 
-class WisconsinVaccineCounty(TableauDashboard):
-    has_location = False
+class WisconsinVaccineCounty(ArcGIS):
+    has_location = True
     source = "https://www.dhs.wisconsin.gov/covid-19/vaccine-data.htm#summary"
     source_name = "Wisconsin Department of Health Services"
     state_fips = int(us.states.lookup("Wisconsin").fips)
     location_type = "county"
-    baseurl = "https://bi.wisconsin.gov/t/DHS"
-    viewPath = (
-        "VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
-    )
 
-    data_tableau_table = "**Download Table"
-    location_name_col = "County-alias"
-    timezone = "US/Central"
-
-    # map wide form column names into CMUs
-    cmus = {
-        "At Least One Dose (#)": variables.INITIATING_VACCINATIONS_ALL,
-        "Completed Series (#)": variables.FULLY_VACCINATED_ALL,
+    variables = {
+        "DOSE_ONE_TOTAL": variables.INITIATING_VACCINATIONS_ALL,
+        "DOSE_COMPLETE_TOTAL": variables.FULLY_VACCINATED_ALL,
     }
 
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        # county names (converted to title case)
-        df["location_name"] = df[self.location_name_col].str.title()
-        # remove "County" from location_name if it is included
-        df["location_name"] = df["location_name"].apply(
-            lambda s: s[:-7] if s.endswith("County") else s
-        )
-        df = df[["Measure Values-alias", "location_name", "Measure Names-alias"]]
+    def fetch(self) -> Dict:
+        url = "https://dhsgis.wi.gov/server/rest/services/DHS_COVID19/COVID19_WI_Vaccinations/MapServer/1/query"
+        return requests.get(url, params=self.params).json()
 
-        df = (
-            df.replace(
-                {
-                    "location_name": {
-                        "St Croix": "St. Croix",
-                        "Fond Du Lac": "Fond du Lac",
-                    }
-                }
-            )
-            .query(
-                "`Measure Names-alias` in @self.cmus.keys() and location_name != 'Unknown'"
-            )
-            .rename(
-                columns={
-                    "Measure Values-alias": "value",
-                    "Measure Names-alias": "variable",
-                }
-            )
-        )
+    def normalize(self, data: Dict) -> pd.DataFrame:
+        data = self.arcgis_json_to_df(data)
+        data["dt"] = pd.to_datetime(data["DATE"], unit="ms").dt.date
 
-        # parse out data columns
-        df = (
-            df.dropna()
-            .assign(
-                dt=self._retrieve_dt(self.timezone),
-                vintage=self._retrieve_vintage(),
-                value=lambda x: pd.to_numeric(
-                    x["value"].astype(str).str.replace(",", "")
-                ),
-            )
-            .pipe(self.extract_CMU, cmu=self.cmus)
-            .drop(["variable"], axis=1)
-        )
-        return df
+        return data.pipe(
+            self._rename_or_add_date_and_location,
+            location_column="GEOID",
+            date_column="dt",
+        ).pipe(self._reshape_variables, variable_map=self.variables)
