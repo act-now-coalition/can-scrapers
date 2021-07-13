@@ -42,9 +42,9 @@ from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
 )
 from can_tools.scrapers.official.federal.CDC.cdc_county_vaccines import CDCCountyVaccine
 
-# from can_tools.scrapers.official.federal.CDC.cdc_historical_vaccine import (
-# CDCCountyVaccine2,
-# )
+from can_tools.scrapers.official.federal.CDC.cdc_historical_vaccine import (
+    CDCCountyVaccine2,
+)
 from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
     CDCVariantTracker,
 )
