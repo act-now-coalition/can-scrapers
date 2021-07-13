@@ -7,7 +7,17 @@ from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCou
 from can_tools.scrapers import variables, CMU
 
 
-class WisconsinVaccineStateAge(WisconsinVaccineCounty):
+class WisconsinVaccineStateAge(TableauDashboard):
+    has_location = False
+    source = "https://www.dhs.wisconsin.gov/covid-19/vaccine-data.htm#summary"
+    source_name = "Wisconsin Department of Health Services"
+    state_fips = int(us.states.lookup("Wisconsin").fips)
+    baseurl = "https://bi.wisconsin.gov/t/DHS"
+    viewPath = (
+        "VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
+    )
+
+    timezone = "US/Central"
     data_tableau_table = "Age vax/unvax County"
     # age does not report missing/unknown entries
     missing_tableau_table = ""
@@ -116,9 +126,10 @@ class WisconsinVaccineStateEthnicity(WisconsinVaccineStateAge):
         return df
 
 
-class WisconsinVaccineCountyRace(WisconsinVaccineCounty):
+class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
     demographic_worksheet = "Race vax/unvax county"
     demographic_column = "Race-alias"
+    location_type = "county"
     demographic = "race"
     fullUrl = "https://bi.wisconsin.gov/t/DHS/views/VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
 
