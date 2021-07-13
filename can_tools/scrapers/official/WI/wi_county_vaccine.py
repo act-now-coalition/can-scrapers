@@ -26,17 +26,10 @@ class WisconsinVaccineCounty(ArcGIS):
 
     def normalize(self, data: Dict) -> pd.DataFrame:
         data = self.arcgis_json_to_df(data)
-        data['dt'] = pd.to_datetime(data['DATE'], unit="ms").dt.date
-        
-        return ( 
-            data.pipe(
-                self._rename_or_add_date_and_location,
-                location_column="GEOID",
-                date_column="dt",
-            )
-            .pipe(
-                self._reshape_variables,
-                variable_map=self.variables
-            )
-        )
+        data["dt"] = pd.to_datetime(data["DATE"], unit="ms").dt.date
 
+        return data.pipe(
+            self._rename_or_add_date_and_location,
+            location_column="GEOID",
+            date_column="dt",
+        ).pipe(self._reshape_variables, variable_map=self.variables)
