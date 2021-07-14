@@ -138,7 +138,7 @@ def create_cdc_all_states_flow(schedule=True):
 
 
 def create_main_flow(flows: List[Flow], project_name):
-    schedule = CronSchedule("0 */2 * * *")
+    schedule = CronSchedule("0 */3 * * *")
 
     with Flow("MainFlow", schedule) as main_flow:
         tasks = []
