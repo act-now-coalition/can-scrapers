@@ -1,9 +1,6 @@
 import pandas as pd
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import FederalDashboard
-import ssl
-
-ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class CDCCountyVaccine2(FederalDashboard):
