@@ -1,6 +1,9 @@
 import pandas as pd
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import FederalDashboard
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class CDCCountyVaccine2(FederalDashboard):
@@ -25,4 +28,6 @@ class CDCCountyVaccine2(FederalDashboard):
             data, location_column="FIPS", date_column="Date", locations_to_drop=["UNK"]
         )
         out = self._reshape_variables(out, self.variables)
-        return out.query("location != 78020")
+
+        # remove entries with 0's and a location that caused issues (St. John Island, VI)
+        return out.query("location != 78020 and value != 0")
