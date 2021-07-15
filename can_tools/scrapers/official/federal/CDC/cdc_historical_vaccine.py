@@ -6,7 +6,7 @@ from can_tools.scrapers.official.base import FederalDashboard
 class CDCCountyVaccine2(FederalDashboard):
     has_location = True
     location_type = "county"
-    source = "https://covid.cdc.gov/covid-data-tracker/#county-view"
+    source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc2"
 
@@ -25,6 +25,22 @@ class CDCCountyVaccine2(FederalDashboard):
             data, location_column="FIPS", date_column="Date", locations_to_drop=["UNK"]
         )
         out = self._reshape_variables(out, self.variables)
+        
+        # an alaska county was renamed in 2014 and given a new fips: update from the old fips (2270) to the new (2158)
+        # source: https://www.cdc.gov/nchs/data/data_acces_files/County-Geography.pdf
+        out["location"] = out["location"].replace(2270,2158)
 
-        # remove entries with 0's and a location that caused issues (St. John Island, VI)
+        # CDC data uses zeroes instead of NaNs to represent missing data in many locations, creating locations with trailing zeroes.
+        # The _reshape_variables method removes NaNs (missing data), and the pipeline will later fill those locations with the 
+        # next data-source, but this will not happen for the zero values (as 0 is usually a valid entry).
+        # Since the zeroes here are essentially NaNs, we remove them. 
+        # This removes all zeroes in the dataframe, so leading zeroes are lost as well as trailing/any other zeroes.
+        # A potential update would be to isolate and only remove the trailing zeroes for each location
+        # 
+        # The location 78020 (St. John Island, VI) caused problems in the pipeline. 
+        # It was being assigned a location id "iso1:us#iso2:us-vi#fips:780120" (instead of "iso1:us#iso2:us-vi#fips:78020" with the correct FIPS)
+        # which caused the update-and-promote-datasets to fail. Since we do not surface any data for VI and because we are still testing this data, 
+        # we chose to just block the location entirely 
+        #
+        # example of pipeline failure: https://github.com/covid-projections/covid-data-model/runs/3052782694?check_suite_focus=true
         return out.query("location != 78020 and value != 0")
