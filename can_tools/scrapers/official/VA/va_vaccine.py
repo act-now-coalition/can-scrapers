@@ -161,12 +161,14 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
     def _normalize_age(self, data):
         df = pd.concat(x["age"] for x in data)
         df["dt"] = self._retrieve_dt()
+        # I've seen the age column be labeled multiple ways, so rename both of them
         df = df.rename(
             columns={
                 "AGG(Locality Name for String)-alias": "location_name",
                 "SUM(Vaccine Status Count)-value": "value",
                 "ATTR(KPI String)-alias": "category",
                 "Age Group-alias": "age",
+                "New Age Group-alias": "age",
             }
         )
         df.category = df.category.str.replace(
