@@ -188,7 +188,7 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
                     if title is not None:
                         # extract table and load into dataframe
                         table = div.find(
-                            "table", class_="c-dash-table__table table table-striped"
+                            "table", class_="table c-dash-table__table table-striped"
                         )
                         table = pd.read_html(str(table))[0].assign(
                             variable=var, location_name=county

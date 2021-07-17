@@ -202,8 +202,9 @@ class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
         data = data.rename(columns={"AGG(Geography TT)-alias": "location_name"})
         data["location_name"] = (
             data["location_name"]
+            .str.title()
             .str.replace(" County", "")
-            .replace("St Croix", "St. Croix")
+            .replace({"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"})
         )
         data[self.demographic_column] = (
             data[self.demographic_column]

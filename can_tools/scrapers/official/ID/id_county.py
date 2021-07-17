@@ -9,7 +9,7 @@ class IdahoCountyVaccine(TableauDashboard):
     location_type = "county"
     source = "https://coronavirus.idaho.gov/"
     source_name = "Idaho Official Government Website"
-    data_tableau_table = "Vax Rate / County Chart"
+    data_tableau_table = "Vax Rate / County Chart (2)"
     baseurl = "https://public.tableau.com"
     viewPath = "COVID-19VaccineDataDashboard/VaccineUptakeIdahoIIS"
     filterFunctionName = "[Parameters].[Map (copy)]"  # set to county level
@@ -41,7 +41,7 @@ class IdahoCountyVaccine(TableauDashboard):
                 "dose_number-value": "dose_number",
             }
         )
-        keep = df[["county", "doses", "dose_number"]]
+        keep = df[["county", "doses", "dose_number"]].drop_duplicates()
         out = (
             keep.pivot(index="county", columns="dose_number", values="doses")
             .reset_index()

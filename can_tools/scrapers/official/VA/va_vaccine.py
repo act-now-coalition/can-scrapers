@@ -167,6 +167,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
                 "SUM(Vaccine Status Count)-value": "value",
                 "ATTR(KPI String)-alias": "category",
                 "Age Group-alias": "age",
+                "New Age Group-alias": "age",
             }
         )
         df.category = df.category.str.replace(
