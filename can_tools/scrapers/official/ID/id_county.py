@@ -41,6 +41,8 @@ class IdahoCountyVaccine(TableauDashboard):
                 "dose_number-value": "dose_number",
             }
         )
+
+        # duplicate rows (repeated data) were causing the pivot to fail, so remove them
         keep = df[["county", "doses", "dose_number"]].drop_duplicates()
         out = (
             keep.pivot(index="county", columns="dose_number", values="doses")
