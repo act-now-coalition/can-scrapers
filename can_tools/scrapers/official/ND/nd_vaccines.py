@@ -499,18 +499,21 @@ class NDVaccineCounty(MicrosoftBIDashboard):
         # combine first dose rows with fully vaccinated rows
         data_rows = first_dose_data_rows + fully_vaccinated_data_rows
 
-        # multiply percentages per county by populations to get actual number of people
+        non_counties = ["ND-COUNTY UNKNOWN"]
         data_rows_with_population = []
+
+        # multiply percentages per county by populations to get actual number of people
         for i, row in enumerate(data_rows):
             county_name = row["county"]
+            if county_name in non_counties:
+                continue
 
             # differentiate dose type from `at_least_one_dose` and `fully_vaccinated`
             keys = list(row.keys())
             dose_type = keys[1]
             dose_percentage = float(row[dose_type])
 
-            if county_name in nd_populations:
-                doses = int(dose_percentage * nd_populations[county_name])
+            doses = int(dose_percentage * nd_populations[county_name])
 
             row_with_population = {
                 "county": county_name,
