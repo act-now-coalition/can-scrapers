@@ -80,9 +80,10 @@ class CDCCovidDataTracker(FederalDashboard):
             ignore_index=True,
         )
 
+        # We have no way to handle suppressed entries, so remove them
         df = self._rename_or_add_date_and_location(
             df, location_column="fips_code", date_column="date"
-        )
+        ).replace("suppressed", None)
 
         df = self._reshape_variables(df, self.variables)
         return df
