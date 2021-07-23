@@ -96,6 +96,45 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                                             ),
                                         ],
                                     ),
+                                    # 07/22/21
+                                    # There are 5 counties that have data for AstraZeneca doses (all w/ fewer than 10 initiated doses)
+                                    # The way in which the data is returned is unpredictable b/c there are no completed doses yet
+                                    # In some cases the number of completed doses is returned, in others it is skipped
+                                    # Since the data is stored in a list having a variable # of list items causes issues in parsing the JSON.
+                                    # B/c of this, Astrazeneca doses have been removed until the vaccine is formally approved and counties have data 
+                                    "Where": [
+											{
+												"Condition": {
+                                                    "Not": {
+                                                        "Expression": {
+                                                            "In": {
+                                                                "Expressions": [
+                                                                    {
+                                                                        "Column": {
+                                                                            "Expression": {
+                                                                                "SourceRef": {
+                                                                                    "Source": "c"
+                                                                                }
+                                                                            },
+                                                                            "Property": "Vaccine Manufacturer"
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "Values": [
+                                                                    [
+                                                                        {
+                                                                            "Literal": {
+                                                                                "Value": "'AstraZeneca'"
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                }
+											}
+										]
                                 }
                             }
                         }
@@ -161,7 +200,6 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
             data_rows.append(row)
 
         df = pd.DataFrame.from_records(data_rows)
-
         # calculate vaccine initiated to match def'n
         df["total_vaccine_initiated"] = (
             df["pfizer_moderna_first_dose"] + df["janssen_series"]
@@ -320,6 +358,37 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                 }
                                             }
                                         },
+                                        {
+                                            "Condition": {
+                                                "Not": {
+                                                    "Expression": {
+                                                        "In": {
+                                                            "Expressions": [
+                                                                {
+                                                                    "Column": {
+                                                                        "Expression": {
+                                                                            "SourceRef": {
+                                                                                "Source": "c1"
+                                                                            }
+                                                                        },
+                                                                        "Property": "Vaccine Manufacturer"
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "Values": [
+                                                                [
+                                                                    {
+                                                                        "Literal": {
+                                                                            "Value": "'AstraZeneca'"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+										},
                                     ],
                                 }
                             }
@@ -552,6 +621,37 @@ class MaineAgeVaccines(MaineRaceVaccines):
                                                 }
                                             }
                                         },
+                                        {
+                                            "Condition": {
+                                                "Not": {
+                                                    "Expression": {
+                                                        "In": {
+                                                            "Expressions": [
+                                                                {
+                                                                    "Column": {
+                                                                        "Expression": {
+                                                                            "SourceRef": {
+                                                                                "Source": "c1"
+                                                                            }
+                                                                        },
+                                                                        "Property": "Vaccine Manufacturer"
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "Values": [
+                                                                [
+                                                                    {
+                                                                        "Literal": {
+                                                                            "Value": "'AstraZeneca'"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+										},
                                     ],
                                 }
                             }
