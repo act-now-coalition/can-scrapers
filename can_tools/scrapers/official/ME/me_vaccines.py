@@ -101,40 +101,40 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
                                     # The way in which the data is returned is unpredictable b/c there are no completed doses yet
                                     # In some cases the number of completed doses is returned, in others it is skipped
                                     # Since the data is stored in a list having a variable # of list items causes issues in parsing the JSON.
-                                    # B/c of this, Astrazeneca doses have been removed until the vaccine is formally approved and counties have data 
+                                    # B/c of this, Astrazeneca doses have been removed until the vaccine is formally approved and counties have data
                                     "Where": [
-											{
-												"Condition": {
-                                                    "Not": {
-                                                        "Expression": {
-                                                            "In": {
-                                                                "Expressions": [
+                                        {
+                                            "Condition": {
+                                                "Not": {
+                                                    "Expression": {
+                                                        "In": {
+                                                            "Expressions": [
+                                                                {
+                                                                    "Column": {
+                                                                        "Expression": {
+                                                                            "SourceRef": {
+                                                                                "Source": "c"
+                                                                            }
+                                                                        },
+                                                                        "Property": "Vaccine Manufacturer",
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "Values": [
+                                                                [
                                                                     {
-                                                                        "Column": {
-                                                                            "Expression": {
-                                                                                "SourceRef": {
-                                                                                    "Source": "c"
-                                                                                }
-                                                                            },
-                                                                            "Property": "Vaccine Manufacturer"
+                                                                        "Literal": {
+                                                                            "Value": "'AstraZeneca'"
                                                                         }
                                                                     }
-                                                                ],
-                                                                "Values": [
-                                                                    [
-                                                                        {
-                                                                            "Literal": {
-                                                                                "Value": "'AstraZeneca'"
-                                                                            }
-                                                                        }
-                                                                    ]
                                                                 ]
-                                                            }
+                                                            ],
                                                         }
                                                     }
                                                 }
-											}
-										]
+                                            }
+                                        }
+                                    ],
                                 }
                             }
                         }
@@ -371,7 +371,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                                                 "Source": "c1"
                                                                             }
                                                                         },
-                                                                        "Property": "Vaccine Manufacturer"
+                                                                        "Property": "Vaccine Manufacturer",
                                                                     }
                                                                 }
                                                             ],
@@ -383,12 +383,12 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
                                                                         }
                                                                     }
                                                                 ]
-                                                            ]
+                                                            ],
                                                         }
                                                     }
                                                 }
                                             }
-										},
+                                        },
                                     ],
                                 }
                             }
@@ -634,7 +634,7 @@ class MaineAgeVaccines(MaineRaceVaccines):
                                                                                 "Source": "c1"
                                                                             }
                                                                         },
-                                                                        "Property": "Vaccine Manufacturer"
+                                                                        "Property": "Vaccine Manufacturer",
                                                                     }
                                                                 }
                                                             ],
@@ -646,12 +646,12 @@ class MaineAgeVaccines(MaineRaceVaccines):
                                                                         }
                                                                     }
                                                                 ]
-                                                            ]
+                                                            ],
                                                         }
                                                     }
                                                 }
                                             }
-										},
+                                        },
                                     ],
                                 }
                             }
