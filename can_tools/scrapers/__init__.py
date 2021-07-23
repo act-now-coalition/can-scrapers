@@ -54,6 +54,7 @@ from can_tools.scrapers.official.federal.HHS.facility import (
 from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )
+
 # Scrapers disabled due to source data no longer being updated
 # from can_tools.scrapers.official.FL.fl_vaccine import (
 #     FloridaCountyVaccine,
