@@ -164,7 +164,6 @@ from can_tools.scrapers.official.VA.va_vaccine import (
 )
 from can_tools.scrapers.official.VT.vt_vaccinations import (
     VermontCountyVaccine,
-    VermontStateVaccine,
 )
 from can_tools.scrapers.official.WA.wa_vaccine import (
     WashingtonVaccine,
