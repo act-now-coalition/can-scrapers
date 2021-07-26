@@ -55,11 +55,6 @@ from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )
 
-# Scrapers disabled due to source data no longer being updated
-# from can_tools.scrapers.official.FL.fl_vaccine import (
-#     FloridaCountyVaccine,
-#     FloridaCountyVaccineDemographics,
-# )
 from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccine,
     GeorgiaCountyVaccineAge,
@@ -75,7 +70,6 @@ from can_tools.scrapers.official.HI.hi_demographics import (
 
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 
-# from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IA.ia_vaccine_county import IowaCountyVaccine
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (
@@ -110,7 +104,6 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
     MontanaStateVaccine,
 )
 
-# from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemographics
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
 from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
@@ -158,12 +151,6 @@ from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
     SDVaccineAge,
 )
 
-# State provided cases/deaths data is no longer being scraped
-# from can_tools.scrapers.official.TN.tn_state import (
-#     TennesseeAge,
-#     TennesseeAgeByCounty,
-#     TennesseeRaceEthnicitySex,
-# )
 from can_tools.scrapers.official.TN.tn_vaccine import TennesseeVaccineCounty
 from can_tools.scrapers.official.TX.texas_vaccine import (
     TexasCountyVaccine,
