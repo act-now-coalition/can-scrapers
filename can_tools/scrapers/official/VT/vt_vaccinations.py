@@ -29,14 +29,15 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         path = "/../../../bootstrap_data/locations.csv"
         return list(
             pd.read_csv(os.path.dirname(__file__) + path).query(
-                f"state == {self.state_fips} and location != {self.state_fips}")["name"]
+                f"state == {self.state_fips} and location != {self.state_fips}"
+            )["name"]
         )
-    
+
     def get_dashboard_iframe(self):
         """scrapes the dashboard source page for the link (iframe) to the stand-alone dashboard.
-        
+
         The iframe from the source page directed to an arcgis url, which does not comply with this
-        scraper class' setup/methods, so this custom method is used. 
+        scraper class' setup/methods, so this custom method is used.
         """
 
         res = requests.get(self.source)
