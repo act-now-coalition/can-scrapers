@@ -37,7 +37,8 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         """scrapes the dashboard source page for the link (iframe) to the stand-alone dashboard.
 
         The iframe from the source page directed to an arcgis url, which does not comply with this
-        scraper class' setup/methods, so this custom method is used.
+        scraper class' setup/methods, so this custom method is used instead to grab the 
+        standard 'powerbigov' url.
         """
 
         res = requests.get(self.source)
