@@ -1,218 +1,185 @@
 import pandas as pd
+import requests
 import us
 
-from can_tools.scrapers import CMU
-from can_tools.scrapers.official.base import ArcGIS
+from can_tools.scrapers import variables
+from can_tools.scrapers.official.base import MicrosoftBIDashboard
+from can_tools.scrapers.util import flatten_dict
+from bs4 import BeautifulSoup
+import os
 
-pd.options.mode.chained_assignment = None  # Avoid unnessacary SettingWithCopy warning
+
+pd.options.mode.chained_assignment = None  # Avoid unnecessary SettingWithCopy warning
 
 
-class VermontCountyVaccine(ArcGIS):
-    ARCGIS_ID = "YKJ5JtnaPQ2jDbX8"
+class VermontCountyVaccine(MicrosoftBIDashboard):
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("Vermont").fips)
     source = "https://www.healthvermont.gov/covid-19/vaccine/covid-19-vaccine-dashboard"
     source_name = "Vermont Department of Health"
-    var_columns = [
-        "dose_1_male",
-        "dose_1_female",
-        "dose_1_sex_unknown",
-        "dose_2_male",
-        "dose_2_female",
-        "dose_2_sex_unknown",
-    ]
+    powerbi_url = "https://wabi-us-gov-virginia-api.analysis.usgovcloudapi.net"
+
+    variables = {
+        "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+    }
+
+    def get_counties(self):
+        path = "/../../../bootstrap_data/locations.csv"
+        return list(
+            pd.read_csv(os.path.dirname(__file__) + path).query(
+                f"state == {self.state_fips} and location != {self.state_fips}")["name"]
+        )
+    
+    def get_dashboard_iframe(self):
+        """scrapes the dashboard source page for the link (iframe) to the stand-alone dashboard.
+        
+        The iframe from the source page directed to an arcgis url, which does not comply with this
+        scraper class' setup/methods, so this custom method is used. 
+        """
+
+        res = requests.get(self.source)
+        page = BeautifulSoup(res.content, "lxml")
+        urls = page.find_all("a")
+        iframe = [
+            url["href"]
+            for url in urls
+            if url.has_attr("href") and "app.powerbigov.us" in url["href"]
+        ][0]
+        return {"src": iframe}
+
+    def construct_body(self, resource_key, ds_id, model_id, report_id, county):
+        "Build body request"
+        body = {}
+        body["version"] = "1.0.0"
+        body["cancelQueries"] = []
+        body["modelId"] = model_id
+
+        body["queries"] = [
+            {
+                "Query": {
+                    "Commands": [
+                        {
+                            "SemanticQueryDataShapeCommand": {
+                                "Query": {
+                                    "Version": 2,
+                                    "From": self.construct_from(
+                                        [
+                                            # From
+                                            ("d1", "Dimension County", 0),
+                                            ("i", "Immunization Summary - finished", 0),
+                                            ("_1", "_CVMeasures", 0),
+                                        ]
+                                    ),
+                                    "Select": self.construct_select(
+                                        [
+                                            # Selects
+                                            ("d1", "County", "location_name")
+                                        ],
+                                        [],
+                                        [
+                                            # Measures
+                                            ("_1", "People vaccinated", "init"),
+                                            ("i", "People completed 1", "completed"),
+                                        ],
+                                    ),
+                                    "Where": [
+                                        {
+                                            "Condition": {
+                                                "In": {
+                                                    "Expressions": [
+                                                        {
+                                                            "Column": {
+                                                                "Expression": {
+                                                                    "SourceRef": {
+                                                                        "Source": "d1"
+                                                                    }
+                                                                },
+                                                                "Property": "County",
+                                                            }
+                                                        }
+                                                    ],
+                                                    "Values": [
+                                                        [
+                                                            {
+                                                                "Literal": {
+                                                                    "Value": f"'{county}'"
+                                                                }
+                                                            }
+                                                        ]
+                                                    ],
+                                                }
+                                            }
+                                        }
+                                    ],
+                                }
+                            }
+                        }
+                    ]
+                },
+                "QueryId": "",
+                "ApplicationContext": self.construct_application_context(
+                    ds_id, report_id
+                ),
+            }
+        ]
+
+        return body
 
     def fetch(self):
-        return self.get_all_jsons("VT_COVID_Vaccine_Data", 0, "")
 
-    def normalize(self, data):
-        data = (
-            self.arcgis_jsons_to_df(data)
-            .fillna(0)
-            .rename(columns={"County": "location_name"})
-        )
-        data = self._get_clean_data(data)
-        newest_date = data["dt"].max()
+        # Get general information
+        self._setup_sess()
+        dashboard_frame = self.get_dashboard_iframe()
+        resource_key = self.get_resource_key(dashboard_frame)
+        ds_id, model_id, report_id = self.get_model_data(resource_key)
 
-        # get cumulative data
-        df = data.melt(
-            id_vars=["dt", "location_name"], value_vars=self.var_columns
-        ).dropna()
+        # Get the post url
+        url = self.powerbi_query_url()
 
-        # sum total values by county for first and second dose
-        # NOTE: This currently uses a sum to get the total number of
-        #       vaccines administered -- This depends on the fact
-        #       that we're only working with sex for now
-        df1 = (
-            df.query('variable.str.contains("dose_1")')
-            .groupby("location_name", as_index=False)["value"]
-            .sum()
-        )
-        df1["category"] = "total_vaccine_initiated"
-        df2 = (
-            df.query('variable.str.contains("dose_2")')
-            .groupby("location_name", as_index=False)["value"]
-            .sum()
-        )
-        df2["category"] = "total_vaccine_completed"
+        # Build post headers
+        headers = self.construct_headers(resource_key)
 
-        # combine dfs and fill needed columns
-        df = pd.concat(
-            [
-                df1,
-                df2,
-            ],
-            axis=0,
-            ignore_index=True,
-        )
-        cumulative_df = self._populate_cols(df, newest_date)
+        jsons = []
+        # Build post body
+        for county in self.get_counties():
+            body = self.construct_body(resource_key, ds_id, model_id, report_id, county)
+            res = self.sess.post(url, json=body, headers=headers)
+            jsons.append(res.json())
 
-        # get weekly snapshots
-        # create "total" 1st and 2nd dose columns by week
-        weekly_df = self._get_clean_data(data)
-        weekly_df["dose_1"] = (
-            weekly_df["dose_1_male"]
-            + weekly_df["dose_1_female"]
-            + weekly_df["dose_1_sex_unknown"]
-        )
-        weekly_df["dose_2"] = (
-            weekly_df["dose_2_male"]
-            + weekly_df["dose_2_female"]
-            + weekly_df["dose_2_sex_unknown"]
-        )
+        return jsons
 
-        crename = {
-            "dose_1": CMU(
-                category="total_vaccine_initiated",
-                measurement="new_7_day",
-                unit="people",
-            ),
-            "dose_2": CMU(
-                category="total_vaccine_completed",
-                measurement="new_7_day",
-                unit="people",
-            ),
-            "dose_1_male": CMU(
-                category="total_vaccine_initiated",
-                measurement="new_7_day",
-                unit="people",
-                sex="male",
-            ),
-            "dose_2_male": CMU(
-                category="total_vaccine_completed",
-                measurement="new_7_day",
-                unit="people",
-                sex="male",
-            ),
-            "dose_1_female": CMU(
-                category="total_vaccine_initiated",
-                measurement="new_7_day",
-                unit="people",
-                sex="female",
-            ),
-            "dose_2_female": CMU(
-                category="total_vaccine_completed",
-                measurement="new_7_day",
-                unit="people",
-                sex="female",
-            ),
-            "dose_1_sex_unknown": CMU(
-                category="total_vaccine_initiated",
-                measurement="new_7_day",
-                unit="people",
-                sex="unknown",
-            ),
-            "dose_2_sex_unknown": CMU(
-                category="total_vaccine_completed",
-                measurement="new_7_day",
-                unit="people",
-                sex="unknown",
-            ),
+    def normalize(self, resjson: dict) -> pd.DataFrame:
+
+        # combine all list entries into one dict s.t they can all be parsed at once
+        data = []
+        for chunk in resjson:
+            foo = chunk["results"][0]["result"]["data"]
+            d = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
+            data.extend(d)
+
+        # Build dict of dicts with relevant info
+        col_mapping = {
+            "C_0": "location_name",
+            "C_1": "total_vaccine_initiated",
+            "C_2": "total_vaccine_completed",
         }
 
-        weekly_df = weekly_df.melt(
-            id_vars=["location_name", "dt"], value_vars=crename.keys()
-        ).dropna()
-        weekly_df["value"] = weekly_df["value"].astype(int)
-        weekly_df["vintage"] = self._retrieve_vintage()
+        # Iterate through all of the rows and store relevant data
+        data_rows = []
+        for record in data:
+            flat_record = flatten_dict(record)
+            row = {}
+            for k in list(col_mapping.keys()):
+                flat_record_key = [frk for frk in flat_record.keys() if k in frk]
 
-        # Extract category information and add other variable context
-        weekly_df = self.extract_CMU(weekly_df, crename)
-        weekly_df = weekly_df.drop(columns={"variable"})
+                if len(flat_record_key) > 0:
+                    row[col_mapping[k]] = flat_record[flat_record_key[0]]
 
-        return pd.concat([cumulative_df, weekly_df], ignore_index=True).query(
-            "location_name != 'Unknown/Out of State'"
-        )
+            data_rows.append(row)
+        df = pd.DataFrame.from_records(data_rows).reset_index()
 
-    def _get_clean_data(self, data):
-        """
-        clean data -- rename columns and reformat date column
-
-        accepts: pandas.Dataframe
-        returns: pandas.Dataframe
-        """
-        data.columns = [x.lower() for x in list(data)]
-        data = data.query("location_name != 'Unknown/Other'")
-
-        # keep second date
-        data["dt"] = data["dates"].str.split("-").str[1]
-        data["dt"] = pd.to_datetime(data["dt"], errors="coerce")
-
-        return data
-
-    def _populate_cols(self, data, dt):
-        """
-        create and populate necessary columns for put() function. format value to numeric
-
-        accepts: pandas.Dataframe
-        returns: pandas.Dataframe
-        """
-        df = data.assign(
-            measurement="cumulative",
-            unit="people",
-            age="all",
-            race="all",
-            ethnicity="all",
-            sex="all",
-        )
-
-        df["dt"] = dt
-        df["vintage"] = self._retrieve_vintage()
-        df.loc[:, "value"] = pd.to_numeric(df["value"])
-
-        return df
-
-
-class VermontStateVaccine(VermontCountyVaccine):
-    has_location = True
-    location_type = "state"
-
-    def normalize(self, data):
-        data = (
-            self.arcgis_jsons_to_df(data)
-            .fillna(0)
-            .rename(columns={"County": "location_name"})
-        )
-        df = self._get_clean_data(data)
-        newest_date = df["dt"].max()
-
-        # transform to long -- keep only dose 1 and 2 for each sex
-        df = df.melt(
-            id_vars=["dt", "location_name"], value_vars=self.var_columns
-        ).dropna()
-
-        # get cumulative state values (sum all rows for each dose)
-        first_dose = df.loc[df["variable"].str.contains("dose_1"), "value"].sum()
-        second_dose = df.loc[df["variable"].str.contains("dose_2"), "value"].sum()
-
-        # combine values into a df and add necessary columns
-        d = [
-            {"value": first_dose, "category": "total_vaccine_initiated"},
-            {"value": second_dose, "category": "total_vaccine_completed"},
-        ]
-        df = pd.DataFrame(d)
-        df = self._populate_cols(df, newest_date)
-
-        df["location"] = self.state_fips
-        return df
+        out = self._reshape_variables(df, self.variables)
+        out["dt"] = self._retrieve_dt("US/Eastern")
+        return out
