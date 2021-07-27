@@ -3,6 +3,9 @@ import asyncio
 import pandas as pd
 import us
 import os
+import re
+from pyppeteer import launch
+
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard, MicrosoftBIDashboard
@@ -59,7 +62,6 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
 
     source = "https://www.doh.wa.gov/Emergencies/COVID19/DataDashboard"
     powerbi_url = "https://wabi-us-gov-virginia-api.analysis.usgovcloudapi.net"
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiZTZhOTlkYzgtMTlkYi00OWEzLTg2NjUtN2FmODgxNzZkMzA2IiwidCI6IjExZDBlMjE3LTI2NGUtNDAwYS04YmEwLTU3ZGNjMTI3ZDcyZCJ9"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
@@ -81,9 +83,26 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
         "8": "pacific_islander",
     }
 
+    async def _get_from_browser(self):
+        """use an async function to wait until the javascript has loaded to extract the iframe url.
+
+        The page is protected by a "no-javascript" blocker, so we parse the html directly with an lxml/html parser.
+        """
+        browser = await launch()
+        page = await browser.newPage()
+        await page.goto(self.source)
+
+        sel = "#dnn_ctr34282_HtmlModule_lblContent div"
+        # wait until element that contains the iframe url has loaded into the page
+        iframe_div = await page.waitForSelector(sel)
+        iframe = await page.J(sel)
+        iframe = await page.evaluate(" x => x.outerHTML", iframe)
+        await browser.close()
+
+        return {"src": re.findall(r'pbi-resize-src="(.*?)"', iframe)[0]}
+
     def get_dashboard_iframe(self):
-        fumn = {"src": self.powerbi_dashboard_link}
-        return fumn
+        return asyncio.get_event_loop().run_until_complete(self._get_from_browser())
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, county):
         "Build body request"
