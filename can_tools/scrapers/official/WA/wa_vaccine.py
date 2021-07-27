@@ -86,7 +86,7 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
     async def _get_from_browser(self):
         """use an async function to wait until the javascript has loaded to extract the iframe url.
 
-        The page is protected by a "no-javascript" blocker, so we cannot parse the html directly with an lxml/html parser.
+        The page is protected by a "no-javascript" blocker, so we cannot parse the html directly.
         """
         browser = await launch()
         page = await browser.newPage()
