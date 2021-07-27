@@ -14,7 +14,7 @@ class VirginiaVaccine(TableauDashboard):
     baseurl = "https://vdhpublicdata.vdh.virginia.gov"
     provider = "state"
     has_location = True
-    location_type = ""
+    location_type = "county"
     filterFunctionName = None
     viewPath = "VirginiaCOVID-19Dashboard-VaccineSummary/VirginiaCOVID-19VaccineSummary"
 
@@ -161,7 +161,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
     def _normalize_age(self, data):
         df = pd.concat(x["age"] for x in data)
         df["dt"] = self._retrieve_dt()
-        # I've seen the age column be labeled multiple ways, so rename both of them
+        # I've seen the age column be labeled multiple ways, so rename all of them
         df = df.rename(
             columns={
                 "AGG(Locality Name for String)-alias": "location_name",
@@ -169,6 +169,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
                 "ATTR(KPI String)-alias": "category",
                 "Age Group-alias": "age",
                 "New Age Group-alias": "age",
+                "Cases and Vaccine Age Group-alias": "age",
             }
         )
         df.category = df.category.str.replace(
