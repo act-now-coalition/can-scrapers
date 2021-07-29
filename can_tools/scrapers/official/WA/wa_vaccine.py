@@ -92,7 +92,6 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
             await page.goto(self.source)
             sel = "#dnn_ctr34282_HtmlModule_lblContent div"
             iframe_div = await page.waitForSelector(sel)
-            print("found iframe!")
             iframe = await page.J(sel)
             iframe = await page.evaluate(" x => x.outerHTML", iframe)
             return {"src": re.findall(r'pbi-resize-src="(.*?)"', iframe)[0]}
