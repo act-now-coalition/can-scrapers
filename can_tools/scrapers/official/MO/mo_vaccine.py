@@ -25,6 +25,7 @@ class MissouriVaccineCounty(TableauDashboard):
             "Kansas City",
             "Joplin",
             "Unknown Jurisdiction",
+            "Independence",  # city without a fips
         ]  # noqa
         return (
             data.rename(
