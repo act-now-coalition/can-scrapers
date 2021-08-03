@@ -24,11 +24,11 @@ class PhiladelphiaVaccine(TableauDashboard):
     data_tableau_table = "Residents Percentage New"
     variables = {
         "Residents Receiving At Least 1 Dose ": variables.INITIATING_VACCINATIONS_ALL,
-        "Full Vaccinated Residents": variables.FULLY_VACCINATED_ALL,
+        "Fully Vaccinated Residents  ": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        return (
+        data = (
             data.rename(
                 columns={
                     "Measure Values-alias": "value",
@@ -38,7 +38,7 @@ class PhiladelphiaVaccine(TableauDashboard):
             .loc[:, ["value", "variable"]]
             .query(
                 "variable in"
-                "['Residents Receiving At Least 1 Dose ', 'Full Vaccinated Residents']"
+                "['Residents Receiving At Least 1 Dose ', 'Fully Vaccinated Residents  ']"
             )
             .assign(
                 location=42101,
@@ -54,6 +54,11 @@ class PhiladelphiaVaccine(TableauDashboard):
             .drop(columns={"variable"})
             .reset_index(drop=True)
         )
+
+        # break scraper if both init and completed variables are not included in data
+        vars = {"total_vaccine_initiated", "total_vaccine_completed"}
+        assert vars <= set(data["category"])
+        return data
 
     # could not find a way to select the "Demographics New" dashboard tab in the usual manner,
     # so edit request body to manually select Demographic tab/sheets
