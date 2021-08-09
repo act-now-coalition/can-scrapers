@@ -88,18 +88,13 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
 
         The page is protected by a "no-javascript" blocker, so we cannot parse the html directly.
         """
-        browser = await launch()
-        page = await browser.newPage()
-        await page.goto(self.source)
-
-        sel = "#dnn_ctr34282_HtmlModule_lblContent div"
-        # wait until element that contains the iframe url has loaded into the page
-        iframe_div = await page.waitForSelector(sel)
-        iframe = await page.J(sel)
-        iframe = await page.evaluate(" x => x.outerHTML", iframe)
-        await browser.close()
-
-        return {"src": re.findall(r'pbi-resize-src="(.*?)"', iframe)[0]}
+        async with with_page(headless=True) as page:
+            await page.goto(self.source)
+            sel = "#dnn_ctr34282_HtmlModule_lblContent div"
+            iframe_div = await page.waitForSelector(sel)
+            iframe = await page.J(sel)
+            iframe = await page.evaluate(" x => x.outerHTML", iframe)
+            return {"src": re.findall(r'pbi-resize-src="(.*?)"', iframe)[0]}
 
     def get_dashboard_iframe(self):
         return asyncio.get_event_loop().run_until_complete(self._get_from_browser())

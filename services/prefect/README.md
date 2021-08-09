@@ -89,5 +89,6 @@ The steps to fix this are to:
 * Navigate to `/home/sglyon/`
 * If `ls: cannot access 'scraper-outputs': Permission denied` occurs, gain access to Spencer's account using `sudo su sglyon`
 * Un-mount the current filesystem using `fusermount -u scraper-outputs`
+* If the above fails with the error `fusermount: failed to unmount /home/sglyon/scraper-outputs: Device or resource busy`, un-mount the filesystem using `sudo umount -l scraper-outputs`
 * Re-mount the filesystem using `mount ~/scraper-outputs`. This runs gcsfuse and links the ~/scraper-outputs directory to the cloud storage bucket
 * Check the Prefect server dashboard to ensure that the flows have commenced. 
