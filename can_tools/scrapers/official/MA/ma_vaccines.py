@@ -37,9 +37,9 @@ class MassachusettsVaccineDemographics(StateDashboard):
         dfs = []
         # scrape each demographic type then combine
         demos = {
-            "Sex – municipality": "sex",
-            "Race and ethnicity – muni.": "race",
-            "Age – municipality": "age",
+            "Sex - municipality": "sex",
+            "Race and ethnicity - muni.": "race",
+            "Age - municipality": "age",
         }
         for sheet, demo in demos.items():
             # the race / ethnicity sheet name changes, so try different formats
@@ -47,7 +47,7 @@ class MassachusettsVaccineDemographics(StateDashboard):
                 try:
                     df = pd.read_excel(data, sheet, header=[1])
                 except:
-                    df = pd.read_excel(data, "Race and Ethnicity – muni.", header=[1])
+                    df = pd.read_excel(data, "Race and Ethnicity - muni.", header=[1])
             else:
                 df = pd.read_excel(data, sheet, header=[1])
 
