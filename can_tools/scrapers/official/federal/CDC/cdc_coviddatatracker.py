@@ -1,8 +1,10 @@
 import pathlib
+from typing import Dict
 
 import pandas as pd
 import requests
 import us
+import multiprocessing
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
@@ -47,6 +49,10 @@ class CDCCovidDataTracker(FederalDashboard):
         root = path.parent / f"{self.state.abbr}.{path.name}"
         return root
 
+    @staticmethod
+    def _county_request(url: str) -> requests.models.Response:
+        return requests.get(url)
+
     def fetch(self):
         # reset exceptions
         self.exceptions = []
@@ -61,7 +67,8 @@ class CDCCovidDataTracker(FederalDashboard):
             raise ValueError("please specify state to fetch data for")
 
         urls = [fetcher_url.format(county) for county in counties]
-        responses = [requests.get(url) for url in urls]
+        pool = multiprocessing.Pool(processes=8)  # choose 8 processes arbitrarily
+        responses = pool.map(self._county_request, urls)
 
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
