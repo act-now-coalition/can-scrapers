@@ -17,7 +17,6 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
-from us.states import VA
 
 from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
@@ -183,8 +182,8 @@ class StateDashboard(DatasetBase, ABC):
         as_series: Optional[bool] = False,
         replace: Optional[Dict[str, str]] = None,
         state: Optional[us.states.State] = None,
-        fips: Optional[bool] = False
-        ):
+        fips: Optional[bool] = False,
+    ):
         """Get a list of all counties in current state"""
         """
         as_series: 
@@ -201,16 +200,16 @@ class StateDashboard(DatasetBase, ABC):
 
         if state is not None:
             query = f"state == {int(state.fips)} and location != {int(state.fips)}"
-        elif hasattr(self, 'state_fips') is not None:
+        elif hasattr(self, "state_fips") is not None:
             query = f"state == {self.state_fips} and location != {self.state_fips}"
         else:
-            raise ValueError("directly provide a state or ensure parent class has the state_fips attribute")
+            raise ValueError(
+                "directly provide a state or ensure parent class has the state_fips attribute"
+            )
 
         if fips:
             counties = (
-                pd.read_csv(path).query(query)["location"]
-                .astype(str)
-                .str.zfill(5)
+                pd.read_csv(path).query(query)["location"].astype(str).str.zfill(5)
             )
         else:
             counties = pd.read_csv(path).query(query)["name"]
