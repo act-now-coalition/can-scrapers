@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import us
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -22,7 +22,7 @@ class CDCCovidDataTracker(FederalDashboard):
         "new_deaths_7_day_rolling_average": CMU(
             category="deaths", measurement="rolling_average_7_day", unit="people"
         ),
-        "percent_positive_7_day": CMU(
+        "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
             category="pcr_tests_positive",
             measurement="rolling_average_7_day",
             unit="percentage",
@@ -52,16 +52,15 @@ class CDCCovidDataTracker(FederalDashboard):
         self.exceptions = []
         fetcher_url = (
             "https://covid.cdc.gov/covid-data-tracker/COVIDData/"
-            "getAjaxData?id=integrated_county_timeseries_state_{}_external"
+            "getAjaxData?id=integrated_county_timeseries_fips_{}_external"
         )
 
         if self.state:
-            states = [self.state]
+            counties = self._retrieve_counties(state=self.state, fips=True)
         else:
-            states = ALL_STATES_PLUS_DC
+            raise ValueError("please specify state to fetch data for")
 
-        urls = [fetcher_url.format(state.abbr.lower()) for state in states]
-
+        urls = [fetcher_url.format(county) for county in counties]
         responses = [requests.get(url) for url in urls]
 
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
