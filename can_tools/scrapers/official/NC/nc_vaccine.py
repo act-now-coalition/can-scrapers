@@ -17,13 +17,13 @@ class NCVaccine(TableauDashboard):
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
 
     data_tableau_table = "County Map"
-    location_name_col = "County -alias"
+    location_name_col = "County-alias"
     timezone = "US/Eastern"
 
     # map wide form column names into CMUs
     cmus = {
-        "AGG(Calc.Tooltip At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "AGG(Calc.Tooltip Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
+        "AGG(Calc.At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
+        "AGG(Calc.Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
     }
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
