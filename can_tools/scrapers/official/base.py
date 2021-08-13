@@ -1,6 +1,8 @@
 import json
 import logging
 import re
+import os
+import us
 import urllib.parse
 import uuid
 from abc import ABC, abstractmethod
@@ -174,6 +176,50 @@ class StateDashboard(DatasetBase, ABC):
             data["vintage"] = self._retrieve_vintage()
 
         return data
+
+    def _retrieve_counties(
+        self,
+        as_series: Optional[bool] = False,
+        replace: Optional[Dict[str, str]] = None,
+        state: Optional[us.states.State] = None,
+        fips: Optional[bool] = False,
+    ):
+        """Get a list of all counties in current state"""
+        """
+        as_series: 
+            Returns counties as a list by default. If True, returns counties as a pd.Series
+        fips:
+            return list of fips code if fips is specified, else return county names
+        state:
+            a state to fetch locations for. A state must either be specified, or the parent class must
+            have the state_fips attribute. In the instance where both are present, the state parameter is preferred
+        replace: 
+            Dictionary of county names to replace, formatted as {old_value: new_value}
+        """
+        path = os.path.dirname(__file__) + "/../../bootstrap_data/locations.csv"
+
+        if state is not None:
+            query = f"state == {int(state.fips)} and location != {int(state.fips)}"
+        elif hasattr(self, "state_fips") is not None:
+            query = f"state == {self.state_fips} and location != {self.state_fips}"
+        else:
+            raise ValueError(
+                "directly provide a state or ensure parent class has the state_fips attribute"
+            )
+
+        if fips:
+            counties = (
+                pd.read_csv(path).query(query)["location"].astype(str).str.zfill(5)
+            )
+        else:
+            counties = pd.read_csv(path).query(query)["name"]
+
+        if replace is not None:
+            counties = counties.replace(replace)
+        if not as_series:
+            return list(counties)
+        else:
+            return counties.reset_index(drop=True)
 
     def _rename_or_add_date_and_location(
         self,
