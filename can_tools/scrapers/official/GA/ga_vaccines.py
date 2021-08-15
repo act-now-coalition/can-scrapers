@@ -1,281 +1,126 @@
 import pandas as pd
+import requests
 import us
 
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import ArcGIS
+from can_tools.scrapers.official.base import StateDashboard
 
 
-class GeorgiaCountyVaccine(ArcGIS):
-    """
-    Fetch county level covid data from an ARCGIS dashboard
+class GeorgiaCountyVaccine(StateDashboard):
 
-    Example implementations:
-      * `can_tools/scrapers/official/FL/fl_state.py`
-      * `can_tools/scrapers/official/GA/ga_vaccines.py`
-    """
-
-    ARCGIS_ID = "t7DA9BjRElflTVpw"
     has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Georgia").fips)
+    source_name = "Georgia Department of Public Health"
     source = (
         "https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/"
     )
-    source_name = "Georgia Department of Public Health"
-    service = "Georgia_DPH_PUBLIC_Vaccination_Dashboard_V5_VIEW"
-    sheet = 4
+    fetch_url = "https://georgiadph.maps.arcgis.com/sharing/rest/content/items/e7378d64d3fa4bc2a67b2ea40e4748b0/data"
 
     variables = {
         "CUMPERSONCVAX": variables.FULLY_VACCINATED_ALL,
         "CUMPERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
-        "CUMVAXADMIN": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
+    converters = {"COUNTY_ID": str}
 
-    def fetch(self):
-        completed = self._fetch_completed()
-        initiated = self._fetch_initiated()
-        total = self._fetch_total()
+    def fetch(self) -> requests.models.Response:
+        return requests.get(self.fetch_url)
 
-        return {"total": total, "completed": completed, "initiated": initiated}
-
-    def _fetch_completed(self):
-        sheet = 5
-        return self.get_all_jsons(self.service, sheet, "6")
-
-    def _fetch_initiated(self):
-        sheet = 4
-        return self.get_all_jsons(self.service, sheet, "6")
-
-    def _fetch_total(self):
-        sheet = 3
-        return self.get_all_jsons(self.service, sheet, "6")
-
-    def normalize_helper(self, data, dataset_name, col):
-        df = self.arcgis_jsons_to_df(data[dataset_name])
-        df = self._rename_or_add_date_and_location(
-            df, date_column="ADMIN_DATE", location_column="COUNTY_ID"
+    def normalize(self, data: requests.models.Response) -> pd.DataFrame:
+        initiated_sheet = pd.read_excel(
+            data.content, sheet_name="PERSON_1_VAX_BY_DAY_COUNTY"
         )
-        return df.set_index(["location", "dt"])[[col]]
+        completed_sheet = pd.read_excel(
+            data.content, sheet_name="PERSON_C_VAX_BY_DAY_COUNTY"
+        )
 
-    def normalize(self, data):
-        completed = self.normalize_helper(data, "completed", "CUMPERSONCVAX")
-        initiated = self.normalize_helper(data, "initiated", "CUMPERSONVAX")
-        total = self.normalize_helper(data, "total", "CUMVAXADMIN")
-        df = completed.join(initiated).join(total).reset_index()
-        out = self._reshape_variables(df, self.variables)
-        locs_to_del = ["0", "99999", 0, 99999]
+        # doses are stored in separate sheets, parse both
+        dataframes = []
+        for sheet in (initiated_sheet, completed_sheet):
+            dataframes.append(
+                self._rename_or_add_date_and_location(
+                    data=sheet,
+                    location_column="COUNTY_ID",
+                    locations_to_drop=[0, 99999],
+                    date_column="ADMIN_DATE",
+                )
+            )
 
-        return out.loc[~out.location.isin(locs_to_del), :]
+        # unpack dataframes and merge into one df on location and date
+        initiated, completed = dataframes
+        data = pd.merge(initiated, completed, how="left", on=["location", "dt"])
+        return self._reshape_variables(data=data, variable_map=self.variables)
 
 
 class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
-    service = "Georgia_DPH_PUBLIC_Vaccination_Dashboard_V5_VIEW"
-    sheet = 7
-    column_names = ["AGE"]
-
-    variables = {
-        "00-05": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="0-9",
-        ),
-        "05_09": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="5-9",
-        ),
-        "10_14": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="10-14",
-        ),
-        "15_19": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="15-19",
-        ),
-        "20_24": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="20-24",
-        ),
-        "25_34": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="25-34",
-        ),
-        "35_44": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="35-44",
-        ),
-        "45_54": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="45-54",
-        ),
-        "55_64": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="55-64",
-        ),
-        "65_74": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="65-74",
-        ),
-        "75_84": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="75-84",
-        ),
-        "85PLUS": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            age="85_plus",
-        ),
+    demographic = "age"
+    sheet_name = "AGE_BY_COUNTY"
+    location_column = "COUNTYFIPS"
+    has_location = True
+    variables = {"PERSONVAX": variables.INITIATING_VACCINATIONS_ALL}
+    demographic_formatting = {
+        "00-05": "0-5",
+        "05_09": "5-9",
+        "10_14": "10-14",
+        "15_19": "15-19",
+        "20_24": "20-24",
+        "25_34": "25-34",
+        "35_44": "35-44",
+        "45_54": "45-54",
+        "55_64": "55-64",
+        "65_74": "65-74",
+        "75_84": "75-84",
+        "85PLUS": "85_plus",
     }
 
-    def fetch(self):
-        return self.get_all_jsons(self.service, self.sheet, "6")
-
-    def normalize(self, data):
-        df = self.arcgis_jsons_to_df(data)
-        df["COUNTS"] = pd.to_numeric(df["COUNTS"], errors="coerce")
-        df = (
-            df.pivot_table(
-                index="COUNTYFIPS", columns=self.column_names, values="COUNTS"
+    def normalize(self, data: requests.models.Response) -> pd.DataFrame:
+        sheet = pd.read_excel(data.content, sheet_name=self.sheet_name)
+        data = self._rename_or_add_date_and_location(
+            data=sheet,
+            location_column=self.location_column,
+            locations_to_drop=[0, 99999],
+            timezone="US/Eastern",
+        )
+        return (
+            data.pipe(
+                self._reshape_variables,
+                variable_map=self.variables,
+                id_vars=[self.demographic.upper()],
+                skip_columns=[self.demographic],
             )
-            .reset_index()
-            .rename_axis(None, axis=1)
+            .rename(columns={self.demographic.upper(): self.demographic})
+            .replace(self.demographic_formatting)
         )
-        df = self._rename_or_add_date_and_location(
-            df, location_column="COUNTYFIPS", timezone="US/Eastern"
-        )
-        df = self._reshape_variables(df, self.variables)
-
-        locs_to_drop = ["0", "00000", 0]
-        df = df.query("location not in @locs_to_drop")
-        return df
 
 
 class GeorgiaCountyVaccineRace(GeorgiaCountyVaccineAge):
-    sheet = 6
-    column_names = ["RACE_ID"]
-
-    variables = {
-        "2054-5": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="black",
-        ),
-        # "2076-8": CMU(
-        #     category="total_vaccine_initiated",
-        #     measurement="cumulative",
-        #     unit="people",
-        #     race="white",
-        # ),
-        "2106-3": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="white",
-        ),
-        "1002-5": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="ai_an",
-        ),
-        "2028-9": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="multiple",
-        ),
-        "ANHOPI": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="asian",
-        ),
-        "UNK": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="unknown",
-        ),
-        "2131-1": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            race="other",
-        ),
+    demographic = "race"
+    sheet_name = "RACE_BY_COUNTY"
+    location_column = "COUNTY_ID"
+    demographic_formatting = {
+        "American Indian or Alaska Native": "ai_an",
+        "Asian": "asian",
+        "Black": "black",
+        "White": "white",
+        "Other": "other",
+        "Unknown": "unknown",
     }
 
-    def fetch(self):
-        return self.get_all_jsons(self.service, self.sheet, "6")
 
-
-class GeorgiaCountyVaccineSex(GeorgiaCountyVaccineRace):
-    sheet = 8
-    column_names = ["SEX"]
-    variables = {
-        "F": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="female",
-        ),
-        "M": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="male",
-        ),
-        "U": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            sex="unknown",
-        ),
-    }
+class GeorgiaCountyVaccineSex(GeorgiaCountyVaccineAge):
+    demographic = "sex"
+    sheet_name = "SEX_BY_COUNTY"
+    demographic_formatting = {"Male": "male", "Female": "female", "Unknown": "unknown"}
 
 
 class GeorgiaCountyVaccineEthnicity(GeorgiaCountyVaccineAge):
-    sheet = 9
-    column_names = ["ETHNICITY"]
-    variables = {
-        "2186-5": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            ethnicity="non-hispanic",
-        ),
-        "2135-2": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            ethnicity="hispanic",
-        ),
-        "UNK": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-            ethnicity="unknown",
-        ),
-    }
+    demographic = "ETHNICTY"
+    sheet_name = "ETHNICITY_BY_COUNTY"
+    demographic_formatting = {"Hispanic": "hispanic", "Non-Hispanic": "non-hispanic"}
+
+    def normalize(self, data: requests.models.Response) -> pd.DataFrame:
+        data = super().normalize(data)
+        # manually drop/rename column to fix different spelling
+        return data.drop(columns={"ethnicity"}).rename(
+            columns={"ETHNICTY": "ethnicity"}
+        )
