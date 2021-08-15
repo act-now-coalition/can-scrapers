@@ -21,7 +21,6 @@ class GeorgiaCountyVaccine(StateDashboard):
         "CUMPERSONCVAX": variables.FULLY_VACCINATED_ALL,
         "CUMPERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
     }
-    converters = {"COUNTY_ID": str}
 
     def fetch(self) -> requests.models.Response:
         return requests.get(self.fetch_url)
@@ -95,8 +94,9 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
                 skip_columns=[self.demographic],
             )
             # format the demographic column name, and standardize the values within
-            .rename(columns={self.demographic.upper(): self.demographic})
-            .replace(self.demographic_formatting)
+            .rename(columns={self.demographic.upper(): self.demographic}).replace(
+                self.demographic_formatting
+            )
         )
 
 
