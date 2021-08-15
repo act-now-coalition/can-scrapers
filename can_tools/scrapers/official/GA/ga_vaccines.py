@@ -41,6 +41,9 @@ class GeorgiaCountyVaccine(StateDashboard):
                 self._rename_or_add_date_and_location(
                     data=sheet,
                     location_column="COUNTY_ID",
+                    # Remove unwanted fips codes
+                    # 0 = Georgia
+                    # 99999 = Unknown
                     locations_to_drop=[0, 99999],
                     date_column="ADMIN_DATE",
                 )
@@ -78,6 +81,9 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
         data = self._rename_or_add_date_and_location(
             data=sheet,
             location_column=self.location_column,
+            # Remove unwanted fips codes
+            # 0 = Georgia
+            # 99999 = Unknown
             locations_to_drop=[0, 99999],
             timezone="US/Eastern",
         )
@@ -88,6 +94,7 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
                 id_vars=[self.demographic.upper()],
                 skip_columns=[self.demographic],
             )
+            # format the demographic column name, and standardize the values within
             .rename(columns={self.demographic.upper(): self.demographic})
             .replace(self.demographic_formatting)
         )
