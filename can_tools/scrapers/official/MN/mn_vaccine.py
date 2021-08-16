@@ -26,7 +26,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     # get the iframe link manually to bypass captcha
     # this will need to be updated periodically -- find the iframe in the page source html
 
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiYTRlZjQwOWQtZGVmZC00ZjYzLWJmMDEtNTNkOWUxODBhYWI3IiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiYjBhNjMxM2YtMzUyOS00YWU2LTg3OTYtOGI5ZTZhZDRhZWM5IiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
 
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}
@@ -139,7 +139,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
         df["location_name"] = (
             df["county"].str.title().str.replace("County", "").str.strip()
         )
-        df = df.query("~location_name.str.contains('Unknown')")
+        df = df.query("location_name not in ['Unknown/Missing', 'Total 18+ Cdc']")
 
         # Rename certain counties
         df = df.replace(
@@ -307,12 +307,7 @@ class MinnesotaCountyAgeVaccines(MinnesotaCountyVaccines):
 
         # Build post headers
         headers = self.construct_headers(resource_key)
-
-        counties = list(
-            pd.read_csv(
-                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-            ).query("state == @self.state_fips and name != 'Minnesota'")["name"]
-        )
+        counties = self._retrieve_counties()
 
         jsons = []
         """

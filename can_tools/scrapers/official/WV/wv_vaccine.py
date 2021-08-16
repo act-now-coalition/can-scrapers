@@ -48,7 +48,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
 
         select_variables = [
             [
-                ("d", "County Name", "dimCounty.County Name"),
+                ("d", "County", "dimCounty.County Name"),
             ],
             [],
             [
@@ -69,7 +69,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
                                             "Expression": {
                                                 "SourceRef": {"Source": "d"}
                                             },
-                                            "Property": "County Name",
+                                            "Property": "County",
                                         }
                                     }
                                 ],
@@ -242,7 +242,7 @@ class WVCountyVaccineRace(WVCountyVaccine):
                                     "Select": self.construct_select(
                                         [
                                             # Selects
-                                            ("d", "County Name", "county"),
+                                            ("d", "County", "county"),
                                             (
                                                 "c",
                                                 f"{self.demographic_query_name}",
@@ -271,7 +271,7 @@ class WVCountyVaccineRace(WVCountyVaccine):
                                                                                 "Source": "d"
                                                                             }
                                                                         },
-                                                                        "Property": "County Name",
+                                                                        "Property": "County",
                                                                     }
                                                                 }
                                                             ],
@@ -300,7 +300,7 @@ class WVCountyVaccineRace(WVCountyVaccine):
                                                                         "Source": "d"
                                                                     }
                                                                 },
-                                                                "Property": "County Name",
+                                                                "Property": "County",
                                                             }
                                                         }
                                                     ],
