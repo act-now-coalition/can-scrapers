@@ -1,11 +1,11 @@
 from typing import Any
 
 import pandas as pd
-
+from urllib.request import Request, urlopen
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
-BASEURL = "https://usafactsstatic.blob.core.windows.net/public/data/"
+BASEURL = "https://static.usafacts.org/public/data/"
 
 
 class USAFactsCases(FederalDashboard):
@@ -29,7 +29,8 @@ class USAFactsCases(FederalDashboard):
     category: str = "cases"
 
     def fetch(self) -> pd.DataFrame:
-        return pd.read_csv(BASEURL + self.filename)
+        req = Request(BASEURL + self.filename, headers={'User-Agent': 'Mozilla/5.0'})
+        return pd.read_csv(urlopen(req))
 
     def normalize(self, data: Any) -> pd.DataFrame:
         # Make lowercase so they can't change capitalization on us
