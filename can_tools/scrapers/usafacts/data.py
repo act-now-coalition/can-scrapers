@@ -29,7 +29,7 @@ class USAFactsCases(FederalDashboard):
     category: str = "cases"
 
     def fetch(self) -> pd.DataFrame:
-        req = Request(BASEURL + self.filename, headers={'User-Agent': 'Mozilla/5.0'})
+        req = Request(BASEURL + self.filename, headers={"User-Agent": "Mozilla/5.0"})
         return pd.read_csv(urlopen(req))
 
     def normalize(self, data: Any) -> pd.DataFrame:
