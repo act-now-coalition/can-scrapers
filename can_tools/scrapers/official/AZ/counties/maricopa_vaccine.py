@@ -84,7 +84,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         # dump rows into df
         rows = records + records_init
         df = pd.DataFrame.from_records(rows)
-        df = df.query("value != 'All'")
+        df = df.query("value not in ['All', '']")
 
         df = (
             df.assign(
