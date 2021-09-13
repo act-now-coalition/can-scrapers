@@ -411,7 +411,7 @@ class ArcGIS(StateDashboard, ABC):
         """
         out = f"https://services{srvid}.arcgis.com/{self.ARCGIS_ID}/"
         out += f"ArcGIS/rest/services/{service}/FeatureServer/{sheet}/query"
-        
+
         return out
 
     def get_single_json(
