@@ -25,21 +25,37 @@ class IllinoisVaccineCounty(StateDashboard):
         return (
             # rename the Chicago rows such that they are summed together with the Cook County entries,
             # effectively merging the two locations into one (as CHI is within Cook County)
-            data.replace({"Chicago":"Cook"})
-            .groupby(["CountyName", "Report_Date"]).sum()
+            data.replace({"Chicago": "Cook"})
+            .groupby(["CountyName", "Report_Date"])
+            .sum()
             .reset_index()
-            .loc[:,["AdministeredCount", "PersonsFullyVaccinated", "Report_Date", "CountyName"]]
+            .loc[
+                :,
+                [
+                    "AdministeredCount",
+                    "PersonsFullyVaccinated",
+                    "Report_Date",
+                    "CountyName",
+                ],
+            ]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="CountyName",
-                location_names_to_drop=["Illinois", "Out Of State", "Unknown", "Chicago"],
-                location_names_to_replace={"Dekalb": "DeKalb", "Dupage":"DuPage", "Lasalle": "LaSalle", "Mcdonough":"McDonough", "Mclean":"McLean", "Mchenry":"McHenry"},
-                date_column="Report_Date"
+                location_names_to_drop=[
+                    "Illinois",
+                    "Out Of State",
+                    "Unknown",
+                    "Chicago",
+                ],
+                location_names_to_replace={
+                    "Dekalb": "DeKalb",
+                    "Dupage": "DuPage",
+                    "Lasalle": "LaSalle",
+                    "Mcdonough": "McDonough",
+                    "Mclean": "McLean",
+                    "Mchenry": "McHenry",
+                },
+                date_column="Report_Date",
             )
-            .pipe(
-                self._reshape_variables,
-                variable_map=self.variables
-            )
+            .pipe(self._reshape_variables, variable_map=self.variables)
         )
-
-
