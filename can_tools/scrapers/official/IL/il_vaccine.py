@@ -14,6 +14,9 @@ class IllinoisVaccineCounty(StateDashboard):
     location_type = "county"
 
     variables = {
+        # AdministeredCount appears to be the column for 1+ doses
+        # and TotalAdministered is the column for total doses administered
+        # AdministeredCount is always greater PersonsFullyVaccinated and less than TotalAdministered
         "AdministeredCount": variables.INITIATING_VACCINATIONS_ALL,
         "PersonsFullyVaccinated": variables.FULLY_VACCINATED_ALL,
     }
@@ -41,12 +44,6 @@ class IllinoisVaccineCounty(StateDashboard):
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="CountyName",
-                location_names_to_drop=[
-                    "Illinois",
-                    "Out Of State",
-                    "Unknown",
-                    "Chicago",
-                ],
                 location_names_to_replace={
                     "Dekalb": "DeKalb",
                     "Dupage": "DuPage",
