@@ -44,6 +44,7 @@ class IllinoisVaccineCounty(StateDashboard):
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="CountyName",
+                location_names_to_drop=["Illinois"],
                 location_names_to_replace={
                     "Dekalb": "DeKalb",
                     "Dupage": "DuPage",
