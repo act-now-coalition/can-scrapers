@@ -1,8 +1,7 @@
 import pandas as pd
-import requests
 import us
 
-from can_tools.scrapers.base import CMU
+from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
@@ -11,88 +10,50 @@ class IllinoisVaccineCounty(StateDashboard):
     source = "https://www.dph.illinois.gov/covid19/vaccinedata"
     source_name = "Illinois Department of Public Health"
     state_fips = int(us.states.lookup("Illinois").fips)
-    url = "https://idph.illinois.gov/DPHPublicInformation/api/covidVaccine/getVaccineAdministrationCurrent"
+    url = "https://idph.illinois.gov/DPHPublicInformation/api/COVIDVaccine/getCOVIDVaccineAdministrationCountyAge"
     location_type = "county"
 
-    def fetch(self) -> dict:
-        res = requests.get(self.url)
-        if not res.ok:
-            msg = f"Could not request data from {self.url}"
-            raise ValueError(msg)
+    variables = {
+        # AdministeredCount appears to be the column for 1+ doses
+        # and TotalAdministered is the column for total doses administered
+        # AdministeredCount is always greater PersonsFullyVaccinated and less than TotalAdministered
+        "AdministeredCount": variables.INITIATING_VACCINATIONS_ALL,
+        "PersonsFullyVaccinated": variables.FULLY_VACCINATED_ALL,
+    }
 
-        return res.json()
+    def fetch(self) -> pd.DataFrame:
+        return pd.read_json(self.url)
 
-    def normalize_all(self, data) -> pd.DataFrame:
-        k = "VaccineAdministration"
-        if k not in data:
-            raise ValueError(f"Expected to find {k} in JSON response")
-        new_names = dict(
-            CountyName="location_name",
-            Report_Date="dt",
-        )
-        df = (
-            pd.DataFrame(data[k])
-            .rename(columns=new_names)
-            .assign(dt=lambda x: pd.to_datetime(x["dt"]))
-            .set_index(["location_name", "dt"])
-        )
-
-        # Select certain columns
-        cmus = {
-            "AdministeredCount": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "AllocatedDoses": CMU(
-                category="total_vaccine_allocated",
-                measurement="cumulative",
-                unit="doses",
-            ),
-            "PersonsFullyVaccinated": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-        }
-
-        # Reorganize so we can add Chicago to Cook county
-        for cmu_key in cmus.keys():
-            df.loc[pd.IndexSlice["Cook", :], cmu_key] = (
-                df.loc[pd.IndexSlice["Cook", :], cmu_key].values
-                + df.loc[pd.IndexSlice["Chicago", :], cmu_key].values
-            )
-
+    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         return (
-            df.reset_index()
-            .melt(id_vars=["location_name", "dt"], value_vars=cmus.keys())
-            .dropna()
-            .assign(
-                value=lambda x: pd.to_numeric(x.loc[:, "value"]),
-                vintage=self._retrieve_vintage(),
+            # rename the Chicago rows such that they are summed together with the Cook County entries,
+            # effectively merging the two locations into one (as CHI is within Cook County)
+            data.replace({"Chicago": "Cook"})
+            .groupby(["CountyName", "Report_Date"])
+            .sum()
+            .reset_index()
+            .loc[
+                :,
+                [
+                    "AdministeredCount",
+                    "PersonsFullyVaccinated",
+                    "Report_Date",
+                    "CountyName",
+                ],
+            ]
+            .pipe(
+                self._rename_or_add_date_and_location,
+                location_name_column="CountyName",
+                location_names_to_drop=["Illinois"],
+                location_names_to_replace={
+                    "Dekalb": "DeKalb",
+                    "Dupage": "DuPage",
+                    "Lasalle": "LaSalle",
+                    "Mcdonough": "McDonough",
+                    "Mclean": "McLean",
+                    "Mchenry": "McHenry",
+                },
+                date_column="Report_Date",
             )
-            .pipe(self.extract_CMU, cmu=cmus)
-            .drop(["variable"], axis=1)
-        )
-
-    def normalize(self, data) -> pd.DataFrame:
-        df = self.normalize_all(data)
-
-        # drop non-county level obs
-        non_county = ["Illinois", "Out Of State", "Unknown", "Chicago"]  # noqa
-        return df.query("location_name not in @non_county")
-
-
-class IllinoisVaccineState(IllinoisVaccineCounty):
-    has_location = True
-    location_type = "state"
-
-    def normalize(self, data) -> pd.DataFrame:
-        df = self.normalize_all(data)
-
-        # Keep only state obs, drop location_name, set location
-        return (
-            df.query("location_name == 'Illinois'")
-            .drop(["location_name"], axis=1)
-            .assign(location=self.state_fips)
+            .pipe(self._reshape_variables, variable_map=self.variables)
         )
