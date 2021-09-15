@@ -29,7 +29,7 @@ class HawaiiVaccineCounty(TableauDashboard):
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
-    data_tableau_table = "County Progress (JUR+PHARM) (mobile)"
+    data_tableau_table = "Updated County Progress"
 
     variables = {
         "initiated": v.INITIATING_VACCINATIONS_ALL,
@@ -42,29 +42,20 @@ class HawaiiVaccineCounty(TableauDashboard):
         df = (
             data.rename(
                 columns={
-                    "SUM(Population)-alias": "population",
-                    f"AGG(% initiating )-alias": "percent_initiating",
-                    f"AGG(% completing)-alias": "percent_completing",
+                    f"AGG(TOTAL 1st doses)-alias": "initiated",
+                    f"AGG(TOTAL 2nd doses)-alias": "completed",
                     "County-alias": "location_name",
                 }
-            )
-            .loc[
+            ).loc[
                 :,
-                [
-                    "population",
-                    "percent_initiating",
-                    "percent_completing",
-                    "location_name",
-                ],
+                ["initiated", "completed", "location_name", "Measure Names-alias"],
             ]
-            .query("location_name != 0")
-            .assign(
-                initiated=lambda x: x["population"] * x["percent_initiating"],
-                completed=lambda x: x["population"] * x["percent_completing"],
-                dt=self._retrieve_dtm1d("US/Hawaii"),
-            )
+            # The data is repeated twice (with different values of measure name alias)
+            # Slice the data to only get one instance of it
+            .query("`Measure Names-alias` != 'TOTAL State progress 1st dose'")
         )
         out = self._reshape_variables(df, self.variables)
+        out["dt"] = self._retrieve_dt("US/Hawaii")
         return out
 
     def get_filters(self):

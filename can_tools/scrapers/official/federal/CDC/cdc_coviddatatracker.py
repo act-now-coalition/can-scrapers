@@ -1,10 +1,12 @@
 import pathlib
+from typing import Dict
 
 import pandas as pd
 import requests
 import us
+import multiprocessing
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC, CMU
+from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 
@@ -22,7 +24,7 @@ class CDCCovidDataTracker(FederalDashboard):
         "new_deaths_7_day_rolling_average": CMU(
             category="deaths", measurement="rolling_average_7_day", unit="people"
         ),
-        "percent_positive_7_day": CMU(
+        "percent_new_test_results_reported_positive_7_day_rolling_average": CMU(
             category="pcr_tests_positive",
             measurement="rolling_average_7_day",
             unit="percentage",
@@ -47,22 +49,26 @@ class CDCCovidDataTracker(FederalDashboard):
         root = path.parent / f"{self.state.abbr}.{path.name}"
         return root
 
+    @staticmethod
+    def _county_request(url: str) -> requests.models.Response:
+        return requests.get(url)
+
     def fetch(self):
         # reset exceptions
         self.exceptions = []
         fetcher_url = (
             "https://covid.cdc.gov/covid-data-tracker/COVIDData/"
-            "getAjaxData?id=integrated_county_timeseries_state_{}_external"
+            "getAjaxData?id=integrated_county_timeseries_fips_{}_external"
         )
 
         if self.state:
-            states = [self.state]
+            counties = self._retrieve_counties(state=self.state, fips=True)
         else:
-            states = ALL_STATES_PLUS_DC
+            raise ValueError("please specify state to fetch data for")
 
-        urls = [fetcher_url.format(state.abbr.lower()) for state in states]
-
-        responses = [requests.get(url) for url in urls]
+        urls = [fetcher_url.format(county) for county in counties]
+        pool = multiprocessing.Pool(processes=8)  # choose 8 processes arbitrarily
+        responses = pool.map(self._county_request, urls)
 
         bad_idx = [i for (i, r) in enumerate(responses) if not r.ok]
         if len(bad_idx):
@@ -80,9 +86,10 @@ class CDCCovidDataTracker(FederalDashboard):
             ignore_index=True,
         )
 
+        # We have no way to handle suppressed entries, so remove them
         df = self._rename_or_add_date_and_location(
             df, location_column="fips_code", date_column="date"
-        )
+        ).replace({"suppressed": None})
 
         df = self._reshape_variables(df, self.variables)
         return df

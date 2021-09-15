@@ -54,10 +54,7 @@ from can_tools.scrapers.official.federal.HHS.facility import (
 from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )
-from can_tools.scrapers.official.FL.fl_vaccine import (
-    FloridaCountyVaccine,
-    FloridaCountyVaccineDemographics,
-)
+
 from can_tools.scrapers.official.GA.ga_vaccines import (
     GeorgiaCountyVaccine,
     GeorgiaCountyVaccineAge,
@@ -73,12 +70,10 @@ from can_tools.scrapers.official.HI.hi_demographics import (
 
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 
-# from can_tools.scrapers.official.IL import IllinoisDemographics, IllinoisHistorical
 from can_tools.scrapers.official.IA.ia_vaccine_county import IowaCountyVaccine
 from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineCounty,
-    IllinoisVaccineState,
 )
 from can_tools.scrapers.official.IN.in_vaccines import IndianaCountyVaccinations
 from can_tools.scrapers.official.LA.la_county import (
@@ -108,7 +103,6 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
     MontanaStateVaccine,
 )
 
-# from can_tools.scrapers.official.MA import Massachusetts
 from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemographics
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
 from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
@@ -156,11 +150,6 @@ from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
     SDVaccineAge,
 )
 
-from can_tools.scrapers.official.TN.tn_state import (
-    TennesseeAge,
-    TennesseeAgeByCounty,
-    TennesseeRaceEthnicitySex,
-)
 from can_tools.scrapers.official.TN.tn_vaccine import TennesseeVaccineCounty
 from can_tools.scrapers.official.TX.texas_vaccine import (
     TexasCountyVaccine,
@@ -174,7 +163,6 @@ from can_tools.scrapers.official.VA.va_vaccine import (
 )
 from can_tools.scrapers.official.VT.vt_vaccinations import (
     VermontCountyVaccine,
-    VermontStateVaccine,
 )
 from can_tools.scrapers.official.WA.wa_vaccine import (
     WashingtonVaccine,

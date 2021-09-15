@@ -25,31 +25,6 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
         "total_vaccine_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
-        "moderna_1_dose": CMU(
-            category="moderna_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "pfizer_1_dose": CMU(
-            category="pfizer_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "moderna_complete": CMU(
-            category="moderna_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "pfizer_complete": CMU(
-            category="pfizer_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
-        "janssen_series": CMU(
-            category="janssen_vaccine_completed",
-            measurement="cumulative",
-            unit="people",
-        ),
     }
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, counties):
@@ -198,11 +173,11 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         col_mapping = {
             "G0": "county",
             "M_0_DM2_0_A1": "total_vaccine_initiated",
-            "M_1_DM3_0_C_1": "janssen_series",
-            "M_1_DM3_1_C_1": "moderna_1_dose",
-            "M_1_DM3_2_C_1": "moderna_complete",
-            "M_1_DM3_3_C_1": "pfizer_1_dose",
-            "M_1_DM3_4_C_1": "pfizer_complete",
+            "M_1_DM3_1_C_1": "janssen_series",
+            "M_1_DM3_2_C_1": "moderna_1_dose",
+            "M_1_DM3_3_C_1": "moderna_complete",
+            "M_1_DM3_4_C_1": "pfizer_1_dose",
+            "M_1_DM3_5_C_1": "pfizer_complete",
         }
         data_rows = []
         for record in data:
@@ -218,7 +193,6 @@ class SDVaccineCounty(MicrosoftBIDashboard):
 
         # Dump records into a DataFrame and transform
         df = pd.DataFrame.from_records(data_rows)
-
         # calculate metrics to match our def'ns
         df["total_vaccine_completed"] = (
             df["janssen_series"] + df["moderna_complete"] + df["pfizer_complete"]

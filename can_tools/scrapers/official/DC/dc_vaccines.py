@@ -35,7 +35,7 @@ class DCVaccine(TableauDashboard):
             data.query(
                 "`Measure Names-alias` in"
                 "['Fully Vaccinated', 'At Least One Dose', 'Total Administrations']"
-                "and `Type of Resident1-value` in"
+                "and `Type of Resident-value` in"
                 "['DC Resident (outside DC)', 'DC Resident (within DC)', 'DC Resident (Federal Entity)']"
             )
             .assign(
