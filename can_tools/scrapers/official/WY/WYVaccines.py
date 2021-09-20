@@ -43,7 +43,7 @@ class WYStateVaccinations(StateDashboard):
         end = re.findall(f"{match}:\s?<strong>(.*?)</strong>", data)[0]
 
         # convert back to an HTML object to extract the text of the tag containing the actual data
-        end = bs(end, "html.parser").find_all('span')[0].text
+        end = bs(end, "html.parser").find_all("span")[0].text
         return pd.to_numeric(end.replace(",", ""))
 
     def normalize(self, data) -> pd.DataFrame:
