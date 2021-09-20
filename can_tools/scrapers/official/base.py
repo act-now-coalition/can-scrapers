@@ -175,7 +175,7 @@ class StateDashboard(DatasetBase, ABC):
         if "vintage" not in data.columns:
             data["vintage"] = self._retrieve_vintage()
 
-        return data
+        return data.drop_duplicates()
 
     def _retrieve_counties(
         self,
