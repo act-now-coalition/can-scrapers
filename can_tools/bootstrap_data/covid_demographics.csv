@@ -57,6 +57,7 @@ all,all,all,all
 20-44,all,all,all
 21-30,all,all,all
 25-29,all,all,all
+25-34,white,all,all
 25-34,all,all,all
 25-49,all,all,all
 26-34,all,all,all
@@ -69,6 +70,7 @@ all,all,all,all
 35-39,all,all,all
 35-44,all,all,all
 35-49,all,all,all
+35-44,white,all,all
 35-54,all,all,all
 40-44,all,all,all
 40-49,all,all,all
@@ -77,6 +79,7 @@ all,all,all,all
 41-50,all,all,all
 45-49,all,all,all
 45-54,all,all,all
+45-54,white,all,all
 46-64,all,all,all
 50-54,all,all,all
 50-59,all,all,all
@@ -86,6 +89,7 @@ all,all,all,all
 51-60,all,all,all
 55-59,all,all,all
 55-64,all,all,all
+55-64,white,all,all
 55-74,all,all,all
 60-64,all,all,all
 60-69,all,all,all
@@ -120,6 +124,8 @@ all,all,all,all
 85_plus,white,all,all
 75-84,white,all,all
 65-74,white,all,all
+45-54,black,all,all
+55-64,black,all,all
 50-64,white,all,all
 40-49,white,all,all
 30-39,white,all,all
@@ -231,3 +237,25 @@ unknown,all,all,female
 unknown,all,all,male
 unknown,all,all,unknown
 16-17,all,all,female
+35-44,black,all,all
+25-34,black,all,all
+55-64,asian_or_pacific_islander,all,all
+45-54,asian_or_pacific_islander,all,all
+35-44,asian_or_pacific_islander,all,all
+25-34,asian_or_pacific_islander,all,all
+55-64,all,all,female
+45-54,all,all,female
+35-44,all,all,female
+25-34,all,all,female
+55-64,all,all,male
+45-54,all,all,male
+35-44,all,all,male
+25-34,all,all,male
+55-64,all,hispanic,all
+45-54,all,hispanic,all
+35-44,all,hispanic,all
+25-34,all,hispanic,all
+55-64,all,non-hispanic,all
+45-54,all,non-hispanic,all
+35-44,all,non-hispanic,all
+25-34,all,non-hispanic,all

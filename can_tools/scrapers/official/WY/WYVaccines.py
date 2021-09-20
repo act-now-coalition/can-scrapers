@@ -1,8 +1,6 @@
 import enum
 import json
-from datetime import datetime
 from typing import Any
-from numpy import source
 
 import pandas as pd
 import requests
@@ -40,8 +38,12 @@ class WYStateVaccinations(StateDashboard):
         }
         return requests.get(self.source, headers=header).text
 
-    def _extract_regex(self, match, data):
-        end = re.findall(f"{match}: <strong>(.*?)</strong>", data)[0]
+    def _extract_data(self, match, data):
+        # use regex to find the tags that follow the name the doses (eg: "Total Doses: <strong>...data...</strong>")
+        end = re.findall(f"{match}:\s?<strong>(.*?)</strong>", data)[0]
+
+        # convert back to an HTML object to extract the text of the tag containing the actual data
+        end = bs(end, "html.parser").find_all('span')[0].text
         return pd.to_numeric(end.replace(",", ""))
 
     def normalize(self, data) -> pd.DataFrame:
@@ -55,14 +57,14 @@ class WYStateVaccinations(StateDashboard):
 
         # extract data from strings with regex -- assert that we collect correct values
         assert bool(re.search("Overall Totals", data[1]))
-        doses_admin = self._extract_regex("Total Doses Administered", data[1])
+        doses_admin = self._extract_data("Total Doses Administered", data[1])
 
         assert bool(re.search("Two-Dose Vaccines", data[2]))
-        pfiz_mod_1_dose = self._extract_regex("First Doses Administered", data[2])
-        pfiz_mod_2_dose = self._extract_regex("Second Doses Administered", data[2])
+        pfiz_mod_1_dose = self._extract_data("First Doses Administered", data[2])
+        pfiz_mod_2_dose = self._extract_data("Second Doses Administered", data[2])
 
         assert bool(re.search("One-Dose Vaccine", data[3]))
-        jj_doses = self._extract_regex("Doses Administered", data[3])
+        jj_doses = self._extract_data("Doses Administered", data[3])
 
         records = [
             {"variable": "total_doses_administered", "value": doses_admin},
