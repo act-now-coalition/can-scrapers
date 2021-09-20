@@ -40,6 +40,7 @@ class WYStateVaccinations(StateDashboard):
 
     def _extract_doses_count(self, dosesLabel, data):
         # use regex to find the HTML that comes afer the name of the dose data that we want to extract
+        # the HTML elements following dosesLabel contain the corresponding dose count data
         doseDataString = re.findall(f"{dosesLabel}:\s?<strong>(.*?)</strong>", data)[0]
 
         # convert string back to an HTML object to extract the text of the tag that contains the dose data
