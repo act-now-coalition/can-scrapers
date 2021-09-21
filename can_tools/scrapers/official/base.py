@@ -139,7 +139,7 @@ class StateDashboard(DatasetBase, ABC):
             Map from column name to output variables
         id_vars: Optional[List[str]], (default=None)
             Variables that should be included as "id_vars" when melting from wide to long
-        drop_duplicates: 
+        drop_duplicates:
             if true duplicate rows are removed, else they are ignored
         kwargs:
             Other kwargs to pass to `self.extract_CMU`
