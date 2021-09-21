@@ -65,7 +65,6 @@ class CDCCovidDataTracker(FederalDashboard):
             counties = self._retrieve_counties(state=self.state, fips=True)
         else:
             raise ValueError("please specify state to fetch data for")
-
         urls = [fetcher_url.format(county) for county in counties]
         pool = multiprocessing.Pool(processes=8)  # choose 8 processes arbitrarily
         responses = pool.map(self._county_request, urls)
@@ -91,5 +90,9 @@ class CDCCovidDataTracker(FederalDashboard):
             df, location_column="fips_code", date_column="date"
         ).replace({"suppressed": None})
 
-        df = self._reshape_variables(df, self.variables)
+        # TODO(smcclure17): The CDCCovidDataTracker sometimes returns multiple rows for the same
+        # date, with duplicated data, causing duplicated rows in our output dataframe
+        # this causes the df to fail on insert, so we remove them here.
+        # Not 100% sure why there are sometimes multiple rows for one date.
+        df = self._reshape_variables(df, self.variables, drop_duplicates=True)
         return df
