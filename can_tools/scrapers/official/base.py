@@ -126,6 +126,7 @@ class StateDashboard(DatasetBase, ABC):
         data: pd.DataFrame,
         variable_map: Dict[str, CMU],
         id_vars: Optional[List[str]] = None,
+        drop_duplicates: Optional[bool] = False,
         **kwargs,
     ) -> pd.DataFrame:
         """Reshape columns in data to be long form definitions defined in `variable_map`.
@@ -138,6 +139,8 @@ class StateDashboard(DatasetBase, ABC):
             Map from column name to output variables
         id_vars: Optional[List[str]], (default=None)
             Variables that should be included as "id_vars" when melting from wide to long
+        drop_duplicates:
+            if true duplicate rows are removed, else they are ignored
         kwargs:
             Other kwargs to pass to `self.extract_CMU`
 
@@ -174,6 +177,8 @@ class StateDashboard(DatasetBase, ABC):
 
         if "vintage" not in data.columns:
             data["vintage"] = self._retrieve_vintage()
+        if drop_duplicates:
+            data = data.drop_duplicates()
 
         return data
 
