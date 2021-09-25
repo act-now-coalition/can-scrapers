@@ -93,12 +93,13 @@ class CDCCovidDataTracker(FederalDashboard):
         df = self._reshape_variables(df, self.variables, drop_duplicates=True)
 
         # The CDC Covid Data tracker API endpoint sometimes returns multiple entries for
-        # a single day. This means there are multiple rows with the same CMU and date (but not value)
-        # which breaks the insertion into the database, (b/c it is trying to insert multiple values
-        # into the same variable/row).
-        # One of the duplicated entries appears to always be 0. To remove them, this chooses to keep
-        # the maximum of the duplicated values, removing the 0 entry from the dataframe and keeping the
-        # other value.
+        # a single day, reporting different variables in each entry (e.g. cases in one entry, 
+        # testing data in the other). In these entries, the variables that are not reported 
+        # (and are instead reported in the other entry) are marked as zeroes. 
+        # This means there are multiple rows with the same CMU and date (but not value) which breaks
+        # the insertion into the database, (b/c it is trying to insert multiple values into the same variable/row).
+        # To remove the artificial 0 values, this chooses to keep the maximum of any duplicated variables, 
+        # removing the 0 entries from the dataframe and keeping the other/real values.
         #
         # For an example see: https://trello.com/c/gVEPcsjb/1504-cdc-covid-data-tracker-duplicate-entries
         group_columns = [col for col in df.columns if col != "value"]
