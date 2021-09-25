@@ -90,9 +90,18 @@ class CDCCovidDataTracker(FederalDashboard):
             df, location_column="fips_code", date_column="date"
         ).replace({"suppressed": None})
 
-        # TODO(smcclure17): The CDCCovidDataTracker sometimes returns multiple rows for the same
-        # date, with duplicated data, causing duplicated rows in our output dataframe
-        # this causes the df to fail on insert, so we remove them here.
-        # Not 100% sure why there are sometimes multiple rows for one date.
         df = self._reshape_variables(df, self.variables, drop_duplicates=True)
+
+        # The CDC Covid Data tracker API endpoint sometimes returns multiple entries for
+        # a single day. This means there are multiple rows with the same CMU and date (but not value)
+        # which breaks the insertion into the database, (b/c it is trying to insert multiple values
+        # into the same variable/row).
+        # One of the duplicated entries appears to always be 0. To remove them, this chooses to keep
+        # the maximum of the duplicated values, removing the 0 entry from the dataframe and keeping the
+        # other value.
+        #
+        # For an example see: https://trello.com/c/gVEPcsjb/1504-cdc-covid-data-tracker-duplicate-entries
+        group_columns = [col for col in df.columns if col != "value"]
+        df = df.groupby(group_columns).agg({"value": "max"}).reset_index()
+
         return df
