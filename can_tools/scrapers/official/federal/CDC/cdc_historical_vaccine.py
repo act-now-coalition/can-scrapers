@@ -24,7 +24,7 @@ class CDCCountyVaccine2(FederalDashboard):
         out = self._rename_or_add_date_and_location(
             data, location_column="FIPS", date_column="Date", locations_to_drop=["UNK"]
         )
-        out = self._reshape_variables(out, self.variables)
+        out = self._reshape_variables(out, self.variables, drop_duplicates=True)
 
         # an alaska county was renamed in 2014 and given a new fips: update from the old fips (2270) to the new (2158)
         # source: https://www.cdc.gov/nchs/data/data_acces_files/County-Geography.pdf
