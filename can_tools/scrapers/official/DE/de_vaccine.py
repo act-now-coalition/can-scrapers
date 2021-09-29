@@ -1,151 +1,62 @@
-import datetime as dt
-import json
-
 import pandas as pd
 import requests
 import us
 from bs4 import BeautifulSoup
-from typing import Dict
+from typing import Dict, List
 import re
 
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import StateDashboard
-from can_tools.scrapers import variables as v
+from can_tools.scrapers import variables
 
 
 class DelawareCountyVaccine(StateDashboard):
-    kent_fully_vaccinated_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-kent/covid19_vaccine_fully_vaccinated"
-    new_castle_fully_vaccinated_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-new-castle/covid19_vaccine_fully_vaccinated"
-    sussex_fully_vaccinated_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-sussex/covid19_vaccine_fully_vaccinated"
-    kent_total_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-kent/covid19_vaccine_administrations"
-    new_castle_total_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-new-castle/covid19_vaccine_administrations"
-    sussex_total_url = "https://myhealthycommunity.dhss.delaware.gov/locations/county-sussex/covid19_vaccine_administrations"
-
+    url_base = "https://myhealthycommunity.dhss.delaware.gov/locations/county-{county}/covid19_vaccine_fully_vaccinated"
     has_location = False
     location_type = "county"
-
-    # Initialize
     source = "https://myhealthycommunity.dhss.delaware.gov"
     source_name = "Delaware Health and Social Services"
     state_fips = int(us.states.lookup("Delaware").fips)
 
     variables = {
-        "FirstDose": CMU(
-            category="total_vaccine_initiated", measurement="new", unit="doses"
-        ),
-        "SecondDose": CMU(
-            category="total_vaccine_completed", measurement="new", unit="doses"
-        ),
-        "TotalDoses": CMU(
-            category="total_vaccine_doses_administered", measurement="new", unit="doses"
-        ),
+        "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
-    def _fetch_fully_vaccinated(self):
-        dfs = []
-        fully_vaccinated_urls = [
-            {"county": "Kent", "url": self.kent_fully_vaccinated_url},
-            {"county": "New Castle", "url": self.new_castle_fully_vaccinated_url},
-            {"county": "Sussex", "url": self.sussex_fully_vaccinated_url},
+    def fetch(self) -> List[pd.DataFrame]:
+        # the summary/overall table is always the first on the page,
+        # since all the tables have the same class name, just access it
+        # by index (first in the list)
+        return [
+            pd.read_html(
+                self.url_base.format(county=county),
+                attrs={"class": "table c-dash-table__table table-striped"},
+            )[0].assign(location_name=county)
+            for county in ("kent", "new-castle", "sussex")
         ]
-        for curl in fully_vaccinated_urls:
-            county = curl["county"]
-            url = curl["url"]
-            r = requests.get(url)
-            soup = BeautifulSoup(r.text, features="lxml")
-            tdata = json.loads(
-                soup.find(
-                    "div",
-                    {"aria-labelledby": "chart-covid-vaccine-fully-vaccinated-label"},
-                )["data-charts--covid-vaccine-fully-vaccinated-config-value"]
-            )
-            sd = tdata["startDate"]
-            # Parse start date
-            startDate = dt.datetime(sd[0], sd[1], sd[2])
-            # Get first dose data
-            first_dose_data = tdata["series"][0]["data"]
-            idx = pd.date_range(startDate, periods=len(first_dose_data), freq="d")
-            first_dose_df = pd.DataFrame(
-                data=first_dose_data, columns=["FirstDose"], index=idx
-            )
-            # Get second dose data
-            second_dose_data = tdata["series"][1]["data"]
-            idx = pd.date_range(startDate, periods=len(second_dose_data), freq="d")
-            second_dose_df = pd.DataFrame(
-                data=second_dose_data, columns=["SecondDose"], index=idx
-            )
-            df = first_dose_df.join(second_dose_df)
-            df["location_name"] = county
-            dfs.append(df)
-        return pd.concat(dfs)
 
-    def _fetch_total_administered(self):
-        dfs = []
-        total_urls = [
-            {"county": "Kent", "url": self.kent_total_url},
-            {"county": "New Castle", "url": self.new_castle_total_url},
-            {"county": "Sussex", "url": self.sussex_total_url},
-        ]
-        for curl in total_urls:
-            county = curl["county"]
-            url = curl["url"]
-            r = requests.get(url)
-            soup = BeautifulSoup(r.text, features="lxml")
-            tdata = json.loads(
-                soup.find(
-                    "div",
-                    {
-                        "aria-labelledby": "chart-covid-vaccine-administrations-daily-label"
-                    },
-                )["data-charts--covid-vaccine-administrations-daily-config-value"]
+    def normalize(self, data: List[pd.DataFrame]) -> pd.DataFrame:
+        return (
+            pd.concat(data)
+            .query("`People Vaccinated` == 'All ages'")
+            .assign(
+                location_name=(
+                    lambda row: row["location_name"].str.title().str.replace("-", " ")
+                ),
             )
-            sd = tdata["startDate"]
-            # Parse start date
-            startDate = dt.datetime(sd[0], sd[1], sd[2])
-            # Get first dose data
-            total_df = None
-            for srs in tdata["series"]:
-                if srs["name"] == "Daily Count":
-                    total_data = srs["data"]
-                    idx = pd.date_range(startDate, periods=len(total_data), freq="d")
-                    total_df = pd.DataFrame(
-                        data=total_data, columns=["TotalDoses"], index=idx
-                    )
-            if total_df is None:
-                raise "Couln't get county total data"
-            df = total_df
-            df["location_name"] = county
-            dfs.append(df)
-        return pd.concat(dfs)
-
-    def fetch(self):
-        totals = self._fetch_total_administered()
-        doses = self._fetch_fully_vaccinated()
-        return {"totals": totals, "doses": doses}
-
-    def normalize(self, data):
-
-        totals = data["totals"]
-        totals = totals.reset_index().rename(columns={"index": "dt"})
-        doses = data["doses"]
-        doses = doses.reset_index().rename(columns={"index": "dt"})
-        df = (
-            totals.set_index(["dt", "location_name"])
-            .join(doses.set_index(["dt", "location_name"]))
-            .reset_index()
+            .pipe(
+                self._rename_or_add_date_and_location,
+                timezone="US/Eastern",
+                location_name_column="location_name",
+            )
+            .pipe(self._reshape_variables, variable_map=self.variables)
         )
-
-        df = df.fillna(0)
-        out = self._reshape_variables(df, self.variables)
-
-        return out
 
 
 class DelawareVaccineDemographics(DelawareCountyVaccine):
 
     variables = {
-        "at_least_one_dose": v.INITIATING_VACCINATIONS_ALL,
-        "fully_vaccinated": v.FULLY_VACCINATED_ALL,
+        "at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
+        "fully_vaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self) -> Dict[str, Dict[str, requests.models.Response]]:
