@@ -14,7 +14,7 @@ class NewJerseyVaccineCounty(ArcGIS):
     state_fips = int(us.states.lookup("New Jersey").fips)
     source = "https://covid19.nj.gov/#live-updates"
     source_name = "New Jersey Department of Health"
-    service: str = "VaxCov2"
+    service: str = "VaxCov4"
 
     # NOTE: do not delete the `(start|end) variables` comments
     #       they are needed to generate documentation
