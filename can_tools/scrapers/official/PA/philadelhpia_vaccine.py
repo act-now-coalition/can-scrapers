@@ -21,40 +21,56 @@ class PhiladelphiaVaccine(TableauDashboard):
     source_name = "Philadelphia Department of Public Health"
     baseurl = "https://healthviz.phila.gov/t/PublicHealth/"
     viewPath = "COVIDVaccineDashboard/COVID_Vaccine"
-    data_tableau_table = "Residents Percentage New"
+    data_tableau_table = "Residents Percentage {dose_type}"
     variables = {
-        "Residents Receiving At Least 1 Dose ": variables.INITIATING_VACCINATIONS_ALL,
-        "Fully Vaccinated Residents  ": variables.FULLY_VACCINATED_ALL,
+        "Residents Receiving At Least 1 Dose* ": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully Vaccinated Residents*": variables.FULLY_VACCINATED_ALL,
     }
 
+    def fetch(self) -> pd.DataFrame:
+        # create a dict of the 2 dose type tables
+        # which are titled "Residents Percentage New" and "... Full"
+        return {
+            dose_type: self.get_tableau_view(dose_type=dose_type)[
+                self.data_tableau_table.format(dose_type=dose_type)
+            ]
+            for dose_type in ["New", "Full"]
+        }
+
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        dataframes = []
+        for dose_type in ["New", "Full"]:
+            dose_data = (
+                data[dose_type]
+                .rename(
+                    columns={
+                        "Measure Values-alias": "value",
+                        "Measure Names-alias": "variable",
+                    }
+                )
+                .loc[:, ["value", "variable"]]
+                .query(
+                    "variable in"
+                    "['Residents Receiving At Least 1 Dose* ', 'Fully Vaccinated Residents*']"
+                )
+                .assign(
+                    location=42101,
+                    value=lambda x: pd.to_numeric(x["value"].str.replace(",", "")),
+                    vintage=self._retrieve_vintage(),
+                )
+                .pipe(
+                    self._rename_or_add_date_and_location,
+                    location_column="location",
+                    timezone="US/Eastern",
+                )
+            )
+            dataframes.append(dose_data)
+
         data = (
-            data.rename(
-                columns={
-                    "Measure Values-alias": "value",
-                    "Measure Names-alias": "variable",
-                }
-            )
-            .loc[:, ["value", "variable"]]
-            .query(
-                "variable in"
-                "['Residents Receiving At Least 1 Dose ', 'Fully Vaccinated Residents  ']"
-            )
-            .assign(
-                location=42101,
-                value=lambda x: pd.to_numeric(x["value"].str.replace(",", "")),
-                vintage=self._retrieve_vintage(),
-            )
-            .pipe(
-                self._rename_or_add_date_and_location,
-                location_column="location",
-                timezone="US/Eastern",
-            )
-            .pipe(self.extract_CMU, cmu=self.variables)
+            self.extract_CMU(df=pd.concat(dataframes), cmu=self.variables)
             .drop(columns={"variable"})
             .reset_index(drop=True)
         )
-
         # break scraper if both init and completed variables are not included in data
         vars = {"total_vaccine_initiated", "total_vaccine_completed"}
         assert vars <= set(data["category"])
@@ -63,7 +79,7 @@ class PhiladelphiaVaccine(TableauDashboard):
     # could not find a way to select the "Demographics New" dashboard tab in the usual manner,
     # so edit request body to manually select Demographic tab/sheets
     # this is the default function with only form_data["sheet_id"] altered
-    def get_tableau_view(self, url=None):
+    def get_tableau_view(self, dose_type, url=None):
         def onAlias(it, value, cstring):
             return value[it] if (it >= 0) else cstring["dataValues"][abs(it) - 1]
 
@@ -102,7 +118,7 @@ class PhiladelphiaVaccine(TableauDashboard):
                 form_data[v] = tableauData[k]
 
         # set sheet manually to access the subsheets we need
-        form_data["sheet_id"] = "Demographics New"
+        form_data["sheet_id"] = f"Demographics {dose_type}"
         resp = req.post(
             dataUrl,
             data=form_data,

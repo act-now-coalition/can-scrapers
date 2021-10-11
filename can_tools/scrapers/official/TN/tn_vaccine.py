@@ -26,7 +26,7 @@ class TennesseeVaccineCounty(TableauDashboard):
             measurement="current",
             unit="percentage",
         ),
-        "SUM(% Two Doses %)-alias": CMU(
+        "AGG(% 2+ %)-alias": CMU(
             category="total_vaccine_completed",
             measurement="current",
             unit="percentage",

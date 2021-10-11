@@ -47,6 +47,9 @@ class OhioVaccineCounty(StateDashboard):
                 location_name=lambda x: x["location_name"].str.strip(),
             )
             .query("location_name not in @not_counties")
+            # TODO(sean): 10/11/21, ignoring booster shots for now as they are a subset of the vaccine completed group
+            # if we update our schema to handle boosters, this should change
+            .query("variable in ['vaccines_started', 'vaccines_completed']")
             .pipe(self.extract_CMU, cmu=self.variables)
             .drop(["variable"], axis=1)
         )
