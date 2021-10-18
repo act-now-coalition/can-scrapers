@@ -3,7 +3,7 @@ import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
-from tableauscraper import TableauScraper as TS
+from tableauscraper import TableauScraper
 
 class NCVaccine(TableauDashboard):
     has_location = False
@@ -26,7 +26,7 @@ class NCVaccine(TableauDashboard):
     }
 
     def fetch(self):
-        scraper_instance = TS()
+        scraper_instance = TableauScraper()
         scraper_instance.loads(self.fetch_url)
         workbook = scraper_instance.getWorkbook()
         return workbook.getWorksheet("County Map").data
