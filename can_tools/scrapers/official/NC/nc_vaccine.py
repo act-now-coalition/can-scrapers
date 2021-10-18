@@ -5,6 +5,7 @@ from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 from tableauscraper import TableauScraper
 
+
 class NCVaccine(TableauDashboard):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
