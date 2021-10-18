@@ -10,11 +10,18 @@ class MichiganVaccineCounty(StateDashboard):
     source = "https://www.michigan.gov/coronavirus/0,9753,7-406-98178_103214_103272-547150--,00.html"
     source_name = "State of Michican Official Website"
     state_fips = int(us.states.lookup("Michigan").fips)
-    url = "https://www.michigan.gov/documents/coronavirus/Covid_Vaccine_Doses_Administered_718468_7.xlsx"
+    # they split up dates into two excel files -- make sure we parse both as we take a cumsum of the rows to find the cumulative value
+    urls = (
+        "https://www.michigan.gov/documents/coronavirus/COVID_Vaccines_Administered_20210530-20210727_731325_7.xlsx",
+        "https://www.michigan.gov/documents/coronavirus/COVID_Vaccines_Administered-20210529_730228_7.xlsx",
+    )
     location_type = "county"
 
     def fetch(self):
-        return pd.read_excel(self.url, sheet_name="Doses Administered")
+        data = [
+            pd.read_excel(url, sheet_name="Doses Administered") for url in self.urls
+        ]
+        return pd.concat(data)
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         # date is written out in first column name
