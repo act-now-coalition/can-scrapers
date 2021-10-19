@@ -71,7 +71,7 @@ class RunResult:
         if not self.last_run_at:
             return False
         one_day_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=hours)
-        return self.last_run_at > one_day_ago
+        return self.last_run_at >= one_day_ago
 
     def last_success_delta_seconds(self):
         if not self.last_success_at:
@@ -83,7 +83,7 @@ class RunResult:
             return False
 
         one_day_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=hours)
-        return self.last_success_at > one_day_ago
+        return self.last_success_at >= one_day_ago
 
 
 def run_and_parse_flow_group_results(client, flow_group_id):

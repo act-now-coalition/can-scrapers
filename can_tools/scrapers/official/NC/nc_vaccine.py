@@ -3,6 +3,7 @@ import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
+from tableauscraper import TableauScraper
 
 
 class NCVaccine(TableauDashboard):
@@ -13,8 +14,7 @@ class NCVaccine(TableauDashboard):
     )
     state_fips = int(us.states.lookup("North Carolina").fips)
     location_type = "county"
-    baseurl = "https://public.tableau.com"
-    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Summary"
+    fetch_url = "https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
 
     data_tableau_table = "County Map"
     location_name_col = "County-alias"
@@ -25,6 +25,12 @@ class NCVaccine(TableauDashboard):
         "AGG(Calc.At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "AGG(Calc.Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
     }
+
+    def fetch(self):
+        scraper_instance = TableauScraper()
+        scraper_instance.loads(self.fetch_url)
+        workbook = scraper_instance.getWorkbook()
+        return workbook.getWorksheet("County Map").data
 
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
         df = super().normalize(df)

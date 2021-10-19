@@ -4,6 +4,7 @@ import us
 from bs4 import BeautifulSoup
 from typing import Dict, List
 import re
+from itertools import product
 
 from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers import variables
@@ -23,13 +24,10 @@ class DelawareCountyVaccine(StateDashboard):
     }
 
     def fetch(self) -> List[pd.DataFrame]:
-        # the summary/overall table is always the first on the page,
-        # since all the tables have the same class name, just access it
-        # by index (first in the list)
         return [
             pd.read_html(
                 self.url_base.format(county=county),
-                attrs={"class": "table c-dash-table__table table-striped"},
+                attrs={"class": "table c-dash-table__table c-dash-table--striped-by-2"},
             )[0].assign(location_name=county)
             for county in ("kent", "new-castle", "sussex")
         ]
@@ -55,107 +53,98 @@ class DelawareCountyVaccine(StateDashboard):
 class DelawareVaccineDemographics(DelawareCountyVaccine):
 
     variables = {
-        "at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
-        "fully_vaccinated": variables.FULLY_VACCINATED_ALL,
+        "have_received_at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
+        "are_fully_vaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
-    def fetch(self) -> Dict[str, Dict[str, requests.models.Response]]:
+    def fetch(self) -> Dict[str, requests.models.Response]:
         # each combination of county and dose type has its own page (6 pages total) with the url as below
-        url_template = (
-            "https://myhealthycommunity.dhss.delaware.gov/locations/"
-            "county-{county}/covid19_vaccine_fully_vaccinated/demographics?demographics_stat_type={var}"
-        )
+        url_template = "https://myhealthycommunity.dhss.delaware.gov/locations/county-{county}/covid19_vaccine_demographics"
 
-        # store responses in dict of dicts like:
-        # {'county': {'at_least_one_dose': response, 'fully_vaccinated': response}, ...}
+        # store responses in dict of dicts:
         data = {}
-        # for each county, get request for initiated and completed data
         for county in ["kent", "sussex", "new-castle"]:
-            urls = {}
-            for var in ["at_least_one_dose", "fully_vaccinated"]:
-                r = requests.get(url_template.format(county=county, var=var))
-                urls[var] = r
-            data[county] = urls
-
+            res = requests.get(url_template.format(county=county))
+            data[county] = res
         return data
 
     def _get_demographic(
-        self, data: Dict[str, Dict[str, requests.models.Response]], demographic: str
+        self, data: Dict[str, requests.models.Response]
     ) -> pd.DataFrame:
         """
-        extract data for each county and dose type for specified demographic
+        extract data for each county and dose type for all demographics
         """
-        # loop through each county and each variable for each county and extract data:
+
         dfs = []
-        for county, responses in data.items():
-            for var, response in responses.items():
+        for county, response in data.items():
+            # get all combinations of demographics and variables
+            for var, dose in list(
+                product(
+                    ["Race", "Sex", "Age", "Ethnicity"],
+                    ["Have received at least one dose", "Are fully vaccinated"],
+                )
+            ):
                 # find the divs that contain the data tables
                 soup = BeautifulSoup(response.text, "lxml")
-                divs = soup.find_all("div", class_="c-table-with-chart")
+                divs = soup.find_all("div", class_="c-table-with-chart__wrapper")
 
                 for div in divs:
                     # find the div that contains the correct demographic data
-                    title = div.find("h2", text=re.compile(f"by {demographic}"))
+                    title = div.find(
+                        "h3", text=re.compile(f"% of Delawareans by {var} who {dose}")
+                    )
                     if title is not None:
-                        # extract table and load into dataframe
                         table = div.find(
-                            "table", class_="table c-dash-table__table table-striped"
+                            "table",
+                            class_="table c-dash-table__table c-dash-table--striped",
                         )
                         table = pd.read_html(str(table))[0].assign(
-                            variable=var, location_name=county
+                            variable=dose, location_name=county
                         )
                         dfs.append(table)
-
         return pd.concat(dfs)
 
-    def normalize(
-        self, data: Dict[str, Dict[str, requests.models.Response]]
-    ) -> pd.DataFrame:
-        # for each demographic: get data, format, then append to list
-        dfs = []
-        for demo in ["sex", "race", "age", "ethnicity"]:
+    def normalize(self, data: Dict[str, requests.models.Response]) -> pd.DataFrame:
 
-            # get demographic data, create CMU columns
-            df = (
-                self._get_demographic(data, demo.title())
-                .drop(
-                    columns={
-                        f"% of all persons vaccinated",
-                        "% of demographic group vaccinated",
-                    }
-                )
-                .rename(columns={"Count": "value"})
+        demographic_cols = ["race", "sex", "age", "ethnicity"]
+        # fetch demographic tables and format dataframe variables
+        df = (
+            self._get_demographic(data)
+            .rename(columns={"Count": "value"})
+            .drop(
+                columns={
+                    "% of demographic group vaccinated",
+                    "% of all persons vaccinated",
+                }
             )
-            df.columns = [x.lower() for x in df.columns]
-            df = self.extract_CMU(df, cmu=self.variables, skip_columns=[demo])
+        )
 
-            # format demographic column and append to list
-            df[demo] = df[demo].str.lower().str.replace("*", "")
-            dfs.append(df)
+        df.columns = [col.lower() for col in df.columns]
+        df[demographic_cols] = df[demographic_cols].fillna(value="all")
+        df = df.applymap(
+            lambda string: string.lower().replace(" ", "_").replace("*", "")
+            if type(string) == str
+            else string
+        )
 
-        # combine and format total df
-        out = pd.concat(dfs)
-        out = (
-            out.dropna()
-            .assign(
-                dt=self._retrieve_dtm1d("US/Eastern"),
-                vintage=self._retrieve_vintage(),
-                value=lambda x: pd.to_numeric(
-                    x["value"].astype(str).str.replace(",", "")
-                ),
+        # expand into CMU variables and format
+        return (
+            self.extract_CMU(
+                df=df,
+                cmu=self.variables,
+                skip_columns=demographic_cols,
             )
             .drop(columns={"variable"})
-        )
-        out["location_name"] = out["location_name"].str.title().str.replace("-", " ")
-        out = out.replace({"65+": "65_plus", "pacific islander": "pacific_islander"})
-
-        # combine not reported + declined disclosure into 'unknown' values
-        group_by = [c for c in out.columns if c != "value"]
-        out = out.replace(
-            dict.fromkeys(
-                ["patient declined to disclose", "data not reported"], "unknown"
+            .pipe(
+                self._rename_or_add_date_and_location,
+                location_name_column="location_name",
+                timezone="US/Eastern",
             )
+            .assign(
+                vintage=self._retrieve_vintage(),
+                location_name=lambda row: row["location_name"].str.replace("-", " "),
+                age=lambda row: row["age"].str.replace("+", "_plus"),
+            )
+            .replace(["patient_declined_to_disclose", "data_not_reported"], None)
+            .dropna()
         )
-        out = out.groupby(group_by, as_index=False).aggregate({"value": "sum"})
-
-        return out
