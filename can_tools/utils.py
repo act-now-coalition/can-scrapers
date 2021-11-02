@@ -52,13 +52,13 @@ def find_unknown_variable_id(engine: Engine, df: pd.DataFrame):
     bad = merged["id"].isna()
     return df.loc[bad, :]
 
+
 def find_unknown_location_id(engine: Engine, df: pd.DataFrame, state_fips: int):
     """Find any locations in the specified dataframe that do not match an entry in the locations file"""
     locs = pd.read_sql("select * from locations", engine)
-    good_rows = df.location_name.isin(
-        locs.loc[locs.state_fips == state_fips, :].name
-    )
+    good_rows = df.location_name.isin(locs.loc[locs.state_fips == state_fips, :].name)
     return df.loc[~good_rows, :]
+
 
 def find_unknown_demographic_id(engine: Engine, df: pd.DataFrame):
     """Find any demographic pairs in the specified dataframe that do not match an entry in the covid_demographics file"""

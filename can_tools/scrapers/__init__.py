@@ -37,7 +37,9 @@ from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
 )
 
-from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import CDCHistoricalTestingDataset
+from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import (
+    CDCHistoricalTestingDataset,
+)
 
 from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
     CDCStateVaccine,
