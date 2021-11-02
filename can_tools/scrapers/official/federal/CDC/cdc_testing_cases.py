@@ -15,6 +15,9 @@ class CDCHistoricalTestingDataset(FederalDashboard):
     location_type = "county"
     source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
     source_name = "Centers for Disease Control and Prevention"
+    # We also collect CDC testing data via the CDCCovidDataTracker class. 
+    # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
+    # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
     provider = "cdc2"
 
     # SODA API stream has different variable names than the CSV and online dataset -- but the columns appear to be the same.
