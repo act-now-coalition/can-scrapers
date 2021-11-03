@@ -54,11 +54,14 @@ class CDCHistoricalTestingDataset(FederalDashboard):
             # We currently do not track it, and instead track Valdez-Cordova Census Area,
             # the census area from which Copper River split.
             # https://en.wikipedia.org/wiki/Copper_River_Census_Area,_Alaska
+            # I could not find any info on the Puerto Rico fips codes (72888 and 72999).
+            # They are not locations we surface on the website (or have anywhere in our locations)
+            # so I've removed them.
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_column="fips_code",
                 date_column="date",
-                locations_to_drop=[2066, 2063],
+                locations_to_drop=[2066, 2063, 72888, 72999],
             ).pipe(self._reshape_variables, variable_map=self.variables)
         )
 1
