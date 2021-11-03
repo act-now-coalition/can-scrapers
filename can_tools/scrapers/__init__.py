@@ -193,7 +193,6 @@ from can_tools.scrapers.official.WV.wv_vaccine import (
 )
 from can_tools.scrapers.official.WY.WYVaccines import (
     WYCountyVaccinations,
-    WYStateVaccinations,
     WYCountyAgeVaccinations,
 )
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths

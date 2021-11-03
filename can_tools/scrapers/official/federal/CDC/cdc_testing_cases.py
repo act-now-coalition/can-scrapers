@@ -58,6 +58,7 @@ class CDCHistoricalTestingDataset(FederalDashboard):
                 self._rename_or_add_date_and_location,
                 location_column="fips_code",
                 date_column="date",
-                locations_to_drop=[2066],
+                locations_to_drop=[2066, 2063],
             ).pipe(self._reshape_variables, variable_map=self.variables)
         )
+1

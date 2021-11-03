@@ -18,39 +18,29 @@ class GeorgiaCountyVaccine(StateDashboard):
     fetch_url = "https://georgiadph.maps.arcgis.com/sharing/rest/content/items/e7378d64d3fa4bc2a67b2ea40e4748b0/data"
 
     variables = {
-        "CUMPERSONCVAX": variables.FULLY_VACCINATED_ALL,
-        "CUMPERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
+        "PERSONCVAX": variables.FULLY_VACCINATED_ALL,
+        "PERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
     }
 
     def fetch(self) -> requests.models.Response:
         return requests.get(self.fetch_url)
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
-        initiated_sheet = pd.read_excel(
-            data.content, sheet_name="PERSON_1_VAX_BY_DAY_COUNTY"
-        )
-        completed_sheet = pd.read_excel(
-            data.content, sheet_name="PERSON_C_VAX_BY_DAY_COUNTY"
+        sheet = pd.read_excel(
+            data.content, sheet_name="COUNTY_SUMMARY"
         )
 
         # doses are stored in separate sheets, parse both
-        dataframes = []
-        for sheet in (initiated_sheet, completed_sheet):
-            dataframes.append(
-                self._rename_or_add_date_and_location(
-                    data=sheet,
-                    location_column="COUNTY_ID",
-                    # Remove unwanted fips codes
-                    # 0 = Georgia
-                    # 99999 = Unknown
-                    locations_to_drop=[0, 99999],
-                    date_column="ADMIN_DATE",
-                )
+        data = self._rename_or_add_date_and_location(
+                data=sheet,
+                location_column="COUNTY_ID",
+                # Remove unwanted fips codes
+                # 0 = Georgia
+                # 99999 = Unknown
+                locations_to_drop=[0, 99999],
+                timezone="US/Eastern",
             )
 
-        # unpack dataframes and merge into one df on location and date
-        initiated, completed = dataframes
-        data = pd.merge(initiated, completed, how="left", on=["location", "dt"])
         return self._reshape_variables(data=data, variable_map=self.variables)
 
 

@@ -144,6 +144,7 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
                 vintage=self._retrieve_vintage(),
                 location_name=lambda row: row["location_name"].str.replace("-", " "),
                 age=lambda row: row["age"].str.replace("+", "_plus"),
+                dt=lambda row: row["dt"].dt.date
             )
             .replace(["patient_declined_to_disclose", "data_not_reported"], None)
             .dropna()

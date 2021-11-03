@@ -13,7 +13,7 @@ class NewYorkVaccineCounty(TableauDashboard):
     source_name = "New York State Department of Health"
     state_fips = int(us.states.lookup("New York").fips)
     location_type = "county"
-    baseurl = "https://covid19tracker.health.ny.gov"
+    baseurl = "https://public.tableau.com"
     viewPath = "Vaccine_County_Public/NYSCountyVaccinations"
 
     data_tableau_table = "Vaccinated by County"
@@ -41,10 +41,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
     }
 
     def fetch(self) -> List[pd.DataFrame]:
-        path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-        counties = list(
-            pd.read_csv(path).query(f"state == 36 and location != 36")["name"]
-        )
+        counties = self._retrieve_counties()
 
         # set filters for each dose type for each county
         results = []

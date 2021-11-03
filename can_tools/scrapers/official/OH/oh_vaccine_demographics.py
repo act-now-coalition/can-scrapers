@@ -54,9 +54,11 @@ class OHVaccineCountyRace(StateDashboard):
         for county in counties:
             print("working on county: ", county)
             wb = ws.select("county", county)
-            df = wb.getWorksheet("New Demographics").data.assign(location_name=county)
+            try:
+                df = wb.getWorksheet("New Demographics").data.assign(location_name=county)
+            except TypeError:
+                print(f"Could not fetch data for {county}, skipping...")
             df = df.rename(columns={"SUM(Chosen Dose Status Metric)-alias": shot_type})
-            assert county in wb.getWorksheet("New County or Statewide").data.iloc[0, 0]
             parts.append(df)
             ws = ts.getWorksheet("New Map")
         return pd.concat(parts)

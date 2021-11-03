@@ -100,7 +100,7 @@ class SDVaccineCounty(MicrosoftBIDashboard):
                 }
             },
             {
-                # TODO(sean): This remove booster shots from request. Currently treating boosters as a subset of
+                # TODO(sean): This removes booster shots from request. Currently treating boosters as a subset of
                 # "vaccinations completed" so they are not tracked.
                 "Condition": {
                     "Not": {
@@ -117,11 +117,10 @@ class SDVaccineCounty(MicrosoftBIDashboard):
                                     }
                                 ],
                                 "Values": [
-                                    [
-                                        {"Literal": {"Value": "'MOD3'"}},
-                                    ],
+                                    [{"Literal": {"Value": "'MOD3'"}}],
                                     [{"Literal": {"Value": "'PFR3'"}}],
-                                ],
+                                    [{"Literal": {"Value": "'JSN2'"}}]
+                                ]
                             }
                         }
                     }
