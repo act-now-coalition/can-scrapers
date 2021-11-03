@@ -64,4 +64,3 @@ class CDCHistoricalTestingDataset(FederalDashboard):
                 locations_to_drop=[2066, 2063, 72888, 72999],
             ).pipe(self._reshape_variables, variable_map=self.variables)
         )
-1

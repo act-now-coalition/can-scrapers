@@ -107,7 +107,7 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         out = df[df["dt"] > pd.to_datetime("2021-3-01")]
 
         # NOTE(sean): There are a couple of entries for the same date and variable.
-        # Just take the last/most recent value as this appears to be the accurate entry. 
+        # Just take the last/most recent value as this appears to be the accurate entry.
         # see Trello for info: https://trello.com/c/1xxf3Ulg/1513-arizona-maricopa-scraper-vaccine-duplicate-entries
         group_columns = [col for col in df.columns if col != "value"]
         out = out.groupby(group_columns).agg({"value": "last"}).reset_index()

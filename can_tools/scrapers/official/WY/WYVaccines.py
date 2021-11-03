@@ -13,6 +13,7 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import GoogleDataStudioDashboard
 
+
 class WYCountyVaccinations(GoogleDataStudioDashboard):
     """
     Pulls Wyoming state vaccine data, cleans and up the Json Strig that is returned before returning that object as

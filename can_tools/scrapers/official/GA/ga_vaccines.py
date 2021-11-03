@@ -26,20 +26,18 @@ class GeorgiaCountyVaccine(StateDashboard):
         return requests.get(self.fetch_url)
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
-        sheet = pd.read_excel(
-            data.content, sheet_name="COUNTY_SUMMARY"
-        )
+        sheet = pd.read_excel(data.content, sheet_name="COUNTY_SUMMARY")
 
         # doses are stored in separate sheets, parse both
         data = self._rename_or_add_date_and_location(
-                data=sheet,
-                location_column="COUNTY_ID",
-                # Remove unwanted fips codes
-                # 0 = Georgia
-                # 99999 = Unknown
-                locations_to_drop=[0, 99999],
-                timezone="US/Eastern",
-            )
+            data=sheet,
+            location_column="COUNTY_ID",
+            # Remove unwanted fips codes
+            # 0 = Georgia
+            # 99999 = Unknown
+            locations_to_drop=[0, 99999],
+            timezone="US/Eastern",
+        )
 
         return self._reshape_variables(data=data, variable_map=self.variables)
 

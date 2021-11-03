@@ -99,33 +99,6 @@ class SDVaccineCounty(MicrosoftBIDashboard):
                     }
                 }
             },
-            {
-                # TODO(sean): This removes booster shots from request. Currently treating boosters as a subset of
-                # "vaccinations completed" so they are not tracked.
-                "Condition": {
-                    "Not": {
-                        "Expression": {
-                            "In": {
-                                "Expressions": [
-                                    {
-                                        "Column": {
-                                            "Expression": {
-                                                "SourceRef": {"Source": "v"}
-                                            },
-                                            "Property": "Manufacturer - Dose # (spelled out)",
-                                        }
-                                    }
-                                ],
-                                "Values": [
-                                    [{"Literal": {"Value": "'MOD3'"}}],
-                                    [{"Literal": {"Value": "'PFR3'"}}],
-                                    [{"Literal": {"Value": "'JSN2'"}}]
-                                ]
-                            }
-                        }
-                    }
-                }
-            },
         ]
 
         body["queries"] = [
@@ -167,11 +140,7 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         headers = self.construct_headers(resource_key)
 
         # get list of counties
-        counties = list(
-            pd.read_csv(
-                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-            ).query("state == @self.state_fips and name != 'South Dakota'")["name"]
-        )
+        counties = self._retrieve_counties()
 
         jsons = []
         """
@@ -199,12 +168,14 @@ class SDVaccineCounty(MicrosoftBIDashboard):
         # make the mappings manually
         col_mapping = {
             "G0": "county",
-            "M_0_DM2_0_A1": "total_vaccine_initiated",
             "M_1_DM3_1_C_1": "janssen_series",
-            "M_1_DM3_2_C_1": "moderna_1_dose",
-            "M_1_DM3_3_C_1": "moderna_complete",
-            "M_1_DM3_4_C_1": "pfizer_1_dose",
-            "M_1_DM3_5_C_1": "pfizer_complete",
+            "M_1_DM3_2_C_1": "janssen_booster",
+            "M_1_DM3_3_C_1": "moderna_1_dose",
+            "M_1_DM3_4_C_1": "moderna_complete",
+            "M_1_DM3_5_C_1": "moderna_booster",
+            "M_1_DM3_6_C_1": "pfizer_1_dose",
+            "M_1_DM3_7_C_1": "pfizer_complete",
+            "M_1_DM3_8_C_1": "pfizer_booster",
         }
         data_rows = []
         for record in data:
@@ -220,15 +191,30 @@ class SDVaccineCounty(MicrosoftBIDashboard):
 
         # Dump records into a DataFrame and transform
         df = pd.DataFrame.from_records(data_rows)
-        # calculate metrics to match our def'ns
+
+        # Calculate metrics to match our definitions:
+        # SD moves individuals between buckets when they receive shots. E.g when someone gets their second dose of Moderna,
+        # they are removed from the 1-dose bucket and placed into the 2-dose bucket. So, we need to combine all the buckets.
         df["total_vaccine_completed"] = (
-            df["janssen_series"] + df["moderna_complete"] + df["pfizer_complete"]
+            df["janssen_series"]
+            + df["janssen_booster"]
+            + df["moderna_complete"]
+            + df["pfizer_complete"]
+            + df["moderna_booster"]
+            + df["pfizer_booster"]
         )
+
+        df["total_vaccine_initiated"] = (
+            df["moderna_1_dose"] + df["pfizer_1_dose"] + df["total_vaccine_completed"]
+        )
+
         df["total_vaccine_doses_administered"] = (
             df["janssen_series"]
             + df["moderna_1_dose"]
             + df["pfizer_1_dose"]
             + 2 * (df["moderna_complete"] + df["pfizer_complete"])
+            + 3 * (df["moderna_booster"] + df["pfizer_booster"])
+            + 2 * (df["janssen_booster"])
         )
 
         out = self._rename_or_add_date_and_location(
