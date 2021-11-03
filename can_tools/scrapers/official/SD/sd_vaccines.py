@@ -23,7 +23,6 @@ class SDVaccineCounty(MicrosoftBIDashboard):
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
-        "total_vaccine_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
     }
 
@@ -206,15 +205,6 @@ class SDVaccineCounty(MicrosoftBIDashboard):
 
         df["total_vaccine_initiated"] = (
             df["moderna_1_dose"] + df["pfizer_1_dose"] + df["total_vaccine_completed"]
-        )
-
-        df["total_vaccine_doses_administered"] = (
-            df["janssen_series"]
-            + df["moderna_1_dose"]
-            + df["pfizer_1_dose"]
-            + 2 * (df["moderna_complete"] + df["pfizer_complete"])
-            + 3 * (df["moderna_booster"] + df["pfizer_booster"])
-            + 2 * (df["janssen_booster"])
         )
 
         out = self._rename_or_add_date_and_location(
