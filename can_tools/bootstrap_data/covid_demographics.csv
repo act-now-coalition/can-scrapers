@@ -46,6 +46,7 @@ age,race,ethnicity,sex
 16-49,all,all,unknown
 16-54,all,all,all
 18-24,all,all,all
+18-19,all,all,all
 18-24,all,all,female
 18-24,all,all,male
 18-24,all,hispanic,all
@@ -64,6 +65,7 @@ age,race,ethnicity,sex
 20-29,all,all,unknown
 20-34,all,all,all
 20-44,all,all,all
+20-49,all,all,all
 21-30,all,all,all
 25-29,all,all,all
 25-29,all,all,female
