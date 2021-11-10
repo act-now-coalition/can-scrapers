@@ -137,6 +137,7 @@ from can_tools.scrapers.official.OH.oh_vaccine_demographics import (
     OHVaccineCountyEthnicity,
 )
 from can_tools.scrapers.official.OR.or_vaccine import OregonVaccineCounty
+from can_tools.scrapers.official.OR.or_vaccine_demographics import OregonVaccineRace, OregonVaccineAge, OregonVaccineSex
 from can_tools.scrapers.official.PA.pa_vaccines import (
     PennsylvaniaCountyVaccines,
     PennsylvaniaVaccineAge,
