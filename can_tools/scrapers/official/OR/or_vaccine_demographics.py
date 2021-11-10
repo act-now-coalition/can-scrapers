@@ -4,6 +4,7 @@ import us
 from can_tools.scrapers import variables
 import pandas as pd
 
+
 class OregonVaccineRace(TableauDashboard):
     has_location = False
     source = "https://covidvaccine.oregon.gov/"
@@ -40,7 +41,11 @@ class OregonVaccineRace(TableauDashboard):
         results = []
         for county in counties:
             self.filterFunctionValue = county
-            results.append(self.get_tableau_view()[self.data_tableau_table].assign(location_name=county))
+            results.append(
+                self.get_tableau_view()[self.data_tableau_table].assign(
+                    location_name=county
+                )
+            )
         return results
 
     def normalize(self, data: Dict) -> pd.DataFrame:
@@ -50,19 +55,29 @@ class OregonVaccineRace(TableauDashboard):
             .query("value != 'Suppressed'")
             .assign(
                 variable="total_vaccine_initiated",
-                value=lambda row: pd.to_numeric(row["value"].astype(str).str.replace(",", "")),
-                vintage=self._retrieve_vintage()
+                value=lambda row: pd.to_numeric(
+                    row["value"].astype(str).str.replace(",", "")
+                ),
+                vintage=self._retrieve_vintage(),
             )
-            .loc[:,["location_name", self.demographic, "value", "variable", "vintage"]]
+            .loc[:, ["location_name", self.demographic, "value", "variable", "vintage"]]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_name_column="location_name",
-                timezone=self.timezone
+                timezone=self.timezone,
             )
-            .pipe(self.extract_CMU, cmu=self.variables, var_name = "variable", skip_columns=[self.demographic])
+            .pipe(
+                self.extract_CMU,
+                cmu=self.variables,
+                var_name="variable",
+                skip_columns=[self.demographic],
+            )
         )
-        data[self.demographic] = data[self.demographic].replace(self.demographic_rename).str.lower()
+        data[self.demographic] = (
+            data[self.demographic].replace(self.demographic_rename).str.lower()
+        )
         return data
+
 
 class OregonVaccineAge(OregonVaccineRace):
     data_tableau_table = "Cty Age "
@@ -75,11 +90,17 @@ class OregonVaccineAge(OregonVaccineRace):
 
     # this isn't needed but is used in the base class, so I'm going to leave it for the sake of simplicity
     demographic_rename = {}
-    
+
     def normalize(self, data: Dict) -> pd.DataFrame:
         data = super().normalize(data)
-        data["age"] = data["age"].str.replace(" ", "").str.replace("to", "-").str.replace("+", "_plus")
+        data["age"] = (
+            data["age"]
+            .str.replace(" ", "")
+            .str.replace("to", "-")
+            .str.replace("+", "_plus")
+        )
         return data
+
 
 class OregonVaccineSex(OregonVaccineRace):
     data_tableau_table = "Cty Sex"
@@ -90,8 +111,4 @@ class OregonVaccineSex(OregonVaccineRace):
         "SUM(People Count)-alias": "value",
     }
 
-    demographic_rename = {
-        "U": "unknown",
-        "F": "female",
-        "M": "male"
-    }
+    demographic_rename = {"U": "unknown", "F": "female", "M": "male"}
