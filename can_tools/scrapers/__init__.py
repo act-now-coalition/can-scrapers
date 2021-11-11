@@ -121,6 +121,8 @@ from can_tools.scrapers.official.NE.ne_vaccines import (
 
 from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
 
+from can_tools.scrapers.official.NH.nh_demographics import NHVaccineRace
+
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
