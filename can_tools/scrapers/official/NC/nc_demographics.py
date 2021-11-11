@@ -35,12 +35,15 @@ class NCVaccineAge(NCVaccine):
     }
 
     def fetch(self):
-        e = TableauScraper()
-        e.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
-        return e.getWorkbook()
+        engine = TableauScraper()
+        engine.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
+        return engine.getWorkbook()
 
         # counties = self._retrieve_counties()
         # return self._get_data(counties)
+
+
+
 
     def _get_data(self, counties):
         data = []
