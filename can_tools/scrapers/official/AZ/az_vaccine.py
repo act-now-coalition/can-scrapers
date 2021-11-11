@@ -57,7 +57,7 @@ class ArizonaVaccineCounty(TableauDashboard):
 
     def fetch(self):
         dfs = []
-        for county_name, fips in self.counties:
+        for county_name, fips in [["PIMA", 4019]]:
             self.filterFunctionValue = county_name
             county_data = self.get_tableau_view()
             data = {
