@@ -3,12 +3,13 @@ import pandas as pd
 import us
 import os
 import multiprocessing as mp
+from tableauscraper import TableauScraper
 
 from can_tools.scrapers import variables
 from can_tools.scrapers import NCVaccine
 
 class NCVaccineAge(NCVaccine):
-    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/Demographics"
+    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
     timezone = "US/Eastern"
     # filterFunctionName = "[Parameters].[Parameter 3 1]"  # county
     # secondaryFilterFunctionName = (
@@ -34,14 +35,12 @@ class NCVaccineAge(NCVaccine):
     }
 
     def fetch(self):
-        path = os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-        counties = list(
-            pd.read_csv(path).query(
-                "state == @self.state_fips and location != @self.state_fips"
-            )["name"]
-        )
+        e = TableauScraper()
+        e.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
+        return e.getWorkbook()
 
-        return self._get_data(counties)
+        # counties = self._retrieve_counties()
+        # return self._get_data(counties)
 
     def _get_data(self, counties):
         data = []
