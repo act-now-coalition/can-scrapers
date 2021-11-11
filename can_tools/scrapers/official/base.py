@@ -793,7 +793,7 @@ class TableauDashboard(StateDashboard, ABC):
         tableauData = json.loads(tableauTag.text)
         parsed_url = urllib.parse.urlparse(fullURL)
         dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
-
+        print(dataUrl)
         # copy over some additional headers from tableauData
         form_data = {}
         form_map = {
