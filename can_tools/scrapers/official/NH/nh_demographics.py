@@ -19,12 +19,23 @@ class NHVaccineRace(StateDashboard):
     def fetch(self):
         engine = TableauScraper()
         engine.loads(self.fetch_url)
-        return engine.getWorkbook()
-        engine = engine.getWorksheet("Vaccine Map By SC residents PEOPLE")
-        filters = engine.getFilters()
-        counties = [
-            t["values"] for t in filters if t["column"] == "Recipient County for maps"
-        ][0]
+        workbook = engine.getWorkbook()
+        return workbook
+
+        chart = workbook.goToSheet("Count: Bar Chart")
+        return chart
+        # return chart.getParameters()
+        # engine = engine.getWorksheet("Count and Prop: Map (no R/E with town&rphn)")
+        # selects = engine.getSelectableItems()
+        # counties = [
+        #     t["values"] for t in selects if t["column"] == "CMN + Town + RPHN"
+        # ][0]
+
+        workbook = engine.getWorksheet("Count: Bar Chart")
+        workbook.getParameterVal
+        workbook = workbook.select("Recipient County for maps", counties[2])
+        county_data = workbook.getWorksheet("Count: Bar Chart").data
+        return county_data
         
 
     def normalize(self, data) -> pd.DataFrame:
