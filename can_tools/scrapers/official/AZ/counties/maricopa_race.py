@@ -1,9 +1,5 @@
 import requests
-import re
 import pandas as pd
-import json
-from bs4 import BeautifulSoup as bs
-from typing import Dict
 from can_tools.scrapers import variables
 from can_tools.scrapers import ArizonaMaricopaVaccine
 
