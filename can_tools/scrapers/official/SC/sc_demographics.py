@@ -19,7 +19,7 @@ class SCVaccineDemographics(StateDashboard):
     variables = {"total_vaccinations_initiated": variables.INITIATING_VACCINATIONS_ALL}
 
     # hard coding these because it was annoying to use getFilter on two different sheets
-    race = [
+    races = [
         "Asian, American Indian or Alaskan Native, Native Hawaiian or Other Pacific Islander",
         "Black",
         "Other",
@@ -39,8 +39,7 @@ class SCVaccineDemographics(StateDashboard):
 
         data = []
         for county in [counties[1]]:
-            print("parsing", county)
-            for race in self.race:
+            for race in self.races:
                 # set the filter functions to select specific county and race
                 workbook = engine.setFilter("Recipient County for maps", county)
                 workbook = workbook.getWorksheet("Final Age xSex x Race REC")
