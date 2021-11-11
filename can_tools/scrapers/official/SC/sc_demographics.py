@@ -38,7 +38,7 @@ class SCVaccineDemographics(StateDashboard):
         ][0]
 
         data = []
-        for county in [counties[1]]:
+        for county in counties:
             print("parsing", county)
             for race in self.race:
                 # set the filter functions to select specific county and race
