@@ -35,7 +35,6 @@ class ArizonaVaccineRace(StateDashboard):
         ][0]
         raw_data = []
         for county in counties:
-            print("parsing", county)
             workbook = worksheet.select("Admin Address County W/ State Pod", county)
             raw_data.append(
                 workbook.getWorksheet("Race (# people)").data.assign(
@@ -44,6 +43,7 @@ class ArizonaVaccineRace(StateDashboard):
             )
         data = pd.concat(raw_data)
 
+        # format data to match structure
         rename_columns = {
             "Race/Ethnicity Consolidated (group)-alias": "race",
             "AGG(Total number of people (LOD))-alias": "value",
@@ -58,7 +58,10 @@ class ArizonaVaccineRace(StateDashboard):
             "Hispanic or Latino": "all",
         }
 
-        # format data to match structure
+        # All the race demographics specify that the entries are non-hispanic
+        # except for 'Hispanic or Latino' value.
+        # So, by default set ethnicity as non-hispanic, and set to hispanic where race == Hispanic or Latino
+        # When race is unknown, ethnicity is also unknown, modify columns to reflect this.
         data = (
             data.loc[:, ["location_name"] + list(rename_columns.keys())]
             .rename(columns=rename_columns)
@@ -74,10 +77,6 @@ class ArizonaVaccineRace(StateDashboard):
             )
         )
 
-        # All the race demographics specify that the entries are non-hispanic
-        # except for 'Hispanic or Latino' value.
-        # So, by default set ethnicity as non-hispanic (done above), and set to hispanic where race == Hispanic or Latino (done below)
-        # When race is unknown, ethnicity is also unknown, modify columns to reflect this.
         data.loc[data["race"] == "all", "ethnicity"] = "hispanic"
         data.loc[data["race"] == "unknown", "ethnicity"] = "unknown"
         return data
