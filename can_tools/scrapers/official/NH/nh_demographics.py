@@ -3,10 +3,11 @@ import us
 import pandas as pd
 from can_tools.scrapers import variables
 import multiprocessing
+from functools import partial
 
 from can_tools.scrapers.official.base import StateDashboard
 
-NUM_PROCESSES = 8
+NUM_PROCESSES = 12
 
 
 class NHVaccineRace(StateDashboard):
@@ -24,10 +25,10 @@ class NHVaccineRace(StateDashboard):
 
     # hard coding to make parallel fetching easier
     counties = [
+        "Rest of Hillsborough",
         "Sullivan",
         "Strafford",
         "Rockingham",
-        "Rest of Hillsborough",
         "Nashua",
         "Merrimack",
         "Manchester",
@@ -41,34 +42,39 @@ class NHVaccineRace(StateDashboard):
     def fetch(self):
         # fetch NUM_PROCESSES counties at a time
         pool = multiprocessing.Pool(processes=NUM_PROCESSES)
-        data = pool.map(self._get_county, self.counties[:8])
+        data = []
+
+        # Setting multiple parameters values on the same parameter type
+        # on a single TableauScraper instance removes the
+        # other selections (in this case, the county selection), and there doesn't seem
+        # to be a good way to fix/circumvent this. So, we use two TableauScraper
+        # instances to fetch each respective dose type.
+        # This is an issue we've had in the past with the OH and WI demographic scrapers.
+        for variable in [
+            "Total Individuals with at least 1 Dose",
+            "Total Individuals Fully Vaccinated",
+        ]:
+            func = partial(self._get_county, variable)
+            data.extend(pool.map(func, self.counties))
         return pd.concat(data)
 
     @staticmethod
-    def _get_county(county: str):
+    def _get_county(variable: str, county: str):
         engine = TableauScraper()
         engine.loads(
             url="https://www.nh.gov/t/DHHS/views/VaccineOperationalDashboard/VaccineDashboard"
         )
 
         engine.getWorkbook().setParameter("ShowBy", "Race/Ethnicity")
+        engine.getWorkbook().setParameter("Metric", variable)
 
         raw_data = []
-        for variable in [
-            "Total Individuals Fully Vaccinated",
-            "Total Individuals with at least 1 Dose",
-        ]:
-            engine.getWorkbook().setParameter("Metric", variable)
-            worksheet = engine.getWorksheet(
-                "Count and Prop: Map (no R/E with town&rphn)"
-            )
+        worksheet = engine.getWorksheet("Count and Prop: Map (no R/E with town&rphn)")
+        workbook = worksheet.select("CMN + Town + RPHN", county)
+        raw_data.append(
+            workbook.getWorksheet("Count: Bar Chart").data.assign(location_name=county)
+        )
 
-            workbook = worksheet.select("CMN + Town + RPHN", county)
-            raw_data.append(
-                workbook.getWorksheet("Count: Bar Chart").data.assign(
-                    location_name=county
-                )
-            )
         data = pd.concat(raw_data)
         return data
 
