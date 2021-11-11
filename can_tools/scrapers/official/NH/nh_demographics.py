@@ -52,7 +52,7 @@ class NHVaccineRace(StateDashboard):
         # This is an issue we've had in the past with the OH and WI demographic scrapers.
         for variable in [
             "Total Individuals with at least 1 Dose",
-            "Total Individuals Fully Vaccinated",
+            # "Total Individuals Fully Vaccinated",
         ]:
             func = partial(self._get_county, variable)
             data.extend(pool.map(func, self.counties))
@@ -125,4 +125,8 @@ class NHVaccineRace(StateDashboard):
             }
         )
         group = [col for col in cols_to_keep if col != "value"]
-        return data.groupby(group).sum().reset_index()
+        data = data.groupby(group).sum().reset_index()
+        # shift hispanic values to ethnicity column 
+        data.loc[data["race"] == "hispanic", "ethnicity"] = "hispanic"
+        data.loc[data["ethnicity"] == "hispanic", "race"] = "all"
+        return data
