@@ -40,7 +40,12 @@ class MaricopaVaccineRace(ArizonaMaricopaVaccine):
                 location_name="Maricopa",
                 dt=lambda row: pd.to_datetime(row["time"], unit="ms").dt.date,
                 vintage=self._retrieve_vintage(),
-                value=lambda row: pd.to_numeric(row["value"])
+                value=lambda row: pd.to_numeric(row["value"]),
             )
-            .pipe(self.extract_CMU, var_name="column", cmu=self.variables, skip_columns=["race"])
+            .pipe(
+                self.extract_CMU,
+                var_name="column",
+                cmu=self.variables,
+                skip_columns=["race"],
+            )
         )
