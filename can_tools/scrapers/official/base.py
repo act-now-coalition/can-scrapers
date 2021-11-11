@@ -759,6 +759,7 @@ class TableauDashboard(StateDashboard, ABC):
 
         req = requests_retry_session()
         fullURL = self.baseurl + "/views/" + self.viewPath
+        print(fullURL)
         if url is not None:
             fullURL = url
         if self.filterFunctionName is not None:
@@ -788,6 +789,7 @@ class TableauDashboard(StateDashboard, ABC):
                 },
                 headers={"Accept": "text/javascript"},
             )
+        reqg.raise_for_status()
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
