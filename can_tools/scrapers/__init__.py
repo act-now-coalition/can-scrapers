@@ -156,6 +156,8 @@ from can_tools.scrapers.official.PA.pa_vaccines import (
 
 from can_tools.scrapers.official.PA.philadelhpia_vaccine import PhiladelphiaVaccine
 
+from can_tools.scrapers.official.SC.sc_demographics import SCVaccineDemographics
+
 from can_tools.scrapers.official.SD.sd_vaccines import SDVaccineCounty
 from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
     SDVaccineRace,
