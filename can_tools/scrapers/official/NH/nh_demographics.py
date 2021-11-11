@@ -44,9 +44,9 @@ class NHVaccineRace(StateDashboard):
         pool = multiprocessing.Pool(processes=NUM_PROCESSES)
         data = []
 
-        # Setting multiple parameters values on the same parameter type
+        # Setting multiple parameter values on the same parameter type
         # on a single TableauScraper instance removes the
-        # other selections (in this case, the county selection), and there doesn't seem
+        # other selections (in this case, the county selection) from the instance, and there doesn't seem
         # to be a good way to fix/circumvent this. So, we use two TableauScraper
         # instances to fetch each respective dose type.
         # This is an issue we've had in the past with the OH and WI demographic scrapers.
