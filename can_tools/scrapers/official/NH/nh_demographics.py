@@ -52,7 +52,7 @@ class NHVaccineRace(StateDashboard):
         # This is an issue we've had in the past with the OH and WI demographic scrapers.
         for variable in [
             "Total Individuals with at least 1 Dose",
-            # "Total Individuals Fully Vaccinated",
+            "Total Individuals Fully Vaccinated",
         ]:
             func = partial(self._get_county, variable)
             data.extend(pool.map(func, self.counties))
