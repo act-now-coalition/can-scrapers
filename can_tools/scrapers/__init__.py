@@ -12,9 +12,12 @@ from can_tools.scrapers.official.AK.ak_vaccine import (
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
 )
+from can_tools.scrapers.official.AZ.az_demographics import ArizonaVaccineRace
+
 from can_tools.scrapers.official.AZ.counties.maricopa_vaccine import (
     ArizonaMaricopaVaccine,
 )
+from can_tools.scrapers.official.AZ.counties.maricopa_race import MaricopaVaccineRace
 from can_tools.scrapers.official.CA.ca_vaccine import (
     CaliforniaVaccineCounty,
     CaliforniaVaccineDemographics,
