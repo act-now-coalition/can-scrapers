@@ -66,3 +66,53 @@ class ILVaccineRace(StateDashboard):
         data.loc[data["ethnicity"] == "hispanic", "race"] = "all"
 
         return data
+
+
+class ILVaccineAge(StateDashboard):
+    has_location = False
+    source = "https://dph.illinois.gov/covid19/vaccine/vaccine-data"
+    source_name = "Illinois Department of Public Health"
+    state_fips = int(us.states.lookup("Illinois").fips)
+    url = "https://idph.illinois.gov/DPHPublicInformation/api/COVIDVaccine/getCOVIDVaccineAdministrationCountyAge?countyName={county}"
+    location_type = "county"
+
+    variables = {
+        # NOTE: AdministeredCount sounds like something other than 1+ dose, but it matches the dashboard.
+        "AdministeredCount": variables.INITIATING_VACCINATIONS_ALL,
+        "PersonsFullyVaccinated": variables.FULLY_VACCINATED_ALL,
+    }
+
+    def fetch(self):
+        counties = self._retrieve_counties()
+        county_jsons = [
+            requests.get(self.url.format(county=county)).json() for county in counties
+        ]
+        return county_jsons
+
+    def normalize(self, county_jsons) -> pd.DataFrame:
+        data = pd.concat([pd.DataFrame(json) for json in county_jsons])
+
+        data = self._rename_or_add_date_and_location(
+            data=data,
+            date_column="Report_Date",
+            location_name_column="CountyName",
+            location_names_to_replace={
+                "Dekalb": "DeKalb",
+                "Dupage": "DuPage",
+                "Lasalle": "LaSalle",
+                "Mcdonough": "McDonough",
+                "Mclean": "McLean",
+                "Mchenry": "McHenry",
+            },
+            location_names_to_drop=[],
+        ).assign(
+            vintage=self._retrieve_vintage(),
+            age=data["AgeGroup"]
+            .str.replace("+", "_plus")
+            .str.replace("^0", "", regex=True),
+        )
+        data = self._reshape_variables(
+            data, variable_map=self.variables, id_vars=["age"], skip_columns=["age"]
+        )
+
+        return data

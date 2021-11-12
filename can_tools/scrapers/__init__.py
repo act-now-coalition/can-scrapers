@@ -84,6 +84,7 @@ from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineCounty,
 )
 from can_tools.scrapers.official.IL.il_vaccine_demographics import (
+    ILVaccineAge,
     ILVaccineRace,
 )
 from can_tools.scrapers.official.IN.in_vaccines import IndianaCountyVaccinations
