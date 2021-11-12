@@ -126,7 +126,7 @@ class NHVaccineRace(StateDashboard):
         )
         group = [col for col in cols_to_keep if col != "value"]
         data = data.groupby(group).sum().reset_index()
-        # shift hispanic values to ethnicity column 
+        # shift hispanic values to ethnicity column
         data.loc[data["race"] == "hispanic", "ethnicity"] = "hispanic"
         data.loc[data["ethnicity"] == "hispanic", "race"] = "all"
         return data
