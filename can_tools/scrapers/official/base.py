@@ -788,7 +788,6 @@ class TableauDashboard(StateDashboard, ABC):
                 },
                 headers={"Accept": "text/javascript"},
             )
-        reqg.raise_for_status()
         soup = BeautifulSoup(reqg.text, "html.parser")
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
