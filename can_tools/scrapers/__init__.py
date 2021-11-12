@@ -12,9 +12,12 @@ from can_tools.scrapers.official.AK.ak_vaccine import (
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
 )
+from can_tools.scrapers.official.AZ.az_demographics import ArizonaVaccineRace
+
 from can_tools.scrapers.official.AZ.counties.maricopa_vaccine import (
     ArizonaMaricopaVaccine,
 )
+from can_tools.scrapers.official.AZ.counties.maricopa_race import MaricopaVaccineRace
 from can_tools.scrapers.official.CA.ca_vaccine import (
     CaliforniaVaccineCounty,
     CaliforniaVaccineDemographics,
@@ -90,6 +93,7 @@ from can_tools.scrapers.official.ME.me_vaccines import MaineCountyVaccines
 from can_tools.scrapers.official.MI.mi_vaccine import (
     MichiganVaccineCounty,
 )
+from can_tools.scrapers.official.MI.mi_vaccine_demographics import MIVaccineRaceAge
 from can_tools.scrapers.official.ME.me_vaccines import (
     MaineCountyVaccines,
     MaineRaceVaccines,
@@ -122,6 +126,8 @@ from can_tools.scrapers.official.NE.ne_vaccines import (
 
 from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
 
+from can_tools.scrapers.official.NH.nh_demographics import NHVaccineRace
+
 from can_tools.scrapers.official.NJ.nj_vaccine import NewJerseyVaccineCounty
 from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 from can_tools.scrapers.official.NV.nv_vaccines import NevadaCountyVaccines
@@ -152,6 +158,8 @@ from can_tools.scrapers.official.PA.pa_vaccines import (
 )
 
 from can_tools.scrapers.official.PA.philadelhpia_vaccine import PhiladelphiaVaccine
+
+from can_tools.scrapers.official.SC.sc_demographics import SCVaccineDemographics
 
 from can_tools.scrapers.official.SD.sd_vaccines import SDVaccineCounty
 from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
