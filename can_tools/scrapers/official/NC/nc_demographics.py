@@ -37,7 +37,20 @@ class NCVaccineAge(NCVaccine):
     def fetch(self):
         engine = TableauScraper()
         engine.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
-        return engine.getWorkbook()
+        engine = engine.getWorkbook()
+        # print(engine.getParameters())
+        # engine.setParameter("County-Map", "Wake County")
+
+        worksheet = engine.getWorksheet("County Map")
+        d = worksheet.getSelectableItems()
+        print(d)
+        return worksheet
+        # print(book.getStoryPoints())
+        print("go to specific storypoint")
+        
+        book.setParameter("County-Map", "Wake County")
+        # story = book.goToStoryPoint(storyPointId=2)
+        return book
 
         # counties = self._retrieve_counties()
         # return self._get_data(counties)
