@@ -83,6 +83,9 @@ from can_tools.scrapers.official.ID.id_county import IdahoCountyVaccine
 from can_tools.scrapers.official.IL.il_vaccine import (
     IllinoisVaccineCounty,
 )
+from can_tools.scrapers.official.IL.il_vaccine_demographics import (
+    ILVaccineRace,
+)
 from can_tools.scrapers.official.IN.in_vaccines import IndianaCountyVaccinations
 from can_tools.scrapers.official.LA.la_county import (
     LAVaccineCounty,
