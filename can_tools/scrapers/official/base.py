@@ -794,8 +794,8 @@ class TableauDashboard(StateDashboard, ABC):
         tableauTag = soup.find("textarea", {"id": "tsConfigContainer"})
         tableauData = json.loads(tableauTag.text)
         parsed_url = urllib.parse.urlparse(fullURL)
-        dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
-
+        # dataUrl = f'{parsed_url.scheme}://{parsed_url.hostname}{tableauData["vizql_root"]}/bootstrapSession/sessions/{tableauData["sessionid"]}'
+        dataUrl = f'https://public.tableau.com/vizql/w/NCDHHS_COVID-19_Dashboard_Vaccinations/v/VaccinationDashboard/bootstrapSession{tableauData["sessionid"]}/'
         # copy over some additional headers from tableauData
         form_data = {}
         form_map = {

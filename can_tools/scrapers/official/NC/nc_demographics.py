@@ -1,4 +1,3 @@
-
 import pandas as pd
 import us
 import os
@@ -8,16 +7,18 @@ from tableauscraper import TableauScraper
 from can_tools.scrapers import variables
 from can_tools.scrapers import NCVaccine
 
+
 class NCVaccineAge(NCVaccine):
     viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
     timezone = "US/Eastern"
-    # filterFunctionName = "[Parameters].[Parameter 3 1]"  # county
+    filterFunctionName = "[Parameters].[Parameter 3 1]"  # county
     # secondaryFilterFunctionName = (
         # "[Parameters].[Param.DemographicMetric (copy)_1353894643018190853]"  # dose type
     # )
     # thirdFilterFunctionName = "[Parameters].[Parameter 2]"  # specify providers
     # thirdFilterFunctionValue = "3"
     baseurl = "https://public.tableau.com"
+    viewPath = "NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
 
     # map wide form column names into CMUs
     variables = {
@@ -35,38 +36,40 @@ class NCVaccineAge(NCVaccine):
     }
 
     def fetch(self):
-        engine = TableauScraper()
-        engine.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
-        engine = engine.getWorkbook()
-        # print(engine.getParameters())
-        # engine.setParameter("County-Map", "Wake County")
+        # engine = TableauScraper()
+        # engine.loads("https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard")
+        # engine = engine.getWorkbook()
+        # # print(engine.getParameters())
+        # sp = engine.goToStoryPoint("2")
+        # print(sp.getParameters())
+        # wb = sp.setParameter("County", "Wake County")
+        # return wb
 
-        worksheet = engine.getWorksheet("County Map")
-        d = worksheet.getSelectableItems()
-        print(d)
-        return worksheet
+        # g = wb.getWorksheet("Race_weekly_county")
+        # return g
         # print(book.getStoryPoints())
-        print("go to specific storypoint")
-        
-        book.setParameter("County-Map", "Wake County")
+        # print("go to specific storypoint")
+
+        # book.setParameter("County-Map", "Wake County")
         # story = book.goToStoryPoint(storyPointId=2)
-        return book
+        # return book
 
-        # counties = self._retrieve_counties()
-        # return self._get_data(counties)
-
-
-
+        counties = self._retrieve_counties()
+        return self._get_data(counties)
 
     def _get_data(self, counties):
         data = []
-        for county in counties:
-            # self.filterFunctionValue = county + " County"
+        for county in [counties[0]]:
+            self.filterFunctionValue = county + " County"
             # for dose_val in ["3", "4"]:
-                # print("working on:", county, "dose: ", dose_val)
+                # print("wor/king on:", county, "dose: ", dose_val)
                 # self.secondaryFilterValue = dose_val
-                df = self.get_tableau_view()[self.worksheet]
-                data.append(df.assign(location_name=county))
+            df = self.get_tableau_view(
+                url="https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
+            )
+            return df
+            # [self.worksheet]
+            data.append(df.assign(location_name=county))
         return data
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
