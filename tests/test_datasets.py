@@ -6,9 +6,11 @@ import os
 import pandas as pd
 import pytest
 import sqlalchemy as sa
+from us import states
 
 from can_tools import ALL_SCRAPERS
 from can_tools.models import Base, create_dev_engine
+from can_tools import utils
 
 SORTED_SCRAPERS = sorted(ALL_SCRAPERS, key=lambda x: x.__name__)
 
@@ -20,6 +22,9 @@ if CONN_STR is not None:
     Base.metadata.create_all(bind=engine)
 else:
     engine, sess = create_dev_engine(verbose=VERBOSE)
+
+class UnverifiedScraperOutputError(Exception):
+    pass
 
 
 def _covid_dataset_tests(cls, df):
@@ -72,7 +77,27 @@ def test_datasets(cls):
 
     d.validate(clean, None)
 
-    d.put(engine, clean)
+    try:
+        d.put(engine, clean)
+    except sa.exc.IntegrityError:
+        unk_demographics = utils.find_unknown_demographic_id(clean, engine=engine, csv_rows=True)
+        unk_variables = utils.find_unknown_variable_id(clean, engine=engine, csv_rows=True)
+        if cls.location_type in ["county", "state"]:
+            unk_locations = utils.find_unknown_location_id(clean, engine=engine, state_fips=cls.state_fips, csv_rows=True)
+        
+        error_msg = (
+            "NOT NULL constraint failed on insert. " 
+            "Verify the missing rows are expected and add them to the corresponding files "
+            "or modify the scraper output to match the expected, existing CSV entries. \n"
+        )
+        if unk_demographics:
+            error_msg += "covid_demographics.csv: \n" + "".join(unk_demographics) + "\n"
+        if unk_variables:
+            error_msg += "covid_variables.csv: \n" + "".join(unk_variables) + "\n"
+        if unk_locations:
+            error_msg += "locations.csv: \n" + "".join(unk_locations)
+        
+        raise UnverifiedScraperOutputError(error_msg)
 
 
 @pytest.mark.parametrize("cls", SORTED_SCRAPERS)
