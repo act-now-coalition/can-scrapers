@@ -79,4 +79,5 @@ class SCVaccineDemographics(StateDashboard):
                 var_name="variable",
                 skip_columns=["age", "race", "sex"],
             )
+            .query("value != -1")
         )
