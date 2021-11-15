@@ -12,7 +12,7 @@ sqlalchemy==1.3.20
 sqlalchemy_utils==0.36.8
 camelot-py[cv]
 us==2.0.2
-TableauScraper-0.1.29
+TableauScraper==0.1.29
 xlrd==1.2.0
 lxml==4.6.2
 sentry-sdk==1.0.0
