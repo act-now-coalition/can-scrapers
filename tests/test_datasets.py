@@ -82,7 +82,7 @@ def test_datasets(cls):
     except sa.exc.IntegrityError:
         unk_demographics = utils.find_unknown_demographic_id(clean, engine=engine, csv_rows=True)
         unk_variables = utils.find_unknown_variable_id(clean, engine=engine, csv_rows=True)
-        if cls.location_type in ["county", "state"]:
+        if cls.location_type in ["county", "state"] or cls.has_location == True:
             unk_locations = utils.find_unknown_location_id(clean, engine=engine, state_fips=cls.state_fips, csv_rows=True)
         
         error_msg = (
