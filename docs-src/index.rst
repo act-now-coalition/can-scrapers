@@ -17,7 +17,7 @@ The efforts of the data engineering team are roughly split into two categories:
    CAN database, maintaining APIs, and working on CI/CD pipelines. This job is
    mainly done by the CAN data engineering leads.
 
-The organization of the documentation follows the categories outlined above:
+The organization of the documentation follows the categories outlined above.
 
 .. toctree::
    :maxdepth: 2
