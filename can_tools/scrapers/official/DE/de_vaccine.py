@@ -141,7 +141,7 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
                 timezone="US/Eastern",
             )
             .assign(
-                vintage=self._retrieve_vintage(),
+                vintage=self._retrieve_vintage().tz_localize(None),
                 location_name=lambda row: row["location_name"].str.replace("-", " "),
                 age=lambda row: row["age"].str.replace("+", "_plus"),
                 dt=lambda row: row["dt"].dt.date,

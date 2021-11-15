@@ -70,11 +70,19 @@ def find_unknown_location_id(df: pd.DataFrame, state_fips: int, engine: Engine =
     return df.loc[~good_rows, :]
 
 
-def find_unknown_demographic_id(df: pd.DataFrame, engine: Engine = None):
+def find_unknown_demographic_id(
+    df: pd.DataFrame, engine: Engine = None, csv_rows=False
+):
     """Find any demographic pairs in the specified dataframe that do not match an entry in the covid_demographics file"""
     if not engine:
         engine = create_dev_engine()[0]
     dems = pd.read_sql("select * from covid_demographics", engine)
     merged = df.merge(dems, on=["sex", "age", "race", "ethnicity"], how="left")
     bad = list(merged["id"].isna())
-    return df.loc[bad, :]
+
+    df_bad = df.loc[bad, :]
+    if not csv_rows:
+        return df_bad
+
+    df_bad_combinations = df_bad[["age", "race", "ethnicity", "sex"]].drop_duplicates()
+    return df_bad_combinations.to_csv(index=False, header=False)

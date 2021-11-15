@@ -416,11 +416,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
         # Build post headers
         headers = self.construct_headers(resource_key)
 
-        counties = list(
-            pd.read_csv(
-                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-            ).query("state == @self.state_fips and name != 'Maine'")["name"]
-        )
+        counties = self._retrieve_counties()
 
         jsons = []
         """
@@ -460,13 +456,19 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
 
         # combine into dataframe
         df = pd.DataFrame.from_records(data_rows)
-        # they report j&j doses in either the initiated or completed column--the other is empty (NA)
-        df["jj_complete"] = df["jj_complete"].fillna(0)
-        df["jj_init"] = df["jj_init"].fillna(0)
+
+        # J&J doses are reported in either the initiated or completed column--the other is empty (NaN)
+        # NOTE(sean): 11/14/21, the 5-11 age group does not have J&J data (it's not authorized for those under 18),
+        # but the J&J columns need to exist for the rest of the method to work.
+        # This just adds an empty column for if the J&J columns do not exist.
+        if "jj_complete" not in df.columns:
+            df["jj_complete"] = 0
+        if "jj_init" not in df.columns:
+            df["jj_complete"] = 0
 
         # format, calculate total_vacccine_initiated + map CMU
         out = (
-            df.dropna()  # counties that don't have age 0-11 return NA for value
+            df.fillna(0)
             .assign(
                 initiated_total=lambda x: x["first_dose_total"]
                 + x["jj_complete"]
@@ -500,9 +502,8 @@ class MaineAgeVaccines(MaineRaceVaccines):
     demographic = "age"
     demographic_query_name = "Age Group"
     demographic_key = {
-        "9": "0-11",
-        "8": "12-15",
-        "7": "16-19",
+        "8": "5-11",
+        "7": "12-19",
         "6": "20-29",
         "5": "30-39",
         "4": "40-49",

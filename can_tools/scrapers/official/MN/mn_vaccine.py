@@ -26,7 +26,7 @@ class MinnesotaCountyVaccines(MicrosoftBIDashboard):
     # get the iframe link manually to bypass captcha
     # this will need to be updated periodically -- find the iframe in the page source html
 
-    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiZTEzNjk3YzktODVkOS00MWM5LTk0NjktNTU4N2E0YTc2YWI0IiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
+    powerbi_dashboard_link = "https://app.powerbigov.us/view?r=eyJrIjoiODEyNDEyM2QtNzdmZS00YzIwLTk5NGQtNDA3ZTU5MmM4MTUyIiwidCI6ImViMTRiMDQ2LTI0YzQtNDUxOS04ZjI2LWI4OWMyMTU5ODI4YyJ9"
 
     def get_dashboard_iframe(self):
         fumn = {"src": self.powerbi_dashboard_link}
@@ -207,11 +207,12 @@ class MinnesotaCountyAgeVaccines(MinnesotaCountyVaccines):
     }
     # use these keys to fill in the keys for each dose type
     demographic_key = {
-        "0": "12-15",
-        "1": "16-17",
-        "2": "18-49",
-        "3": "50-64",
-        "4": "65_plus",
+        "0": "5-11",
+        "1": "12-15",
+        "2": "16-17",
+        "3": "18-49",
+        "4": "50-64",
+        "5": "65_plus",
     }
     variables = {
         "initiating": v.INITIATING_VACCINATIONS_ALL,

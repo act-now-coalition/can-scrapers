@@ -28,7 +28,10 @@ class TexasVaccineParent(StateDashboard, ABC):
     def excel_to_dataframe(self, data, sheet) -> pd.DataFrame:
         # Read data from excel file and parse specified sheet
         return pd.read_excel(
-            data.content, sheet_name=sheet, engine="openpyxl", na_values="--"
+            data.content,
+            sheet_name=sheet,
+            na_values="--",
+            dtype={"Age Group": "string"},
         ).assign(dt=self._retrieve_dtm1d("US/Eastern"))
 
 
@@ -142,11 +145,14 @@ class TXVaccineCountyAge(TexasVaccineParent):
     sheet_name = "By County, Age"
     replacers = {
         "age": {
-            "12-15 years": "12-15",
-            "16-49 years": "16-49",
-            "50-64 years": "50-64",
-            "65-79 years": "65-79",
-            "80+ years": "80_plus",
+            # Excel automatically parses some of the string entries as dates, and
+            # read excel does not seem to have a way to fix this.
+            # This is not a good fix, but it's the only way I could find to convert the
+            # date values back into strings.S
+            # See https://github.com/pandas-dev/pandas/issues/39898 for explanation
+            "2021-05-11 00:00:00": "5-11",
+            "2021-12-15 00:00:00": "12-15",
+            "80+": "80_plus",
             "Unknown": "unknown",
             "Total": "all",
         },

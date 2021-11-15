@@ -28,7 +28,7 @@ class IllinoisVaccineCounty(StateDashboard):
         return (
             # rename the Chicago rows such that they are summed together with the Cook County entries,
             # effectively merging the two locations into one (as CHI is within Cook County)
-            data.replace({"Chicago": "Cook"})
+            data.replace({"Chicago": "Cook", "Chicago ": "Cook"})
             .groupby(["CountyName", "Report_Date"])
             .sum()
             .reset_index()
