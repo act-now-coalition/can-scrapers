@@ -67,11 +67,13 @@ class NHVaccineRace(StateDashboard):
 
         engine.getWorkbook().setParameter("ShowBy", "Race/Ethnicity")
         # By default the parameter is set to "Total Individuals Completed Vaccine"
-        # and when trying to set the parameter to the default state we get a warning. 
-        # On the Prefect VM, this warning causes the scraper to fail. 
+        # and when trying to set the parameter to the default state we get a warning.
+        # On the Prefect VM, this warning causes the scraper to fail.
         # To circumvent this, we set the parameter if we are pulling in 1+ dose data.
         if variable == "initiated":
-            engine.getWorkbook().setParameter("Metric", "Total Individuals with at least 1 Dose")
+            engine.getWorkbook().setParameter(
+                "Metric", "Total Individuals with at least 1 Dose"
+            )
 
         raw_data = []
         worksheet = engine.getWorksheet("Count and Prop: Map (no R/E with town&rphn)")
