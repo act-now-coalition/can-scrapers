@@ -142,23 +142,35 @@ class ALCountyVaccineAge(ALCountyVaccineSex):
     variable_columns = ["AGECAT"]
     sheet_num = 5
     variables = {
-        "0-17": CMU(
+        "00-04": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
-            age="0-17",
+            age="0-4",
         ),
-        "18-29": CMU(
+        "05-11": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
-            age="18-29",
+            age="5-11",
         ),
-        "30-49": CMU(
+        "12-17": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",
             unit="people",
-            age="30-49",
+            age="12-17",
+        ),
+        "18-24": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+            age="18-24",
+        ),
+        "25-49": CMU(
+            category="total_vaccine_initiated",
+            measurement="cumulative",
+            unit="people",
+            age="25-49",
         ),
         "50-64": CMU(
             category="total_vaccine_initiated",

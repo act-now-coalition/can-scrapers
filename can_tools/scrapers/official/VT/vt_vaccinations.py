@@ -1,15 +1,11 @@
+from typing import Dict
 import pandas as pd
 import requests
 import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
-from can_tools.scrapers.util import flatten_dict
 from bs4 import BeautifulSoup
-import os
-
-
-pd.options.mode.chained_assignment = None  # Avoid unnecessary SettingWithCopy warning
 
 
 class VermontCountyVaccine(MicrosoftBIDashboard):
@@ -24,14 +20,6 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
     }
-
-    def get_counties(self):
-        path = "/../../../bootstrap_data/locations.csv"
-        return list(
-            pd.read_csv(os.path.dirname(__file__) + path).query(
-                f"state == {self.state_fips} and location != {self.state_fips}"
-            )["name"]
-        )
 
     def get_dashboard_iframe(self):
         """scrapes the dashboard source page for the link (iframe) to the stand-alone dashboard.
@@ -51,7 +39,7 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         ][0]
         return {"src": iframe}
 
-    def construct_body(self, resource_key, ds_id, model_id, report_id, county):
+    def construct_body(self, ds_id, model_id, report_id, dose_type):
         "Build body request"
         body = {}
         body["version"] = "1.0.0"
@@ -69,21 +57,23 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
                                     "From": self.construct_from(
                                         [
                                             # From
-                                            ("d1", "Dimension County", 0),
-                                            ("i", "Immunization Summary - finished", 0),
-                                            ("_1", "_CVMeasures", 0),
+                                            ("c", "Dimension County", 0),
+                                            ("b", "Baseline VDH", 0),
+                                            ("s1", "Select vaccine status", 0),
+                                            ("d", "Dimension Age - AgeVaccine1", 0),
+                                            ("m", "_CountyMeasures", 0),
                                         ]
                                     ),
                                     "Select": self.construct_select(
                                         [
                                             # Selects
-                                            ("d1", "County", "location_name")
+                                            ("c", "County", "location_name")
                                         ],
-                                        [],
+                                        [("b", "Count", 0, "count")],
                                         [
                                             # Measures
-                                            ("_1", "People vaccinated", "init"),
-                                            ("i", "People completed 1", "completed"),
+                                            ("m", "Map % vaccinated", "init"),
+                                            # ("i", "People completed 1", "completed"),
                                         ],
                                     ),
                                     "Where": [
@@ -95,25 +85,57 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
                                                             "Column": {
                                                                 "Expression": {
                                                                     "SourceRef": {
-                                                                        "Source": "d1"
+                                                                        "Source": "s1"
                                                                     }
                                                                 },
-                                                                "Property": "County",
+                                                                "Property": "Select vax status",
                                                             }
                                                         }
                                                     ],
                                                     "Values": [
                                                         [
                                                             {
+                                                                # 'Completed'
                                                                 "Literal": {
-                                                                    "Value": f"'{county}'"
+                                                                    "Value": f"'{dose_type}'"
                                                                 }
                                                             }
                                                         ]
                                                     ],
                                                 }
+                                            },
+                                        },
+                                        {
+                                            "Condition": {
+                                                "Not": {
+                                                    "Expression": {
+                                                        "In": {
+                                                            "Expressions": [
+                                                                {
+                                                                    "Column": {
+                                                                        "Expression": {
+                                                                            "SourceRef": {
+                                                                                "Source": "d"
+                                                                            }
+                                                                        },
+                                                                        "Property": "Age eligibility 5+",
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "Values": [
+                                                                [
+                                                                    {
+                                                                        "Literal": {
+                                                                            "Value": "'Under 5'"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            ],
+                                                        }
+                                                    }
+                                                }
                                             }
-                                        }
+                                        },
                                     ],
                                 }
                             }
@@ -143,45 +165,36 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         # Build post headers
         headers = self.construct_headers(resource_key)
 
-        jsons = []
+        jsons = {}
         # Build post body
-        for county in self.get_counties():
-            body = self.construct_body(resource_key, ds_id, model_id, report_id, county)
-            res = self.sess.post(url, json=body, headers=headers)
-            jsons.append(res.json())
+        for dose in ["1 or more", "Completed"]:
+            body = self.construct_body(ds_id, model_id, report_id, dose_type=dose)
+            res = self.sess.post(url, json=body, headers=headers).json()
+            jsons[dose] = res
 
         return jsons
 
     def normalize(self, resjson: dict) -> pd.DataFrame:
+        init, complete = [
+            self._extract_dose_data(dose, data) for dose, data in resjson.items()
+        ]
 
-        # combine all list entries into one dict s.t they can all be parsed at once
-        data = []
-        for chunk in resjson:
-            foo = chunk["results"][0]["result"]["data"]
-            d = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
-            data.extend(d)
-
-        # Build dict of dicts with relevant info
-        col_mapping = {
-            "C_0": "location_name",
-            "C_1": "total_vaccine_initiated",
-            "C_2": "total_vaccine_completed",
-        }
-
-        # Iterate through all of the rows and store relevant data
-        data_rows = []
-        for record in data:
-            flat_record = flatten_dict(record)
-            row = {}
-            for k in list(col_mapping.keys()):
-                flat_record_key = [frk for frk in flat_record.keys() if k in frk]
-
-                if len(flat_record_key) > 0:
-                    row[col_mapping[k]] = flat_record[flat_record_key[0]]
-
-            data_rows.append(row)
-        df = pd.DataFrame.from_records(data_rows).reset_index()
+        # merge dose dataframes and multiply percentage * population to find cumulative values
+        df = init.merge(complete, on=["location_name", "pop_5_plus"], how="left")
+        df["total_vaccine_initiated"] = df["1 or more"] * df["pop_5_plus"]
+        df["total_vaccine_completed"] = df["Completed"] * df["pop_5_plus"]
 
         out = self._reshape_variables(df, self.variables)
         out["dt"] = self._retrieve_dt("US/Eastern")
         return out
+
+    @staticmethod
+    def _extract_dose_data(dose_title: str, resjson: Dict):
+        """extract all data records from the JSON fetch response"""
+        foo = resjson["results"][0]["result"]["data"]
+        data = foo["dsr"]["DS"][0]["PH"][1]["DM1"]
+
+        records = [record["C"] for record in data]
+        df = pd.DataFrame(records, columns=["location_name", "pop_5_plus", dose_title])
+        df[dose_title] = pd.to_numeric(df[dose_title].str.replace("D", ""))
+        return df

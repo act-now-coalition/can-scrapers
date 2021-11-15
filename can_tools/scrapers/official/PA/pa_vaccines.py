@@ -359,7 +359,7 @@ class PennsylvaniaVaccineAge(PennsylvaniaVaccineDemographics):
     powerbi_table = "Vaccinations by Age_Group"
     powerbi_dem_column = "Age_Group"
     demographic = "age"
-    value_renamer = {"105+": "105_plus"}
+    value_renamer = {"105+": "105_plus", "05-09": "5-9"}
 
 
 class PennsylvaniaVaccineEthnicity(PennsylvaniaVaccineDemographics):

@@ -388,3 +388,9 @@ all,asian_or_pacific_islander,non-hispanic,all
 55-64,white,all,female
 65_plus,white,all,male
 65_plus,white,all,female
+5-11,ai_an,all,all
+12-19,all,all,all
+5-11,all,all,female
+5-11,all,all,male
+5-11,all,hispanic,all
+5-11,all,non-hispanic,all
