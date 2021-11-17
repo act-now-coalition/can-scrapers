@@ -86,3 +86,23 @@ def find_unknown_demographic_id(
 
     df_bad_combinations = df_bad[["age", "race", "ethnicity", "sex"]].drop_duplicates()
     return df_bad_combinations.to_csv(index=False, header=False)
+
+
+def find_duplicated_variable_entries(df: pd.DataFrame, has_location=False):
+    """find duplicated variables in a scraper output"""
+    df = df.reset_index(drop=True)
+    location_col = "location" if has_location else "location_name"
+    df_insert_keys = [
+        "dt",
+        "category",
+        "measurement",
+        "unit",
+        "age",
+        "race",
+        "ethnicity",
+        "sex",
+        location_col,
+    ]
+
+    df_duplicated_idx = df.loc[:, df_insert_keys].duplicated(keep=False)
+    return df.loc[df_duplicated_idx == True]

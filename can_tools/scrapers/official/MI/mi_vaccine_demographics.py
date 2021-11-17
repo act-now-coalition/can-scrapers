@@ -63,9 +63,19 @@ class MIVaccineRaceAge(StateDashboard):
 
         # combine detroit and wayne county into one location
         data["location_name"] = data["location_name"].replace("Detroit", "Wayne")
-        data = (
-            data.groupby(by=[col for col in data.columns if col != "value"])
-            .sum()
-            .reset_index()
-        )
-        return data
+
+        # sum over age and race columns to create independent demographic data
+        # (e.g 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
+        dataframes = []
+        for variable in ["age", "race"]:
+            demo_data = (
+                data.groupby(
+                    by=[col for col in data.columns if col not in ["value", variable]]
+                )
+                .sum()
+                .reset_index()
+            )
+            demo_data[variable] = "all"
+            dataframes.append(demo_data)
+
+        return pd.concat(dataframes)
