@@ -38,10 +38,10 @@ class SCVaccineDemographics(StateDashboard):
         ][0]
 
         data = []
-        for county in counties:
+        for county in counties[:2]:
+            workbook = engine.setFilter("Recipient County for maps", county)
             for race in self.races:
-                # set the filter functions to select specific county and race
-                workbook = engine.setFilter("Recipient County for maps", county)
+                # set the filter functions to select specific race
                 workbook = workbook.getWorksheet("Final Age xSex x Race REC")
                 workbook = workbook.setFilter("Assigned Race", race)
 
@@ -57,7 +57,7 @@ class SCVaccineDemographics(StateDashboard):
             "location_name": "location_name",
             "Age Bins SIMON-value": "age",
         }
-        return (
+        data = (
             data.rename(columns=rename)
             .loc[:, list(rename.values())]
             .assign(
@@ -81,3 +81,18 @@ class SCVaccineDemographics(StateDashboard):
             )
             .query("value != -1")
         )
+
+        # sum over age and race columns to create independent demographic data
+        # (e.g 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
+        dataframes = []
+        for variable in ["age", "race"]:
+            demo_data = (
+                data.groupby(
+                    by=[col for col in data.columns if col not in ["value", variable]]
+                )
+                .sum()
+                .reset_index()
+            )
+            demo_data[variable] = "all"
+            dataframes.append(demo_data)
+        return pd.concat(dataframes)
