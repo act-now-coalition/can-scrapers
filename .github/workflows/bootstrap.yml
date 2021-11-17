@@ -1,0 +1,27 @@
+name: Bootstrap CSVs
+
+on:
+  push:
+    paths:
+      - "can_tools/bootstrap_data"
+    branches:
+      - main
+
+env:
+  CAN_SCRAPERS_DB_URL: ${{ secrets.CAN_SCRAPERS_DB_URL }}
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+      - name: Install dependencies
+        run: |
+          pip install -e .
+      - name: Bootstrap
+        run: python can_tools/bootstrap.py
+
