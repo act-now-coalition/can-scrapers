@@ -4,9 +4,6 @@ import pandas as pd
 from can_tools.scrapers import variables
 import multiprocessing
 from functools import partial
-import pkg_resources
-import prefect
-
 
 from can_tools.scrapers.official.base import StateDashboard
 
@@ -43,11 +40,6 @@ class NHVaccineRace(StateDashboard):
     ]
 
     def fetch(self):
-
-        ts_version = pkg_resources.get_distribution("tableauscraper").version
-        logger = prefect.context.get("logger")
-        logger.info(f"tableauscraper version {ts_version}")
-
         # fetch NUM_PROCESSES counties at a time
         pool = multiprocessing.Pool(processes=NUM_PROCESSES)
         data = []

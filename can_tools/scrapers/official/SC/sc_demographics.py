@@ -79,7 +79,7 @@ class SCVaccineDemographics(StateDashboard):
                 var_name="variable",
                 skip_columns=["age", "race", "sex"],
             )
-            .query("value != -1")
+            .query("value != -1 and location_name != 'nan'")
         )
 
         # sum over age and race columns to create independent demographic data
