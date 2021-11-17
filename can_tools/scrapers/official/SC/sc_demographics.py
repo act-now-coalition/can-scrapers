@@ -38,7 +38,7 @@ class SCVaccineDemographics(StateDashboard):
         ][0]
 
         data = []
-        for county in counties[:2]:
+        for county in counties:
             workbook = engine.setFilter("Recipient County for maps", county)
             for race in self.races:
                 # set the filter functions to select specific race
