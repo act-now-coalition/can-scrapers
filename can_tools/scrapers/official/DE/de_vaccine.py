@@ -105,7 +105,6 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
         return pd.concat(dfs)
 
     def normalize(self, data: Dict[str, requests.models.Response]) -> pd.DataFrame:
-
         demographic_cols = ["race", "sex", "age", "ethnicity"]
         # fetch demographic tables and format dataframe variables
         df = (
@@ -146,6 +145,9 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
                 age=lambda row: row["age"].str.replace("+", "_plus"),
                 dt=lambda row: row["dt"].dt.date,
             )
-            .replace(["patient_declined_to_disclose", "data_not_reported"], None)
+            .query(
+                'race not in ["patient_declined_to_disclose", "data_not_reported"] and '
+                'ethnicity not in ["patient_declined_to_disclose", "data_not_reported"]'
+            )
             .dropna()
         )

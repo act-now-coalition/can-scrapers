@@ -4,6 +4,9 @@ import pandas as pd
 from can_tools.scrapers import variables
 import multiprocessing
 from functools import partial
+import pkg_resources
+import logging
+
 
 from can_tools.scrapers.official.base import StateDashboard
 
@@ -40,6 +43,11 @@ class NHVaccineRace(StateDashboard):
     ]
 
     def fetch(self):
+
+        ts_version = pkg_resources.get_distribution("tableauscraper").version
+        _logger = logging.getLogger(__name__)
+        _logger.warning(f"tableauscraper version {ts_version}")
+
         # fetch NUM_PROCESSES counties at a time
         pool = multiprocessing.Pool(processes=NUM_PROCESSES)
         data = []
@@ -51,8 +59,8 @@ class NHVaccineRace(StateDashboard):
         # instances to fetch each respective dose type.
         # This is an issue we've had in the past with the OH and WI demographic scrapers.
         for variable in [
-            "Total Individuals with at least 1 Dose",
-            "Total Individuals Fully Vaccinated",
+            "initiated",
+            "completed",
         ]:
             func = partial(self._get_county, variable)
             data.extend(pool.map(func, self.counties))
@@ -66,7 +74,14 @@ class NHVaccineRace(StateDashboard):
         )
 
         engine.getWorkbook().setParameter("ShowBy", "Race/Ethnicity")
-        engine.getWorkbook().setParameter("Metric", variable)
+        # By default the parameter is set to "Total Individuals Completed Vaccine"
+        # and when trying to set the parameter to the default state we get a warning.
+        # On the Prefect VM, this warning causes the scraper to fail.
+        # To circumvent this, we set the parameter if we are pulling in 1+ dose data.
+        if variable == "initiated":
+            engine.getWorkbook().setParameter(
+                "Metric", "Total Individuals with at least 1 Dose"
+            )
 
         raw_data = []
         worksheet = engine.getWorksheet("Count and Prop: Map (no R/E with town&rphn)")
