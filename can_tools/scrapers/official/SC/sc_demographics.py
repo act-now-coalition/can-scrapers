@@ -83,16 +83,27 @@ class SCVaccineDemographics(StateDashboard):
         )
 
         # sum over age and race columns to create independent demographic data
-        # (e.g 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
+        # creates dataframes for each demographic that smooths over the other demographics
+        # and concatenate these separate dfs into one.
+        # (e.g create a row like 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
         dataframes = []
-        for variable in ["age", "race"]:
+        for variable in ["age", "race", "sex"]:
+            ignore_demos = [item for item in ["age", "race", "sex"] if item != variable]
             demo_data = (
                 data.groupby(
-                    by=[col for col in data.columns if col not in ["value", variable]]
+                    # group by all except value and other demographic columns
+                    by=[
+                        col
+                        for col in data.columns
+                        if col not in ["value"] + ignore_demos
+                    ]
                 )
                 .sum()
                 .reset_index()
             )
-            demo_data[variable] = "all"
+            # set the values of the demographics we ignored to "all"
+            for demo in ignore_demos:
+                demo_data[demo] = "all"
+
             dataframes.append(demo_data)
         return pd.concat(dataframes)
