@@ -39,9 +39,9 @@ class SCVaccineDemographics(StateDashboard):
 
         data = []
         for county in counties:
+            workbook = engine.setFilter("Recipient County for maps", county)
             for race in self.races:
-                # set the filter functions to select specific county and race
-                workbook = engine.setFilter("Recipient County for maps", county)
+                # set the filter functions to select specific race
                 workbook = workbook.getWorksheet("Final Age xSex x Race REC")
                 workbook = workbook.setFilter("Assigned Race", race)
 
@@ -57,7 +57,7 @@ class SCVaccineDemographics(StateDashboard):
             "location_name": "location_name",
             "Age Bins SIMON-value": "age",
         }
-        return (
+        data = (
             data.rename(columns=rename)
             .loc[:, list(rename.values())]
             .assign(
@@ -81,3 +81,29 @@ class SCVaccineDemographics(StateDashboard):
             )
             .query("value != -1")
         )
+
+        # sum over age and race columns to create independent demographic data
+        # creates dataframes for each demographic that smooths over the other demographics
+        # and concatenate these separate dfs into one.
+        # (e.g create a row like 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
+        dataframes = []
+        for variable in ["age", "race", "sex"]:
+            ignore_demos = [item for item in ["age", "race", "sex"] if item != variable]
+            demo_data = (
+                data.groupby(
+                    # group by all except value and other demographic columns
+                    by=[
+                        col
+                        for col in data.columns
+                        if col not in ["value"] + ignore_demos
+                    ]
+                )
+                .sum()
+                .reset_index()
+            )
+            # set the values of the demographics we ignored to "all"
+            for demo in ignore_demos:
+                demo_data[demo] = "all"
+
+            dataframes.append(demo_data)
+        return pd.concat(dataframes)
