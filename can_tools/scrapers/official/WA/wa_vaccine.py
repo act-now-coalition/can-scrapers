@@ -2,10 +2,7 @@ import asyncio
 
 import pandas as pd
 import us
-import os
 import re
-from pyppeteer import launch
-
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard, MicrosoftBIDashboard
@@ -73,14 +70,14 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
         "M_1_DM3_{demo}_C_2": "completed",
     }
     demographic_key = {
-        "1": "unknown",
-        "2": "white",
-        "3": "asian",
-        "4": "other",
-        "5": "hispanic",
-        "6": "black",
-        "7": "ai_an",
-        "8": "pacific_islander",
+        "0": "unknown",
+        "1": "white",
+        "2": "asian",
+        "3": "other",
+        "4": "hispanic",
+        "5": "black",
+        "6": "ai_an",
+        "7": "pacific_islander",
     }
 
     async def _get_from_browser(self):
@@ -222,19 +219,10 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
         # Build post headers
         headers = self.construct_headers(resource_key)
 
-        counties = list(
-            pd.read_csv(
-                os.path.dirname(__file__) + "/../../../bootstrap_data/locations.csv"
-            ).query("state == @self.state_fips and name != 'Washington'")["name"]
-        )
-
         jsons = []
-        """
-        make one call per county to ensure that all the data is received
-        """
-        for county in counties:
-            # if county == 'Lewis':
-            #     break
+        
+        # make one call per county to ensure that all the data is received
+        for county in self._retrieve_counties():
             print("making request for: ", county)
             body = self.construct_body(resource_key, ds_id, model_id, report_id, county)
             res = self.sess.post(url, json=body, headers=headers)
