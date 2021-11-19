@@ -220,7 +220,7 @@ class WashingtonVaccineCountyRace(MicrosoftBIDashboard):
         headers = self.construct_headers(resource_key)
 
         jsons = []
-        
+
         # make one call per county to ensure that all the data is received
         for county in self._retrieve_counties():
             print("making request for: ", county)
