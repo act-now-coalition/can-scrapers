@@ -30,7 +30,7 @@ def create_location_parquet(connstr: str, location_id: str):
         # Write vintage file.
         ts = prefect.context.scheduled_start_time
         dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
-        vintage_fn = f'{FILENAME_PREFIX}_{dt_str}_{location_id}.parquet'
+        vintage_fn = f'{FILENAME_PREFIX}_{location_id}_{dt_str}.parquet'
         df.to_parquet(DATA_PATH / vintage_fn, index=False)
 
         # Replace primary file.
