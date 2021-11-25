@@ -27,15 +27,15 @@ def create_location_parquet(connstr: str, location_id: str):
         query = sa.text('SELECT * FROM data.covid_observations WHERE location_id = :location_id').bindparams(location_id=location_id)
         df = pd.read_sql_query(query, conn)
 
-        # Write vintage file.
-        ts = prefect.context.scheduled_start_time
-        dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
-        vintage_fn = f'{FILENAME_PREFIX}_{location_id}_{dt_str}.parquet'
-        df.to_parquet(DATA_PATH / vintage_fn, index=False)
+    # Write vintage file.
+    ts = prefect.context.scheduled_start_time
+    dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
+    vintage_fn = f'{FILENAME_PREFIX}_{location_id}_{dt_str}.parquet'
+    df.to_parquet(DATA_PATH / vintage_fn, index=False)
 
-        # Replace primary file.
-        fn = f'{FILENAME_PREFIX}_{location_id}.parquet'
-        df.to_parquet(DATA_PATH / fn, index=False)
+    # Replace primary file.
+    fn = f'{FILENAME_PREFIX}_{location_id}.parquet'
+    df.to_parquet(DATA_PATH / fn, index=False)
 
 def main():
     with Flow('update_location_parquet_files') as flow:
