@@ -47,7 +47,7 @@ def get_gcs_cmd(fn):
     return f'gsutil acl ch -u AllUsers:R gs://can-scrape-outputs/final/{fn}'
 
 def main():
-    with Flow('update_location_parquet_files') as flow:
+    with Flow('UpdateLocationParquetFiles') as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
         location_ids = fetch_location_ids(connstr)
         filename_tuples = create_location_parquet.map(connstr=unmapped(connstr), location_id=location_ids)
