@@ -2,6 +2,11 @@
 # requirements.txt. They're currently manually installed in production via
 # services/prefect/setup_gcp_instance.sh. We should probably fix that.
 
+# 1. is anything bad gonna happen when we scale to 3k or 30k?
+# 2. how is this parallelized? do we scale out more instances?
+# - Sean says there's a bucket with the intermediate data of every scraper
+# - is the data being passed directly or being spit out to S3?
+
 '''
 Use [technology X] to build a minimal pipeline that:
 
@@ -43,8 +48,12 @@ logging.basicConfig(
         format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s')
 
 @task
-def fetch_parquet_data(path):
+def fetch_parquet_data(path: str):
     return pd.read_parquet(path)
+
+@task
+def fetch_csv_data(path: str):
+    return pd.read_csv(path)
 
 @task
 def log_data(data):
@@ -52,12 +61,17 @@ def log_data(data):
 
 def main():
     with Flow('foo') as flow:
-        path = Parameter('path', default='https://storage.googleapis.com/can-scrape-outputs/final/can_scrape_api_covid_us.parquet')
-        data = fetch_parquet_data(path)
+        covid_data_path = Parameter('covid_data_path', default='https://storage.googleapis.com/can-scrape-outputs/final/can_scrape_api_covid_us.parquet')
+        geo_data_path = Parameter('geo_data_path', default='https://media.githubusercontent.com/media/covid-projections/covid-data-model/main/data/geo-data.csv')
 
-        log_data(data)
+        covid_data = fetch_parquet_data(covid_data_path)
+        geo_data = fetch_csv_data(geo_data_path)
 
-    flow.run(path='can_scrape_api_covid_us.parquet')
+        log_data(covid_data)
+        log_data(geo_data)
+
+    flow.run(covid_data_path='can_scrape_api_covid_us.parquet',
+             geo_data_path='geo-data.csv')
 
 if __name__ == '__main__':
     main()
