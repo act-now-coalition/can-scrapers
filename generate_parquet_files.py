@@ -4,7 +4,8 @@ import pathlib
 import prefect
 import sqlalchemy as sa
 
-from prefect import Flow, task, unmapped
+from prefect import flatten, Flow, task, unmapped
+from prefect.tasks.shell import ShellTask
 from prefect.tasks.secrets import EnvVarSecret
 
 DATA_PATH = pathlib.Path(os.environ["DATAPATH"]) / "final"
@@ -24,6 +25,8 @@ def create_location_parquet(connstr: str, location_id: str):
     engine = sa.create_engine(connstr)
     with engine.connect() as conn:
         # Read rows from PostgreSQL into Pandas dataframe.
+        # TODO: Can we read to plain dicts/tuples instead and remove Pandas as
+        # a dependency? Would probably use pyarrow instead for Parquet IO.
         query = sa.text('SELECT * FROM data.covid_observations WHERE location_id = :location_id').bindparams(location_id=location_id)
         df = pd.read_sql_query(query, conn)
 
@@ -37,11 +40,21 @@ def create_location_parquet(connstr: str, location_id: str):
     fn = f'{FILENAME_PREFIX}_{location_id}.parquet'
     df.to_parquet(DATA_PATH / fn, index=False)
 
+    return vintage_fn, fn
+
+@task
+def get_gcs_cmd(fn):
+    return f'gsutil acl ch -u AllUsers:R gs://can-scrape-outputs/final/{fn}'
+
 def main():
     with Flow('update_location_parquet_files') as flow:
         connstr = EnvVarSecret("COVID_DB_CONN_URI")
         location_ids = fetch_location_ids(connstr)
-        create_location_parquet.map(connstr=unmapped(connstr), location_id=location_ids)
+        filename_tuples = create_location_parquet.map(connstr=unmapped(connstr), location_id=location_ids)
+
+        file_permission_commands = get_gcs_cmd.map(flatten(filename_tuples))
+        # TODO: figure out how to test this
+        #ShellTask().map(file_permission_commands)
 
     flow.run()
 
