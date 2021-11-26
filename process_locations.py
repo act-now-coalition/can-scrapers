@@ -39,7 +39,8 @@ And just play around with running that “pipeline” and how prefect works.  We
 import argparse
 import pandas as pd
 
-from prefect import task, Flow, Parameter
+from prefect import Flow, Parameter, task, unmapped
+from prefect.engine import signals
 from typing import List
 
 COVID_DATA_PATH_PREFIX = "./tmp/final/can_scrape_api_covid_us"
@@ -55,9 +56,18 @@ def location_ids_for(states: List[str], geo_data_path: str = GEO_DATA_PATH) -> L
     return df['location_id'].tolist()
 
 @task
-def fetch_parquet_data(path: str):
-    return pd.read_parquet(path)
+def fetch_location_parquet_data(location_id: str, sources: List[str]) -> pd.DataFrame:
+    path = f'{COVID_DATA_PATH_PREFIX}_{location_id}.parquet'
 
+    try:
+        df = pd.read_parquet(path)
+        if len(sources) > 0:
+            df = df[df['source_name'].isin(sources)]
+    except FileNotFoundError:
+        # TODO: report the error somewhere. Sentry?
+        raise signals.SKIP()
+
+    return df
 
 @task
 def process_dataframe(df: pd.DataFrame):
@@ -70,8 +80,8 @@ def fetch_csv_data(path: str):
 
 
 @task
-def log_data(data):
-    print(data.columns)
+def log_data(df):
+    print(df)
 
 def create_flow():
     with Flow("ProcessLocations") as flow:
@@ -80,8 +90,12 @@ def create_flow():
             default=GEO_DATA_PATH
         )
         states = Parameter("states", default=[])
+        sources = Parameter("sources", default=[])
 
         location_ids = location_ids_for(states, geo_data_path)
+        dataframes = fetch_location_parquet_data.map(location_ids, unmapped(sources))
+
+        log_data.map(dataframes)
 
         # covid_data_path = Parameter("covid_data_path", default="")
 
@@ -102,6 +116,7 @@ def main():
         "--state",
         "--states",
         help="comma-separated list of two-letter state abbreviation(s)",
+        default='USAFacts',
     )
     parser.add_argument(
         "--source",
@@ -126,6 +141,7 @@ def main():
         #covid_data_path="./tmp/final/can_scrape_api_covid_us_iso1:us#iso2:us-vi#fips:78010.parquet",
         geo_data_path="./geo-data.csv",
         states=states,
+        sources=sources,
     )
 
 
