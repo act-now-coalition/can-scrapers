@@ -56,7 +56,7 @@ def location_ids_for(states: List[str], geo_data_path: str = GEO_DATA_PATH) -> L
     return df['location_id'].tolist()
 
 @task
-def fetch_location_parquet_data(location_id: str, sources: List[str]) -> pd.DataFrame:
+def fetch_parquet_data(location_id: str, sources: List[str]) -> pd.DataFrame:
     path = f'{COVID_DATA_PATH_PREFIX}_{location_id}.parquet'
 
     try:
@@ -93,7 +93,7 @@ def create_flow():
         sources = Parameter("sources", default=[])
 
         location_ids = location_ids_for(states, geo_data_path)
-        dataframes = fetch_location_parquet_data.map(location_ids, unmapped(sources))
+        dataframes = fetch_parquet_data.map(location_ids, unmapped(sources))
 
         log_data.map(dataframes)
 
@@ -132,9 +132,6 @@ def main():
     states = []
     if args.state:
         states = [state.strip() for state in args.state.split(",")]
-
-    print("sources:", sources)
-    print("states:", states)
 
     flow = create_flow()
     flow.run(
