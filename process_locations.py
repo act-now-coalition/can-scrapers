@@ -46,13 +46,15 @@ from typing import List
 
 COVID_DATA_PATH_PREFIX = "./tmp/final/can_scrape_api_covid_us"
 GEO_DATA_PATH = "https://media.githubusercontent.com/media/covid-projections/covid-data-model/main/data/geo-data.csv"
+POPULATION_DATA_PATH = "https://media.githubusercontent.com/media/covid-projections/covid-data-public/main/data/misc/fips_population.csv"
 
 
 @task
 def location_ids_for(state: str, geo_data_path: str = GEO_DATA_PATH) -> List[str]:
     df = pd.read_csv(geo_data_path)
     df = df[df["state"] == state]
-    return df['location_id'].tolist()
+    return df["location_id"].tolist()
+
 
 @task
 def daily_new_cases_for(location_id: str, sources: List[str], smooth: int) -> float:
@@ -127,7 +129,7 @@ def main():
         "--state",
         "--states",
         help="comma-separated list of two-letter state abbreviation(s)",
-        default='USAFacts',
+        default="USAFacts",
     )
     parser.add_argument(
         "--source",
