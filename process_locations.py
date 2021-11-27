@@ -39,6 +39,7 @@ And just play around with running that “pipeline” and how prefect works.  We
 import argparse
 import pandas as pd
 
+from datetime import date, timedelta
 from prefect import Flow, Parameter, task, unmapped
 from prefect.engine import signals
 from typing import List
@@ -54,27 +55,46 @@ def location_ids_for(state: str, geo_data_path: str = GEO_DATA_PATH) -> List[str
     return df['location_id'].tolist()
 
 @task
-def fetch_parquet_data(location_id: str, sources: List[str]) -> pd.DataFrame:
-    path = f'{COVID_DATA_PATH_PREFIX}_{location_id}.parquet'
+def daily_new_cases_for(location_id: str, sources: List[str], smooth: int) -> float:
+    path = f"{COVID_DATA_PATH_PREFIX}_{location_id}.parquet"
 
     try:
         df = pd.read_parquet(path)
-        if len(sources) > 0:
-            df = df[df['source_name'].isin(sources)]
     except FileNotFoundError:
         # TODO: report the error somewhere. Sentry?
         raise signals.SKIP()
 
-    return df
+    # Filter to the given list of sources.
+    if len(sources) > 0:
+        # TODO: back off to other sources
+        source = sources[0]
+        df = df[df["source_name"] == source]
 
-@task
-def process_dataframe(df: pd.DataFrame):
-    cases_df = df[df["variable_name"] == "cases"]
+    # Filter to the most recent dates.
+    # TODO: replace max date with date.today()
+    # TODO: what to do if not enough dates to satisfy smoothing?
+    # max_date = date.today()
+    max_date = df["dt"].max()
+    dates = [max_date - timedelta(days=days) for days in range(0, smooth + 1)]
+    df = df[df["dt"].isin(dates)]
 
+    df = df[df["variable_name"] == "cases"]
 
-@task
-def fetch_csv_data(path: str):
-    return pd.read_csv(path)
+    # TODO: maybe better to do this in pandas? or reuse existing code in
+    # covid-data-model repo. i'm just pulling it out into plain Python data
+    # structures since i don't know pandas / existing code well.
+    cumulative_case_records = df[["dt", "value"]].sort_values("dt").values.tolist()
+    new_case_records = [
+        (date2, cases2 - cases1)
+        for (date1, cases1), (date2, cases2) in zip(
+            cumulative_case_records, cumulative_case_records[1:]
+        )
+    ]
+    avg_daily_new_cases = sum(new_cases for d, new_cases in new_case_records) / smooth
+
+    print(f"{location_id}: {avg_daily_new_cases} new cases ({smooth}-day average)")
+
+    return avg_daily_new_cases
 
 
 @task
@@ -88,20 +108,13 @@ def create_flow():
             default=GEO_DATA_PATH
         )
         state = Parameter("state", default=[])
-        sources = Parameter("sources", default=[])
+        sources = Parameter("sources", default=["USAFacts"])
+        smooth = Parameter("smooth", default=7)
 
         location_ids = location_ids_for(state, geo_data_path)
-        dataframes = fetch_parquet_data.map(location_ids, unmapped(sources))
-
-        log_data.map(dataframes)
-
-        # covid_data_path = Parameter("covid_data_path", default="")
-
-        # covid_data = fetch_parquet_data(covid_data_path)
-        # geo_data = fetch_csv_data(geo_data_path)
-
-        # log_data(covid_data)
-        # log_data(geo_data)
+        daily_new_cases = daily_new_cases_for.map(
+            location_ids, unmapped(sources), unmapped(smooth)
+        )
 
     return flow
 
