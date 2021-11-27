@@ -48,11 +48,9 @@ GEO_DATA_PATH = "https://media.githubusercontent.com/media/covid-projections/cov
 
 
 @task
-def location_ids_for(states: List[str], geo_data_path: str = GEO_DATA_PATH) -> List[str]:
+def location_ids_for(state: str, geo_data_path: str = GEO_DATA_PATH) -> List[str]:
     df = pd.read_csv(geo_data_path)
-    if len(states) > 0:
-        df = df[df["state"].isin(states)]
-
+    df = df[df["state"] == state]
     return df['location_id'].tolist()
 
 @task
@@ -89,10 +87,10 @@ def create_flow():
             "geo_data_path",
             default=GEO_DATA_PATH
         )
-        states = Parameter("states", default=[])
+        state = Parameter("state", default=[])
         sources = Parameter("sources", default=[])
 
-        location_ids = location_ids_for(states, geo_data_path)
+        location_ids = location_ids_for(state, geo_data_path)
         dataframes = fetch_parquet_data.map(location_ids, unmapped(sources))
 
         log_data.map(dataframes)
@@ -133,13 +131,13 @@ def main():
     if args.state:
         states = [state.strip() for state in args.state.split(",")]
 
-    flow = create_flow()
-    flow.run(
-        #covid_data_path="./tmp/final/can_scrape_api_covid_us_iso1:us#iso2:us-vi#fips:78010.parquet",
-        geo_data_path="./geo-data.csv",
-        states=states,
-        sources=sources,
-    )
+    for state in states:
+        flow = create_flow()
+        flow.run(
+            geo_data_path="./geo-data.csv",
+            state=state,
+            sources=sources,
+        )
 
 
 if __name__ == "__main__":
