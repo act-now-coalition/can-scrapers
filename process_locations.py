@@ -37,11 +37,13 @@ And just play around with running that “pipeline” and how prefect works.  We
 """
 
 import argparse
+import re
 import pandas as pd
 
 from datetime import date, timedelta
 from prefect import Flow, Parameter, task, unmapped
 from prefect.engine import signals
+from prefect.tasks.control_flow.filter import FilterTask
 from typing import List
 
 COVID_DATA_PATH_PREFIX = "./tmp/final/can_scrape_api_covid_us"
@@ -100,23 +102,66 @@ def daily_new_cases_for(location_id: str, sources: List[str], smooth: int) -> fl
 
 
 @task
-def log_data(df):
-    print(df)
+def sum_numbers(numbers):
+    return sum(numbers)
+
+
+def fips_id_for(location_id):
+    return int(re.findall(r"fips:(\d+)", location_id)[0])
+
+
+@task
+def population_of(location_ids: List[str], population_data_path: str):
+    fips_ids = []
+    for location_id in location_ids:
+        try:
+            fips_ids.append(fips_id_for(location_id))
+        except:
+            print(f"\n\n\nskipped {location_id}\n\n\n")
+
+    df = pd.read_csv(population_data_path)
+    df = df[df["fips"].isin(fips_ids)]
+    return df["population"].sum()
+
+
+@task
+def calculate_case_density(new_cases, population):
+    case_density = new_cases / population * 100_000
+
+    print(f"new cases: {new_cases}")
+    print(f"population: {population}")
+    print(f"case density per 100k: {case_density}")
+
+    return case_density
+
+
+@task
+def log_data(data):
+    print(data)
+
 
 def create_flow():
+    filter_results = FilterTask(filter_func=lambda x: not isinstance(x, signals.SKIP))
+
     with Flow("ProcessLocations") as flow:
-        geo_data_path = Parameter(
-            "geo_data_path",
-            default=GEO_DATA_PATH
+        geo_data_path = Parameter("geo_data_path", default=GEO_DATA_PATH)
+        population_data_path = Parameter(
+            "population_data_path", default=POPULATION_DATA_PATH
         )
         state = Parameter("state", default=[])
         sources = Parameter("sources", default=["USAFacts"])
         smooth = Parameter("smooth", default=7)
 
         location_ids = location_ids_for(state, geo_data_path)
-        daily_new_cases = daily_new_cases_for.map(
-            location_ids, unmapped(sources), unmapped(smooth)
+        daily_new_cases = sum_numbers(
+            filter_results(
+                daily_new_cases_for.map(
+                    location_ids, unmapped(sources), unmapped(smooth)
+                )
+            )
         )
+        population = population_of(location_ids, population_data_path)
+        case_density = calculate_case_density(daily_new_cases, population)
 
     return flow
 
@@ -150,6 +195,7 @@ def main():
         flow = create_flow()
         flow.run(
             geo_data_path="./geo-data.csv",
+            population_data_path="./fips_population.csv",
             state=state,
             sources=sources,
         )
