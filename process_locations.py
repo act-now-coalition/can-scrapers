@@ -39,6 +39,7 @@ And just play around with running that “pipeline” and how prefect works.  We
 import argparse
 import re
 import pandas as pd
+import prefect
 
 from datetime import date, timedelta
 from prefect import Flow, Parameter, task, unmapped
@@ -59,20 +60,18 @@ def location_ids_for(state: str, geo_data_path: str = GEO_DATA_PATH) -> List[str
 
 
 @task
-def daily_new_cases_for(location_id: str, sources: List[str], smooth: int) -> float:
+def daily_new_cases_for(location_id: str, provider: str, smooth: int) -> float:
     path = f"{COVID_DATA_PATH_PREFIX}_{location_id}.parquet"
 
     try:
         df = pd.read_parquet(path)
     except FileNotFoundError:
         # TODO: report the error somewhere. Sentry?
+        prefect.context.logger.error(f"missing Parquet COVID data for {location_id}")
         raise signals.SKIP()
 
-    # Filter to the given list of sources.
-    if len(sources) > 0:
-        # TODO: back off to other sources
-        source = sources[0]
-        df = df[df["source_name"] == source]
+    # TODO: add ability to back off to other providers?
+    df = df[df["provider"] == provider]
 
     # Filter to the most recent dates.
     # TODO: replace max date with date.today()
@@ -117,7 +116,7 @@ def population_of(location_ids: List[str], population_data_path: str):
         try:
             fips_ids.append(fips_id_for(location_id))
         except:
-            print(f"\n\n\nskipped {location_id}\n\n\n")
+            prefect.context.logger.error(f"missing population data for {location_id}")
 
     df = pd.read_csv(population_data_path)
     df = df[df["fips"].isin(fips_ids)]
@@ -141,27 +140,28 @@ def log_data(data):
 
 
 def create_flow():
-    filter_results = FilterTask(filter_func=lambda x: not isinstance(x, signals.SKIP))
+    remove_skipped_tasks = FilterTask(filter_func=lambda x: not isinstance(x, signals.SKIP))
 
     with Flow("ProcessLocations") as flow:
         geo_data_path = Parameter("geo_data_path", default=GEO_DATA_PATH)
+        provider = Parameter("provider", default="usafacts")
         population_data_path = Parameter(
             "population_data_path", default=POPULATION_DATA_PATH
         )
-        state = Parameter("state", default=[])
-        sources = Parameter("sources", default=["USAFacts"])
         smooth = Parameter("smooth", default=7)
+        state = Parameter("state")
 
         location_ids = location_ids_for(state, geo_data_path)
         daily_new_cases = sum_numbers(
-            filter_results(
+            remove_skipped_tasks(
                 daily_new_cases_for.map(
-                    location_ids, unmapped(sources), unmapped(smooth)
+                    location_ids, unmapped(provider), unmapped(smooth)
                 )
             )
         )
         population = population_of(location_ids, population_data_path)
         case_density = calculate_case_density(daily_new_cases, population)
+        log_data(case_density)
 
     return flow
 
@@ -171,33 +171,25 @@ def main():
         description="Generate basic COVID metrics for the given location(s)"
     )
     parser.add_argument(
-        "--state",
-        "--states",
-        help="comma-separated list of two-letter state abbreviation(s)",
-        default="USAFacts",
+        "provider",
+        default="usafacts",
+        help="data provider to use (e.g. usafacts, cdc, ctp, hts)",
     )
     parser.add_argument(
-        "--source",
-        "--sources",
-        help="comma-separated list of source(s) to use (e.g. USAFacts, Centers for Disease Control and Prevention)",
+        "states",
+        help="comma-separated list of two-letter state abbreviation(s)",
     )
     args = parser.parse_args()
 
-    sources = []
-    if args.source:
-        sources = [source.strip() for source in args.source.split(",")]
-
-    states = []
-    if args.state:
-        states = [state.strip() for state in args.state.split(",")]
+    states = [state.strip() for state in args.states.split(",")]
 
     for state in states:
         flow = create_flow()
         flow.run(
             geo_data_path="./geo-data.csv",
             population_data_path="./fips_population.csv",
+            provider=args.provider,
             state=state,
-            sources=sources,
         )
 
 
