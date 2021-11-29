@@ -82,6 +82,10 @@ def daily_new_cases_for(location_id: str, provider: str, smooth: int) -> float:
     df = df[df["dt"].isin(dates)]
 
     df = df[df["variable_name"] == "cases"]
+    df = df[df["age"] == "all"]
+    df = df[df["ethnicity"] == "all"]
+    df = df[df["race"] == "all"]
+    df = df[df["sex"] == "all"]
 
     # TODO: maybe better to do this in pandas? i'm just pulling it out into
     # plain Python data structures since i don't know pandas / existing code
@@ -163,6 +167,8 @@ def create_flow():
         )
         population = population_of(location_ids, population_data_path)
         case_density = calculate_case_density(daily_new_cases, population)
+
+        # TODO: output to file instead
         log_data(case_density)
 
     return flow
