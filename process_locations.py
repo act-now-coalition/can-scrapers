@@ -140,7 +140,9 @@ def log_data(data):
 
 
 def create_flow():
-    remove_skipped_tasks = FilterTask(filter_func=lambda x: not isinstance(x, signals.SKIP))
+    remove_skipped_tasks = FilterTask(
+        filter_func=lambda x: not isinstance(x, signals.SKIP)
+    )
 
     with Flow("ProcessLocations") as flow:
         geo_data_path = Parameter("geo_data_path", default=GEO_DATA_PATH)
