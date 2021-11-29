@@ -143,12 +143,12 @@ def log_data(data):
     print(data)
 
 
-def create_flow():
+def create_flow(state, provider):
     remove_skipped_tasks = FilterTask(
         filter_func=lambda x: not isinstance(x, signals.SKIP)
     )
 
-    with Flow("ProcessLocations") as flow:
+    with Flow(f"CalculateCaseDensity - {state} - {provider}") as flow:
         geo_data_path = Parameter("geo_data_path", default=GEO_DATA_PATH)
         provider = Parameter("provider", default="usafacts")
         population_data_path = Parameter(
@@ -189,14 +189,15 @@ def main():
     )
     args = parser.parse_args()
 
+    provider = args.provider
     states = [state.strip() for state in args.states.split(",")]
 
     for state in states:
-        flow = create_flow()
+        flow = create_flow(state, provider)
         flow.run(
             geo_data_path="./geo-data.csv",
             population_data_path="./fips_population.csv",
-            provider=args.provider,
+            provider=provider,
             state=state,
         )
 
