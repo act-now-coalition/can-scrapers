@@ -83,9 +83,9 @@ def daily_new_cases_for(location_id: str, provider: str, smooth: int) -> float:
 
     df = df[df["variable_name"] == "cases"]
 
-    # TODO: maybe better to do this in pandas? or reuse existing code in
-    # covid-data-model repo. i'm just pulling it out into plain Python data
-    # structures since i don't know pandas / existing code well.
+    # TODO: maybe better to do this in pandas? i'm just pulling it out into
+    # plain Python data structures since i don't know pandas / existing code
+    # well. in the end, this should be replaced with existing modeling code.
     cumulative_case_records = df[["dt", "value"]].sort_values("dt").values.tolist()
     new_case_records = [
         (date2, cases2 - cases1)
