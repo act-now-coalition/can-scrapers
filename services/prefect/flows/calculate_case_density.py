@@ -1,12 +1,3 @@
-# TODO: The prefect and pyarrow packages are not part of either Pipfile or
-# requirements.txt. They're currently manually installed in production via
-# services/prefect/setup_gcp_instance.sh. We should probably fix that.
-
-# 1. is anything bad gonna happen when we scale to 3k or 30k?
-# 2. how is this parallelized? do we scale out more instances?
-# - Sean says there's a bucket with the intermediate data of every scraper
-# - is the data being passed directly or being spit out to S3?
-
 """
 Use [technology X] to build a minimal pipeline that:
 
@@ -34,7 +25,19 @@ Then write some tasks that do some minimal transformation on the data.  E.g.
 Filter it to the data with variable=cases, provider=usafacts, age=all, race=all, sex=all, gender=all  which should give you cumulative cases for every location.
 From the cumulatives, subtract the day-over-day values to generate “new cases” for each day.
 And just play around with running that “pipeline” and how prefect works.  We can come up with next steps from there.
+
+---
+
+1. is anything bad gonna happen when we scale to 3k or 30k?
+2. how is this parallelized? do we scale out more instances?
+- Sean says there's a bucket with the intermediate data of every scraper
+- is the data being passed directly or being spit out to S3?
+
 """
+
+# TODO: The prefect and pyarrow packages are not part of either Pipfile or
+# requirements.txt. They're currently manually installed in production via
+# services/prefect/setup_gcp_instance.sh. We should probably fix that.
 
 import argparse
 import re
