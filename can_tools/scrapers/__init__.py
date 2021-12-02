@@ -119,6 +119,9 @@ from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemog
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
 from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
 
+# 12/02/21: NE has made their server private, so we can no longer access the data driving the NebraskaCases scraper
+# I'm leaving the code intact in case they begin to publish data publicly again at some point. Commenting this out removes
+# the scraper from list that drives the Prefect tasks, so this scraper will not be included in any flows (because it isn't functional)
 # from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
 
 from can_tools.scrapers.official.NH.nh_demographics import NHVaccineRace
