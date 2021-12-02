@@ -7,7 +7,7 @@ from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class SCVaccineDemographics(StateDashboard):
+class SCVaccineRace(StateDashboard):
     has_location = False
     source = "https://public.tableau.com/app/profile/population.health.dhec/viz/COVIDVaccineDashboard/RECIPIENTVIEW"
     source_name = "South Carolina Population Health DHEC"
@@ -17,45 +17,27 @@ class SCVaccineDemographics(StateDashboard):
     fetch_url = "https://public.tableau.com/views/COVIDVaccineDashboard/RECIPIENTVIEW"
 
     variables = {"total_vaccinations_initiated": variables.INITIATING_VACCINATIONS_ALL}
-
-    # hard coding these because it was annoying to use getFilter on two different sheets
-    races = [
-        "Asian, American Indian or Alaskan Native, Native Hawaiian or Other Pacific Islander",
-        "Black",
-        "Other",
-        "Unknown",
-        "White",
-    ]
+    demographic = "race"
+    demographic_column = "Assigned Race For Rate-value"
+    demographic_table = "at least 1 3 Age Groups x B W"
 
     def fetch(self):
         engine = TableauScraper()
         engine.loads(self.fetch_url)
-
-        engine = engine.getWorksheet("Vaccine Map By SC residents PEOPLE")
-        filters = engine.getFilters()
-        counties = [
-            t["values"] for t in filters if t["column"] == "Recipient County for maps"
-        ][0]
+        engine = engine.getWorkbook()
 
         data = []
-        for county in counties:
-            workbook = engine.setFilter("Recipient County for maps", county)
-            for race in self.races:
-                # set the filter functions to select specific race
-                workbook = workbook.getWorksheet("Final Age xSex x Race REC")
-                workbook = workbook.setFilter("Assigned Race", race)
-
-                county_data = workbook.getWorksheet("Final Age xSex x Race REC").data
-                data.append(county_data.assign(location_name=county))
+        for county in self._retrieve_counties():
+            workbook = engine.setParameter("County Parameter", county)
+            county_data = workbook.getWorksheet(self.demographic_table).data
+            data.append(county_data.assign(location_name=county))
         return pd.concat(data)
 
     def normalize(self, data: TableauScraper):
         rename = {
-            "AGG(Count individuals with Suppression )-alias": "value",
-            "Assigned Race-value": "race",
-            "ATTR(recip sex (Recipient Data Vaccine Dashboard v1.csv))-alias": "sex",
+            "AGG(SC Residents at least 1  Vaccination with Suppression)-alias": "value",
+            self.demographic_column: self.demographic,
             "location_name": "location_name",
-            "Age Bins SIMON-value": "age",
         }
         data = (
             data.rename(columns=rename)
@@ -64,46 +46,32 @@ class SCVaccineDemographics(StateDashboard):
                 variable="total_vaccinations_initiated",
                 dt=self._retrieve_dt(),
                 vintage=self._retrieve_vintage(),
-                sex=lambda row: row["sex"].str.lower(),
-                race=lambda row: row["race"]
-                .replace(
-                    "Asian, American Indian or Alaskan Native, Native Hawaiian or Other Pacific Islander",
-                    "ai_an_asian_or_pacific_islander",
-                )
-                .str.lower(),
-                age=lambda row: row["age"].str.replace("+", "_plus"),
+                value=lambda row: pd.to_numeric(
+                    row["value"].str.replace(",", "").str.replace("<5", "5")
+                ),
             )
-            .pipe(
-                self.extract_CMU,
-                cmu=self.variables,
-                var_name="variable",
-                skip_columns=["age", "race", "sex"],
-            )
-            .query("value != -1 and location_name != 'nan'")
+        )
+        data[self.demographic] = (
+            data[self.demographic]
+            .str.lower()
+            .str.replace("not hispanic", "non-hispanic")
+        )
+        data = self.extract_CMU(
+            df=data,
+            cmu=self.variables,
+            var_name="variable",
+            skip_columns=[self.demographic],
         )
 
-        # sum over age and race columns to create independent demographic data
-        # creates dataframes for each demographic that smooths over the other demographics
-        # and concatenate these separate dfs into one.
-        # (e.g create a row like 12-15, all, all, all instead of 12-15, ai_an, all, all etc.)
-        dataframes = []
-        for variable in ["age", "race", "sex"]:
-            ignore_demos = [item for item in ["age", "race", "sex"] if item != variable]
-            demo_data = (
-                data.groupby(
-                    # group by all except value and other demographic columns
-                    by=[
-                        col
-                        for col in data.columns
-                        if col not in ["value"] + ignore_demos
-                    ]
-                )
-                .sum()
-                .reset_index()
-            )
-            # set the values of the demographics we ignored to "all"
-            for demo in ignore_demos:
-                demo_data[demo] = "all"
+        # Sum over all of the age buckets (that were implicitly dropped at the start of this method)
+        return (
+            data.groupby(by=[col for col in data.columns if col not in ["value"]])
+            .sum()
+            .reset_index()
+        )
 
-            dataframes.append(demo_data)
-        return pd.concat(dataframes)
+
+class SCVaccineEthnicity(SCVaccineRace):
+    demographic = "ethnicity"
+    demographic_column = "Clean Ethnicity-value"
+    demographic_table = "At least 1 3 Age Groups H NH"

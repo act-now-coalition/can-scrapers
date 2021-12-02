@@ -119,14 +119,7 @@ from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemog
 from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
 from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
 
-from can_tools.scrapers.official.NE.ne_vaccines import (
-    NebraskaVaccineSex,
-    NebraskaVaccineRace,
-    NebraskaVaccineEthnicity,
-    NebraskaVaccineAge,
-)
-
-from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
+# from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
 
 from can_tools.scrapers.official.NH.nh_demographics import NHVaccineRace
 
@@ -161,7 +154,10 @@ from can_tools.scrapers.official.PA.pa_vaccines import (
 
 from can_tools.scrapers.official.PA.philadelhpia_vaccine import PhiladelphiaVaccine
 
-from can_tools.scrapers.official.SC.sc_demographics import SCVaccineDemographics
+from can_tools.scrapers.official.SC.sc_demographics import (
+    SCVaccineRace,
+    SCVaccineEthnicity,
+)
 
 from can_tools.scrapers.official.SD.sd_vaccines import SDVaccineCounty
 from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
