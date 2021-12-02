@@ -1,6 +1,4 @@
-import pandas as pd
 import us
-
 
 from can_tools.scrapers.official.base import ArcGIS
 from can_tools.scrapers import variables
@@ -13,13 +11,13 @@ class AlaskaCountyVaccine(ArcGIS):
     source_name = (
         "Alaska Department of Health and Social Services Coronavirus Response Hub"
     )
-    service = "Vaccine_Dashboard_Map_Feature_Layer_(PRODUCTION)"
+    service = "Vaccine_Dashboard_Feature_Layer"
     ARCGIS_ID = "WzFsmainVTuD5KML"
     state_fips = int(us.states.lookup("Alaska").fips)
 
     variables = {
-        "All_DoseOne_Count": variables.INITIATING_VACCINATIONS_ALL,
-        "All_VaxCom_Count": variables.FULLY_VACCINATED_ALL,
+        "1+ Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self):
@@ -27,19 +25,26 @@ class AlaskaCountyVaccine(ArcGIS):
 
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
+
+        rename = {"Area": "location_name", "Vax_Status": "variable", "Counts": "value"}
+
         out = (
-            df.loc[:, ["ADJ_BORO_1", "All_DoseOne_Count", "All_VaxCom_Count"]]
+            df.loc[df["Age_Group"] == "All Ages"]
+            .loc[:, list(rename.keys())]
+            .rename(columns=rename)
             .pipe(
                 self._rename_or_add_date_and_location,
-                location_name_column="ADJ_BORO_1",
+                location_name_column="location_name",
                 timezone="US/Alaska",
             )
-            .pipe(self._reshape_variables, variable_map=self.variables)
+            .pipe(self.extract_CMU, cmu=self.variables)
             .assign(
                 location_name=lambda x: x["location_name"]
                 .str.replace("And", "and")
-                .str.replace("Of", "of")
+                .str.replace("Of", "of"),
+                vintage=self._retrieve_vintage(),
             )
+            .drop_duplicates()
         )
         return out.query(
             'location_name not in ["Yakutat Plus Hoonah-Angoon", "Bristol Bay Plus Lake and Peninsula"]'
