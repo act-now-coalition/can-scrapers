@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy.engine.base import Engine
 from can_tools.scrapers.base import DatasetBase
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
@@ -25,9 +23,6 @@ if CONN_STR is not None:
     Base.metadata.create_all(bind=engine)
 else:
     engine, sess = create_dev_engine(verbose=VERBOSE)
-
-class UnverifiedScraperOutputError(Exception):
-    pass
 
 
 def _covid_dataset_tests(cls, df):
@@ -84,7 +79,7 @@ def test_datasets(cls):
         d.put(engine, clean)
     except sa.exc.IntegrityError:
         error_msg = _create_put_error_msg(engine, clean, cls)
-        raise UnverifiedScraperOutputError(error_msg)
+        raise Exception(error_msg)
 
 
 @pytest.mark.parametrize("cls", SORTED_SCRAPERS)
