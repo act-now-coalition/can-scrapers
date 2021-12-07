@@ -7,7 +7,7 @@ import os
 from can_tools.scrapers import CMU, variables
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from can_tools.scrapers.util import flatten_dict
-pd.set_option("max_rows", 100000)
+
 
 class WVCountyVaccine(MicrosoftBIDashboard):
 

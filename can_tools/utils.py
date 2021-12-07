@@ -2,7 +2,7 @@ from typing import Optional
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine.base import Engine
-from can_tools.models import Location, create_dev_engine
+from can_tools.models import create_dev_engine
 
 
 def determine_location_column(df: pd.DataFrame) -> str:
@@ -62,7 +62,9 @@ def find_unknown_variable_id(df: pd.DataFrame, engine: Engine = None, csv_rows=F
     return df_bad_combinations.to_csv(index=False, header=False)
 
 
-def find_unknown_location_id(df: pd.DataFrame, state_fips: int, engine: Engine = None, csv_rows=False):
+def find_unknown_location_id(
+    df: pd.DataFrame, state_fips: int, engine: Engine = None, csv_rows=False
+):
     """Find any locations in the specified dataframe that do not match an entry in the locations file"""
     if not engine:
         engine = create_dev_engine()[0]
@@ -74,7 +76,7 @@ def find_unknown_location_id(df: pd.DataFrame, state_fips: int, engine: Engine =
             locs.loc[locs.state_fips == state_fips, :].name
         )
     bad_df = df.loc[~good_rows, :]
-    
+
     if not csv_rows:
         return bad_df
     if "location" in df.columns:
