@@ -113,7 +113,7 @@ def _create_put_error_msg(engine: Engine, data: pd.DataFrame, cls: DatasetBase):
     error_msg = (
         "NOT NULL constraint failed on insert. "
         "Verify the missing rows are expected and add them to the corresponding files "
-        "or modify the scraper output to match the expected, existing CSV entries. \n"
+        "or modify the scraper output to match the expected and existing CSV entries. \n"
     )
     if unk_demographics:
         error_msg += "covid_demographics.csv: \n" + "".join(unk_demographics) + "\n"
