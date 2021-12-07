@@ -111,8 +111,8 @@ def _create_put_error_msg(engine: Engine, data: pd.DataFrame, cls: DatasetBase):
         unk_locations = utils.find_unknown_location_id(data, engine=engine, state_fips=cls.state_fips, csv_rows=True)
     
     error_msg = (
-        "NOT NULL constraint failed on insert. "
-        "Verify the missing rows are expected and add them to the corresponding files "
+        "Exception encountered during scraper put() method. "
+        "This may be due to unknown values in the scraper output. Verify any unknown rows are expected and add them to the corresponding files "
         "or modify the scraper output to match the expected and existing CSV entries. \n"
     )
     if unk_demographics:
