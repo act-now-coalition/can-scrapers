@@ -35,7 +35,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
         from_variables = [
             (
                 "c",
-                "COVID_Vaccine",
+                "factVaccine",
                 0,
             ),
             (
@@ -197,7 +197,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
 
 class WVCountyVaccineRace(WVCountyVaccine):
     demographic = "race"
-    demographic_query_name = "Race1"
+    demographic_query_name = "Race"
     col_mapping = {
         "G0": "location_name",
         "M_1_DM3_0_C_1": "black",
@@ -235,7 +235,7 @@ class WVCountyVaccineRace(WVCountyVaccine):
                                         [
                                             # From
                                             ("d", "dimCounty", 0),
-                                            ("c", "COVID_Vaccine", 0),
+                                            ("c", "factVaccine", 0),
                                             ("n", "Navigation", 0),
                                         ]
                                     ),
@@ -475,16 +475,18 @@ class WVCountyVaccineRace(WVCountyVaccine):
 class WVCountyVaccineAge(WVCountyVaccineRace):
     col_mapping = {
         "G0": "location_name",
-        "M_1_DM3_0_C_1": "12-24",
-        "M_1_DM3_1_C_1": "25-34",
-        "M_1_DM3_2_C_1": "35-44",
-        "M_1_DM3_3_C_1": "45-54",
-        "M_1_DM3_4_C_1": "55-64",
-        "M_1_DM3_5_C_1": "65-74",
-        "M_1_DM3_6_C_1": "75-84",
-        "M_1_DM3_7_C_1": "85_plus",
+        "M_1_DM3_0_C_1": "5-11",
+        "M_1_DM3_1_C_1": "12-15",
+        "M_1_DM3_2_C_1": "16-20",
+        "M_1_DM3_3_C_1": "21-25",
+        "M_1_DM3_4_C_1": "26-30",
+        "M_1_DM3_5_C_1": "31-40",
+        "M_1_DM3_6_C_1": "41-50",
+        "M_1_DM3_7_C_1": "51-60",
+        "M_1_DM3_8_C_1": "61-70",
+        "M_1_DM3_9_C_1": "71_plus",
     }
-    demographic_query_name = "Age Group"
+    demographic_query_name = "AgeGroupVax"
     demographic = "age"
 
 

@@ -1,3 +1,5 @@
+from sqlalchemy.engine.base import Engine
+from can_tools.scrapers.base import DatasetBase
 from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
     CDCCovidDataTracker,
 )
@@ -9,6 +11,7 @@ import sqlalchemy as sa
 
 from can_tools import ALL_SCRAPERS
 from can_tools.models import Base, create_dev_engine
+from can_tools import utils
 
 SORTED_SCRAPERS = sorted(ALL_SCRAPERS, key=lambda x: x.__name__)
 
@@ -72,7 +75,11 @@ def test_datasets(cls):
 
     d.validate(clean, None)
 
-    d.put(engine, clean)
+    try:
+        d.put(engine, clean)
+    except sa.exc.IntegrityError:
+        error_msg = _create_put_error_msg(engine, clean, cls)
+        raise Exception(error_msg)
 
 
 @pytest.mark.parametrize("cls", SORTED_SCRAPERS)
@@ -95,3 +102,23 @@ def test_covid_dataset_has_source(cls):
 @pytest.mark.parametrize("cls", SORTED_SCRAPERS)
 def test_all_datasets_has_source_name(cls):
     assert hasattr(cls, "source_name")
+
+def _create_put_error_msg(engine: Engine, data: pd.DataFrame, cls: DatasetBase):
+    """Find unknown/missing variable entries and format an error message"""
+    unk_demographics = utils.find_unknown_demographic_id(data, engine=engine, csv_rows=True)
+    unk_variables = utils.find_unknown_variable_id(data, engine=engine, csv_rows=True)
+    if cls.location_type in ["county", "state"] or cls.has_location == True:
+        unk_locations = utils.find_unknown_location_id(data, engine=engine, state_fips=cls.state_fips, csv_rows=True)
+    
+    error_msg = (
+        "Exception encountered during scraper put() method. "
+        "This may be due to unknown values in the scraper output. Verify any unknown rows are expected and add them to the corresponding files "
+        "or modify the scraper output to match the expected and existing CSV entries. \n"
+    )
+    if unk_demographics:
+        error_msg += "covid_demographics.csv: \n" + "".join(unk_demographics) + "\n"
+    if unk_variables:
+        error_msg += "covid_variables.csv: \n" + "".join(unk_variables) + "\n"
+    if unk_locations:
+        error_msg += "locations.csv: \n" + "".join(unk_locations)
+    return error_msg
