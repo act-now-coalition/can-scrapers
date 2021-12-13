@@ -3,16 +3,18 @@ from datetime import timedelta
 import sentry_sdk
 import pandas as pd
 import sqlalchemy as sa
-from can_tools import ALL_SCRAPERS
+# from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC
-from can_tools.scrapers import CDCCovidDataTracker
 import prefect
-from prefect import Flow, task
+from prefect import Flow, task, case
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
+from can_tools.scrapers.official.base import ETagCacheMixin
 
+from can_tools.scrapers import CDCHistoricalTestingDataset, TXVaccineCountyAge, CDCCountyVaccine2
+
+ALL_SCRAPERS = [TXVaccineCountyAge, CDCCountyVaccine2, CDCHistoricalTestingDataset]
 
 @task
 def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
@@ -48,7 +50,7 @@ def validate(d: DatasetBase):
     d._validate()
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task()
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
 
@@ -71,6 +73,11 @@ def initialize_sentry(sentry_dsn: str):
     """Initialize sentry SDK for Flow. """
     sentry_sdk.init(sentry_dsn)
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
+
+@task
+def skip_cached_flow(flow_name):
+    logger = prefect.context.get("logger")
+    logger.info(f"No new data. Skipping {flow_name}")
 
 
 def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
@@ -97,42 +104,27 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     return flow
 
 
-def create_cdc_single_state_flow():
-    with Flow(CDCCovidDataTracker.__name__) as flow:
-        state = prefect.Parameter("state")
-        connstr = EnvVarSecret("COVID_DB_CONN_URI")
-        sentry_dsn = EnvVarSecret("SENTRY_DSN")
-        sentry_sdk_task = initialize_sentry(sentry_dsn)
+def create_cached_flow_for_scraper(cls: ETagCacheMixin):
+    with Flow(cls.__name__) as flow:
+        new_data = cls().check_if_new_data()
 
-        d = create_scraper(CDCCovidDataTracker, state=state)
-        fetched = fetch(d)
-        normalized = normalize(d)
-        validated = validate(d)
-        done = put(d, connstr)
+        with case(new_data, True):
+            connstr = EnvVarSecret("COVID_DB_CONN_URI")
+            sentry_dsn = EnvVarSecret("SENTRY_DSN")
+            sentry_sdk_task = initialize_sentry(sentry_dsn)
+            d = create_scraper(cls)
+            fetched = fetch(d)
+            normalized = normalize(d)
+            validated = validate(d)
+            done = put(d, connstr)
 
-        d.set_upstream(sentry_sdk_task)
-        normalized.set_upstream(fetched)
-        validated.set_upstream(normalized)
-        done.set_upstream(validated)
-
-    return flow
-
-
-def create_cdc_all_states_flow(schedule=True):
-    """Creates a flow that runs the CDC data update on all states."""
-    sched = None
-    if schedule:
-        sched = CronSchedule("17 */4 * * *")
-
-    flow = Flow("CDCAllStatesDataUpdate", sched)
-    for state in ALL_STATES_PLUS_DC:
-        task = StartFlowRun(
-            flow_name=CDCCovidDataTracker.__name__,
-            project_name="can-scrape",
-            wait=True,
-            parameters={"state": state.abbr},
-        )
-        flow.add_task(task)
+            d.set_upstream(sentry_sdk_task)
+            normalized.set_upstream(fetched)
+            validated.set_upstream(normalized)
+            done.set_upstream(validated)
+        
+        with case(new_data, False):
+            skip_cached_flow(cls.__name__)
 
     return flow
 
@@ -165,20 +157,16 @@ def init_flows():
     for ix, cls in enumerate(ALL_SCRAPERS):
         if not cls.autodag:
             continue
-        if cls == CDCCovidDataTracker:
-            flow = create_cdc_single_state_flow()
+        if issubclass(cls, ETagCacheMixin):
+            flow = create_cached_flow_for_scraper(cls)
+            flows.append(flow)
         else:
             flow = create_flow_for_scraper(ix, cls, schedule=False)
             flows.append(flow)
-        flow.register(project_name="can-scrape")
-
-    # Create additional flow that runs the CDC Data updater
-    flow = create_cdc_all_states_flow(schedule=False)
-    flows.append(flow)
-    flow.register(project_name="can-scrape")
+        flow.run()
 
     flow = create_main_flow(flows, "can-scrape")
-    flow.register(project_name="can-scrape")
+    flow.run()
 
 
 if __name__ == "__main__":
