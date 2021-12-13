@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import FederalDashboard
+from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 
 # Set the maximum number of records to ten million to ensure we collect all rows in the dataset.
 # Currently the size of the dataset is 2 million records, so this may need to be updated (increased)
@@ -11,7 +11,7 @@ from can_tools.scrapers.official.base import FederalDashboard
 SODA_API_RESPONSE_LIMIT = 10000000
 
 
-class CDCHistoricalTestingDataset(FederalDashboard):
+class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
     source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"

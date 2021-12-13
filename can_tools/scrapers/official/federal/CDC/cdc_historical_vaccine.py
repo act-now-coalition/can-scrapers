@@ -1,9 +1,9 @@
 import pandas as pd
 from can_tools.scrapers import variables
-from can_tools.scrapers.official.base import FederalDashboard
+from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 
 
-class CDCCountyVaccine2(FederalDashboard):
+class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh"

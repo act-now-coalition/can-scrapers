@@ -17,6 +17,7 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
+from pathlib import Path
 
 from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
@@ -1212,3 +1213,41 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
         """Accepts JSON body, and a url to post to the data studio batched URL"""
         rawJson = str(requests.post(url, json=body).content)
         return rawJson
+
+
+class ETagCacheMixin:
+    cache_url: str
+    cache_file: str
+    cache_dir: Path = Path(__file__).parents[3] / "metadata"
+
+    @property
+    def etag(self):
+        res = requests.get(self.cache_url)
+        if "Etag" not in res.headers:
+            raise ValueError(
+                "No Etag returned in response header for url: "
+                f"{self.cache_url}"
+            )
+        return res.headers["Etag"]
+    
+    def check_if_new_data(self):
+        """Check etag of data source, and update the stored etag if necessary
+        
+        returns:
+            True if data is new
+            False if data is not new
+        """
+        with open(self.cache_dir / self.cache_file) as file:
+            log = json.load(file)
+
+        now = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S EST")
+        log["last_checked"] = now
+
+        # if etag has not changed then do nothing.       
+        if log["etag"] == self.etag:
+            return False
+        
+        log["etag"] = self.etag
+        with open(self.cache_dir / self.cache_file, 'w') as file:
+            json.dump(log, file)
+        return True
