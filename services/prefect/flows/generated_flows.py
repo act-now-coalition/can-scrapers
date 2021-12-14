@@ -160,10 +160,10 @@ def init_flows():
         else:
             flow = create_flow_for_scraper(ix, cls, schedule=False)
             flows.append(flow)
-        flow.run()
+        flow.register(project_name="can-scrape")
 
     flow = create_main_flow(flows, "can-scrape")
-    flow.run()
+    flow.register(project_name="can-scrape")
 
 
 if __name__ == "__main__":
