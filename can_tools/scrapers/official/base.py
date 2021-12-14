@@ -1217,10 +1217,11 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
 
 class ETagCacheMixin:
     """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
-    
+
     This is used in the `create_cached_flow_for_scraper` flow, to determine whether
     to ingest the data (execute the fetch, normalize, and put methods).
     """
+
     cache_url: str
     cache_name: str
     cache_file: Path = Path(__file__).parents[1] / "cache_scraper_versions.json"
@@ -1230,14 +1231,13 @@ class ETagCacheMixin:
         res = requests.get(self.cache_url)
         if "Etag" not in res.headers:
             raise ValueError(
-                "No Etag returned in response header for url: "
-                f"{self.cache_url}"
+                "No Etag returned in response header for url: " f"{self.cache_url}"
             )
         return res.headers["Etag"]
-    
+
     def check_if_new_data(self):
-        """Check etag of data source, and update the stored etag if necessary. 
-        
+        """Check etag of data source, and update the stored etag if necessary.
+
         returns:
             True if etag has been updated since last check.
             False if data has not been updated.
@@ -1254,11 +1254,11 @@ class ETagCacheMixin:
         now = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S EST")
         log[self.cache_name]["last_checked"] = now
 
-        # if etag has not changed then do nothing.       
+        # if etag has not changed then do nothing.
         if log[self.cache_name]["etag"] == self.etag:
             return False
-        
+
         log[self.cache_name]["etag"] = self.etag
-        with open(self.cache_file, 'w') as file:
+        with open(self.cache_file, "w") as file:
             json.dump(log, file, indent=4)
         return True

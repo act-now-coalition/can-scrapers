@@ -1,9 +1,8 @@
-from typing import Any, Tuple, Type, List
+from typing import Any, Type, List
 from datetime import timedelta
 import sentry_sdk
-import pandas as pd
 import sqlalchemy as sa
-# from can_tools import ALL_SCRAPERS
+from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 import prefect
 from prefect import Flow, task, case
@@ -12,9 +11,6 @@ from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
 
-from can_tools.scrapers import CDCHistoricalTestingDataset, TXVaccineCountyAge, CDCCountyVaccine2,USAFactsCases, USAFactsDeaths
-
-ALL_SCRAPERS = [USAFactsDeaths, TXVaccineCountyAge, CDCCountyVaccine2, USAFactsCases, CDCHistoricalTestingDataset]
 
 @task
 def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
@@ -74,6 +70,7 @@ def initialize_sentry(sentry_dsn: str):
     sentry_sdk.init(sentry_dsn)
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
+
 @task
 def skip_cached_flow(flow_name):
     logger = prefect.context.get("logger")
@@ -122,7 +119,7 @@ def create_cached_flow_for_scraper(cls: ETagCacheMixin):
             normalized.set_upstream(fetched)
             validated.set_upstream(normalized)
             done.set_upstream(validated)
-        
+
         with case(new_data, False):
             skip_cached_flow(cls.__name__)
 

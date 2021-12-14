@@ -18,7 +18,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     source_name = "Centers for Disease Control and Prevention"
     cache_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
     cache_name = "cdc_historical_testing"
-    
+
     # We used to also collect CDC testing data via the CDCCovidDataTracker class.
     # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
     # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
