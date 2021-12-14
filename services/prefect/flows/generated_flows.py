@@ -2,6 +2,7 @@ from typing import Any, Type, List
 from datetime import timedelta
 import sentry_sdk
 import sqlalchemy as sa
+
 # from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 import prefect
@@ -10,9 +11,19 @@ from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
-from can_tools.scrapers import TXVaccineCountyAge, CDCHistoricalTestingDataset, USAFactsCases, SDVaccineCounty
+from can_tools.scrapers import (
+    TXVaccineCountyAge,
+    CDCHistoricalTestingDataset,
+    USAFactsCases,
+    SDVaccineCounty,
+)
 
-ALL_SCRAPERS = [TXVaccineCountyAge, CDCHistoricalTestingDataset, USAFactsCases, SDVaccineCounty]
+ALL_SCRAPERS = [
+    TXVaccineCountyAge,
+    CDCHistoricalTestingDataset,
+    USAFactsCases,
+    SDVaccineCounty,
+]
 
 
 @task
@@ -82,9 +93,10 @@ def skip_cached_flow(flow_name):
     logger = prefect.context.get("logger")
     logger.info(f"No new data. Skipping {flow_name}")
 
+
 @task
-def check_cached_scraper_etag(cls: ETagCacheMixin):
-    return cls().check_if_new_data()
+def check_if_skip_cached_flow(cls: ETagCacheMixin):
+    return not cls().check_if_new_data()  # if there is new data don't skip this flow.
 
 
 def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
@@ -92,29 +104,32 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     if schedule:
         sched = CronSchedule(f"{ix % 60} */4 * * *")
 
-    # check if scraper has caching, and if so check if there is new data.
-    # If no new data, create a flow to log that data has not been updated
-    if issubclass(cls, ETagCacheMixin):
-        if not cls().check_if_new_data():
-            with Flow(cls.__name__, sched) as flow:
-                skip_cached_flow(cls.__name__)
-                return flow
-
     with Flow(cls.__name__, sched) as flow:
-        connstr = EnvVarSecret("COVID_DB_CONN_URI")
-        sentry_dsn = EnvVarSecret("SENTRY_DSN")
-        sentry_sdk_task = initialize_sentry(sentry_dsn)
 
-        d = create_scraper(cls)
-        fetched = fetch(d)
-        normalized = normalize(d)
-        validated = validate(d)
-        done = put(d, connstr)
+        # check if scraper has etag cache/check
+        # if so and the data has not been updated since the last check, set skip_flow to true
+        skip_flow = False
+        if issubclass(cls, ETagCacheMixin):
+            skip_flow = check_if_skip_cached_flow(cls)
 
-        d.set_upstream(sentry_sdk_task)
-        normalized.set_upstream(fetched)
-        validated.set_upstream(normalized)
-        done.set_upstream(validated)
+        with case(skip_flow, False):
+            connstr = EnvVarSecret("COVID_DB_CONN_URI")
+            sentry_dsn = EnvVarSecret("SENTRY_DSN")
+            sentry_sdk_task = initialize_sentry(sentry_dsn)
+
+            d = create_scraper(cls)
+            fetched = fetch(d)
+            normalized = normalize(d)
+            validated = validate(d)
+            done = put(d, connstr)
+
+            d.set_upstream(sentry_sdk_task)
+            normalized.set_upstream(fetched)
+            validated.set_upstream(normalized)
+            done.set_upstream(validated)
+
+        with case(skip_flow, True):
+            skip_cached_flow(cls.__name__)
 
     return flow
 
