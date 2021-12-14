@@ -46,17 +46,25 @@ def load_most_recent_cdc(
     pass
 
 
-def find_unknown_variable_id(df: pd.DataFrame, engine: Engine = None):
+def find_unknown_variable_id(df: pd.DataFrame, engine: Engine = None, csv_rows=False):
     """Find any CMU variables in the specified dataframe that do not match an entry in the covid_variables file"""
     if not engine:
         engine = create_dev_engine()[0]
     variables = pd.read_sql("select * from covid_variables", engine)
     merged = df.merge(variables, on=["category", "measurement", "unit"], how="left")
     bad = merged["id"].isna()
-    return df.loc[bad, :]
+
+    df_bad = df.loc[bad, :]
+    if not csv_rows:
+        return df_bad
+
+    df_bad_combinations = df_bad[["category", "measurement", "unit"]].drop_duplicates()
+    return df_bad_combinations.to_csv(index=False, header=False)
 
 
-def find_unknown_location_id(df: pd.DataFrame, state_fips: int, engine: Engine = None):
+def find_unknown_location_id(
+    df: pd.DataFrame, state_fips: int, engine: Engine = None, csv_rows=False
+):
     """Find any locations in the specified dataframe that do not match an entry in the locations file"""
     if not engine:
         engine = create_dev_engine()[0]
@@ -67,7 +75,13 @@ def find_unknown_location_id(df: pd.DataFrame, state_fips: int, engine: Engine =
         good_rows = df.location_name.isin(
             locs.loc[locs.state_fips == state_fips, :].name
         )
-    return df.loc[~good_rows, :]
+    bad_df = df.loc[~good_rows, :]
+
+    if not csv_rows:
+        return bad_df
+    if "location" in df.columns:
+        return bad_df["location"].drop_duplicates().to_csv(index=False, header=False)
+    return bad_df["location_name"].drop_duplicates().to_csv(index=False, header=False)
 
 
 def find_unknown_demographic_id(

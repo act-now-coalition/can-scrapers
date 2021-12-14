@@ -49,7 +49,7 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
     has_location = True
     variables = {"PERSONVAX": variables.INITIATING_VACCINATIONS_ALL}
     demographic_formatting = {
-        "00-05": "0-5",
+        "00_04": "0-4",
         "05_09": "5-9",
         "10_14": "10-14",
         "15_19": "15-19",
