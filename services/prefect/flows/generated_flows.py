@@ -12,9 +12,9 @@ from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
 
-from can_tools.scrapers import CDCHistoricalTestingDataset, TXVaccineCountyAge, CDCCountyVaccine2
+from can_tools.scrapers import CDCHistoricalTestingDataset, TXVaccineCountyAge, CDCCountyVaccine2,USAFactsCases, USAFactsDeaths
 
-ALL_SCRAPERS = [TXVaccineCountyAge, CDCCountyVaccine2, CDCHistoricalTestingDataset]
+ALL_SCRAPERS = [USAFactsDeaths, TXVaccineCountyAge, CDCCountyVaccine2, USAFactsCases, CDCHistoricalTestingDataset]
 
 @task
 def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
@@ -130,7 +130,7 @@ def create_cached_flow_for_scraper(cls: ETagCacheMixin):
 
 
 def create_main_flow(flows: List[Flow], project_name):
-    schedule = CronSchedule("0 */3 * * *")
+    schedule = CronSchedule("0 */4 * * *")
 
     with Flow("MainFlow", schedule) as main_flow:
         tasks = []

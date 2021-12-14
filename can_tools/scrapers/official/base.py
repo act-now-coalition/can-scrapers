@@ -1216,9 +1216,14 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
 
 
 class ETagCacheMixin:
+    """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
+    
+    This is used in the `create_cached_flow_for_scraper` flow, to determine whether
+    to ingest the data (execute the fetch, normalize, and put methods).
+    """
     cache_url: str
-    cache_file: str
-    cache_dir: Path = Path(__file__).parents[3] / "metadata"
+    cache_name: str
+    cache_file: Path = Path(__file__).parents[1] / "cache_scraper_versions.json"
 
     @property
     def etag(self):
@@ -1231,23 +1236,29 @@ class ETagCacheMixin:
         return res.headers["Etag"]
     
     def check_if_new_data(self):
-        """Check etag of data source, and update the stored etag if necessary
+        """Check etag of data source, and update the stored etag if necessary. 
         
         returns:
-            True if data is new
-            False if data is not new
+            True if etag has been updated since last check.
+            False if data has not been updated.
         """
-        with open(self.cache_dir / self.cache_file) as file:
+        with open(self.cache_file) as file:
             log = json.load(file)
 
+        if self.cache_name not in log.keys():
+            raise ValueError(
+                f"key {self.cache_name} not found in cache file. Check that a matching entry exists, "
+                "and if not then create one."
+            )
+
         now = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S EST")
-        log["last_checked"] = now
+        log[self.cache_name]["last_checked"] = now
 
         # if etag has not changed then do nothing.       
-        if log["etag"] == self.etag:
+        if log[self.cache_name]["etag"] == self.etag:
             return False
         
-        log["etag"] = self.etag
-        with open(self.cache_dir / self.cache_file, 'w') as file:
-            json.dump(log, file)
+        log[self.cache_name]["etag"] = self.etag
+        with open(self.cache_file, 'w') as file:
+            json.dump(log, file, indent=4)
         return True

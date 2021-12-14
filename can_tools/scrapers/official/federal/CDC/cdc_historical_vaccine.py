@@ -9,6 +9,8 @@ class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc2"
+    cache_url = "https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD"
+    cache_name = "cdc_county_vaccines"
 
     variables = {
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,

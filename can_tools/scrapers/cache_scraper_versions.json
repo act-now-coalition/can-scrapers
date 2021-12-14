@@ -1,0 +1,18 @@
+{
+    "cdc_historical_testing": {
+        "etag": "\"Y2hhcmxpZS4xNjkyMDFfMl8xNDFUVUpKRHlDNDc0WHZYbnotUHEwbmJYRjBVWDg---gzirsWhhQW2zk0894ecBy5kbUxbz3Fg--gzip--gzip\"",
+        "last_checked": "2021-12-14 11:39:49 EST"
+    },
+    "cdc_county_vaccines": {
+        "etag": "\"YnJhdm8uNDEzMTE1XzRfMzcwbmh2cE5rUUNNakNxa3ZUVDBna1haY3AxNFdj---gzipB8nXq_VOlPAR8SCyrVfFXkk1GMc--gzip--gzip\"",
+        "last_checked": "2021-12-14 11:25:44 EST"
+    },
+    "usa_facts_cases": {
+        "etag": "0x8D9BE77F8081C4F",
+        "last_checked": "2021-12-14 11:22:15 EST"
+    },
+    "usa_facts_deaths": {
+        "etag": "0x8D9BE77F8DBC869",
+        "last_checked": "2021-12-14 11:23:23 EST"
+    }
+}

@@ -3,12 +3,12 @@ from typing import Any
 import pandas as pd
 from urllib.request import Request, urlopen
 from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import FederalDashboard
+from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 
 BASEURL = "https://static.usafacts.org/public/data/"
 
 
-class USAFactsCases(FederalDashboard):
+class USAFactsCases(FederalDashboard, ETagCacheMixin):
     """
     Downloads USA Fact case data
     Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
@@ -23,6 +23,8 @@ class USAFactsCases(FederalDashboard):
     source_name = "USAFacts"
     has_location = True
     location_type = ""
+    cache_url = BASEURL + filename
+    cache_name = "usa_facts_cases"
 
     provider: str = "usafacts"
 
@@ -92,7 +94,7 @@ class USAFactsCases(FederalDashboard):
         return
 
 
-class USAFactsDeaths(USAFactsCases):
+class USAFactsDeaths(USAFactsCases, ETagCacheMixin):
     """
     Downloads USA Facts death data
     Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
@@ -100,3 +102,5 @@ class USAFactsDeaths(USAFactsCases):
 
     filename = "covid-19/covid_deaths_usafacts.csv"
     category = "deaths"
+    cache_url = BASEURL + filename
+    cache_name = "usa_facts_deaths"

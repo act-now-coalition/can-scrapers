@@ -16,7 +16,10 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     location_type = "county"
     source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
     source_name = "Centers for Disease Control and Prevention"
-    # We also collect CDC testing data via the CDCCovidDataTracker class.
+    cache_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
+    cache_name = "cdc_historical_testing"
+    
+    # We used to also collect CDC testing data via the CDCCovidDataTracker class.
     # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
     # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
     provider = "cdc2"
@@ -36,7 +39,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     def fetch(self) -> pd.DataFrame:
         # select only the columns we care about in order to speed up query
         data = pd.read_json(
-            f"https://data.cdc.gov/resource/nra9-vzzn.json?$limit={SODA_API_RESPONSE_LIMIT}"
+            f"{self.cache_url}?$limit={SODA_API_RESPONSE_LIMIT}"
             "&$select=fips_code,date,cases_per_100k_7_day_count,percent_test_results_reported"
         )
         if len(data) == SODA_API_RESPONSE_LIMIT:
