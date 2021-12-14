@@ -3,7 +3,7 @@ from datetime import timedelta
 import sentry_sdk
 import sqlalchemy as sa
 
-# from can_tools import ALL_SCRAPERS
+from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 import prefect
 from prefect import Flow, task, case
@@ -11,19 +11,6 @@ from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
-from can_tools.scrapers import (
-    TXVaccineCountyAge,
-    CDCHistoricalTestingDataset,
-    USAFactsCases,
-    SDVaccineCounty,
-)
-
-ALL_SCRAPERS = [
-    TXVaccineCountyAge,
-    CDCHistoricalTestingDataset,
-    USAFactsCases,
-    SDVaccineCounty,
-]
 
 
 @task
@@ -62,8 +49,7 @@ def validate(d: DatasetBase):
 
 # NOTE(sean): timeout put() method after 2 hours because sometimes
 # this method hangs, leaving flows running indefinitely.
-# @task(max_retries=3, retry_delay=timedelta(minutes=1), timeout=7200)
-@task
+@task(max_retries=3, retry_delay=timedelta(minutes=1), timeout=7200)
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
 
@@ -106,7 +92,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
 
     with Flow(cls.__name__, sched) as flow:
 
-        # check if scraper has etag cache/check
+        # check if scraper has etag checking
         # if so and the data has not been updated since the last check, set skip_flow to true
         skip_flow = False
         if issubclass(cls, ETagCacheMixin):
@@ -164,12 +150,10 @@ def init_flows():
             continue
         flow = create_flow_for_scraper(ix, cls, schedule=False)
         flows.append(flow)
-        flow.run()
-        # flow.register(project_name="can-scrape")
+        flow.register(project_name="can-scrape")
 
     flow = create_main_flow(flows, "can-scrape")
-    flow.run()
-    # flow.register(project_name="can-scrape")
+    flow.register(project_name="can-scrape")
 
 
 if __name__ == "__main__":
