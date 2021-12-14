@@ -46,7 +46,9 @@ def validate(d: DatasetBase):
     d._validate()
 
 
-@task()
+# NOTE(sean): timeout put() method after 2 hours because sometimes
+# this method hangs, leaving flows running indefinitely.
+@task(max_retries=3, retry_delay=timedelta(minutes=1), timeout=7200)
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
 
