@@ -1226,8 +1226,8 @@ class ETagCacheMixin:
     cache_dir: Path = Path(__file__).parents[1]
 
     def initialize_cache(self, cache_url, cache_file):
-        self.cache_url=cache_url
-        self.cache_file=cache_file
+        self.cache_url = cache_url
+        self.cache_file = cache_file
 
     @property
     def etag(self):

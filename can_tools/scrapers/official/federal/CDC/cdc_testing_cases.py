@@ -36,11 +36,9 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     }
 
     # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
+    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
-            self,
-            cache_url=self.fetch_url,
-            cache_file="cdc_historical_testing.txt"
+            self, cache_url=self.fetch_url, cache_file="cdc_historical_testing.txt"
         )
         super().__init__(execution_dt=execution_dt)
 
