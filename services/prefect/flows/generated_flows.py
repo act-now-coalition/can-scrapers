@@ -81,8 +81,10 @@ def skip_cached_flow(flow_name):
 
 
 @task
-def check_if_skip_cached_flow(cls: ETagCacheMixin):
-    return not cls().check_if_new_data()  # if there is new data don't skip this flow.
+def check_if_new_data_for_flow(cls):
+    if issubclass(cls, ETagCacheMixin):
+        return cls().check_if_new_data()
+    return True  # if class does not have etag checking always execute the scraper
 
 
 def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
@@ -93,12 +95,10 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     with Flow(cls.__name__, sched) as flow:
 
         # check if scraper has etag checking
-        # if so and the data has not been updated since the last check, set skip_flow to true
-        skip_flow = False
-        if issubclass(cls, ETagCacheMixin):
-            skip_flow = check_if_skip_cached_flow(cls)
+        # if so and the data has been updated since the last check set new_data to True
+        new_data = check_if_new_data_for_flow(cls)
 
-        with case(skip_flow, False):
+        with case(new_data, True):
             connstr = EnvVarSecret("COVID_DB_CONN_URI")
             sentry_dsn = EnvVarSecret("SENTRY_DSN")
             sentry_sdk_task = initialize_sentry(sentry_dsn)
@@ -114,7 +114,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
             validated.set_upstream(normalized)
             done.set_upstream(validated)
 
-        with case(skip_flow, True):
+        with case(new_data, False):
             skip_cached_flow(cls.__name__)
 
     return flow
