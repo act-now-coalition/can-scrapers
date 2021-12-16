@@ -16,8 +16,6 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     location_type = "county"
     source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
     source_name = "Centers for Disease Control and Prevention"
-    cache_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
-    cache_name = "cdc_historical_testing"
 
     # We used to also collect CDC testing data via the CDCCovidDataTracker class.
     # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
@@ -35,6 +33,15 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
             unit="percentage",
         ),
     }
+
+    # Send URL and filename that Mixin will use to check the etag
+    def __init__(self, execution_dt: pd.Timestamp=None):
+        ETagCacheMixin.initialize_cache(
+            self,
+            cache_url="https://data.cdc.gov/resource/nra9-vzzn.json",
+            cache_file="cdc_historical_testing.txt"
+        )
+        super().__init__(execution_dt=execution_dt)
 
     def fetch(self) -> pd.DataFrame:
         # select only the columns we care about in order to speed up query

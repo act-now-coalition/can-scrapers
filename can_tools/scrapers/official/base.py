@@ -11,6 +11,7 @@ from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.parse import parse_qs, urlparse
 
+import datetime
 import jmespath
 import pandas as pd
 import requests
@@ -1222,9 +1223,11 @@ class ETagCacheMixin:
     to ingest the data (execute the fetch, normalize, and put methods).
     """
 
-    cache_url: str
-    cache_name: str
-    cache_file: Path = Path(__file__).parents[1] / "cache_scraper_versions.json"
+    cache_dir: Path = Path(__file__).parents[1]
+
+    def initialize_cache(self, cache_url, cache_file):
+        self.cache_url=cache_url
+        self.cache_file=cache_file
 
     @property
     def etag(self):
@@ -1236,29 +1239,32 @@ class ETagCacheMixin:
         return res.headers["Etag"]
 
     def check_if_new_data(self):
-        """Check etag of data source, and update the stored etag if necessary.
+        """Check etag of data source and update the stored etag if necessary.
 
         returns:
             True if etag has been updated since last check.
             False if data has not been updated.
         """
-        with open(self.cache_file) as file:
-            log = json.load(file)
-
-        if self.cache_name not in log.keys():
-            raise ValueError(
-                f"key {self.cache_name} not found in cache file. Check that a matching entry exists, "
-                "and if not then create one."
-            )
-
-        now = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S EST")
-        log[self.cache_name]["last_checked"] = now
+        cached_etag = self._read_etag_version()
 
         # if etag has not changed then do nothing.
-        if log[self.cache_name]["etag"] == self.etag:
+        if cached_etag == self.etag:
             return False
 
-        log[self.cache_name]["etag"] = self.etag
-        with open(self.cache_file, "w") as file:
-            json.dump(log, file, indent=4)
+        # update etag and return true
+        self._write_etag_version()
         return True
+
+    def _read_etag_version(self):
+        version_path = self.cache_dir / self.cache_file
+        if version_path.is_file():
+            with version_path.open("r") as vf:
+                return vf.readline().rstrip("\n")
+        return None
+
+    def _write_etag_version(self) -> None:
+        stamp = datetime.datetime.utcnow().isoformat()
+        version_path = self.cache_dir / self.cache_file
+        with version_path.open("w+") as vf:
+            vf.write(f"{self.etag}\n")
+            vf.write(f"Updated on {stamp}")

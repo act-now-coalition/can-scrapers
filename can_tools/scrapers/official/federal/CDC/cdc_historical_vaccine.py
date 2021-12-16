@@ -9,18 +9,24 @@ class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc2"
-    cache_url = "https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD"
-    cache_name = "cdc_county_vaccines"
+    csv_url = "https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD"
 
     variables = {
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
     }
 
-    def fetch(self):
-        return pd.read_csv(
-            "https://data.cdc.gov/api/views/8xkx-amqh/rows.csv?accessType=DOWNLOAD"
+    # Send URL and filename that Mixin will use to check the etag
+    def __init__(self, execution_dt: pd.Timestamp=None):
+        ETagCacheMixin.initialize_cache(
+            self,
+            cache_url=self.csv_url,
+            cache_file="cdc_county_vaccines.txt"
         )
+        super().__init__(execution_dt=execution_dt)
+
+    def fetch(self):
+        return pd.read_csv(self.csv_url)
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         out = self._rename_or_add_date_and_location(
