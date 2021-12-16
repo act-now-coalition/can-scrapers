@@ -95,6 +95,8 @@ Now any time a push is made to the master branch of the repo, a push event will 
     - Restart the Prefect infrastructure by running “make restart_services”
 
 
+### Troubleshooting
+
 If gcsfuse is killed it might be necessary to remount the file system. Symptoms of this can include:
 
 * Scrapers failing on the `create_scraper` task with the message, 
