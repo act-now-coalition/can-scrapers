@@ -11,12 +11,14 @@ from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.parse import parse_qs, urlparse
 
+import datetime
 import jmespath
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import sessionmaker
+from pathlib import Path
 
 from can_tools.db_util import fast_append_to_sql
 from can_tools.models import (
@@ -1212,3 +1214,57 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
         """Accepts JSON body, and a url to post to the data studio batched URL"""
         rawJson = str(requests.post(url, json=body).content)
         return rawJson
+
+
+class ETagCacheMixin:
+    """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
+
+    This is used in the `create_cached_flow_for_scraper` flow, to determine whether
+    to ingest the data (execute the fetch, normalize, and put methods).
+    """
+
+    cache_dir: Path = Path(__file__).parents[1]
+
+    def initialize_cache(self, cache_url, cache_file):
+        self.cache_url = cache_url
+        self.cache_file = cache_file
+
+    @property
+    def etag(self):
+        res = requests.get(self.cache_url)
+        if "Etag" not in res.headers:
+            raise ValueError(
+                "No Etag returned in response header for url: " f"{self.cache_url}"
+            )
+        return res.headers["Etag"]
+
+    def check_if_new_data(self):
+        """Check etag of data source and update the stored etag if necessary.
+
+        returns:
+            True if etag has been updated since last check.
+            False if data has not been updated.
+        """
+        cached_etag = self._read_etag_version()
+
+        # if etag has not changed then do nothing.
+        if cached_etag == self.etag:
+            return False
+
+        # update etag and return true
+        self._write_etag_version()
+        return True
+
+    def _read_etag_version(self):
+        version_path = self.cache_dir / self.cache_file
+        if version_path.is_file():
+            with version_path.open("r") as vf:
+                return vf.readline().rstrip("\n")
+        return None
+
+    def _write_etag_version(self) -> None:
+        stamp = datetime.datetime.utcnow().isoformat()
+        version_path = self.cache_dir / self.cache_file
+        with version_path.open("w+") as vf:
+            vf.write(f"{self.etag}\n")
+            vf.write(f"Updated on {stamp}")

@@ -1,17 +1,16 @@
-from typing import Any, Tuple, Type, List
+from typing import Any, Type, List
 from datetime import timedelta
 import sentry_sdk
-import pandas as pd
 import sqlalchemy as sa
+
 from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC
-from can_tools.scrapers import CDCCovidDataTracker
 import prefect
-from prefect import Flow, task
+from prefect import Flow, task, case
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
+from can_tools.scrapers.official.base import ETagCacheMixin
 
 
 @task
@@ -48,7 +47,9 @@ def validate(d: DatasetBase):
     d._validate()
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+# NOTE(sean): timeout put() method after 2 hours because sometimes
+# this method hangs, leaving flows running indefinitely.
+@task(max_retries=3, retry_delay=timedelta(minutes=1), timeout=7200)
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
 
@@ -73,72 +74,54 @@ def initialize_sentry(sentry_dsn: str):
     sentry_sdk.set_tag("flow", prefect.context.flow_name)
 
 
+@task
+def skip_cached_flow(flow_name):
+    logger = prefect.context.get("logger")
+    logger.info(f"No new data. Skipping {flow_name}")
+
+
+@task
+def check_if_new_data_for_flow(cls):
+    if issubclass(cls, ETagCacheMixin):
+        return cls().check_if_new_data()
+    return True  # if class does not have etag checking always execute the scraper
+
+
 def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     sched = None
     if schedule:
         sched = CronSchedule(f"{ix % 60} */4 * * *")
 
     with Flow(cls.__name__, sched) as flow:
-        connstr = EnvVarSecret("COVID_DB_CONN_URI")
-        sentry_dsn = EnvVarSecret("SENTRY_DSN")
-        sentry_sdk_task = initialize_sentry(sentry_dsn)
 
-        d = create_scraper(cls)
-        fetched = fetch(d)
-        normalized = normalize(d)
-        validated = validate(d)
-        done = put(d, connstr)
+        # check if scraper has etag checking
+        # if so and the data has been updated since the last check set new_data to True
+        new_data = check_if_new_data_for_flow(cls)
 
-        d.set_upstream(sentry_sdk_task)
-        normalized.set_upstream(fetched)
-        validated.set_upstream(normalized)
-        done.set_upstream(validated)
+        with case(new_data, True):
+            connstr = EnvVarSecret("COVID_DB_CONN_URI")
+            sentry_dsn = EnvVarSecret("SENTRY_DSN")
+            sentry_sdk_task = initialize_sentry(sentry_dsn)
 
-    return flow
+            d = create_scraper(cls)
+            fetched = fetch(d)
+            normalized = normalize(d)
+            validated = validate(d)
+            done = put(d, connstr)
 
+            d.set_upstream(sentry_sdk_task)
+            normalized.set_upstream(fetched)
+            validated.set_upstream(normalized)
+            done.set_upstream(validated)
 
-def create_cdc_single_state_flow():
-    with Flow(CDCCovidDataTracker.__name__) as flow:
-        state = prefect.Parameter("state")
-        connstr = EnvVarSecret("COVID_DB_CONN_URI")
-        sentry_dsn = EnvVarSecret("SENTRY_DSN")
-        sentry_sdk_task = initialize_sentry(sentry_dsn)
-
-        d = create_scraper(CDCCovidDataTracker, state=state)
-        fetched = fetch(d)
-        normalized = normalize(d)
-        validated = validate(d)
-        done = put(d, connstr)
-
-        d.set_upstream(sentry_sdk_task)
-        normalized.set_upstream(fetched)
-        validated.set_upstream(normalized)
-        done.set_upstream(validated)
-
-    return flow
-
-
-def create_cdc_all_states_flow(schedule=True):
-    """Creates a flow that runs the CDC data update on all states."""
-    sched = None
-    if schedule:
-        sched = CronSchedule("17 */4 * * *")
-
-    flow = Flow("CDCAllStatesDataUpdate", sched)
-    for state in ALL_STATES_PLUS_DC:
-        task = StartFlowRun(
-            flow_name=CDCCovidDataTracker.__name__,
-            project_name="can-scrape",
-            wait=True,
-            parameters={"state": state.abbr},
-        )
-        flow.add_task(task)
+        with case(new_data, False):
+            skip_cached_flow(cls.__name__)
 
     return flow
 
 
 def create_main_flow(flows: List[Flow], project_name):
-    schedule = CronSchedule("0 */3 * * *")
+    schedule = CronSchedule("0 */4 * * *")
 
     with Flow("MainFlow", schedule) as main_flow:
         tasks = []
@@ -165,17 +148,9 @@ def init_flows():
     for ix, cls in enumerate(ALL_SCRAPERS):
         if not cls.autodag:
             continue
-        if cls == CDCCovidDataTracker:
-            flow = create_cdc_single_state_flow()
-        else:
-            flow = create_flow_for_scraper(ix, cls, schedule=False)
-            flows.append(flow)
+        flow = create_flow_for_scraper(ix, cls, schedule=False)
+        flows.append(flow)
         flow.register(project_name="can-scrape")
-
-    # Create additional flow that runs the CDC Data updater
-    flow = create_cdc_all_states_flow(schedule=False)
-    flows.append(flow)
-    flow.register(project_name="can-scrape")
 
     flow = create_main_flow(flows, "can-scrape")
     flow.register(project_name="can-scrape")

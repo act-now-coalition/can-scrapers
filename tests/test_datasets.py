@@ -1,8 +1,6 @@
 from sqlalchemy.engine.base import Engine
 from can_tools.scrapers.base import DatasetBase
-from can_tools.scrapers.official.federal.CDC.cdc_coviddatatracker import (
-    CDCCovidDataTracker,
-)
+
 import os
 
 import pandas as pd
@@ -60,10 +58,7 @@ def test_datasets(cls):
     execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
         "%Y-%m-%d"
     )
-    if cls == CDCCovidDataTracker:
-        d = cls(execution_date, state="CA")
-    else:
-        d = cls(execution_date)
+    d = cls(execution_date)
 
     raw = d.fetch()
 
