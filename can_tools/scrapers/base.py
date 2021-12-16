@@ -165,7 +165,7 @@ class DatasetBase(ABC):
         ("total_vaccine_completed", "total_vaccine_initiated"),
     ]
 
-    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
+    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
         self.execution_dt = pd.to_datetime(execution_dt, utc=True)
         self.base_path = _get_base_path()
 

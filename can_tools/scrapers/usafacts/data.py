@@ -29,7 +29,7 @@ class USAFactsCases(FederalDashboard, ETagCacheMixin):
     category: str = "cases"
 
     # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp=None):
+    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
             self,
             cache_url=BASEURL + self.filename,
@@ -111,7 +111,7 @@ class USAFactsDeaths(USAFactsCases, ETagCacheMixin):
     category = "deaths"
     
     # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp=None):
+    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
             self,
             cache_url=BASEURL + self.filename,

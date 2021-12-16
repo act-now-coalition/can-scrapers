@@ -17,7 +17,7 @@ class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
     }
 
     # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp=None):
+    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
             self,
             cache_url=self.csv_url,

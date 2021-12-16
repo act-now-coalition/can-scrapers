@@ -16,6 +16,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     location_type = "county"
     source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
     source_name = "Centers for Disease Control and Prevention"
+    fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
 
     # We used to also collect CDC testing data via the CDCCovidDataTracker class.
     # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
@@ -35,10 +36,10 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     }
 
     # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp=None):
+    def __init__(self, execution_dt: pd.Timestamp=pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
             self,
-            cache_url="https://data.cdc.gov/resource/nra9-vzzn.json",
+            cache_url=self.fetch_url,
             cache_file="cdc_historical_testing.txt"
         )
         super().__init__(execution_dt=execution_dt)
@@ -46,7 +47,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     def fetch(self) -> pd.DataFrame:
         # select only the columns we care about in order to speed up query
         data = pd.read_json(
-            f"{self.cache_url}?$limit={SODA_API_RESPONSE_LIMIT}"
+            f"{self.fetch_url}?$limit={SODA_API_RESPONSE_LIMIT}"
             "&$select=fips_code,date,cases_per_100k_7_day_count,percent_test_results_reported"
         )
         if len(data) == SODA_API_RESPONSE_LIMIT:
