@@ -78,16 +78,33 @@ Now any time a push is made to the master branch of the repo, a push event will 
 
 **Maintenance**:
 
-When the server restarts, or if gcsfuse is killed it is necessary to remount the file system. Symptoms of this can include:
+### Restarting the Prefect Infrastructure
+
+- Navigate to the Prefect virtual machine (VM),
+  - Go to the covidactnow-dev Google Cloud Console
+  - Under the “Resources” section, select “Compute Engine”
+  - From the list, open the “prefect” machine
+- Restart the VM,
+  - Restart the VM by clicking the “Reset” button, and clicking “Reset” in the dialogue box that appears. This effectively reboots the machine. 
+- SSH into the Prefect virtual machine:
+  - Click the “SSH” button then select “continue” to open a connection to the VM. 
+- Mount the “scraper-outputs” storage bucket and restart the Prefect server and agent. 
+  - To do these next steps, we will need to access Spencer’s account:
+    - Run `sudo su sglyon` to gain access to his account and navigate to `/home/sglyon`
+    - Remount the storage bucket by running `mount scraper-outputs`
+    - Restart the Prefect infrastructure by running `make restart_services`
+
+
+### Troubleshooting
+
+If gcsfuse is killed it might be necessary to remount the file system. Symptoms of this can include:
 
 * Scrapers failing on the `create_scraper` task with the message, 
   >`[Errno 107] Transport endpoint is not connected: '/home/sglyon/scraper-outputs.`
 * The Prefect console reading a message like, `Jun 21 10:14:55 prefect kernel ...  Killed process ... (gcsfuse)`
 
 The steps to fix this are to:
-* SSH into the prefect virtual machine in the Google Cloud Platform
-* Navigate to `/home/sglyon/`
-* If `ls: cannot access 'scraper-outputs': Permission denied` occurs, gain access to Spencer's account using `sudo su sglyon`
+* Follow the steps above to SSH into the VM and navigate to /home/sglyon,
 * Un-mount the current filesystem using `fusermount -u scraper-outputs`
 * If the above fails with the error `fusermount: failed to unmount /home/sglyon/scraper-outputs: Device or resource busy`, un-mount the filesystem using `sudo umount -l scraper-outputs`
 * Re-mount the filesystem using `mount ~/scraper-outputs`. This runs gcsfuse and links the ~/scraper-outputs directory to the cloud storage bucket
