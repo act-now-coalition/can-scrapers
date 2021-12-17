@@ -90,9 +90,9 @@ Now any time a push is made to the master branch of the repo, a push event will 
   - Click the “SSH” button then select “continue” to open a connection to the VM. 
 - Mount the “scraper-outputs” storage bucket and restart the Prefect server and agent. 
   - To do these next steps, we will need to access Spencer’s account:
-    - Run “sudo su sglyon” to gain access to his account and navigate to /home/sglyon
-    - Remount the storage bucket by running “mount scraper-outputs”
-    - Restart the Prefect infrastructure by running “make restart_services”
+    - Run `sudo su sglyon` to gain access to his account and navigate to `/home/sglyon`
+    - Remount the storage bucket by running `mount scraper-outputs`
+    - Restart the Prefect infrastructure by running `make restart_services`
 
 
 ### Troubleshooting
