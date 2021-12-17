@@ -202,8 +202,5 @@ from can_tools.scrapers.official.WV.wv_vaccine import (
     WVCountyVaccineAge,
     WVCountyVaccineSex,
 )
-from can_tools.scrapers.official.WY.WYVaccines import (
-    WYCountyVaccinations,
-    WYCountyAgeVaccinations,
-)
+
 from can_tools.scrapers.usafacts import USAFactsCases, USAFactsDeaths
