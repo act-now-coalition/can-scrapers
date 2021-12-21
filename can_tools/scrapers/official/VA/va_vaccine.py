@@ -2,9 +2,9 @@ import pandas as pd
 import us
 import os.path
 from tqdm import tqdm
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import TableauDashboard
 from multiprocessing import Pool
+from can_tools.scrapers import variables
 
 
 class VirginiaVaccine(TableauDashboard):
@@ -13,73 +13,45 @@ class VirginiaVaccine(TableauDashboard):
     source_name = "Virginia Department of Health"
     baseurl = "https://vdhpublicdata.vdh.virginia.gov"
     provider = "state"
-    has_location = True
+    has_location = False
     location_type = "county"
+    data_tableau_table = "Doses Administered by Administration FIPS"
     filterFunctionName = None
     viewPath = "VirginiaCOVID-19Dashboard-VaccineSummary/VirginiaCOVID-19VaccineSummary"
 
-    def fetch(self):
-        return self.get_tableau_view()
+    variables = {
+        "initiated": variables.INITIATING_VACCINATIONS_ALL,
+        "complete": variables.FULLY_VACCINATED_ALL,
+    }
 
-    def normalize(self, data) -> pd.DataFrame:
-        rows = [
-            (
-                data["Vaccine One Dose"]["SUM(At Least One Dose)-alias"].iloc[0],
-                data["Vaccine Fully Vacinated"]["SUM(Fully Vaccinated)-alias"].iloc[0],
-                data["Vaccine Total Doses"]["SUM(Vaccine Count)-alias"].iloc[0],
-                self.state_fips,
-                "Virginia",
-            )
-        ]
-        state_df = pd.DataFrame.from_records(
-            rows,
-            columns=[
-                "totalHadFirstDose",
-                "totalHadSecondDose",
-                "totalDoses",
-                "location",
-                "location_name",
-            ],
-        )
-        county_df = data["Doses Administered by Administration FIPS"].rename(
-            columns={
-                "SUM(Fully Vaccinated)-alias": "totalHadSecondDose",
-                "SUM(At Least One Dose)-alias": "totalHadFirstDose",
-                "SUM(Vaccine Count)-alias": "totalDoses",
-                "Recipient FIPS - Manassas Fix-alias": "location",
-                "ATTR(Locality Name)-alias": "location_name",
-            }
-        )
+    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        df = pd.concat([state_df, county_df], axis=0)
-
-        crename = {
-            "totalHadFirstDose": CMU(
-                category="total_vaccine_initiated",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "totalHadSecondDose": CMU(
-                category="total_vaccine_completed",
-                measurement="cumulative",
-                unit="people",
-            ),
-            "totalDoses": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
+        cols = {
+            "SUM(Fully Vaccinated (Federal Doses count))-alias": "federal_complete",
+            "SUM(At Least One Dose (Federal Doses count))-alias": "federal_initiated",
+            "SUM(At Least One Dose (CVX=FedDosesLoc))-alias": "initiated",
+            "SUM(Fully Vaccinated (CVX=FedDosesLoc))-alias": "complete",
+            "ATTR(Locality Name)-alias": "location_name",
         }
-        df = df.melt(id_vars=["location"], value_vars=crename.keys()).dropna()
-        df = self.extract_CMU(df, crename)
 
-        df.loc[:, "value"] = pd.to_numeric(df["value"])
-        df.loc[:, "location"] = df["location"].astype(int)
-        df["location_type"] = "county"
-        df.loc[df["location"] == 51, "location_type"] = "state"
-        df["dt"] = self._retrieve_dt()
-        df["vintage"] = self._retrieve_vintage()
-        return df.drop(["variable"], axis="columns")
+        # VA reports federal doses in a separate column.
+        # We combine the "standard" dose values with the federal dose values
+        # in order to include all the doses.
+        return (
+            df.rename(columns=cols)
+            # some counties have no federal doses, and the values are filled with %null%
+            # replace with 0 so we can still aggregate.
+            .replace("%null%", 0)
+            .assign(
+                complete=lambda row: pd.to_numeric(row["complete"])
+                + pd.to_numeric(row["federal_complete"]),
+                initiated=lambda row: pd.to_numeric(row["initiated"])
+                + pd.to_numeric(row["federal_initiated"]),
+                dt=self._retrieve_dt("US/Eastern"),
+                vintage=self._retrieve_vintage(),
+            )
+            .pipe(self._reshape_variables, variable_map=self.variables)
+        )
 
 
 class VirginiaCountyVaccineDemographics(VirginiaVaccine):
