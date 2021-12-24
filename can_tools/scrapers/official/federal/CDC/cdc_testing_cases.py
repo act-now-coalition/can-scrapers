@@ -1,6 +1,7 @@
 from typing import Dict
 
 import pandas as pd
+import numpy as np
 
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
@@ -58,7 +59,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         return (
             # remove suppressed values as we have no way to handle them
-            data.replace("suppressed", None)
+            data.replace("suppressed", np.NaN)
             # 02066, Copper River Census Area is a new area established in 2019.
             # We currently do not track it, and instead track Valdez-Cordova Census Area,
             # the census area from which Copper River split.
