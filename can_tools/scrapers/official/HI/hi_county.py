@@ -29,7 +29,7 @@ class HawaiiVaccineCounty(TableauDashboard):
     # baseurl = "https://public.tableau.com/shared/"
     # viewPath = "7TCBHC568"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
-    data_tableau_table = "Updated County Progress"
+    data_tableau_table = "Updated County Progress (mobile)"
 
     variables = {
         "initiated": v.INITIATING_VACCINATIONS_ALL,
@@ -44,7 +44,7 @@ class HawaiiVaccineCounty(TableauDashboard):
                 columns={
                     f"AGG(TOTAL 1st doses)-alias": "initiated",
                     f"AGG(TOTAL 2nd doses)-alias": "completed",
-                    "County-alias": "location_name",
+                    "County Clean-alias": "location_name",
                 }
             ).loc[
                 :,
@@ -52,7 +52,7 @@ class HawaiiVaccineCounty(TableauDashboard):
             ]
             # The data is repeated twice (with different values of measure name alias)
             # Slice the data to only get one instance of it
-            .query("`Measure Names-alias` != 'TOTAL State progress 1st dose'")
+            .query("`Measure Names-alias` != 'Initiating'")
         )
         out = self._reshape_variables(df, self.variables)
         out["dt"] = self._retrieve_dt("US/Hawaii")
