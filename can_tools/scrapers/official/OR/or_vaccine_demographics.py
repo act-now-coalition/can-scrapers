@@ -23,7 +23,7 @@ class OregonVaccineRace(TableauDashboard):
 
     column_renames = {
         "Demographic Category-value": "race",
-        "AGG(Race Suppression)-alias": "value",
+        "People Count Label-value": "value",
     }
 
     demographic_rename = {
@@ -52,7 +52,7 @@ class OregonVaccineRace(TableauDashboard):
         data = (
             pd.concat(data)
             .rename(columns=self.column_renames)
-            .query("value != 'Suppressed'")
+            .query("value not in ['Suppressed', '50 or less', '10 or less']")
             .assign(
                 variable="total_vaccine_initiated",
                 value=lambda row: pd.to_numeric(

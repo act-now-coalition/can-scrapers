@@ -10,7 +10,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
     viewPath = "HawaiiCOVID-19-VaccinationDashboard3/RACE"
     subsheet = "Race Progess [MOBILE]"
     demographic = "race"
-    demographic_col_name = "Race-alias"
+    demographic_col_name = "Race Alg HHDW-alias"
     filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"
 
     variables = {
