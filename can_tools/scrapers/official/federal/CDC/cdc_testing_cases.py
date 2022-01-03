@@ -7,9 +7,9 @@ from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 
 # Set the maximum number of records to ten million to ensure we collect all rows in the dataset.
-# Currently the size of the dataset is 2 million records, so this may need to be updated (increased)
+# Currently the size of the dataset is 12 million records, so this may need to be updated (increased)
 # in the future
-SODA_API_RESPONSE_LIMIT = 10000000
+SODA_API_RESPONSE_LIMIT = 20000000
 
 
 class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
@@ -57,7 +57,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
         return data
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        return (
+        data = (
             # remove suppressed values as we have no way to handle them
             data.replace("suppressed", np.NaN)
             # 02066, Copper River Census Area is a new area established in 2019.
@@ -74,3 +74,11 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
                 locations_to_drop=[2066, 2063, 72888, 72999],
             ).pipe(self._reshape_variables, variable_map=self.variables)
         )
+
+        # There are duplicated rows and multiple rows for a single variable in the dataset.
+        data = data.drop_duplicates()
+        # If a variable (e.g. a location, date, and variable type) has multiple entries just select the most
+        # recent occurrence. There does not seem to be a pattern or a discernably "correct" value.
+        # see for context: https://trello.com/c/9xHrKqo4/137-duplicates-in-cdc-testing-dataset-causing-scraper-to-fail
+        group_columns = [col for col in data.columns if col != "value"]
+        return data.groupby(group_columns).agg({"value": "last"}).reset_index()

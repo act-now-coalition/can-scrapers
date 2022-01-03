@@ -4,17 +4,19 @@ import pandas as pd
 from urllib.request import Request, urlopen
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
+import abc
 
 BASEURL = "https://static.usafacts.org/public/data/"
 
 
-class USAFactsCases(FederalDashboard, ETagCacheMixin):
+class USAFactsBase(FederalDashboard):
     """
-    Downloads USA Fact case data
+    Base class for downloading USA Facts data
     Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
     """
 
-    filename = "covid-19/covid_confirmed_usafacts.csv"
+    __metaclass__ = abc.ABCMeta
+
     variablename = "cases_total"
     table_name = "usafacts_covid"
     pk = "(vintage, dt, fips, variable_id)"
@@ -26,14 +28,13 @@ class USAFactsCases(FederalDashboard, ETagCacheMixin):
 
     provider: str = "usafacts"
 
-    category: str = "cases"
+    @abc.abstractproperty
+    def filename(self):
+        pass
 
-    # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        ETagCacheMixin.initialize_cache(
-            self, cache_url=BASEURL + self.filename, cache_file="usa_facts_cases.txt"
-        )
-        super().__init__(execution_dt=execution_dt)
+    @abc.abstractproperty
+    def category(self):
+        pass
 
     def fetch(self) -> pd.DataFrame:
         req = Request(BASEURL + self.filename, headers={"User-Agent": "Mozilla/5.0"})
@@ -99,18 +100,49 @@ class USAFactsCases(FederalDashboard, ETagCacheMixin):
         return
 
 
-class USAFactsDeaths(USAFactsCases, ETagCacheMixin):
+class USAFactsCases(USAFactsBase, ETagCacheMixin):
+    """
+    Downloads USA Facts cases data
+    Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
+    """
+
+    # Send URL and filename that Mixin will use to check the etag
+    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
+        self._filename = "covid-19/covid_confirmed_usafacts.csv"
+        self._category = "cases"
+        ETagCacheMixin.initialize_cache(
+            self, cache_url=BASEURL + self.filename, cache_file="usa_facts_cases.txt"
+        )
+        super().__init__(execution_dt=execution_dt)
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @property
+    def category(self):
+        return self._category
+
+
+class USAFactsDeaths(USAFactsBase, ETagCacheMixin):
     """
     Downloads USA Facts death data
     Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
     """
 
-    filename = "covid-19/covid_deaths_usafacts.csv"
-    category = "deaths"
-
     # Send URL and filename that Mixin will use to check the etag
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
+        self._filename = "covid-19/covid_deaths_usafacts.csv"
+        self._category = "deaths"
         ETagCacheMixin.initialize_cache(
             self, cache_url=BASEURL + self.filename, cache_file="usa_facts_deaths.txt"
         )
         super().__init__(execution_dt=execution_dt)
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @property
+    def category(self):
+        return self._category
