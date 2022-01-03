@@ -4,40 +4,6 @@ import pandas as pd
 from urllib.request import Request, urlopen
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
-
-BASEURL = "https://static.usafacts.org/public/data/"
-
-
-class USAFactsCases(FederalDashboard, ETagCacheMixin):
-    """
-    Downloads USA Fact case data
-    Source: https://usafacts.org/visualizations/coronavirus-covid-19-spread-map
-    """
-
-    filename = "covid-19/covid_confirmed_usafacts.csv"
-    variablename = "cases_total"
-    table_name = "usafacts_covid"
-    pk = "(vintage, dt, fips, variable_id)"
-    data_type = "covid"
-    source = "https://usafacts.org/issues/coronavirus/"
-    source_name = "USAFacts"
-    has_location = True
-    location_type = ""
-
-    provider: str = "usafacts"
-
-    category: str = "cases"
-
-    # Send URL and filename that Mixin will use to check the etag
-    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        ETagCacheMixin.initialize_cache(
-            self, cache_url=BASEURL + self.filename, cache_file="usa_facts_cases.txt"
-        )from typing import Any
-
-import pandas as pd
-from urllib.request import Request, urlopen
-from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 import abc
 
 BASEURL = "https://static.usafacts.org/public/data/"
