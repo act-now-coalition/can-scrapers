@@ -44,11 +44,8 @@ class USAFactsBase(FederalDashboard):
         # Make lowercase so they can't change capitalization on us
         data.columns = [c.lower() for c in data.columns]
 
-        df = (
-            data.drop(["county name", "state"], axis=1)
-            .melt(
-                id_vars=["countyfips", "statefips"], var_name="dt", value_name="value"
-            )
+        df = data.drop(["county name", "state"], axis=1).melt(
+            id_vars=["countyfips", "statefips"], var_name="dt", value_name="value"
         )
         df["dt"] = pd.to_datetime(df["dt"])
 
