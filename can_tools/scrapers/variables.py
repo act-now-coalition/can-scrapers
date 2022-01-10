@@ -49,3 +49,15 @@ CUMULATIVE_DEATHS_PEOPLE: CMU = CMU(
     measurement="cumulative",
     unit="people",
 )
+
+CUMULATIVE_NEGATIVE_TEST_SPECIMENS: CMU = CMU(
+    category="pcr_tests_negative",
+    measurement="cumulative",
+    unit="specimens",
+)
+
+CUMULATIVE_POSITIVE_TEST_SPECIMENS: CMU = CMU(
+    category="pcr_tests_positive",
+    measurement="cumulative",
+    unit="specimens",
+)

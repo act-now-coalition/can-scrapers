@@ -1,7 +1,11 @@
 import pandas as pd
-from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import ETagCacheMixin
 from can_tools.scrapers.official.federal.HHS.common import HHSDataset
+
+from can_tools.scrapers.variables import (
+    CUMULATIVE_NEGATIVE_TEST_SPECIMENS,
+    CUMULATIVE_POSITIVE_TEST_SPECIMENS,
+)
 
 
 class HHSTestingState(HHSDataset, ETagCacheMixin):
@@ -13,12 +17,8 @@ class HHSTestingState(HHSDataset, ETagCacheMixin):
     source = "https://healthdata.gov/dataset/COVID-19-Diagnostic-Laboratory-Testing-PCR-Testing/j8mb-icvb"
 
     variables = {
-        "Negative": CMU(
-            category="pcr_tests_negative", measurement="cumulative", unit="specimens"
-        ),
-        "Positive": CMU(
-            category="pcr_tests_positive", measurement="cumulative", unit="specimens"
-        ),
+        "Negative": CUMULATIVE_NEGATIVE_TEST_SPECIMENS,
+        "Positive": CUMULATIVE_POSITIVE_TEST_SPECIMENS,
     }
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
