@@ -43,3 +43,9 @@ CUMULATIVE_CASES_PEOPLE: CMU = CMU(
     measurement="cumulative",
     unit="people",
 )
+
+CUMULATIVE_DEATHS_PEOPLE: CMU = CMU(
+    category="deaths",
+    measurement="cumulative",
+    unit="people",
+)

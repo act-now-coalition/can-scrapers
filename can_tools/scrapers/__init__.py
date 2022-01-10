@@ -1,5 +1,11 @@
 from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.nytimes.nyt_cases_deaths import (
+    NYTimesState,
+    NYTimesCounty,
+    NYTimesNation,
+)
+
 from can_tools.scrapers.official.AL.al_vaccine import (
     ALCountyVaccine,
     ALCountyVaccineSex,
@@ -55,6 +61,9 @@ from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
 from can_tools.scrapers.official.federal.HHS.facility import (
     HHSReportedPatientImpactHospitalCapacityFacility,
 )
+
+from can_tools.scrapers.official.federal.HHS.hhs_state_testing import HHSTestingState
+
 from can_tools.scrapers.official.federal.HHS.hhs_state import (
     HHSReportedPatientImpactHospitalCapacityState,
 )

@@ -36,7 +36,9 @@ def all_subclasses(cls):
 
 
 def non_abc_subclasses(cls):
-    out = list(x for x in all_subclasses(cls) if not inspect.isabstract(x))
+    out = list(
+        x for x in all_subclasses(cls) if not inspect.isabstract(x) and x.autodag
+    )
 
     # need to specifically remove some classes :(
     from can_tools.scrapers.official.base import TableauDashboard
