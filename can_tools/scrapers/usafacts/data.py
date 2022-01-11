@@ -38,7 +38,7 @@ class USAFactsBase(FederalDashboard):
 
     def fetch(self) -> pd.DataFrame:
         req = Request(BASEURL + self.filename, headers={"User-Agent": "Mozilla/5.0"})
-        return pd.read_csv(urlopen(req)).head(50)
+        return pd.read_csv(urlopen(req))
 
     def normalize(self, data: Any) -> pd.DataFrame:
         # Make lowercase so they can't change capitalization on us
