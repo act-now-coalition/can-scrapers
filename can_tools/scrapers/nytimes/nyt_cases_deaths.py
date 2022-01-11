@@ -244,6 +244,7 @@ def _calculate_county_adjustments(
     # the backfilled cases count.
     return (cases_on_date / cases_on_date.sum() * backfilled_cases).round().to_dict()
 
+
 def remove_ma_county_zeroes_data(
     data: pd.DataFrame,
     county_reporting_stopped_date="2020-08-11",
