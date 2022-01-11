@@ -121,16 +121,6 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
         "deaths": CUMULATIVE_DEATHS_PEOPLE,
     }
 
-    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        # All the files appear to be updated at the same time.
-        # Use the national file for cache checking since it's the smallest
-        ETagCacheMixin.initialize_cache(
-            self,
-            cache_url=NYTIMES_RAW_BASE_URL + "us.csv",
-            cache_file=self.cache_file,
-        )
-        super().__init__(execution_dt=execution_dt)
-
     def fetch(self) -> pd.DataFrame:
         data = []
         for location_type, file in self.file_slugs.items():
