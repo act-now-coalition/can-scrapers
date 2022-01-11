@@ -108,9 +108,13 @@ class NYTimesCasesDeaths(FederalDashboard):
 
     has_location = True
     provider: str = "nyt"
-    location_type = ""  # multiple location types
+    location_type = ""  # multiple location types, so we identify the type with a column
     cache_file = "nyt_cases_deaths.txt"
-    file_slugs = ("us-counties.csv", "us-states.csv", "us.csv")
+    file_slugs = {
+        "county": "us-counties.csv",
+        "state": "us-states.csv",
+        "nation": "us.csv",
+    }
 
     variables = {
         "cases": CUMULATIVE_CASES_PEOPLE,
@@ -127,8 +131,10 @@ class NYTimesCasesDeaths(FederalDashboard):
 
     def fetch(self) -> pd.DataFrame:
         data = []
-        for file in self.file_slugs:
-            location = pd.read_csv(NYTIMES_RAW_BASE_URL + file, dtype={"fips": str})
+        for location_type, file in self.file_slugs.items():
+            location = pd.read_csv(
+                NYTIMES_RAW_BASE_URL + file, dtype={"fips": str}
+            ).assign(location_type=location_type)
             # Nation-level file does not have FIPS column, so create one
             if file == "us.csv":
                 location = location.assign(fips=0)
@@ -138,17 +144,22 @@ class NYTimesCasesDeaths(FederalDashboard):
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         data = remove_county_backfilled_cases(data, COUNTY_BACKFILLED_CASES)
         data = remove_state_backfilled_cases(data, STATE_BACKFILLED_CASES)
+        data = remove_ma_county_zeroes_data(data)
         return (
             # Remove records with no FIPS codes
             data.replace("nan", nan)
-            .loc[~data["fips"].isna()]
+            .loc[~data["fips"].isna(), :]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_column="fips",
                 date_column="date",
             )
             .assign(location=lambda row: pd.to_numeric(row["location"]))
-            .pipe(self._reshape_variables, variable_map=self.variables)
+            .pipe(
+                self._reshape_variables,
+                variable_map=self.variables,
+                id_vars=["location_type"],
+            )
             # two Alaska FIPS not in our location csv
             .query("location not in [2997, 2998]")
         )
@@ -230,3 +241,32 @@ def _calculate_county_adjustments(
     # For states with more counties, rounding could lead to the sum of the counties diverging from
     # the backfilled cases count.
     return (cases_on_date / cases_on_date.sum() * backfilled_cases).round().to_dict()
+
+def remove_ma_county_zeroes_data(
+    data: pd.DataFrame,
+    county_reporting_stopped_date="2020-08-11",
+    county_reporting_restart_date="2020-08-18",
+):
+    """Removes county data for mass where cases are not increasing due to data reporting change.
+    Massachussetts stopped reporting county case data after 8/11.  This code removes data for those
+    days, treating the data as missing rather than a count of 0.
+    Args:
+        data: Data to clean up.
+        county_reporting_stopped_date: Date to start checking for no case count increases.
+        county_reporting_restart_date: Date that MA county reporting started up again.
+    Returns: Data with Mass county data properly cleaned up.
+    """
+    # Sorting on fips and date to ensure the diff is applied in ascending date order below.
+    data = data.sort_values(["fips", "date"])
+
+    is_county = data["location_type"] == "county"
+    is_ma = data["state"] == "MA"
+    is_during_reporting_lull = data["date"].between(
+        county_reporting_stopped_date, county_reporting_restart_date
+    )
+    is_ma_county_after_reporting = is_county & is_ma & is_during_reporting_lull
+    ma_county_data = data.loc[is_ma_county_after_reporting]
+    cases_to_remove = ma_county_data.groupby("fips")["cases"].diff() == 0
+    return pd.concat(
+        [data.loc[~is_ma_county_after_reporting], ma_county_data.loc[~cases_to_remove]]
+    )
