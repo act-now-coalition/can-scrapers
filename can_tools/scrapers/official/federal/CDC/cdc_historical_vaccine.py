@@ -3,7 +3,7 @@ from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 
 
-class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
+class CDCHistoricalCountyVaccine(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
     source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-County/8xkx-amqh"
@@ -14,6 +14,7 @@ class CDCCountyVaccine2(FederalDashboard, ETagCacheMixin):
     variables = {
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
+        "Booster_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     # Send URL and filename that Mixin will use to check the etag
