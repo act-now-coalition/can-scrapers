@@ -102,17 +102,15 @@ STATE_BACKFILLED_CASES = [
 ]
 
 
-class NYTimesBase(FederalDashboard):
+class NYTimesCasesDeaths(FederalDashboard):
     source_name = "The New York Times"
     source = "https://github.com/nytimes/covid-19-data"
 
     has_location = True
     provider: str = "nyt"
-    location_type: str
-    fetch_filename: str
-    cache_file: str
-    # exclude base class from flow generation and tests
-    autodag = False
+    location_type = ""  # multiple location types
+    cache_file = "nyt_cases_deaths.txt"
+    file_slugs = ("us-counties.csv", "us-states.csv", "us.csv")
 
     variables = {
         "cases": CUMULATIVE_CASES_PEOPLE,
@@ -122,20 +120,28 @@ class NYTimesBase(FederalDashboard):
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
             self,
-            cache_url=NYTIMES_RAW_BASE_URL + self.fetch_filename,
+            cache_url=NYTIMES_RAW_BASE_URL + "us-counties.csv",
             cache_file=self.cache_file,
         )
         super().__init__(execution_dt=execution_dt)
 
     def fetch(self) -> pd.DataFrame:
-        return pd.read_csv(
-            NYTIMES_RAW_BASE_URL + self.fetch_filename, dtype={"fips": str}
-        )
+        data = []
+        for file in self.file_slugs:
+            location = pd.read_csv(NYTIMES_RAW_BASE_URL + file, dtype={"fips": str})
+            # Nation-level file does not have FIPS column, so create one
+            if file == "us.csv":
+                location = location.assign(fips=0)
+            data.append(location)
+        return pd.concat(data)
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = remove_county_backfilled_cases(data, COUNTY_BACKFILLED_CASES)
+        data = remove_state_backfilled_cases(data, STATE_BACKFILLED_CASES)
         return (
+            # Remove records with no FIPS codes
             data.replace("nan", nan)
-            .dropna()
+            .loc[~data["fips"].isna()]
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_column="fips",
@@ -145,40 +151,6 @@ class NYTimesBase(FederalDashboard):
             .pipe(self._reshape_variables, variable_map=self.variables)
             # two Alaska FIPS not in our location csv
             .query("location not in [2997, 2998]")
-        )
-
-
-class NYTimesCounty(NYTimesBase, ETagCacheMixin):
-    autodag = True
-    location_type = "county"
-    fetch_filename = "us-counties.csv"
-    cache_file = "nytimes_counties.txt"
-
-    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        data = remove_county_backfilled_cases(data, COUNTY_BACKFILLED_CASES)
-        return super().normalize(data)
-
-
-class NYTimesState(NYTimesBase, ETagCacheMixin):
-    autodag = True
-    location_type = "state"
-    fetch_filename = "us-states.csv"
-    cache_file = "nytimes_states.txt"
-
-    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        data = remove_state_backfilled_cases(data, STATE_BACKFILLED_CASES)
-        return super().normalize(data)
-
-
-class NYTimesNation(NYTimesBase, ETagCacheMixin):
-    autodag = True
-    location_type = "nation"
-    fetch_filename = "us.csv"
-    cache_file = "nytimes_nation.txt"
-
-    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        return data.assign(location=0, dt=lambda row: row["date"]).pipe(
-            self._reshape_variables, variable_map=self.variables
         )
 
 

@@ -1,10 +1,6 @@
 from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
-from can_tools.scrapers.nytimes.nyt_cases_deaths import (
-    NYTimesState,
-    NYTimesCounty,
-    NYTimesNation,
-)
+from can_tools.scrapers.nytimes.nyt_cases_deaths import NYTimesCasesDeaths
 
 from can_tools.scrapers.official.AL.al_vaccine import (
     ALCountyVaccine,
