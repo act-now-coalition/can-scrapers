@@ -102,7 +102,7 @@ STATE_BACKFILLED_CASES = [
 ]
 
 
-class NYTimesCasesDeaths(FederalDashboard):
+class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
     source_name = "The New York Times"
     source = "https://github.com/nytimes/covid-19-data"
 
@@ -122,9 +122,11 @@ class NYTimesCasesDeaths(FederalDashboard):
     }
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
+        # All the files appear to be updated at the same time.
+        # Use the national file for cache checking since it's the smallest
         ETagCacheMixin.initialize_cache(
             self,
-            cache_url=NYTIMES_RAW_BASE_URL + "us-counties.csv",
+            cache_url=NYTIMES_RAW_BASE_URL + "us.csv",
             cache_file=self.cache_file,
         )
         super().__init__(execution_dt=execution_dt)
