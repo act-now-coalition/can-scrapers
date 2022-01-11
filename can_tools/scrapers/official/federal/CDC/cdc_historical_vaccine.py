@@ -14,7 +14,7 @@ class CDCHistoricalCountyVaccine(FederalDashboard, ETagCacheMixin):
     variables = {
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
-        "Booster_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE
+        "Booster_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     # Send URL and filename that Mixin will use to check the etag
