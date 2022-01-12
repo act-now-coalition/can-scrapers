@@ -1516,7 +1516,7 @@ iso1:us#iso2:us-nd#fips:38007,38007,38,38,Billings,1148.5275,47.007046,-103.3640
 iso1:us#iso2:us-ne#fips:31003,31003,31,31,Antelope,857.18585,42.183223999999996,-98.05804,Antelope County,county
 iso1:us#iso2:us-mo#fips:29073,29073,29,29,Gasconade,519.0224599999999,38.441179999999996,-91.50578,Gasconade County,county
 iso1:us#iso2:us-ky#fips:21031,21031,21,21,Butler,426.10602,37.207012,-86.68247,Butler County,county
-iso1:us#iso2:us-vi#fips:780120,78020,78,78,St. John Island,19.691292,18.330435,-64.73526,St. John Island,county
+iso1:us#iso2:us-vi#fips:78020,78020,78,78,St. John Island,19.691292,18.330435,-64.73526,St. John Island,county
 iso1:us#iso2:us-wy#fips:56005,56005,56,56,Campbell,4802.2285,44.192,-105.51701000000001,Campbell County,county
 iso1:us#iso2:us-ga#fips:13211,13211,13,13,Morgan,347.4152,33.598694,-83.49943499999999,Morgan County,county
 iso1:us#iso2:us-ar#fips:05037,5037,5,5,Cross,616.4029,35.28569,-90.76398499999999,Cross County,county
