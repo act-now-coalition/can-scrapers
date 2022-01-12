@@ -1,7 +1,7 @@
 import pandas as pd
 from numpy import nan
 from typing import List, Tuple, Dict
-from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
+from can_tools.scrapers.official.base import FederalDashboard
 
 from can_tools.scrapers.variables import (
     CUMULATIVE_CASES_PEOPLE,
@@ -102,14 +102,13 @@ STATE_BACKFILLED_CASES = [
 ]
 
 
-class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
+class NYTimesCasesDeaths(FederalDashboard):
     source_name = "The New York Times"
     source = "https://github.com/nytimes/covid-19-data"
 
     has_location = True
     provider: str = "nyt"
     location_type = ""  # multiple location types, so we identify the type with a column
-    cache_file = "nyt_cases_deaths.txt"
     file_slugs = {
         "county": "us-counties.csv",
         "state": "us-states.csv",
