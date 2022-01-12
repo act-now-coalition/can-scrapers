@@ -27,7 +27,7 @@ class CDCStateVaccine(FederalDashboard):
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
         "Doses_Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
-        "Additional_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE
+        "additional_doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE
     }
 
     def fetch(self, test=False):
