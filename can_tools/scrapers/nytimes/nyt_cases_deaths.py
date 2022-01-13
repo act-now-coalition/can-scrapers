@@ -152,7 +152,10 @@ class NYTimesCasesDeaths(FederalDashboard):
                 id_vars=["location_type"],
             )
             # two Alaska FIPS not in our location csv
-            .query("location not in [2997, 2998]")
+            # The location 78020 (St. John Island, VI) caused problems in the pipeline.
+            # It was being assigned a location id "iso1:us#iso2:us-vi#fips:780120" (instead of "iso1:us#iso2:us-vi#fips:78020" with the correct FIPS)
+            # which caused the update-and-promote-datasets to fail. Since we do not surface any data for VI, we just block the location entirely.
+            .query("location not in [2997, 2998, 78020]")
         )
 
 
