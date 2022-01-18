@@ -37,7 +37,7 @@ def all_subclasses(cls):
 
 def scrapers_for_flow(cls):
     return list(
-        x for x in all_subclasses(cls) if not inspect.isabstract(x) and cls.autodag
+        x for x in all_subclasses(cls) if not inspect.isabstract(x) and x.autodag
     )
 
 
