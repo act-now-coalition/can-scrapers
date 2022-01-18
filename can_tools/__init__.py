@@ -36,9 +36,9 @@ def all_subclasses(cls):
 
 
 def scrapers_for_flow(cls):
-    return list(x for x in all_subclasses(cls) if not inspect.isabstract(x) and cls.autodag)
+    return list(
+        x for x in all_subclasses(cls) if not inspect.isabstract(x) and cls.autodag
+    )
 
 
-ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = scrapers_for_flow(
-    scrapers.DatasetBase
-)
+ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = scrapers_for_flow(scrapers.DatasetBase)

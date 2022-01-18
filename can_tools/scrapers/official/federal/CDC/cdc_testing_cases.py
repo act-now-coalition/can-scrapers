@@ -11,13 +11,14 @@ from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 # in the future
 SODA_API_RESPONSE_LIMIT = 20000000
 
+
 class CDCTestingBase(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
     source_name = "Centers for Disease Control and Prevention"
     # Do not create a flow for this scraper, only the subcalasses
     autodag = False
-    
+
     cache_file: str
     fetch_url: str
     provider: str

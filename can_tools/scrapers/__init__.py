@@ -39,7 +39,8 @@ from can_tools.scrapers.official.DC.dc_vaccines import (
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import (
-    CDCHistoricalTestingDataset, CDCOriginallyPostedTestingDataset
+    CDCHistoricalTestingDataset,
+    CDCOriginallyPostedTestingDataset,
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
