@@ -11,18 +11,17 @@ from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 # in the future
 SODA_API_RESPONSE_LIMIT = 20000000
 
-
-class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
+class CDCTestingBase(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
-    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
     source_name = "Centers for Disease Control and Prevention"
-    fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
-
-    # We used to also collect CDC testing data via the CDCCovidDataTracker class.
-    # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
-    # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
-    provider = "cdc2"
+    # Do not create a flow for this scraper, only the subcalasses
+    autodag = False
+    
+    cache_file: str
+    fetch_url: str
+    provider: str
+    date_column: str
 
     # SODA API stream has different variable names than the CSV and online dataset -- but the columns appear to be the same.
     variables = {
@@ -39,7 +38,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
     # Send URL and filename that Mixin will use to check the etag
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
-            self, cache_url=self.fetch_url, cache_file="cdc_historical_testing.txt"
+            self, cache_url=self.fetch_url, cache_file=self.cache_file
         )
         super().__init__(execution_dt=execution_dt)
 
@@ -47,7 +46,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
         # select only the columns we care about in order to speed up query
         data = pd.read_json(
             f"{self.fetch_url}?$limit={SODA_API_RESPONSE_LIMIT}"
-            "&$select=fips_code,date,cases_per_100k_7_day_count,percent_test_results_reported"
+            f"&$select=fips_code,{self.date_column},cases_per_100k_7_day_count,percent_test_results_reported"
         )
         if len(data) == SODA_API_RESPONSE_LIMIT:
             raise ValueError(
@@ -70,7 +69,7 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
             .pipe(
                 self._rename_or_add_date_and_location,
                 location_column="fips_code",
-                date_column="date",
+                date_column=self.date_column,
                 locations_to_drop=[2066, 2063, 72888, 72999],
             ).pipe(self._reshape_variables, variable_map=self.variables)
         )
@@ -82,3 +81,28 @@ class CDCHistoricalTestingDataset(FederalDashboard, ETagCacheMixin):
         # see for context: https://trello.com/c/9xHrKqo4/137-duplicates-in-cdc-testing-dataset-causing-scraper-to-fail
         group_columns = [col for col in data.columns if col != "value"]
         return data.groupby(group_columns).agg({"value": "last"}).reset_index()
+
+
+class CDCHistoricalTestingDataset(CDCTestingBase):
+    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
+    fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
+    date_column = "date"
+    cache_file = "cdc_historical_testing.txt"
+    autodag = True
+
+    # We used to also collect CDC testing data via the CDCCovidDataTracker class.
+    # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
+    # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
+    provider = "cdc2"
+
+
+class CDCOriginallyPostedTestingDataset(CDCTestingBase):
+    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/8396-v7yb"
+    fetch_url = "https://data.cdc.gov/resource/8396-v7yb.json"
+    date_column = "report_date"
+    cache_file = "cdc_originally_posted_testing.txt"
+    autodag = True
+
+    # Getting a little loose with the definition of provider here.
+    # This can't be cdc or cdc2 because it will conflict with the rows from the other CDC testing scrapers.
+    provider = "cdc_originally_posted"

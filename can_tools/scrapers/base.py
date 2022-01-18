@@ -129,7 +129,7 @@ class DatasetBase(ABC):
     Attributes
     ----------
     autodag: bool = True
-        Whether an airflow dag should be automatically generated for this class
+        Whether a Prefect flow should be automatically generated for this class
 
     data_type: str = "general"
         The type of data for this scraper. This is often set to "covid"
