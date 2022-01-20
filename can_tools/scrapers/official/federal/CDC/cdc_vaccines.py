@@ -31,7 +31,9 @@ class CDCStateVaccine(FederalDashboard):
     }
 
     def fetch(self, test=False):
-        return pd.read_csv("https://data.cdc.gov/api/views/unsk-b7fc/rows.csv?accessType=DOWNLOAD")
+        return pd.read_csv(
+            "https://data.cdc.gov/api/views/unsk-b7fc/rows.csv?accessType=DOWNLOAD"
+        )
 
     def _filter_rows(self, df):
         state_abbr_list = [x.abbr for x in ALL_STATES_PLUS_TERRITORIES]
