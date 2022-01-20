@@ -18,35 +18,26 @@ def _lookup(location):
 class CDCStateVaccine(FederalDashboard):
     has_location = True
     location_type = "state"
-    source = "https://covid.cdc.gov/covid-data-tracker/#vaccinations"
+    source = "https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
 
     variables = {
-        "Doses_Distributed": variables.TOTAL_VACCINE_DISTRIBUTED,
+        "Distributed": variables.TOTAL_VACCINE_DISTRIBUTED,
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
-        "Doses_Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
-        "additional_doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
+        "Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
+        "Additional_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     def fetch(self, test=False):
-        fetcher_url = (
-            "https://covid.cdc.gov/covid-data-tracker/COVIDData/"
-            "getAjaxData?id=vaccination_data"
-        )
-        response = requests.get(fetcher_url)
-
-        return response.json()
+        return pd.read_csv("https://data.cdc.gov/api/views/unsk-b7fc/rows.csv?accessType=DOWNLOAD")
 
     def _filter_rows(self, df):
         state_abbr_list = [x.abbr for x in ALL_STATES_PLUS_TERRITORIES]
         return df.loc[df["Location"].isin(state_abbr_list), :]
 
-    def normalize(self, data):
-        # Read data in
-        df = pd.DataFrame.from_records(data["vaccination_data"])
-
+    def normalize(self, df):
         # Set date
         df["dt"] = pd.to_datetime(df["Date"])
 

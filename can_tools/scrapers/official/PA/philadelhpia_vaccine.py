@@ -29,17 +29,17 @@ class PhiladelphiaVaccine(TableauDashboard):
 
     def fetch(self) -> pd.DataFrame:
         # create a dict of the 2 dose type tables
-        # which are titled "Residents Percentage New" and "... Full"
+        # which are titled "Residents Percentage First" and "... Full"
         return {
             dose_type: self.get_tableau_view(dose_type=dose_type)[
-                self.data_tableau_table.format(dose_type=dose_type)
+                self.data_tableau_table.format(dose_type=table_name)
             ]
-            for dose_type in ["New", "Full"]
+            for dose_type, table_name in {"First": "New", "Full": "Full"}.items()
         }
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         dataframes = []
-        for dose_type in ["New", "Full"]:
+        for dose_type in ["First", "Full"]:
             dose_data = (
                 data[dose_type]
                 .rename(
