@@ -1,4 +1,3 @@
-from numpy import var
 import us
 
 from can_tools.scrapers.official.base import ArcGIS
