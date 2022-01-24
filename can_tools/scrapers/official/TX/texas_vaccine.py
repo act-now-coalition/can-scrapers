@@ -148,10 +148,10 @@ class TXVaccineCountyAge(TexasVaccineParent):
             # Excel automatically parses some of the string entries as dates, and
             # read excel does not seem to have a way to fix this.
             # This is not a good fix, but it's the only way I could find to convert the
-            # date values back into strings.S
+            # date values back into strings.
             # See https://github.com/pandas-dev/pandas/issues/39898 for explanation
-            "2021-05-11 00:00:00": "5-11",
-            "2021-12-15 00:00:00": "12-15",
+            "2022-05-11 00:00:00": "5-11",
+            "2022-12-15 00:00:00": "12-15",
             "80+": "80_plus",
             "Unknown": "unknown",
             "Total": "all",
