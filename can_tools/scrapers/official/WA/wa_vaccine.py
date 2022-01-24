@@ -33,14 +33,14 @@ class WashingtonVaccine(MicrosoftBIDashboard):
             sel = "#dnn_ctr34282_HtmlModule_lblContent div"
             iframe_div = await page.waitForSelector(sel)
             iframe = await page.J(sel)
-            iframe = await page.evaluate(" x => x.outerHTML", iframe)
+            iframe = await page.evaluate("x => x.outerHTML", iframe)
             return {"src": re.findall(r'pbi-resize-src="(.*?)"', iframe)[0]}
 
     def get_dashboard_iframe(self):
         return asyncio.get_event_loop().run_until_complete(self._get_from_browser())
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):
-        "Build body request"
+        """Build body request"""
         body = {}
 
         # Set version
