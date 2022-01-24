@@ -1,3 +1,4 @@
+from numpy import var
 import us
 
 from can_tools.scrapers.official.base import ArcGIS
@@ -11,13 +12,13 @@ class AlaskaCountyVaccine(ArcGIS):
     source_name = (
         "Alaska Department of Health and Social Services Coronavirus Response Hub"
     )
-    service = "Vaccine_Dashboard_Feature_Layer"
+    service = "Vaccine_Dashboard_Map_V2"
     ARCGIS_ID = "WzFsmainVTuD5KML"
     state_fips = int(us.states.lookup("Alaska").fips)
 
     variables = {
-        "1+ Dose": variables.INITIATING_VACCINATIONS_ALL,
-        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
+        "FDA": variables.INITIATING_VACCINATIONS_ALL,
+        "SDA": variables.FULLY_VACCINATED_ALL,
     }
 
     def fetch(self):
@@ -26,18 +27,17 @@ class AlaskaCountyVaccine(ArcGIS):
     def normalize(self, data):
         df = self.arcgis_jsons_to_df(data)
 
-        rename = {"Area": "location_name", "Vax_Status": "variable", "Counts": "value"}
-
         out = (
-            df.loc[df["Age_Group"] == "All Ages"]
-            .loc[:, list(rename.keys())]
-            .rename(columns=rename)
+            # the data entries are repeated with different "Vax_Status values"
+            # so we just choose one slice to use, as they're all the same.
+            df.loc[(df["Age_Group"] == "All Ages") & (df["Vax_Status"] == "1+ Dose")]
+            .loc[:, ["Name", "FDA", "SDA"]]
             .pipe(
                 self._rename_or_add_date_and_location,
-                location_name_column="location_name",
+                location_name_column="Name",
                 timezone="US/Alaska",
             )
-            .pipe(self.extract_CMU, cmu=self.variables)
+            .pipe(self._reshape_variables, variable_map=self.variables)
             .assign(
                 location_name=lambda x: x["location_name"]
                 .str.replace("And", "and")
