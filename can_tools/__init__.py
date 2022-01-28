@@ -27,6 +27,9 @@ import inspect
 from typing import List, Type
 
 from can_tools import scrapers
+from can_tools.scrapers.official.base import TableauDashboard
+from can_tools.scrapers.official.PA.pa_vaccines import PennsylvaniaVaccineDemographics
+from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import CDCTestingBase
 
 
 def all_subclasses(cls):
@@ -36,8 +39,11 @@ def all_subclasses(cls):
 
 
 def scrapers_for_flow(cls):
+
+    blocked = [PennsylvaniaVaccineDemographics, TableauDashboard, CDCTestingBase]
+
     return list(
-        x for x in all_subclasses(cls) if not inspect.isabstract(x) and x.autodag
+        x for x in all_subclasses(cls) if not inspect.isabstract(x) and x not in blocked
     )
 
 

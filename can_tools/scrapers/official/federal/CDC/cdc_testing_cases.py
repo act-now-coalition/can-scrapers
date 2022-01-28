@@ -16,8 +16,6 @@ class CDCTestingBase(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
     source_name = "Centers for Disease Control and Prevention"
-    # Do not create a flow for this scraper, only the subcalasses
-    autodag = False
 
     cache_file: str
     fetch_url: str
@@ -89,7 +87,6 @@ class CDCHistoricalTestingDataset(CDCTestingBase):
     fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
     date_column = "date"
     cache_file = "cdc_historical_testing.txt"
-    autodag = True
 
     # We used to also collect CDC testing data via the CDCCovidDataTracker class.
     # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
@@ -102,7 +99,6 @@ class CDCOriginallyPostedTestingDataset(CDCTestingBase):
     fetch_url = "https://data.cdc.gov/resource/8396-v7yb.json"
     date_column = "report_date"
     cache_file = "cdc_originally_posted_testing.txt"
-    autodag = True
 
     # Getting a little loose with the definition of provider here.
     # This can't be cdc or cdc2 because it will conflict with the rows from the other CDC testing scrapers.
