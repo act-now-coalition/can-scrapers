@@ -111,7 +111,11 @@ class GeorgiaCountyVaccineSex(GeorgiaCountyVaccineAge):
 class GeorgiaCountyVaccineEthnicity(GeorgiaCountyVaccineAge):
     demographic = "ETHNICTY"
     sheet_name = "ETHNICITY_BY_COUNTY"
-    demographic_formatting = {"Hispanic": "hispanic", "Non-Hispanic": "non-hispanic"}
+    demographic_formatting = {
+        "Hispanic": "hispanic",
+        "Non-Hispanic": "non-hispanic",
+        "Unknown": "unknown",
+    }
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
         data = super().normalize(data)

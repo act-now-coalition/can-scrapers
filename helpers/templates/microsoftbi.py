@@ -28,7 +28,7 @@ class {SCRAPER NAME}(MicrosoftBIDashboard):
     powerbi_url = {POWER BI URL}
 
     def construct_body(self, resource_key, ds_id, model_id, report_id):
-        "Build body request"
+        """Build body request"""
         body = {}
 
         # Set version
