@@ -729,8 +729,6 @@ class TableauDashboard(StateDashboard, ABC):
     data_tableau_table: str
     location_name_col: str
     cmus: Dict[str, CMU]
-    # Do not create flow for this scraper
-    autodag = False
 
     def fetch(self) -> pd.DataFrame:
         return self.get_tableau_view()[self.data_tableau_table]

@@ -178,8 +178,6 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
     """
 
     has_location = False
-    # Do not create flow for this scraper
-    autodag = False
     location_type = ""
     state_fips = int(us.states.lookup("Pennsylvania").fips)
 
