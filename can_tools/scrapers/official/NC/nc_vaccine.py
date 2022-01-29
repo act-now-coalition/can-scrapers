@@ -24,6 +24,7 @@ class NCVaccine(TableauDashboard):
     cmus = {
         "AGG(Calc.At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
         "AGG(Calc.Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
+        "AGG(Calc.Additional/Booster Dose)-alias": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     def fetch(self):
