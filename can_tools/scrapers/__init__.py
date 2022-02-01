@@ -119,7 +119,7 @@ from can_tools.scrapers.official.MT.mt_vaccinations import (
 )
 
 from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemographics
-from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
+from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine, NCVaccineState
 from can_tools.scrapers.official.ND.nd_vaccines import NDVaccineCounty
 
 # 12/02/21: NE has made their server private, so we can no longer access the data driving the NebraskaCases scraper
