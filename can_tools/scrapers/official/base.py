@@ -28,7 +28,7 @@ from can_tools.models import (
     TemptableOfficialNoLocation,
     build_insert_from_temp,
 )
-from can_tools.scrapers.base import CMU, DatasetBase
+from can_tools.scrapers.base import CMU, DatasetBase, InsertedZeroRowsError
 from can_tools.scrapers.util import requests_retry_session
 
 _logger = logging.getLogger(__name__)
@@ -120,6 +120,12 @@ class StateDashboard(DatasetBase, ABC):
                 sess.commit()
                 rows_deleted = res_delete.rowcount
                 print("Removed the {} rows from temp table".format(rows_deleted))
+            
+        if rows_inserted == 0:
+            raise InsertedZeroRowsError(
+                "_put_exec() method completed successfully "
+                "but inserted zero rows into database."
+            )
 
         return worked, rows_inserted, rows_deleted
 
