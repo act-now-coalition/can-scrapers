@@ -120,7 +120,7 @@ class StateDashboard(DatasetBase, ABC):
                 sess.commit()
                 rows_deleted = res_delete.rowcount
                 print("Removed the {} rows from temp table".format(rows_deleted))
-            
+
         if rows_inserted == 0:
             raise InsertedZeroRowsError(
                 "_put_exec() method completed successfully "
