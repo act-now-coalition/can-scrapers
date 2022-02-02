@@ -29,7 +29,7 @@ def export_to_csv(connstr: str):
 
     return True
 
-# NOTE(Sean): timeout this task after 30 (1800 seconds) minutes because sometimes
+# NOTE(Sean): Kill this task after 30 minutes (1800 seconds) because sometimes
 # it hangs, leaving the flow running indefinitely.
 @task(
     max_retries=3,
