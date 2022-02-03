@@ -29,12 +29,14 @@ def export_to_csv(connstr: str):
 
     return True
 
-
+# NOTE(Sean): Kill this task after 30 minutes (1800 seconds) because sometimes
+# it hangs, leaving the flow running indefinitely.
 @task(
     max_retries=3,
     retry_delay=timedelta(minutes=1),
     nout=2,
     trigger=triggers.all_finished,
+    timeout=1800
 )
 def create_parquet(_success):
     ts = prefect.context.scheduled_start_time

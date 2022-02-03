@@ -117,6 +117,13 @@ class ValidationErrors(Exception):
         return out
 
 
+class InsertedZeroRowsError(Exception):
+    """Error raised when put() method inserts 0 rows into database"""
+
+    def __init__(self, info):
+        self.info = info
+
+
 def _get_base_path() -> Path:
     if "DATAPATH" in os.environ.keys():
         return Path(os.environ["DATAPATH"])
