@@ -121,7 +121,7 @@ class StateDashboard(DatasetBase, ABC):
                 rows_deleted = res_delete.rowcount
                 print("Removed the {} rows from temp table".format(rows_deleted))
 
-        if rows_inserted == 0:
+        if rows_inserted == 0 and df.shape[0] != 0:
             raise InsertedZeroRowsError(
                 "_put_exec() method completed successfully "
                 "but inserted zero rows into database."
