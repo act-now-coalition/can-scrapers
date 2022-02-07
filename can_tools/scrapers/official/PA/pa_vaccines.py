@@ -60,6 +60,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
                                                 "FullyCovered",
                                                 "total_vaccine_completed",
                                             ),
+                                            (
+                                                "c",
+                                                "AdditionalDose1",
+                                                "total_vaccine_additional_dose",
+                                            ),
                                         ],
                                         [],
                                         [],
@@ -144,6 +149,11 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
             ),
             "total_vaccine_completed": CMU(
                 category="total_vaccine_completed",
+                measurement="cumulative",
+                unit="people",
+            ),
+            "total_vaccine_additional_dose": CMU(
+                category="total_vaccine_additional_dose",
                 measurement="cumulative",
                 unit="people",
             ),

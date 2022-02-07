@@ -4,6 +4,7 @@ import requests
 import us
 
 from can_tools.scrapers import variables
+from functools import reduce
 from can_tools.scrapers.official.base import MicrosoftBIDashboard
 from bs4 import BeautifulSoup
 
@@ -19,6 +20,7 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
+        "total_vaccine_additional_dose": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     def get_dashboard_iframe(self):
@@ -167,7 +169,7 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
 
         jsons = {}
         # Build post body
-        for dose in ["1 or more", "Completed"]:
+        for dose in ["1 or more", "Completed", "Additional dose"]:
             body = self.construct_body(ds_id, model_id, report_id, dose_type=dose)
             res = self.sess.post(url, json=body, headers=headers).json()
             jsons[dose] = res
@@ -175,14 +177,20 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
         return jsons
 
     def normalize(self, resjson: dict) -> pd.DataFrame:
-        init, complete = [
+        dose_dfs = [
             self._extract_dose_data(dose, data) for dose, data in resjson.items()
         ]
 
         # merge dose dataframes and multiply percentage * population to find cumulative values
-        df = init.merge(complete, on=["location_name", "pop_5_plus"], how="left")
+        df = reduce(
+            lambda left, right: pd.merge(
+                left, right, on=["location_name", "pop_5_plus"]
+            ),
+            dose_dfs,
+        )
         df["total_vaccine_initiated"] = df["1 or more"] * df["pop_5_plus"]
         df["total_vaccine_completed"] = df["Completed"] * df["pop_5_plus"]
+        df["total_vaccine_additional_dose"] = df["Additional dose"] * df["pop_5_plus"]
 
         out = self._reshape_variables(df, self.variables)
         out["dt"] = self._retrieve_dt("US/Eastern")
