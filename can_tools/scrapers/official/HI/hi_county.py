@@ -7,9 +7,9 @@ import us
 from bs4 import BeautifulSoup
 
 from can_tools.scrapers import variables as v
-from can_tools.scrapers.base import CMU
-from can_tools.scrapers.official.base import TableauDashboard, TableauMapClick
+from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers.util import requests_retry_session
+from tableauscraper import TableauScraper
 
 
 class HawaiiVaccineCounty(TableauDashboard):
@@ -21,37 +21,47 @@ class HawaiiVaccineCounty(TableauDashboard):
     )
     location_type = "county"
     state_fips = int(us.states.lookup("Hawaii").fips)
-    baseurl = "https://public.tableau.com"
-    viewPath = "HawaiiCOVID-19-VaccinationDashboard3/VACCINESBYCOUNTY"
-    counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
-    data_tableau_table = "Updated County Progress"
+    fetch_url = "https://dohdocdeas.doh.hawaii.gov/t/DOCD/views/HawaiiCOVID-19-VaccinationDashboard/VACCINESBYCOUNTY"
 
     variables = {
-        "initiated": v.INITIATING_VACCINATIONS_ALL,
-        "completed": v.FULLY_VACCINATED_ALL,
+        "Initiating": v.INITIATING_VACCINATIONS_ALL,
+        "Completing": v.FULLY_VACCINATED_ALL,
+        "Received 3rd Dose": v.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
-    def normalize(self, data):
+    def fetch(self) -> pd.DataFrame:
+        engine = TableauScraper()
+        engine.loads(self.fetch_url)
+        workbook = engine.getWorkbook()
+        return workbook.getWorksheet("Updated County Progress").data
 
-        # population is total county population
-        df = (
-            data.rename(
-                columns={
-                    f"AGG(TOTAL 1st doses)-alias": "initiated",
-                    f"AGG(TOTAL 2nd doses)-alias": "completed",
-                    "County Clean-alias": "location_name",
-                }
-            ).loc[
-                :,
-                ["initiated", "completed", "location_name", "Measure Names-alias"],
-            ]
-            # The data is repeated twice (with different values of measure name alias)
-            # Slice the data to only get one instance of it
-            .query("`Measure Names-alias` != 'Initiating'")
+    def normalize(self, data):
+        cols = {
+            "County Clean-[sqlproxy.0gswhr41fpjgq51exsln71gujrps].[none:County Clean:nk]-value": "county",
+            "Measure Names-[sqlproxy.0gswhr41fpjgq51exsln71gujrps].[:Measure Names]-alias": "variable",
+            "SUM(Population)-[sqlproxy.0tmpcbc05kyg2t1axg02e1ca3s1e].[sum:Population:qk]-alias": "population",
+            "Measure Values-alias": "value",
+        }
+        return (
+            data.loc[:, list(cols.keys())]
+            .rename(columns=cols)
+            # entries with min(1) as the variable are duplicated, so remove them
+            .loc[lambda row: row["variable"] != "min(1)"]
+            .assign(
+                # calculate actual values by multiplying population * percent vaccinated
+                value=lambda row: (
+                    pd.to_numeric(row["value"].str.replace("%", "")) / 100
+                )
+                * row["population"],
+                vintage=self._retrieve_vintage(),
+            )
+            .pipe(
+                self._rename_or_add_date_and_location,
+                timezone="US/Hawaii",
+                location_name_column="county",
+            )
+            .pipe(self.extract_CMU, cmu=self.variables)
         )
-        out = self._reshape_variables(df, self.variables)
-        out["dt"] = self._retrieve_dt("US/Hawaii")
-        return out
 
     def get_filters(self):
         url = f"{self.baseurl}/views/{self.viewPath}"
