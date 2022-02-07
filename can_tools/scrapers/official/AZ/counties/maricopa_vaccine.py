@@ -42,9 +42,11 @@ class ArizonaMaricopaVaccine(CountyDashboard):
         # extract the and format script that contains the data/JSON
         raw_data = soup.find_all("script")
 
-        # if the page must re-direct more than once, find the next re-direct url
-        # re-call fn until found end page
-        if len(raw_data) == 0:
+        # The page may need to redirect multiple times before landing on the
+        # card with the actual data. Check if a redirect is necessary by checking
+        # the meta tag, and if so, re-call the function until the data is found.
+        refresh_tag = soup.find_all("meta", attrs={"http-equiv": "REFRESH"})
+        if refresh_tag:
             new_url = self._get_url(page)
             return self._get_json(new_url)
 

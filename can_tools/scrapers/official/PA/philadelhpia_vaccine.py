@@ -23,8 +23,9 @@ class PhiladelphiaVaccine(TableauDashboard):
     viewPath = "COVIDVaccineDashboard/COVID_Vaccine"
     data_tableau_table = "Residents Percentage {dose_type}"
     variables = {
-        "Residents Receiving At Least 1 Dose* ": variables.INITIATING_VACCINATIONS_ALL,
-        "Fully Vaccinated Residents*": variables.FULLY_VACCINATED_ALL,
+        "New": variables.INITIATING_VACCINATIONS_ALL,
+        "Full": variables.FULLY_VACCINATED_ALL,
+        "Booster": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
     def fetch(self) -> pd.DataFrame:
@@ -32,14 +33,14 @@ class PhiladelphiaVaccine(TableauDashboard):
         # which are titled "Residents Percentage First" and "... Full"
         return {
             dose_type: self.get_tableau_view(dose_type=dose_type)[
-                self.data_tableau_table.format(dose_type=table_name)
+                self.data_tableau_table.format(dose_type=dose_type)
             ]
-            for dose_type, table_name in {"First": "New", "Full": "Full"}.items()
+            for dose_type in ["New", "Full", "Booster"]
         }
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         dataframes = []
-        for dose_type in ["First", "Full"]:
+        for dose_type in ["New", "Full", "Booster"]:
             dose_data = (
                 data[dose_type]
                 .rename(
@@ -49,12 +50,11 @@ class PhiladelphiaVaccine(TableauDashboard):
                     }
                 )
                 .loc[:, ["value", "variable"]]
-                .query(
-                    "variable in"
-                    "['Residents Receiving At Least 1 Dose* ', 'Fully Vaccinated Residents*']"
-                )
+                # The 'Total' entry is sometimes preceded by whitespace, strip it away.
+                .loc[lambda row: row["variable"].str.replace(" ", "") == "Total"]
                 .assign(
                     location=42101,
+                    variable=dose_type,
                     value=lambda x: pd.to_numeric(x["value"].str.replace(",", "")),
                     vintage=self._retrieve_vintage(),
                 )
@@ -71,8 +71,12 @@ class PhiladelphiaVaccine(TableauDashboard):
             .drop(columns={"variable"})
             .reset_index(drop=True)
         )
-        # break scraper if both init and completed variables are not included in data
-        vars = {"total_vaccine_initiated", "total_vaccine_completed"}
+        # break scraper if all variables are not found
+        vars = {
+            "total_vaccine_initiated",
+            "total_vaccine_completed",
+            "total_vaccine_additional_dose",
+        }
         assert vars <= set(data["category"])
         return data
 

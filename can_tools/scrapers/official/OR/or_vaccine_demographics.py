@@ -52,7 +52,9 @@ class OregonVaccineRace(TableauDashboard):
         data = (
             pd.concat(data)
             .rename(columns=self.column_renames)
-            .query("value not in ['Suppressed', '50 or less', '10 or less']")
+            .query(
+                "value not in ['Suppressed', '50 or less', '10 or less', '100 or less']"
+            )
             .assign(
                 variable="total_vaccine_initiated",
                 value=lambda row: pd.to_numeric(
