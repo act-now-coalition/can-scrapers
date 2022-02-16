@@ -11,6 +11,7 @@ from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
+from services.prefect.flows.utils import skip_if_running_handler
 
 
 @task
@@ -92,7 +93,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     if schedule:
         sched = CronSchedule(f"{ix % 60} */4 * * *")
 
-    with Flow(cls.__name__, sched) as flow:
+    with Flow(cls.__name__, sched, state_handlers=[skip_if_running_handler]) as flow:
 
         # check if scraper has etag checking
         # if so and the data has been updated since the last check set new_data to True
