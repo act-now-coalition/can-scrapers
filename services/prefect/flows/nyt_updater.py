@@ -2,10 +2,16 @@ from prefect import Flow
 from prefect.schedules import CronSchedule
 
 from prefect.tasks.prefect import create_flow_run, wait_for_flow_run
+from prefect.utilities.notifications import slack_notifier
+from prefect.engine.state import Failed
 
 
 def init_updater_flow():
-    with Flow("NYTParquetUpdater", schedule=CronSchedule("30 6 * * *")) as flow:
+    with Flow(
+        "NYTParquetUpdater",
+        schedule=CronSchedule("30 6 * * *"),
+        state_handlers=[slack_notifier(only_states=[Failed])]  # notify on failure only,
+    ) as flow:
 
         # NYTimesCasesDeaths and UpdateParquetFiles flows must already be registered via
         # generated_flows.py and update_api_view.py
