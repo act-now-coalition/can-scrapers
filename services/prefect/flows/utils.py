@@ -7,8 +7,10 @@ def skip_if_running_handler(obj, old_state, new_state):
     
     see: https://github.com/PrefectHQ/prefect/discussions/5373
     """
-    
     logger = prefect.context.get("logger")
+    
+    # queries the graphql server to see if any instances of the same flow
+    # is already running, and if so, sets the flow state to Skipped
     if new_state.is_running():
         client = Client()
         query = """
