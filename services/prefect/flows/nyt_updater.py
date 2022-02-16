@@ -17,6 +17,8 @@ def init_updater_flow():
         parquet_flow = create_flow_run(
             flow_name="UpdateParquetFiles", project_name="can-scrape"
         )
+        wait_for_parquet = wait_for_flow_run(parquet_flow, raise_final_state=True)
+
         parquet_flow.set_upstream(wait_for_nyt)
 
     flow.register(project_name="can-scrape")
