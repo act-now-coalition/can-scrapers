@@ -17,7 +17,6 @@ def skip_if_running_handler(obj, old_state, new_state):
                 where: {_and: [{flow_id: {_eq: $flow_id}},
                 {state: {_eq: "Running"}}]}
                 limit: 1
-                offset: 1
               ) {
                 name
                 state
