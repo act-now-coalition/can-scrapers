@@ -7,7 +7,7 @@ def init_scheduled_nyt_updater_flow():
     """Flow to check the NYT source for new data, ingest the data, and update the parquet file.
 
     Flow runs every 30 minutes. If no new data is detected then UpdateParquetFiles is skipped.
-    If new data is detected, UpdateParquetFiles is executed.
+    This is the main updater responsible for updating and ingesting the NYT cases and deaths data.
 
     """
     with Flow(
