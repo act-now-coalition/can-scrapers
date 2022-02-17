@@ -23,7 +23,7 @@ def etag_caching_terminal_state_handler(
         if task_state.is_skipped():
             if getattr(task_state, "etag_skip_flag", False) is True:
                 return Skipped(
-                    "Setting final state to skipped due to reference task" 
+                    "Setting final state to skipped due to reference task"
                     "skipped with attribute etag_skip_flag = True"
                 )
     return state
