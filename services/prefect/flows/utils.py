@@ -15,10 +15,15 @@ def etag_caching_terminal_state_handler(
     run flows downstream of a scraper flow, depending on whether or not there is new data.
     This conditional logic is used in the NYTParquetUpdater flow in
     scheduled_nyt_and_parquet_updater.py.
+
+    For more info on terminal state handlers:
+        https://docs.prefect.io/core/concepts/flows.html#terminal-state-handlers
     """
 
     # look through all the flow's tasks to see if any we're skipped.
     # If so, and the etag_skip_flag attribute is True, set the final state of the flow to Skipped.
+    # etag_skip_flag is a custom flag passed to a task's skip signal during the etag cache checking process.
+    # Any tasks that normally finish with the Skipped state will not trigger this state handler.
     for task_state in reference_task_states:
         if task_state.is_skipped():
             if getattr(task_state, "etag_skip_flag", False) is True:
