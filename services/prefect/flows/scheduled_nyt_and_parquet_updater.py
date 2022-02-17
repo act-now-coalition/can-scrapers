@@ -1,9 +1,12 @@
 import requests
 from datetime import timedelta
 from prefect import Flow, task
-from prefect.tasks.secrets import PrefectSecret
+from prefect.engine.state import Failed
 from prefect.schedules import CronSchedule
+from prefect.tasks.secrets import PrefectSecret
+from prefect.utilities.notifications import slack_notifier
 from prefect.tasks.prefect import create_flow_run, wait_for_flow_run
+
 
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
@@ -20,7 +23,7 @@ def make_request(github_token):
         },
         data='{"ref": "main"}',
     )
-    response.raise_for_status()
+    response.raise_for_status()  # raise status in case of failure
 
 
 def trigger_data_model_flow():
@@ -41,7 +44,9 @@ def init_scheduled_nyt_updater_flow():
     This is the main updater responsible for updating and ingesting the NYT cases and deaths data.
     """
     with Flow(
-        "NYTParquetScheduledUpdater", schedule=CronSchedule("*/30 * * * *")
+        "NYTParquetScheduledUpdater", 
+        schedule=CronSchedule("*/30 * * * *"),
+        state_handlers=[slack_notifier(only_states=[Failed])]  # only alert us on failure
     ) as parent_flow:
 
         # Note that the below code relies on NYTimesCasesDeaths and UpdateParquetFiles flows
