@@ -21,7 +21,7 @@ def make_request(github_token):
     )
 
 def trigger_data_model_flow():
-    with flow("TriggerUpdateDatasets") as flow:
+    with Flow("TriggerUpdateDatasets") as flow:
         github_token=PrefectSecret("GITHUB_ACTION_PAT")
         make_request(github_token=github_token)
     flow.register("can-scrape")
@@ -40,19 +40,19 @@ def init_updater_flow():
         parquet_flow = create_flow_run(
             flow_name="UpdateParquetFiles", project_name="can-scrape"
         )
-        wait_for_parquet = wait_for_flow_run(parquet_flow, raise_final_state=True)
+        # wait_for_parquet = wait_for_flow_run(parquet_flow, raise_final_state=True)
 
         data_update_flow = create_flow_run(
             flow_name="TriggerUpdateDatasets", project_name="can-scrape"
         )
-        wait_for_data_update = wait_for_flow_run(data_update_flow, raise_final_state=True)
+        # wait_for_data_update = wait_for_flow_run(data_update_flow, raise_final_state=True)
 
         parquet_flow.set_upstream(wait_for_nyt)
-        data_update_flow.set_upstream(wait_for_parquet)
+        # data_update_flow.set_upstream(wait_for_parquet)
 
     flow.register(project_name="can-scrape")
 
 
 if __name__ == "__main__":
-    trigger_data_model_flow()
+    # trigger_data_model_flow()
     init_updater_flow()
