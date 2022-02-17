@@ -12,10 +12,7 @@ from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
-from services.prefect.flows.utils import (
-    ETAG_CACHE_SKIP_MESSAGE,
-    etag_caching_terminal_state_handler,
-)
+from services.prefect.flows.utils import etag_caching_terminal_state_handler
 
 
 @task
@@ -82,9 +79,10 @@ def initialize_sentry(sentry_dsn: str):
 @task
 def skip_cached_flow():
     # Set the task state to skipped.
-    # The flow's terminal state handler will see this state message
+    # The flow's terminal state handler will see etag_skip_flag
     # and will in turn set the final state of the flow to skipped.
-    skip_signal = signals.SKIP(ETAG_CACHE_SKIP_MESSAGE)
+    message = "No new source data. Skipping..."
+    skip_signal = signals.SKIP(dict(message=message, etag_skip_flag=True))
     raise skip_signal
 
 

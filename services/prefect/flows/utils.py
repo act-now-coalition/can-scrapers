@@ -2,15 +2,13 @@ from prefect import Flow
 from prefect.engine.state import Skipped, State
 from typing import Optional, Set
 
-ETAG_CACHE_SKIP_MESSAGE = "No new source data. Skipping..."
-
 
 def etag_caching_terminal_state_handler(
     flow: Flow,
     state: State,
     reference_task_states: Set[State],
 ) -> Optional[State]:
-    """Update the flow's final state if a reference task is skipped with a specific message.
+    """Update flow's final state to Skipped if a reference task is skipped with etag_skip_flag = True.
 
     This is used in conjunction with the skip_cached_flow() task to manually skip a
     flow if the Etag caching does not detect new data. This allows us to conditionally
@@ -20,12 +18,12 @@ def etag_caching_terminal_state_handler(
     """
 
     # look through all the flow's tasks to see if any we're skipped.
-    # If so, and the message matches, set the final state of the flow to Skipped.
+    # If so, and the etag_skip_flag attribute is True, set the final state of the flow to Skipped.
     for task_state in reference_task_states:
         if task_state.is_skipped():
-            if task_state.message == ETAG_CACHE_SKIP_MESSAGE:
+            if getattr(task_state, "etag_skip_flag", False) is True:
                 return Skipped(
-                    "Setting final state to skipped due to reference task skipped with message: "
-                    f"{task_state.message}"
+                    "Setting final state to skipped due to reference task" 
+                    "skipped with attribute etag_skip_flag = True"
                 )
     return state
