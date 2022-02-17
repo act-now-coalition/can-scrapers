@@ -1,6 +1,46 @@
-from prefect import Flow
+import prefect
+from prefect.client import Client
 from prefect.engine.state import Skipped, State
+from prefect import Flow
 from typing import Optional, Set
+
+
+def skip_if_running_handler(obj, old_state, new_state):
+    """State handler to skip flow if another instance is already in progress.
+    
+    see: https://github.com/PrefectHQ/prefect/discussions/5373
+    """
+    logger = prefect.context.get("logger")
+
+    # queries the graphql server to see if any instances of the same flow
+    # is already running, and if so, sets the flow state to Skipped
+    if new_state.is_running():
+        client = Client()
+        query = """
+            query($flow_id: uuid) {
+              flow_run(
+                where: {_and: [{flow_id: {_eq: $flow_id}},
+                {state: {_eq: "Running"}}]}
+                limit: 1
+              ) {
+                name
+                state
+                start_time
+              }
+            }
+        """
+        response = client.graphql(
+            query=query, variables=dict(flow_id=prefect.context.flow_id)
+        )
+        active_flow_runs = response["data"]["flow_run"]
+        if active_flow_runs:
+            message = (
+                "Flow already has a run in progress..."
+                f"Skipping due to run in progress: {active_flow_runs}"
+            )
+            logger.info(message)
+            return Skipped(message)
+    return new_state
 
 
 def etag_caching_terminal_state_handler(
@@ -32,3 +72,4 @@ def etag_caching_terminal_state_handler(
                     "skipped with attribute etag_skip_flag = True"
                 )
     return state
+
