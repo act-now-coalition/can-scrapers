@@ -7,10 +7,15 @@ from can_tools import ALL_SCRAPERS
 from can_tools.scrapers.base import DatasetBase
 import prefect
 from prefect import Flow, task, case
+from prefect.engine import signals
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
+from services.prefect.flows.utils import (
+    ETAG_CACHE_SKIP_MESSAGE,
+    etag_caching_terminal_state_handler,
+)
 
 
 @task
@@ -75,9 +80,12 @@ def initialize_sentry(sentry_dsn: str):
 
 
 @task
-def skip_cached_flow(flow_name):
-    logger = prefect.context.get("logger")
-    logger.info(f"No new data. Skipping {flow_name}")
+def skip_cached_flow():
+    # Set the task state to skipped.
+    # The flow's terminal state handler will see this state message
+    # and will in turn set the final state of the flow to skipped.
+    skip_signal = signals.SKIP(ETAG_CACHE_SKIP_MESSAGE)
+    raise skip_signal
 
 
 @task
@@ -92,7 +100,9 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     if schedule:
         sched = CronSchedule(f"{ix % 60} */4 * * *")
 
-    with Flow(cls.__name__, sched) as flow:
+    with Flow(
+        cls.__name__, sched, terminal_state_handler=etag_caching_terminal_state_handler
+    ) as flow:
 
         # check if scraper has etag checking
         # if so and the data has been updated since the last check set new_data to True
@@ -115,7 +125,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
             done.set_upstream(validated)
 
         with case(new_data, False):
-            skip_cached_flow(cls.__name__)
+            skip_cached_flow()
 
     return flow
 

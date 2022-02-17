@@ -1,7 +1,7 @@
 import pandas as pd
 from numpy import nan
 from typing import List, Tuple, Dict
-from can_tools.scrapers.official.base import FederalDashboard
+from can_tools.scrapers.official.base import FederalDashboard, ETagCacheMixin
 
 from can_tools.scrapers.variables import (
     CUMULATIVE_CASES_PEOPLE,
@@ -102,7 +102,7 @@ STATE_BACKFILLED_CASES = [
 ]
 
 
-class NYTimesCasesDeaths(FederalDashboard):
+class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
     source_name = "The New York Times"
     source = "https://github.com/nytimes/covid-19-data"
 
@@ -119,6 +119,15 @@ class NYTimesCasesDeaths(FederalDashboard):
         "cases": CUMULATIVE_CASES_PEOPLE,
         "deaths": CUMULATIVE_DEATHS_PEOPLE,
     }
+
+    def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
+        # use the commits page so that we update whenever a new commit is pushed for any files.
+        ETagCacheMixin.initialize_cache(
+            self,
+            cache_url="https://api.github.com/repos/nytimes/covid-19-data/commits",
+            cache_file="nyt_cases_deaths.txt",
+        )
+        super().__init__(execution_dt=execution_dt)
 
     def fetch(self) -> pd.DataFrame:
         data = []
