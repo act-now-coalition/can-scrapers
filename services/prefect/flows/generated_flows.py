@@ -11,6 +11,7 @@ from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
 from can_tools.scrapers.official.base import ETagCacheMixin
+from services.prefect.flows.utils import skip_if_running_handler
 
 
 @task
@@ -47,9 +48,7 @@ def validate(d: DatasetBase):
     d._validate()
 
 
-# NOTE(sean): timeout put() method after 2 hours because sometimes
-# this method hangs, leaving flows running indefinitely.
-@task(max_retries=3, retry_delay=timedelta(minutes=1), timeout=7200)
+@task(max_retries=3, retry_delay=timedelta(minutes=1))
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
 
@@ -92,7 +91,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
     if schedule:
         sched = CronSchedule(f"{ix % 60} */4 * * *")
 
-    with Flow(cls.__name__, sched) as flow:
+    with Flow(cls.__name__, sched, state_handlers=[skip_if_running_handler]) as flow:
 
         # check if scraper has etag checking
         # if so and the data has been updated since the last check set new_data to True
@@ -127,12 +126,18 @@ def create_main_flow(flows: List[Flow], project_name):
         tasks = []
         for flow in flows:
             task = StartFlowRun(
-                flow_name=flow.name, project_name=project_name, wait=True
+                flow_name=flow.name,
+                project_name=project_name,
+                wait=True,
+                timeout=7200,  # timeout flows after 2 hours
             )
             tasks.append(task)
 
         parquet_flow = StartFlowRun(
-            flow_name="UpdateParquetFiles", project_name=project_name, wait=True
+            flow_name="UpdateParquetFiles",
+            project_name=project_name,
+            wait=True,
+            timeout=3600,  # timeout parquet flow after 1 hour
         )
         # Always run parquet flow
         parquet_flow.trigger = prefect.triggers.all_finished
