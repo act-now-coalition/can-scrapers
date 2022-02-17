@@ -32,7 +32,10 @@ def skip_if_running_handler(obj, old_state, new_state):
         )
         active_flow_runs = response["data"]["flow_run"]
         if active_flow_runs:
-            message = "Flow already has a run in progress, skipping..."
+            message = (
+                "Flow already has a run in progress..."
+                f"Skipping due to run in progress: {active_flow_runs}"
+            )
             logger.info(message)
             return Skipped(message)
     return new_state
