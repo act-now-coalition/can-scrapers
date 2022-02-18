@@ -78,11 +78,11 @@ def initialize_sentry(sentry_dsn: str):
 
 @task
 def skip_cached_flow():
-    # Set the task state to skipped.
-    # The flow's terminal state handler(etag_caching_terminal_state_handler)
-    # will see etag_skip_flag and will in turn set the final state of the flow to skipped.
+    # Set the task state to skipped. The flow's terminal state
+    # handler (etag_caching_terminal_state_handler) will see the etag_skip_flag
+    # context item and will in turn set the final state of the flow to skipped.
     message = "No new source data. Skipping..."
-    skip_signal = signals.SKIP(dict(message=message, etag_skip_flag=True))
+    skip_signal = signals.SKIP(message=message, context=dict(etag_skip_flag=True))
     raise skip_signal
 
 
