@@ -60,7 +60,7 @@ def etag_caching_terminal_state_handler(
         https://docs.prefect.io/core/concepts/flows.html#terminal-state-handlers
     """
 
-    # look through all the flow's tasks to see if any we're skipped.
+    # look through all the flow's tasks to see if any were skipped.
     # If so, and the etag_skip_flag attribute is True, set the final state of the flow to Skipped.
     # etag_skip_flag is a custom flag passed to a task's skip signal during the etag cache checking process.
     # Any tasks that normally finish with the Skipped state will not trigger this state handler.
@@ -68,7 +68,7 @@ def etag_caching_terminal_state_handler(
         if task_state.is_skipped():
             if getattr(task_state, "etag_skip_flag", False) is True:
                 return Skipped(
-                    "Setting final state to skipped due to reference task"
+                    "Setting final state to skipped due to reference task "
                     "skipped with attribute etag_skip_flag = True"
                 )
     return state
