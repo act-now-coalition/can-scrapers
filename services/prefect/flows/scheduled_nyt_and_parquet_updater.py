@@ -8,7 +8,6 @@ from prefect.utilities.notifications import slack_notifier
 from prefect.tasks.prefect import create_flow_run, wait_for_flow_run
 
 
-
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def make_request(github_token):
     dispatch_url = (
@@ -26,9 +25,8 @@ def make_request(github_token):
     response.raise_for_status()  # raise status in case of failure
 
 
-def trigger_data_model_flow():
+def init_update_datasets_flow():
     """Initialize a flow to kick off the covid-data-model Update Combined Datasets Github action"""
-
     with Flow("TriggerUpdateCombinedDatasets") as flow:
         github_token = PrefectSecret("GITHUB_ACTION_PAT")
         make_request(github_token=github_token)
@@ -44,9 +42,11 @@ def init_scheduled_nyt_updater_flow():
     This is the main updater responsible for updating and ingesting the NYT cases and deaths data.
     """
     with Flow(
-        "NYTParquetScheduledUpdater", 
+        "NYTParquetScheduledUpdater",
         schedule=CronSchedule("*/30 * * * *"),
-        state_handlers=[slack_notifier(only_states=[Failed])]  # only alert us on failure
+        state_handlers=[
+            slack_notifier(only_states=[Failed])
+        ],  # only alert us on failure
     ) as parent_flow:
 
         # Note that the below code relies on NYTimesCasesDeaths and UpdateParquetFiles flows
@@ -80,7 +80,7 @@ def init_scheduled_nyt_updater_flow():
             task_args=dict(name="Run UpdateParquetFiles flow"),
         )
 
-        trigger_update_dataset_flow = create_flow_run(
+        trigger_update_datasets_flow = create_flow_run(
             flow_name="TriggerUpdateCombinedDatasets",
             project_name="can-scrape",
             upstream_tasks=[wait_for_parquet_flow],
@@ -91,8 +91,8 @@ def init_scheduled_nyt_updater_flow():
         )
 
         # Wait for this flow to succeed/fail before setting the final state of parent_flow
-        run_trigger_update_dataset_flow = wait_for_flow_run(
-            trigger_update_dataset_flow,
+        run_trigger_update_datasets_flow = wait_for_flow_run(
+            trigger_update_datasets_flow,
             raise_final_state=True,
             stream_logs=True,
             task_args=dict(name="Run TriggerUpdateCombinedDatasets flow"),
@@ -102,5 +102,5 @@ def init_scheduled_nyt_updater_flow():
 
 
 if __name__ == "__main__":
-    trigger_data_model_flow()
+    init_update_datasets_flow()
     init_scheduled_nyt_updater_flow()
