@@ -7,7 +7,7 @@ import requests
 import prefect
 from prefect import Flow, task
 from prefect.schedules import CronSchedule
-from prefect.tasks.secrets import EnvVarSecret
+from prefect.tasks.secrets import PrefectSecret
 
 # To run locally, I found the easiest way was to copy the Authorization header
 # from a graphql request in the web inspector after vising the Prefect UI.
@@ -201,7 +201,7 @@ def create_scraper_monitor_flow():
     # Run every day at 15 UTC (or 10 ET)
     schedule = CronSchedule("0 15 * * *")
     with Flow("MonitorFailingScrapers", schedule) as flow:
-        slack_webhook_url = EnvVarSecret("SLACK_WEBHOOK_URL")
+        slack_webhook_url = PrefectSecret("SLACK_WEBHOOK_URL")
         run_monitor_scrapers(slack_webhook_url)
 
     return flow
