@@ -60,9 +60,9 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
                                         [
                                             # From
                                             ("c", "Dimension County", 0),
-                                            ("b", "Baseline VDH", 0),
+                                            ("b", "Denominator Age/Sex", 0),
                                             ("s1", "Select vaccine status", 0),
-                                            ("d", "Dimension Age - AgeVaccine1", 0),
+                                            ("d1", "Dimension Age - Age", 0),
                                             ("m", "_CountyMeasures", 0),
                                         ]
                                     ),
@@ -117,7 +117,7 @@ class VermontCountyVaccine(MicrosoftBIDashboard):
                                                                     "Column": {
                                                                         "Expression": {
                                                                             "SourceRef": {
-                                                                                "Source": "d"
+                                                                                "Source": "d1"
                                                                             }
                                                                         },
                                                                         "Property": "Age eligibility 5+",

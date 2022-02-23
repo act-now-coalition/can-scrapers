@@ -30,7 +30,7 @@ class WashingtonVaccine(MicrosoftBIDashboard):
         """
         async with with_page(headless=True) as page:
             await page.goto(self.source)
-            sel = "#dnn_ctr34282_HtmlModule_lblContent div"
+            sel = ".content div"
             iframe_div = await page.waitForSelector(sel)
             iframe = await page.J(sel)
             iframe = await page.evaluate("x => x.outerHTML", iframe)
