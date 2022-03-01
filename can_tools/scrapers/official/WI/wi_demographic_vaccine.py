@@ -3,135 +3,23 @@ import us
 import os
 from can_tools.scrapers.official.base import TableauDashboard
 from tableauscraper import TableauScraper as TS
-from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
-from can_tools.scrapers import variables, CMU
+from can_tools.scrapers import variables
 
 
-class WisconsinVaccineStateAge(TableauDashboard):
+class WisconsinVaccineCountyRace(TableauDashboard):
+
     has_location = False
     source = "https://www.dhs.wisconsin.gov/covid-19/vaccine-data.htm#summary"
     source_name = "Wisconsin Department of Health Services"
     state_fips = int(us.states.lookup("Wisconsin").fips)
-    baseurl = "https://bi.wisconsin.gov/t/DHS"
-    viewPath = (
-        "VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
-    )
 
     timezone = "US/Central"
-    data_tableau_table = "Age vax/unvax County"
-    # age does not report missing/unknown entries
-    missing_tableau_table = ""
-    location_name_col = "AGG(Geography TT)-alias"
-    location_type = "state"
 
-    # map wide form column names into CMUs
-    cmus = {
-        "SUM(Initiation or completed count for TT)-alias": CMU(
-            category="total_vaccine_initiated",
-            measurement="cumulative",
-            unit="people",
-        )
-    }
-
-    def _get_demographic(
-        self, df: pd.DataFrame, demo: str, demo_col_name: str
-    ) -> pd.DataFrame:
-        """
-        description: a general "normalize" function to avoid extra/copied code
-                     each demographic uses this in its respective normalize
-
-        params:
-            demo: the demographic as labeled according to CMU (age,sex,race, etc...)
-            demo_col_name: the name of the demographic column from the fetched data
-
-        returns: normalized data in long format
-        """
-
-        # county names (converted to title case)
-        df["location_name"] = df[self.location_name_col].str.title()
-        # fix county names
-        df = df.replace(
-            {"location_name": {"St Croix": "St. Croix", "Fond Du Lac": "Fond du Lac"}}
-        )
-
-        # parse out data columns
-        value_cols = list(set(df.columns) & set(self.cmus.keys()))
-        assert len(value_cols) == len(self.cmus)
-
-        df = (
-            df.melt(id_vars=[demo_col_name, "location_name"], value_vars=value_cols)
-            .dropna()
-            .assign(
-                dt=self._retrieve_dt(self.timezone),
-                vintage=self._retrieve_vintage(),
-                value=lambda x: pd.to_numeric(
-                    x["value"].astype(str).str.replace(",", "")
-                ),
-            )
-            .pipe(self.extract_CMU, cmu=self.cmus)
-        )
-        df[demo] = df[demo_col_name]
-        return df.drop(["variable", demo_col_name], axis=1)
-
-    def fetch(self) -> pd.DataFrame:
-        if self.missing_tableau_table:
-            # extract both data table and missing data table
-            dfs = [
-                self.get_tableau_view().get(table)
-                for table in [self.data_tableau_table, self.missing_tableau_table]
-            ]
-            return pd.concat(dfs)
-        else:
-            return self.get_tableau_view()[self.data_tableau_table]
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self._get_demographic(df, "age", "Age-value")
-        return df.replace({"age": {"65+": "65_plus"}})
-
-
-class WisconsinVaccineStateRace(WisconsinVaccineStateAge):
-    data_tableau_table = "Race vax/unvax county"
-    missing_tableau_table = "Race missing county"
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self._get_demographic(df, "race", "Race-value")
-        rm = {
-            "1": "white",
-            "2": "black",
-            "3": "native_american",
-            "4": "asian",
-            "5": "other",
-            "U": "unknown",
-        }
-        return df.replace({"race": rm})
-
-
-class WisconsinVaccineStateSex(WisconsinVaccineStateAge):
-    data_tableau_table = "Sex vax/unvax county"
-    missing_tableau_table = "Sex missing county"
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self._get_demographic(df, "sex", "Sex-value")
-        df["sex"] = df["sex"].str.lower()
-        return df
-
-
-class WisconsinVaccineStateEthnicity(WisconsinVaccineStateAge):
-    data_tableau_table = "Ethnicity vax/unvax county"
-    missing_tableau_table = "Ethnicity missing county"
-
-    def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = self._get_demographic(df, "ethnicity", "Ethnicity-value")
-        df["ethnicity"] = df["ethnicity"].str.lower()
-        return df
-
-
-class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
     demographic_worksheet = "Race vax/unvax county"
     demographic_column = "Race-alias"
     location_type = "county"
     demographic = "race"
-    fullUrl = "https://bi.wisconsin.gov/t/DHS/views/VaccinesAdministeredtoWIResidents_16212677845310/VaccinatedWisconsin-County"
+    fullUrl = "https://bi.wisconsin.gov/t/DHS/views/VaccinesAdministeredtoWIResidents/VaccinatedWisconsin-County"
 
     variables = {
         "initiated": variables.INITIATING_VACCINATIONS_ALL,
@@ -165,7 +53,7 @@ class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
         if category == "completed":
             workbook.setParameter(
                 "Initiation or Completion",
-                "Residents who have completed the vaccine series",
+                "Total population who have completed the series",
             )
         elif category not in ["completed", "initiated"]:
             raise ValueError(
@@ -182,12 +70,14 @@ class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
             df = df[
                 [
                     demo_col_name,
-                    "AGG(Geography TT)-alias",
-                    "SUM(Initiation or completed count for TT)-alias",
+                    "AGG(Geography TT (copy))-alias",
+                    "SUM(Initiation or completed count for TT (copy))-alias",
                 ]
             ]
             df = df.rename(
-                columns={"SUM(Initiation or completed count for TT)-alias": category}
+                columns={
+                    "SUM(Initiation or completed count for TT (copy))-alias": category
+                }
             )
             dfs.append(df)
         return pd.concat(dfs)
@@ -199,7 +89,7 @@ class WisconsinVaccineCountyRace(WisconsinVaccineStateAge):
         return pd.merge(init, complete, how="left")
 
     def normalize(self, data):
-        data = data.rename(columns={"AGG(Geography TT)-alias": "location_name"})
+        data = data.rename(columns={"AGG(Geography TT (copy))-alias": "location_name"})
         data["location_name"] = (
             data["location_name"]
             .str.title()
