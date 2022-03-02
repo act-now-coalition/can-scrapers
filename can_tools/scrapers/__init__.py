@@ -193,10 +193,6 @@ from can_tools.scrapers.official.WA.wa_vaccine import (
 )
 from can_tools.scrapers.official.WI.wi_county_vaccine import WisconsinVaccineCounty
 from can_tools.scrapers.official.WI.wi_demographic_vaccine import (
-    WisconsinVaccineStateAge,
-    WisconsinVaccineStateEthnicity,
-    WisconsinVaccineStateRace,
-    WisconsinVaccineStateSex,
     WisconsinVaccineCountyRace,
     WisconsinVaccineCountySex,
     WisconsinVaccineCountyAge,
