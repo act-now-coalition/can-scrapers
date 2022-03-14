@@ -7,15 +7,14 @@ COMMUNITY_LEVEL_MAP = {"Low": 0, "Medium": 1, "High": 2}
 
 
 class CDCCommunityLevel(FederalDashboard):
-    """Scraper to collect CDC County Community Level. 
+    """Scraper to collect CDC County Community Level.
 
     Data is updated weekly on Thursdays, and is only available at the county level.
     """
+
     has_location = True
     location_type = "county"
-    source = (
-        "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-Community-Levels-by-County-/3nnm-4jni"
-    )
+    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-Community-Levels-by-County-/3nnm-4jni"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc_community_level"
     csv_url = "https://data.cdc.gov/api/views/3nnm-4jni/rows.csv?accessType=DOWNLOAD"
@@ -50,11 +49,7 @@ class CDCCommunityLevel(FederalDashboard):
 
         # Transform percentages to ratios (e.g 3% -> 0.03)
         data["covid_inpatient_bed_utilization"] = (
-            pd.to_numeric(
-                data[
-                    "covid_inpatient_bed_utilization"
-                ].str.replace("%", "")
-            )
+            pd.to_numeric(data["covid_inpatient_bed_utilization"].str.replace("%", ""))
             / 100
         )
 
@@ -67,7 +62,17 @@ class CDCCommunityLevel(FederalDashboard):
                 location_column="county_fips",
                 date_column="date_updated",
                 # Remove state-equivalent territory locations
-                locations_to_drop=["000AS", "000GU", "000VI", "000MP", "UNK", "60000", "66000", "69000", "78000"],
+                locations_to_drop=[
+                    "000AS",
+                    "000GU",
+                    "000VI",
+                    "000MP",
+                    "UNK",
+                    "60000",
+                    "66000",
+                    "69000",
+                    "78000",
+                ],
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
             .assign(
