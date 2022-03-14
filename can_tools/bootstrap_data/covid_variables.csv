@@ -2,7 +2,6 @@ category,measurement,unit
 cases,cumulative,people
 cases,cumulative,unique_people
 cases,new,people
-cases,rolling_average_7_day,cases_per_100k
 cases,new_7_day,cases_per_100k
 b117_cases,cumulative,people
 p1_cases,cumulative,people
