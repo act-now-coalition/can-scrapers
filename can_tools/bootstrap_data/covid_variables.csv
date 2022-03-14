@@ -200,3 +200,6 @@ total_vaccine_initiated,current,percentage
 total_vaccine_completed,current,percentage
 janssen_vaccine_allocated,cumulative,doses
 janssen_vaccine_completed,new,people
+hospital_admissions,rolling_average_7_day,people
+hospital_beds_in_use_covid,rolling_average_7_day,percentage
+cdc_community,current,risk_level

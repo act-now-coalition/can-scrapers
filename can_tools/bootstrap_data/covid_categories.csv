@@ -8,6 +8,7 @@ case,b1351_cases
 death,deaths
 death,deaths_probable
 death,deaths_confirmed
+hospital,hospital_admissions
 hospital,adult_hospital_beds_available
 hospital,adult_hospital_beds_capacity
 hospital,adult_hospital_beds_in_use
@@ -71,3 +72,4 @@ vaccine,total_vaccine_additional_dose
 vaccine,total_vaccine_doses_administered
 vaccine,janssen_vaccine_allocated
 vaccine,janssen_vaccine_completed
+risk_level,cdc_community
