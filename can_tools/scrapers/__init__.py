@@ -45,7 +45,7 @@ from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import (
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_community_level import (
-    CDCCommunityLevelData,
+    CDCCommunityLevel,
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
