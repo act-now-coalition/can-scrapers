@@ -57,6 +57,21 @@ def init_scheduled_nyt_updater_flow():
             project_name="can-scrape",
             task_args=dict(name="Create NYTimesCasesDeaths flow"),
         )
+
+        # NOTE (sean) 3/14/2022: Temporarily adding USAFacts flow to track at what time of day
+        # USA Facts is typically updated. To be removed after a few days of data collection. 
+        usa_facts_flow = create_flow_run(
+            flow_name="USAFactsCases",
+            project_name="can-scrape",
+            task_args=dict(name="Create USAFactsCases flow"),
+        )
+        wait_for_usa_facts = wait_for_flow_run(
+            usa_facts_flow,
+            raise_final_state=False,
+            stream_logs=True,
+            task_args=dict(name="run USAFactsCases flow"),
+        )
+
         wait_for_nyt = wait_for_flow_run(
             nyt_flow,
             raise_final_state=True,
