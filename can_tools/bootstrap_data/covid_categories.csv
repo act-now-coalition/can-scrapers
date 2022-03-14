@@ -8,7 +8,7 @@ case,b1351_cases
 death,deaths
 death,deaths_probable
 death,deaths_confirmed
-hospital,hospital_admissions
+hospital,covid_hospital_admissions
 hospital,adult_hospital_beds_available
 hospital,adult_hospital_beds_capacity
 hospital,adult_hospital_beds_in_use

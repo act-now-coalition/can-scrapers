@@ -28,7 +28,7 @@ class CDCCommunityLevelMetrics(FederalDashboard):
             unit="percentage",
         ),
         "covid_hospital_admissions_per_100k": CMU(
-            category="hospital_admissions",
+            category="covid_hospital_admissions",
             measurement="rolling_average_7_day",
             unit="people_per_100k",
         ),
