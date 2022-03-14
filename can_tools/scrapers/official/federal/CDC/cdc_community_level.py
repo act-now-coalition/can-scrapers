@@ -10,6 +10,8 @@ class CDCCommunityLevel(FederalDashboard):
     """Scraper to collect CDC County Community Level.
 
     Data is updated weekly on Thursdays, and is only available at the county level.
+    There is no historical data from before February, 2022, and there does not appear to be a
+    secondary dataset containing the historical data (as there is with the testing datasets).
     """
 
     has_location = True
