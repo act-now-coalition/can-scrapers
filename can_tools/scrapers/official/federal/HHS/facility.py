@@ -108,10 +108,16 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
         # Calculate adult and pediatric hospital admissions (same process as above).
         adult_admissions = "previous_day_admission_adult_covid_confirmed_7_day_sum"
         adult_coverage = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
-        pediatric_admissions = "previous_day_admission_pediatric_covid_confirmed_7_day_sum"
-        pediatric_coverage = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
+        pediatric_admissions = (
+            "previous_day_admission_pediatric_covid_confirmed_7_day_sum"
+        )
+        pediatric_coverage = (
+            "previous_day_admission_adult_covid_confirmed_7_day_coverage"
+        )
         temp = df.eval(f"{adult_admissions} / {adult_coverage}")
-        temp = temp + df.eval(f"{pediatric_admissions} / {pediatric_coverage}").fillna(0.0)
+        temp = temp + df.eval(f"{pediatric_admissions} / {pediatric_coverage}").fillna(
+            0.0
+        )
         df.loc[:, "hospital_admissions_covid_7_day_canavg"] = temp.values
 
         crename = {

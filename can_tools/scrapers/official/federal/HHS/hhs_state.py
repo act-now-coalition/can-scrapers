@@ -33,8 +33,8 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
 
         # Combine adult and pediatric hospital admissions into one variable
         df["previous_day_admission_covid_confirmed"] = (
-            df["previous_day_admission_adult_covid_confirmed"] + 
-            df["previous_day_admission_pediatric_covid_confirmed"]
+            df["previous_day_admission_adult_covid_confirmed"]
+            + df["previous_day_admission_pediatric_covid_confirmed"]
         )
 
         crename = {
