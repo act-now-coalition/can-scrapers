@@ -31,6 +31,12 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         df.loc[:, "dt"] = pd.to_datetime(df["date"])
         df.loc[:, "location"] = df["state"].map(lambda x: int(us.states.lookup(x).fips))
 
+        # Combine adult and pediatric hospital admissions into one variable
+        df["previous_day_admission_covid_confirmed"] = (
+            df["previous_day_admission_adult_covid_confirmed"] + 
+            df["previous_day_admission_pediatric_covid_confirmed"]
+        )
+
         crename = {
             "critical_staffing_shortage_today_yes": CMU(
                 category="critical_staff_shortage_yes",
@@ -93,6 +99,11 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
                 category="adult_icu_beds_in_use",
                 measurement="current",
                 unit="percentage",
+            ),
+            "previous_day_admission_covid_confirmed": CMU(
+                category="hospital_admissions_covid",
+                measurement="new",
+                unit="people",
             ),
         }
 
