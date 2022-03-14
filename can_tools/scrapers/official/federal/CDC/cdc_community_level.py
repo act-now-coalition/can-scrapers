@@ -6,8 +6,8 @@ from can_tools.scrapers.official.base import FederalDashboard
 COMMUNITY_LEVEL_MAP = {"Low": 0, "Medium": 1, "High": 2}
 
 
-class CDCCommunityLevel(FederalDashboard):
-    """Scraper to collect CDC County Community Level.
+class CDCCommunityLevelMetrics(FederalDashboard):
+    """Scraper to collect CDC County Community Level and the metrics that determine it.
 
     Data is updated weekly on Thursdays, and is only available at the county level.
     There is no historical data from before February, 2022, and there does not appear to be a
@@ -30,14 +30,11 @@ class CDCCommunityLevel(FederalDashboard):
         "covid_hospital_admissions_per_100k": CMU(
             category="hospital_admissions",
             measurement="rolling_average_7_day",
-            unit="people",
+            unit="people_per_100k",
         ),
         "covid_cases_per_100k": CMU(
-            category="cases", measurement="rolling_average_7_day", unit="people"
+            category="cases", measurement="rolling_average_7_day", unit="cases_per_100k"
         ),
-        # TODO (sean): This is a not-so-great forced extension of our CMU schema.
-        # If we want to scrape more risk levels in the future, it is probably worth
-        # revisiting this.
         "covid-19_community_level": CMU(
             category="cdc_community", measurement="current", unit="risk_level"
         ),
