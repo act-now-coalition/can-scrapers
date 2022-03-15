@@ -80,10 +80,7 @@ class HHSCountyDisaggregatedHospitalAdmissions(HHSDataset):
     )
 
     def fetch(self):
-        # return None
-        data = pd.read_csv("hhs.csv")
-        print("exiting detch")
-        return data
+        return pd.read_csv(self.source_url)
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         # Set all missing values (-999999) to nan for all numeric columns and remove territories
