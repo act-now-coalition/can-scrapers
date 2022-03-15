@@ -137,7 +137,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
                 category="adult_icu_beds_in_use_covid",
                 measurement="rolling_average_7_day",
                 unit="beds",
-            )
+            ),
         }
 
         # Reshape by putting into long form

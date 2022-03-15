@@ -18,13 +18,13 @@ COUNTY_HSA_MAPPING_DATA = (
 
 def create_county_metadata() -> pd.DataFrame:
     """Create dataframe containing county description data.
-    
+
     columns include:
-        fips_code: County fips, 
-        hsa: The HSA that the county belongs to, 
-        population: County population, 
-        hsa_population: total population of all counties within the HSA, 
-        county_percent_pop: 
+        fips_code: County fips,
+        hsa: The HSA that the county belongs to,
+        population: County population,
+        hsa_population: total population of all counties within the HSA,
+        county_percent_pop:
             The ratio of the county's population to the total HSA population (county pop / HSA pop)
     """
     county_pops = (
@@ -39,7 +39,7 @@ def create_county_metadata() -> pd.DataFrame:
         .set_index("FIPS")
     )
 
-    # Combine the county and HSA data and calculate the needed columns. 
+    # Combine the county and HSA data and calculate the needed columns.
     return (
         county_pops.join(hsa)
         .reset_index()
