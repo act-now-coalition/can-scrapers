@@ -59,6 +59,9 @@ from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
 from can_tools.scrapers.official.federal.HHS.facility import (
     HHSReportedPatientImpactHospitalCapacityFacility,
 )
+from can_tools.scrapers.official.federal.HHS.hhs_county_disaggregated import (
+    HHSCountyDisaggregatedHospitalAdmissions,
+)
 
 from can_tools.scrapers.official.federal.HHS.hhs_state_testing import HHSTestingState
 
