@@ -1,6 +1,7 @@
 name
 people
 people_per_100k
+cases_per_100k
 percentage
 specimens
 test_encounters
@@ -9,3 +10,4 @@ unknown
 beds
 hospitals
 doses
+risk_level

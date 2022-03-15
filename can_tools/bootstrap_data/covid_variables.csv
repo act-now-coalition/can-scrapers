@@ -2,7 +2,7 @@ category,measurement,unit
 cases,cumulative,people
 cases,cumulative,unique_people
 cases,new,people
-cases,rolling_average_7_day,people
+cases,new_7_day,cases_per_100k
 b117_cases,cumulative,people
 p1_cases,cumulative,people
 b1351_cases,cumulative,people
@@ -200,3 +200,6 @@ total_vaccine_initiated,current,percentage
 total_vaccine_completed,current,percentage
 janssen_vaccine_allocated,cumulative,doses
 janssen_vaccine_completed,new,people
+hospital_admissions_covid,new_7_day,people_per_100k
+hospital_beds_in_use_covid,rolling_average_7_day,percentage
+cdc_community,current,risk_level
