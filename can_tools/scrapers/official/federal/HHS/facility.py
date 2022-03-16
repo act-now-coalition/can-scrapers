@@ -19,7 +19,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
     )
 
     def fetch(self):
-        df = pd.read_csv("hhs.csv")
+        df = pd.read_csv(self.source_url)
         return df
 
     def normalize(self, data: str) -> pd.DataFrame:
