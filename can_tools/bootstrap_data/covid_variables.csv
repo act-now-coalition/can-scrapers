@@ -11,7 +11,6 @@ deaths,new,people
 deaths,rolling_average_7_day,people
 hospital_admissions_covid,new_7_day,people
 hospital_admissions_covid,new,people
-hospital_admissions_covid,rolling_average_7_day,people
 hospital_beds_in_use_covid,cumulative,beds
 hospital_beds_in_use_covid,new,beds
 hospital_beds_in_use_covid,current,beds
