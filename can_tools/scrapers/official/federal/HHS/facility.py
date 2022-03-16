@@ -19,7 +19,7 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
     )
 
     def fetch(self):
-        df = pd.read_csv(self.source_url)
+        df = pd.read_csv("hhs.csv")
         return df
 
     def normalize(self, data: str) -> pd.DataFrame:
@@ -104,13 +104,19 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
         df.loc[:, "inpatient_beds_used_covid_7_day_canavg"] = temp.values
 
         # Combine adult and pediatric covid admissions to find total.
-        # NOTE: Theoretically, this could be missing data from the weekly total
-        # if hospitals do not report everyday, but this seems to be the methodology that
-        # the CDC is following for weekly hospital admissions
-        admissions = "previous_day_admission_{}_covid_confirmed_7_day_sum"
-        df.loc[:, "hospital_admissions_covid_7_day_sum"] = df[
-            admissions.format("adult")
-        ] + df[admissions.format("pediatric")].fillna(0)
+        # NOTE: Most hospitals report data 7 days a week, but, if a hospital
+        # reports data less than 7 days a week, the 7 day total will be an underrepresentation
+        # of the real data. To account for this, we take the daily average reported admissions
+        # (_sum / _coverage) and multiply by 7 to get an estimate of the week total.
+        # In most cases this has no effect, ([value / 7] * 7 == value), but this corrects facilities
+        # that do not have complete (7 day) coverage.
+        adult_sum = "previous_day_admission_adult_covid_confirmed_7_day_sum"
+        adult_cov = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
+        pediatric_sum = "previous_day_admission_pediatric_covid_confirmed_7_day_sum"
+        pediatric_cov = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
+        temp = df.eval(f"{adult_sum} / {adult_cov}")
+        temp = temp + df.eval(f"{pediatric_sum} / {pediatric_cov}").fillna(0.0)
+        df.loc[:, "hospital_admissions_covid_7_day_sum"] = temp.values * 7
 
         crename = {
             "inpatient_beds_7_day_canavg": CMU(
