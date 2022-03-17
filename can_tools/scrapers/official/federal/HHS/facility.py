@@ -114,9 +114,9 @@ class HHSReportedPatientImpactHospitalCapacityFacility(HHSDataset):
         adult_cov = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
         pediatric_sum = "previous_day_admission_pediatric_covid_confirmed_7_day_sum"
         pediatric_cov = "previous_day_admission_adult_covid_confirmed_7_day_coverage"
-        temp = df.eval(f"{adult_sum} / {adult_cov}")
-        temp = temp + df.eval(f"{pediatric_sum} / {pediatric_cov}").fillna(0.0)
-        df.loc[:, "hospital_admissions_covid_7_day_sum"] = temp.values * 7
+        temp = df.eval(f"({adult_sum} / {adult_cov}) * 7")
+        temp = temp + df.eval(f"({pediatric_sum} / {pediatric_cov}) * 7").fillna(0.0)
+        df.loc[:, "hospital_admissions_covid_7_day_sum"] = temp.values
 
         crename = {
             "inpatient_beds_7_day_canavg": CMU(
