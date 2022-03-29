@@ -71,6 +71,12 @@ class CDCCommunityLevelMetrics(FederalDashboard):
                     "66000",
                     "69000",
                     "78000",
+                    # Valdez-Cordova Census Area (02261) was split into two counties.
+                    # In our code, we still use the old census area and don't have locations
+                    # for the two new counties (02063 and 02066) so we remove them. This dataset
+                    # seems to also report data for 02261, as well as the new counties.
+                    "02063",
+                    "02066",
                 ],
             )
             .pipe(self._reshape_variables, variable_map=self.variables)

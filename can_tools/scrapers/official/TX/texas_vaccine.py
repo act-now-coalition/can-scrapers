@@ -194,7 +194,9 @@ class TXVaccineCountyAge(TexasVaccineParent):
             .rename(columns=str.strip)
             .rename(
                 columns={
+                    # The age column has been named multiple ways, keep both here in case it switches back.
                     "Age Group": "age",
+                    "Agegrp": "age",
                     "Race/Ethnicity": "race",
                     "County Name": "location_name",
                 }
@@ -204,6 +206,9 @@ class TXVaccineCountyAge(TexasVaccineParent):
                 id_vars=["dt", "location_name"] + self.cmu_id_vars,
                 value_vars=list(self.cmus.keys()),
             )
+            .assign(
+                age=lambda row: row["age"].astype(str)
+            )  # convert to string b/c some datetimes exist (see above)
             .replace(self.replacers)
             .pipe(self.extract_CMU, cmu=self.cmus, columns=self.cmu_columns)
             .pipe(lambda x: x.loc[~x["location_name"].isin(["*Other", "Total"]), :])
