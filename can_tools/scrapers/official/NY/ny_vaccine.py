@@ -16,14 +16,32 @@ class NewYorkVaccineCounty(TableauDashboard):
     baseurl = "https://public.tableau.com"
     viewPath = "Vaccine_County_Public/NYSCountyVaccinations"
 
-    data_tableau_table = "Vaccinated by County"
+    data_tableau_table = "Total Doses by County"
     location_name_col = "County-alias"
     timezone = "US/Eastern"
 
     cmus = {
-        "SUM(First Dose)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "SUM(Series Complete)-alias": variables.FULLY_VACCINATED_ALL,
+        "First Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "Series Complete": variables.FULLY_VACCINATED_ALL,
     }
+
+    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
+        columns = {
+            "Measure Names-alias": "variable",
+            "County-value": "location_name",
+            "Measure Values-alias": "value",
+        }
+        data = (
+            data.loc[:, list(columns.keys())]
+            .rename(columns=columns)
+            .assign(
+                dt=self._retrieve_dt(),
+                vintage=self._retrieve_vintage(),
+                value=lambda row: pd.to_numeric(row["value"].str.replace(",", "")),
+            )
+            .pipe(self.extract_CMU, cmu=self.cmus)
+        )
+        return data
 
 
 class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
@@ -33,6 +51,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
     )
     secondaryFilterFunctionName = "[Parameters].[Parameter 1]"
     demographic = "age"
+    demographic_column = "Age Group-alias"
     data_tableau_table = "Demographics by Age"
 
     variables = {
@@ -67,7 +86,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
             df.rename(
                 columns={
                     "SUM(Vaccination)-alias": "value",
-                    "Demo Value-alias": self.demographic,
+                    self.demographic_column: self.demographic,
                 }
             )
             .loc[:, ["location_name", "value", "variable", self.demographic]]
@@ -91,4 +110,5 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
 class NewYorkVaccineCountySex(NewYorkVaccineCountyAge):
     viewPath = "Gender_Age_Public/VaccinationbyGender"
     demographic = "sex"
+    demographic_column = "Demo Value-alias"
     data_tableau_table = "Demographics by Gender"
