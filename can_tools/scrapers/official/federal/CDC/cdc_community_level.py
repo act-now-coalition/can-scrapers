@@ -3,7 +3,14 @@ from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 
-COMMUNITY_LEVEL_MAP = {"Low": 0, "Medium": 1, "High": 2, "low": 0, "medium": 1, "high": 2}
+COMMUNITY_LEVEL_MAP = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2,
+    "low": 0,
+    "medium": 1,
+    "high": 2,
+}
 
 
 class CDCCommunityLevelMetrics(FederalDashboard):
