@@ -68,16 +68,16 @@ class CDCCommunityLevelMetrics(FederalDashboard):
                 date_column="date_updated",
                 # Remove state-equivalent territory locations
                 locations_to_drop=[
-                    "60000",
-                    "66000",
-                    "69000",
-                    "78000",
+                    60000,
+                    66000,
+                    69000,
+                    78000,
                     # Valdez-Cordova Census Area (02261) was split into two counties.
                     # In our code, we still use the old census area and don't have locations
                     # for the two new counties (02063 and 02066) so we remove them. This dataset
                     # seems to also report data for 02261, as well as the new counties.
-                    "02063",
-                    "02066",
+                    2063,
+                    2066,
                 ],
             )
             .pipe(self._reshape_variables, variable_map=self.variables)
