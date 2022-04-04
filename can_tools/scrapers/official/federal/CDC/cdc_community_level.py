@@ -3,7 +3,14 @@ from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 
 
-COMMUNITY_LEVEL_MAP = {"Low": 0, "Medium": 1, "High": 2}
+COMMUNITY_LEVEL_MAP = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2,
+    "low": 0,
+    "medium": 1,
+    "high": 2,
+}
 
 
 class CDCCommunityLevelMetrics(FederalDashboard):
@@ -46,10 +53,9 @@ class CDCCommunityLevelMetrics(FederalDashboard):
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
 
-        # Transform percentages to ratios (e.g 3% -> 0.03)
+        # Transform percentages to ratios (e.g 3 -> 0.03)
         data["covid_inpatient_bed_utilization"] = (
-            pd.to_numeric(data["covid_inpatient_bed_utilization"].str.replace("%", ""))
-            / 100
+            data["covid_inpatient_bed_utilization"] / 100
         )
 
         # Map community levels to integer values where 0 = lowest
@@ -62,11 +68,6 @@ class CDCCommunityLevelMetrics(FederalDashboard):
                 date_column="date_updated",
                 # Remove state-equivalent territory locations
                 locations_to_drop=[
-                    "000AS",
-                    "000GU",
-                    "000VI",
-                    "000MP",
-                    "UNK",
                     "60000",
                     "66000",
                     "69000",
