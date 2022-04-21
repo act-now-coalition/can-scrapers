@@ -3,7 +3,7 @@ from datetime import timedelta
 import sentry_sdk
 import sqlalchemy as sa
 
-from can_tools import ALL_SCRAPERS
+from can_tools import ALL_SCRAPERS, scrapers
 from can_tools.scrapers.base import DatasetBase
 import prefect
 from prefect import Flow, task, case
@@ -15,6 +15,13 @@ from can_tools.scrapers.official.base import ETagCacheMixin
 from services.prefect.flows.utils import (
     etag_caching_terminal_state_handler, skip_if_running_handler
 )
+
+# A list of flows that we want to be registered, but not included in the MainFlow runs.
+# NYTimesCasesDeaths: We have a dedicated flow that checks the NYT source every 30 minutes, 
+# and runs the scraper, updates the parquet file, and kicks off a Github action pipeline run upon new data. 
+# As such, its unnecessary for this flow to run in the MainFlow, and it can cause issues 
+# where the NYT data will update, but a snapshot will not be kicked off. 
+FLOWS_EXCLUDED_FROM_MAIN_FLOW: List[Flow] = [scrapers.NYTimesCasesDeaths]
 
 
 @task
@@ -168,6 +175,7 @@ def init_flows():
         flows.append(flow)
         flow.register(project_name="can-scrape")
 
+    flows = [flow for flow in flows if flow not in FLOWS_EXCLUDED_FROM_MAIN_FLOW]
     flow = create_main_flow(flows, "can-scrape")
     flow.register(project_name="can-scrape")
 
