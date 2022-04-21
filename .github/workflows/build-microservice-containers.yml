@@ -1,0 +1,39 @@
+name: build microservices
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-microservices:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+    - uses: actions/checkout@v2
+    - name: Put back the git branch into git (Earthly uses it for tagging)
+      run: |
+        branch=""
+        if [ -n "$GITHUB_HEAD_REF" ]; then
+          branch="$GITHUB_HEAD_REF"
+        else
+          branch="${GITHUB_REF##*/}"
+        fi
+        git checkout -b "$branch" || true
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '318.0.0'
+        service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT }}
+        export_default_credentials: true
+    - name: setup gcr access
+      run: gcloud auth configure-docker -q
+    - name: Download latest earth
+      run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.3.14/earth-linux-amd64 -O /usr/local/bin/earth && chmod +x /usr/local/bin/earth'"
+    - name: Earth version
+      run: earth --version
+    - name: Run build
+      run: cd services && earth -P --push --build-arg GCP_PROJECT="${{secrets.GCP_PROJECT}}" +all
