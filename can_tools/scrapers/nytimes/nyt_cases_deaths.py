@@ -109,12 +109,17 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
     has_location = True
     provider: str = "nyt"
     location_type = ""  # multiple location types, so we identify the type with a column
-    # NOTE 5/15/22: NYT temporarily stopped updating the usual files, but the live files remained active. 
+    # NOTE 5/15/22: NYT temporarily stopped updating the usual files, but the live files remained active.
     # Collect historical data from usual files and "current" data from the live files.
     file_slugs = {
-        "county": ["us-counties-2020.csv", "us-counties-2021.csv", "us-counties-2022.csv", "live/us-counties.csv"],
+        "county": [
+            "us-counties-2020.csv",
+            "us-counties-2021.csv",
+            "us-counties-2022.csv",
+            "live/us-counties.csv",
+        ],
         "state": ["us-states.csv", "live/us-states.csv"],
-        "nation": ["us.csv", "live/us-states.csv"],
+        "nation": ["us.csv", "live/us.csv"],
     }
 
     variables = {
@@ -138,12 +143,12 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
                 location = pd.read_csv(
                     NYTIMES_RAW_BASE_URL + file, dtype={"fips": str}
                 ).assign(location_type=location_type)
-                
+
                 # Nation-level file does not have FIPS column, so create one
-                if file == "us.csv":
+                if file in ["us.csv", "live/us.csv"]:
                     location = location.assign(fips=0)
                 data.append(location)
-        # TODO Remove when removeing live/ files. Dropping duplicates in case there is overlap 
+        # TODO Remove when removeing live/ files. Dropping duplicates in case there is overlap
         # between live and historical data.
         return pd.concat(data).drop_duplicates()
 
