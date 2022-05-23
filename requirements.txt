@@ -19,3 +19,4 @@ sentry-sdk==1.0.0
 jmespath==0.10.0
 textract
 html5lib==1.1
+click==8.0.2
