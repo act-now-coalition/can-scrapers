@@ -11,7 +11,7 @@ class VirginiaVaccine(TableauDashboard):
     state_fips = int(us.states.lookup("Virginia").fips)
     source = "https://www.vdh.virginia.gov/coronavirus/covid-19-vaccine-summary/"
     source_name = "Virginia Department of Health"
-    baseurl = "https://vdhpublicdata.vdh.virginia.gov"
+    baseurl = "https://public.tableau.com"
     provider = "state"
     has_location = False
     location_type = "county"
