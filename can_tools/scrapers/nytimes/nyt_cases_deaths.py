@@ -103,7 +103,7 @@ STATE_BACKFILLED_CASES = [
 
 
 class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
-    source_name = "NYT"  # Undo this
+    source_name = "The New York Times"
     source = "https://github.com/nytimes/covid-19-data"
 
     has_location = True
