@@ -20,3 +20,5 @@ jmespath==0.10.0
 textract
 html5lib==1.1
 click==8.0.2
+fastparquet==0.8.1
+prefect==1.2.2
