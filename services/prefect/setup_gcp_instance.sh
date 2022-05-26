@@ -55,7 +55,7 @@ conda activate prefect-can-scrapers
 pip install -r requirements.txt
 pip install -e .
 pip install prefect pyarrow
-prefect backend server
+prefect backend cloud
 
 # set up gcsfuse for storing dag outputs
 # install
