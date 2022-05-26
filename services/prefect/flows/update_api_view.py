@@ -40,7 +40,7 @@ def export_to_csv(connstr: str):
 )
 def create_parquet(_success):
     ts = prefect.context.scheduled_start_time
-    dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H")
+    dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H%M%S")
     vintage_fn = FN_STR.format(dt_str) + ".parquet"
     fn = FN_STR.format("") + ".parquet"
 
