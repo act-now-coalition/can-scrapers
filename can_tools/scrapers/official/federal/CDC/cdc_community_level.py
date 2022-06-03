@@ -6,6 +6,7 @@ from can_tools.scrapers.official.base import FederalDashboard
 COMMUNITY_LEVEL_MAP = {
     "Low": 0,
     "Medium": 1,
+    "Meduim": 1,
     "High": 2,
     "low": 0,
     "medium": 1,
