@@ -1,4 +1,4 @@
-,city,state,msa_population,msa_classification,10yr_population_change,growth_classification,location
+,city,state,msa_population,msa_classification,10yr_avg_annual_population_change,growth_classification,location
 3,cape-coral,FL,770577,Midsize,0.026099999999999998,Rapid,fl-cape-coral
 4,charleston,SC,802122,Midsize,0.019799999999999998,Rapid,sc-charleston
 5,omaha,NE,949442,Midsize,0.0176,Rapid,ne-omaha
