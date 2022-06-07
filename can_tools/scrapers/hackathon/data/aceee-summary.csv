@@ -7,7 +7,7 @@ rank,city,state,community-wide initiatives,building,transportation,energy and wa
 5,new-york,NY,6,24,22,12.5,5,69.5,ny-new-york
 7,denver,CO,9.5,26.5,16,13,4,69,co-denver
 8,los-angeles,CA,9,19.5,18.5,13.5,6.5,67,ca-los-angeles
-9,san-josé,CA,10,19.5,17.5,14,2.5,63.5,ca-san-josé
+9,san-jose,CA,10,19.5,17.5,14,2.5,63.5,ca-san-jose
 10,oakland,CA,6.5,15.5,20.5,13.5,6.5,62.5,ca-oakland
 11,portland,OR,7.5,13.5,19.5,11.5,7.5,59.5,or-portland
 12,chicago,IL,5.5,20,16,13.5,2.5,57.5,il-chicago
@@ -56,7 +56,7 @@ rank,city,state,community-wide initiatives,building,transportation,energy and wa
 55,worcester,MA,0.5,7,4.5,9.5,3,24.5,ma-worcester
 55,new-haven,CT,3.5,5,5.5,7.5,3,24.5,ct-new-haven
 57,bakersfield,CA,0,10,2,9.5,2.5,24,ca-bakersfield
-58,colorado,CO,1.5,17.5,2,2,0.5,23.5,co-colorado
+58,colorado-springs,CO,1.5,17.5,2,2,0.5,23.5,co-colorado-springs
 59,louisville,KY,3.5,6,9,4,0.5,23,ky-louisville
 60,memphis,TN,3,5.5,7.5,5.5,1,22.5,tn-memphis
 61,reno,NV,2,13.5,5.5,0.5,0.5,22,nv-reno
