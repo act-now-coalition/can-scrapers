@@ -35,16 +35,21 @@ TRANSPORTATION_POLICIES = {
 }
 
 ENERGY_AND_WATER_UTILITIES = {
-    # "scores_for_energy_efficiency_efforts_of_energy_utilities": {"pages": "202-204", "skip_first": True},
-    "scores_for_decarbonization_efforts_of_energy_utilities": {"pages": "205-207", "remove_last": True},
-    # "scores_for_efficiency_efforts_of_water_utilities": {"pages": "207-209", "skip_first": True},
+    "scores_for_energy_efficiency_efforts_of_energy_utilities": {"pages": "202-204", "skip_first": True},
+    "scores_for_decarbonization_efforts_of_energy_utilities": {"pages": "205-207", "remove_last": True, "columns": [
+        "city",
+        "decarbonize_electric_grid_ious_only_1.5_pts", 
+        "electric_utility_emissions_per_capita_munis_only_1.5_pts",
+        "electric_utility_emission_goal_stringency_1.5_pts",
+        "total"]},
+    "scores_for_efficiency_efforts_of_water_utilities": {"pages": "207-209", "skip_first": True},
 }
 
 
 
 class AceeeSubScores(AceeCityReport):
 
-    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = COMMUNITY_WIDE_INITIATIVES_TABLES):
+    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = ENERGY_AND_WATER_UTILITIES):
         """get data from city info table"""
 
         submetrics = []
@@ -55,9 +60,13 @@ class AceeeSubScores(AceeCityReport):
                     continue                
                 start_idx = table.index[table.iloc[:, 0] == "City"].values[0]
                 col_data = table[:start_idx + 1]
-                for col in col_data:
-                    col_data[col] = col_data[col].str.cat(sep=' ').lower().strip().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_").replace("–", "_")
-                cols = col_data.iloc[-1]
+                if table_object.get("columns", None):
+                    print("here")
+                    cols = table_object.get("columns")
+                else:
+                    for col in col_data:
+                        col_data[col] = col_data[col].str.cat(sep=' ').lower().strip().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_").replace("–", "_")
+                    cols = col_data.iloc[0]
                 tables.append(table[start_idx +1:])
             if table_object.get("skip_first"):
                 tables = tables[1:]
@@ -70,7 +79,7 @@ class AceeeSubScores(AceeCityReport):
             data = format_data(data)
             data = data.merge(CITY_LOCATIONS, how="left", on="city")
             
-            submetrics.append(data)
+            submetrics.append(data.drop_duplicates())
         
         output =  ft.reduce(lambda left, right: pd.merge(left, right, on=["city", "state", "location"], how="left"), submetrics)
         output = output.rename(columns={
@@ -82,6 +91,6 @@ class AceeeSubScores(AceeCityReport):
             "microgrid_equity__related_0.5_pts": "microgrid_equity_related_0.5_pts",
             })
         output = output.replace('N/A',np.NaN)
-        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'submetrics' / "community_wide_initiatives.csv", index=False)
+        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'submetrics' / "energy_and_water_utilities.csv", index=False)
 
     

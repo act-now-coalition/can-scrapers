@@ -60,9 +60,10 @@ def format_data(data):
         data.loc[~data["city"].isin(LOCATIONS_TO_DROP)]
         .replace(LOCATIONS_TO_RENAME)
         .assign(
-            city=lambda row: row["city"].str.lower().str.replace(" ", "-").str.replace(".", "").str.replace(",", ""),
+            city=lambda row: row["city"].str.lower().str.replace(" ", "_").str.replace(".", "").str.replace(",", ""),
+            # location=lambda row: row["state"].str.lower() + "_" + row["city"]
         )
-        .replace("washington-dc", "washington")
+        .replace({"washington_dc": "washington", "mcallen": "mc_allen"})
     )
     # See TODO above
     return data.loc[:, [col for col in data.columns if col != "drop"]]
