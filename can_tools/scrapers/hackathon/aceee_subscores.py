@@ -65,6 +65,12 @@ class AceeeSubScores(AceeCityReport):
             
             submetrics.append(data)
         output =  ft.reduce(lambda left, right: pd.merge(left, right, on=["city", "state", "location"], how="left"), submetrics)
+
+        output = output.rename(columns={
+            "district_energy_equity _related_0.5_pts": "district_energy_equity_related_0.5_pts",
+            "microgrid_equity _related_0.5_pts": "microgrid_equity_related_0.5_pts",
+            "solar_equity _related_0.5_pts": "solar_equity_related_0.5_pts"
+            })
         output.to_csv(pathlib.Path(__file__).parent / 'data' / 'community_wide_initiatives' / "community_wide_initiatives.csv", index=False)
 
     
