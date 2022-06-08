@@ -95,7 +95,7 @@ rank,city,state,community_wide_initiatives,building,transportation,energy_and_wa
 94,little_rock,AR,0.5,0.5,2.5,2.5,0,6,_2.5,_3,ar_little_rock
 95,augusta,GA,0,1.5,1.5,2.5,0,5.5,1,5,ga_augusta
 95,provo,UT,1,1.5,2,1,0,5.5,_2,_2,ut_provo
-97,mcallen,TX,0,3.5,0.5,1,0,5,_2,_2,tx_mcallen
+97,mc_allen,TX,0,3.5,0.5,1,0,5,_2,_2,tx_mc_allen
 98,cape_coral,FL,0,2.5,1,0.5,0.5,4.5,_3,_5,fl_cape_coral
 99,wichita,KS,0,0,1,1.5,1.5,4,_1,0,ks_wichita
 100,baton_rouge,LA,0,1,1.5,1,0,3.5,_2.5,_3,la_baton_rouge
