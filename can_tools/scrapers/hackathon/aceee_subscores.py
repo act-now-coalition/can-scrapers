@@ -11,7 +11,7 @@ DATA_PATH = pathlib.Path(__file__).parent / 'data' / 'community_wide_initiatives
 CITY_LOCATIONS = pd.read_csv(pathlib.Path(__file__).parent / 'data/aceee-summary.csv', usecols=["state", "city", "location"])
 
 COMMUNITY_WIDE_INITIATIVES_TABLES = {
-    "community_wide_initiatives": {"pages": "158-160", "table_breaker": "Table E2."},
+    "community_wide_climate_mitigation_and_energy_goals_scores": {"pages": "158-160", "table_breaker": "Table E2."},
     "equity_driven_climate_action": {"pages": "160-162", "skip_first": True},
     "clean_distributed_energy_resources": {"pages": "163-165", "table_breaker": "Table E4"},
     "heat_island_mitigation_goals": {"pages": "165-167", "skip_first": True}
@@ -35,17 +35,16 @@ TRANSPORTATION_POLICIES = {
 }
 
 ENERGY_AND_WATER_UTILITIES = {
-    "scores_for_energy_efficiency_efforts_of_energy_utilities": {"pages": "202-204", "skip_first": True},
-    "scores_for_decarbonization_efforts_of_energy_utilities": {"pages": "205-207", "table_breaker": "For more data"},
-    "scores_for_efficiency_efforts_of_water_utilities": {"pages": "207-209", "skip_first": True},
-
+    # "scores_for_energy_efficiency_efforts_of_energy_utilities": {"pages": "202-204", "skip_first": True},
+    "scores_for_decarbonization_efforts_of_energy_utilities": {"pages": "205-207", "remove_last": True},
+    # "scores_for_efficiency_efforts_of_water_utilities": {"pages": "207-209", "skip_first": True},
 }
 
 
 
 class AceeeSubScores(AceeCityReport):
 
-    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = ENERGY_AND_WATER_UTILITIES):
+    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = COMMUNITY_WIDE_INITIATIVES_TABLES):
         """get data from city info table"""
 
         submetrics = []
@@ -58,11 +57,12 @@ class AceeeSubScores(AceeCityReport):
                 col_data = table[:start_idx + 1]
                 for col in col_data:
                     col_data[col] = col_data[col].str.cat(sep=' ').lower().strip().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_").replace("–", "_")
-                cols = col_data.iloc[0]
-
+                cols = col_data.iloc[-1]
                 tables.append(table[start_idx +1:])
             if table_object.get("skip_first"):
                 tables = tables[1:]
+            elif table_object.get("remove_last"):
+                tables = tables[:-1]
             
             data = pd.concat(tables)
             data.columns = cols
@@ -75,10 +75,13 @@ class AceeeSubScores(AceeCityReport):
         output =  ft.reduce(lambda left, right: pd.merge(left, right, on=["city", "state", "location"], how="left"), submetrics)
         output = output.rename(columns={
             "district_energy_equity _related_0.5_pts": "district_energy_equity_related_0.5_pts",
+            "district_energy_equity__related_0.5_pts": "district_energy_equity_related_0.5_pts",
             "microgrid_equity _related_0.5_pts": "microgrid_equity_related_0.5_pts",
-            "solar_equity _related_0.5_pts": "solar_equity_related_0.5_pts"
+            "solar_equity__related_0.5_pts": "solar_equity_related_0.5_pts",
+            "solar_equity _related_0.5_pts": "solar_equity_related_0.5_pts",
+            "microgrid_equity__related_0.5_pts": "microgrid_equity_related_0.5_pts",
             })
         output = output.replace('N/A',np.NaN)
-        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'submetrics' / "energy_and_water_utilities.csv", index=False)
+        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'submetrics' / "community_wide_initiatives.csv", index=False)
 
     
