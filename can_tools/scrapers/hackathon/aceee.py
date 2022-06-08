@@ -12,14 +12,6 @@ LOCATIONS_TO_RENAME = {"Colorado": "Colorado Springs", "San José": "San Jose"}
 class AceeCityReport:
     # TODO: handle drop columns better
     SUMMARY_COLUMNS = ["rank", "city", "state", "community_wide_initiatives", "building", "transportation", "energy_and_water", "local_government", "total", "score_delta_2020", "rank_delta_2020", "drop"]
-    COMMUNITY_INITIATIVES_COLUMNS = [
-        "city",
-        "energy_reduction_goal_stringency", 
-        "initial_renewable_energy_supply", 
-        "renewable_energy_goal_stringency",
-        "climate_goal_stringency",
-        "climate_goal_progress",
-        "total"]
     CITY_INFO_COLUMNS = [
         "city", "state", "msa_population", "msa_classification", "10yr_avg_annual_population_change", "growth_classification"
     ]
@@ -57,6 +49,9 @@ class AceeCityReport:
         data["10yr_avg_annual_population_change"] = data["10yr_avg_annual_population_change"].str.replace("%", "").str.replace("–", "-").astype(float) / 100
         return data
 
+    def get_state_data():
+        return pd.read_csv("https://database.aceee.org/aceee_state_download.csv", encoding = "ISO-8859-1")
+
 def persist_data(data: pd.DataFrame, filename: str):
     data.to_csv(f"/Users/sean/Documents/can-scrapers/can_tools/scrapers/hackathon/data/{filename}", index=False)
 
@@ -65,9 +60,9 @@ def format_data(data):
         data.loc[~data["city"].isin(LOCATIONS_TO_DROP)]
         .replace(LOCATIONS_TO_RENAME)
         .assign(
-            city=lambda row: row["city"].str.lower().str.replace(" ", "-").str.replace(".", ""),
-            location=lambda row: row["state"].str.lower() + "-" + row["city"]
+            city=lambda row: row["city"].str.lower().str.replace(" ", "-").str.replace(".", "").str.replace(",", ""),
         )
+        .replace("washington-dc", "washington")
     )
     # See TODO above
     return data.loc[:, [col for col in data.columns if col != "drop"]]

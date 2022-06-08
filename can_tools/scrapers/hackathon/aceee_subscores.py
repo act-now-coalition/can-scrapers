@@ -3,6 +3,7 @@ from can_tools.scrapers.hackathon.aceee import AceeCityReport, format_data
 from typing import List, Dict
 import functools as ft
 import pathlib
+import numpy as np
 
 DATA_PATH = pathlib.Path(__file__).parent / 'data' / 'community_wide_initiatives'
 
@@ -33,11 +34,18 @@ TRANSPORTATION_POLICIES = {
     "scores_for_equitable_transportation": {"pages": "200-202", "table_breaker": "ENERGY AND"}
 }
 
+ENERGY_AND_WATER_UTILITIES = {
+    "scores_for_energy_efficiency_efforts_of_energy_utilities": {"pages": "202-204", "skip_first": True},
+    "scores_for_decarbonization_efforts_of_energy_utilities": {"pages": "205-207", "table_breaker": "For more data"},
+    "scores_for_efficiency_efforts_of_water_utilities": {"pages": "207-209", "skip_first": True},
+
+}
+
 
 
 class AceeeSubScores(AceeCityReport):
 
-    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = COMMUNITY_WIDE_INITIATIVES_TABLES):
+    def get_comprehensive_component(self, table_objects: Dict[str, Dict] = ENERGY_AND_WATER_UTILITIES):
         """get data from city info table"""
 
         submetrics = []
@@ -45,18 +53,17 @@ class AceeeSubScores(AceeCityReport):
             tables: List[pd.DataFrame] = []
             for table in self.fetch(table_object["pages"]):
                 if table_object.get("table_breaker", "!!!!!") in table.iloc[0][0]:
-                    continue
-                
-                print(table_name, table)
+                    continue                
                 start_idx = table.index[table.iloc[:, 0] == "City"].values[0]
                 col_data = table[:start_idx + 1]
                 for col in col_data:
-                    col_data[col] = col_data[col].str.cat(sep=' ').lower().strip().replace(" ", "_").replace("(", "").replace(")", "").replace("-", " ")
+                    col_data[col] = col_data[col].str.cat(sep=' ').lower().strip().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_").replace("–", "_")
                 cols = col_data.iloc[0]
 
                 tables.append(table[start_idx +1:])
             if table_object.get("skip_first"):
                 tables = tables[1:]
+            
             data = pd.concat(tables)
             data.columns = cols
             data = data.rename(columns={"total": f"total_{table_name}"})
@@ -64,13 +71,14 @@ class AceeeSubScores(AceeCityReport):
             data = data.merge(CITY_LOCATIONS, how="left", on="city")
             
             submetrics.append(data)
+        
         output =  ft.reduce(lambda left, right: pd.merge(left, right, on=["city", "state", "location"], how="left"), submetrics)
-
         output = output.rename(columns={
             "district_energy_equity _related_0.5_pts": "district_energy_equity_related_0.5_pts",
             "microgrid_equity _related_0.5_pts": "microgrid_equity_related_0.5_pts",
             "solar_equity _related_0.5_pts": "solar_equity_related_0.5_pts"
             })
-        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'community_wide_initiatives' / "community_wide_initiatives.csv", index=False)
+        output = output.replace('N/A',np.NaN)
+        output.to_csv(pathlib.Path(__file__).parent / 'data' / 'submetrics' / "energy_and_water_utilities.csv", index=False)
 
     
