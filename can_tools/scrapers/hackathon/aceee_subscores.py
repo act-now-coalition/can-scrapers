@@ -66,7 +66,7 @@ class AceeeSubScores(AceeCityReport):
             
             data = pd.concat(tables)
             data.columns = cols
-            data = data.rename(columns={"total": f"total_{table_name}"})
+            data = data.rename(columns=lambda c: f'total_{table_name}' if 'total' in c else c)
             data = format_data(data)
             data = data.merge(CITY_LOCATIONS, how="left", on="city")
             
