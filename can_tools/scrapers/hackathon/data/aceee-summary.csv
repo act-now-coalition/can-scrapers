@@ -85,7 +85,7 @@ rank,city,state,community_wide_initiatives,building,transportation,energy_and_wa
 84,oklahoma_city,OK,0,0.5,7,2.5,0.5,10.5,4.5,13,ok_oklahoma_city
 84,akron,OH,1,3,3,3.5,0,10.5,-1.5,-1,oh_akron
 86,birmingham,AL,0.5,3,4.5,0.5,1.5,10,0,2,al_birmingham
-87,winston-salem,NC,0,0.5,3,5,1,9.5,-2.5,-4,nc_winston-salem
+87,winston_salem,NC,0,0.5,3,5,1,9.5,-2.5,-4,nc_winston_salem
 88,allentown,PA,0,3.5,2,3.5,0,9,-1.5,-2,pa_allentown
 89,omaha,NE,0.5,1,6.5,0,0,8,-8,-11,ne_omaha
 90,columbia,SC,1.5,1,2.5,2.5,0,7.5,-1,1,sc_columbia
