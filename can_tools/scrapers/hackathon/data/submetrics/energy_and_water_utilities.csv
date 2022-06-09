@@ -73,7 +73,7 @@ new_orleans,1,0,0,0.5,0.5,2,LA,la_new_orleans,,0.5,1,1.5,0,0,0,0,0
 newark,0,0,1,0.5,0.5,2,NJ,nj_newark,0,,1.5,1.5,0,0,0,0,0
 tampa,1,0.5,0.5,0,0,2,FL,fl_tampa,0,,0,0,0,0,0,0,0
 tucson,1,0.5,0,0.5,0,2,AZ,az_tucson,0,,0,0,0,0,0,0,0
-winston-salem,1,0,0.5,0,0.5,2,NC,nc_winston-salem,0.5,,0.5,1,0,0,1,1,2
+winston_salem,1,0,0.5,0,0.5,2,NC,nc_winston_salem,0.5,,0.5,1,0,0,1,1,2
 charleston,0.5,0,0.5,0.5,0,1.5,SC,sc_charleston,0,,0.5,0.5,0,0,0,0,0
 colorado_springs,0.5,0.5,0.5,0,0,1.5,CO,co_colorado_springs,,0,0,0,0,0.5,0,0,0.5
 columbia,0.5,0,0.5,0.5,0,1.5,SC,sc_columbia,0,,0.5,0.5,0,0,0.5,0,0.5
@@ -91,7 +91,7 @@ wichita,0,0,0,1,0,1,KS,ks_wichita,0,,0.5,0.5,0,0,0,0,0
 cape_coral,0,0.5,0,0,0,0.5,FL,fl_cape_coral,,0,0,0,0,0,0,0,0
 el_paso,0.5,0,0,0,0,0.5,TX,tx_el_paso,0.5,,1.5,2,0,0.5,1,1,2.5
 lakeland,0,0.5,0,0,0,0.5,FL,fl_lakeland,,0,0,0,0,0,0,0,0
-mc_allen,0,0,0.5,0,0,0.5,TX,tx_mcallen,0,,0.5,0.5,0,0,0,0,0
+mc_allen,0,0,0.5,0,0,0.5,TX,tx_mc_allen,0,,0.5,0.5,0,0,0,0,0
 provo,0,0,0,0,0.5,0.5,UT,ut_provo,,0,0,0,0,0.5,0,0,0.5
 reno,0.5,0,0,0,0,0.5,NV,nv_reno,0,,0,0,0,0,0,0,0
 virginia_beach,0,0,0,0,0.5,0.5,VA,va_virginia_beach,0,,1,1,0,0,0,1,1
