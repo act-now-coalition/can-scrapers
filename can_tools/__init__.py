@@ -38,19 +38,22 @@ def all_subclasses(cls):
     )
 
 
-def fetch_all_unblocked_scrapers(cls):
+def unblocked_scrapers(cls):
+    # TableauDashboard, CDCTestingBase and PennsylvaniaVaccineDemographics
+    # are base classes that are not functional scrapers, so we explicitly remove them.
     blocked = [PennsylvaniaVaccineDemographics, TableauDashboard, CDCTestingBase]
     return list(
         x for x in all_subclasses(cls) if not inspect.isabstract(x) and x not in blocked
     )
 
 
-ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = fetch_all_unblocked_scrapers(
+ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = unblocked_scrapers(
     scrapers.DatasetBase
 )
 
 
 # Data sources currently used by the CAN site/API to be included in Prefect flows.
+# We're currently minimizing our list of active scrapers in order to reduce our Prefect costs.
 # Last updated 08/01/2022
 ACTIVE_SCRAPERS = [
     # National/federal dataset scrapers
