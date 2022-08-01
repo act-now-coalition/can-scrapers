@@ -174,11 +174,11 @@ def init_flows():
             continue
         flow = create_flow_for_scraper(ix, cls, schedule=False)
         flows.append(flow)
-        flow.register(project_name="test")
+        flow.register(project_name="can-scrape")
 
     flows = [flow for flow in flows if flow not in FLOWS_EXCLUDED_FROM_MAIN_FLOW]
-    flow = create_main_flow(flows, "test")
-    flow.register(project_name="test")
+    flow = create_main_flow(flows, "can-scrape")
+    flow.register(project_name="can-scrape")
 
 
 if __name__ == "__main__":
