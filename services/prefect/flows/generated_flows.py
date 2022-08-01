@@ -168,7 +168,6 @@ def create_main_flow(flows: List[Flow], project_name):
 
 def init_flows():
     flows = []
-    print(ACTIVE_SCRAPERS)
     for ix, cls in enumerate(ACTIVE_SCRAPERS):
         if not cls.autodag:
             continue
