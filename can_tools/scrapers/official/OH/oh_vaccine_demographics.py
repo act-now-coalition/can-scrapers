@@ -24,6 +24,7 @@ class OHVaccineCountyRace(StateDashboard):
         "native hawaiian pacific islander": "pacific_islander",
         "multiracial": "multiple",
     }
+    demographic_data = True
 
     # map wide form column names into CMUs
     variables = {

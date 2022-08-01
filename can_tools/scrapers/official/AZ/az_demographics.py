@@ -12,6 +12,7 @@ class ArizonaVaccineRace(StateDashboard):
     source_name = "ARIZONA DEPARTMENT OF HEALTH SERVICES"
     location_type = "county"
     timezone = "US/Mountain"
+    demographic_data = True
 
     state_fips = us.states.lookup("Arizona").fips
 

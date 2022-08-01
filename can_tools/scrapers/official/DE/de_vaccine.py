@@ -56,6 +56,7 @@ class DelawareVaccineDemographics(DelawareCountyVaccine):
         "have_received_at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
         "are_fully_vaccinated": variables.FULLY_VACCINATED_ALL,
     }
+    demographic_data = True
 
     def fetch(self) -> Dict[str, requests.models.Response]:
         # each combination of county and dose type has its own page (6 pages total) with the url as below

@@ -62,6 +62,7 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
         "75_84": "75-84",
         "85PLUS": "85_plus",
     }
+    demographic_data = True
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
         sheet = pd.read_excel(data.content, sheet_name=self.sheet_name)

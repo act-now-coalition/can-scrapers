@@ -237,6 +237,7 @@ class MaineRaceVaccines(MicrosoftBIDashboard):
 
     demographic = "race"
     demographic_query_name = "Race"
+    demographic_data = True
 
     variables = {
         "initiated_total": v.INITIATING_VACCINATIONS_ALL,

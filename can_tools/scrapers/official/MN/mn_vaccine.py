@@ -218,6 +218,7 @@ class MinnesotaCountyAgeVaccines(MinnesotaCountyVaccines):
         "initiating": v.INITIATING_VACCINATIONS_ALL,
         "completing": v.FULLY_VACCINATED_ALL,
     }
+    demographic_data = True
 
     def construct_body(self, resource_key, ds_id, model_id, report_id, county):
 

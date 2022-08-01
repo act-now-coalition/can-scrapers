@@ -198,6 +198,7 @@ class WVCountyVaccine(MicrosoftBIDashboard):
 class WVCountyVaccineRace(WVCountyVaccine):
     demographic = "race"
     demographic_query_name = "Race"
+    demographic_data = True
     col_mapping = {
         "G0": "location_name",
         "M_1_DM3_0_C_1": "black",

@@ -39,6 +39,7 @@ class ALCountyVaccine(ArcGIS):
 
 
 class ALCountyVaccineSex(ALCountyVaccine):
+    demographic_data = True
     variables = {
         "F": CMU(
             category="total_vaccine_initiated",
