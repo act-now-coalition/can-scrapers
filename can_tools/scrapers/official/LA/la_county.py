@@ -47,6 +47,7 @@ class LAVaccineCountyDemographics(LAVaccineCounty):
         "PercInt": variables.INITIATING_VACCINATIONS_ALL,
         "PercComp": variables.FULLY_VACCINATED_ALL,
     }
+    demographic_data = True
 
     def normalize(self, data):
         data = self.arcgis_jsons_to_df(data)

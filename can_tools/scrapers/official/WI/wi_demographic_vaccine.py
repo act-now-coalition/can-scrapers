@@ -12,7 +12,7 @@ class WisconsinVaccineCountyRace(TableauDashboard):
     source = "https://www.dhs.wisconsin.gov/covid-19/vaccine-data.htm#summary"
     source_name = "Wisconsin Department of Health Services"
     state_fips = int(us.states.lookup("Wisconsin").fips)
-
+    demographic_data = True
     timezone = "US/Central"
 
     demographic_worksheet = "Race vax/unvax county"

@@ -3,7 +3,7 @@ from datetime import timedelta
 import sentry_sdk
 import sqlalchemy as sa
 
-from can_tools import ALL_SCRAPERS, scrapers
+from can_tools import ACTIVE_SCRAPERS, scrapers
 from can_tools.scrapers.base import DatasetBase
 import prefect
 from prefect import Flow, task, case
@@ -138,7 +138,7 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
 
 
 def create_main_flow(flows: List[Flow], project_name):
-    schedule = CronSchedule("0 */4 * * *")
+    schedule = CronSchedule("0 */5 * * *")
 
     with Flow("MainFlow", schedule) as main_flow:
         tasks = []
@@ -168,16 +168,17 @@ def create_main_flow(flows: List[Flow], project_name):
 
 def init_flows():
     flows = []
-    for ix, cls in enumerate(ALL_SCRAPERS):
+    print(ACTIVE_SCRAPERS)
+    for ix, cls in enumerate(ACTIVE_SCRAPERS):
         if not cls.autodag:
             continue
         flow = create_flow_for_scraper(ix, cls, schedule=False)
         flows.append(flow)
-        flow.register(project_name="can-scrape")
+        flow.register(project_name="test")
 
     flows = [flow for flow in flows if flow not in FLOWS_EXCLUDED_FROM_MAIN_FLOW]
-    flow = create_main_flow(flows, "can-scrape")
-    flow.register(project_name="can-scrape")
+    flow = create_main_flow(flows, "test")
+    flow.register(project_name="test")
 
 
 if __name__ == "__main__":

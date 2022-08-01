@@ -154,6 +154,10 @@ class DatasetBase(ABC):
     source: str
         A string containing a URL that points to the dashboard or remote
         resource that will be scraped
+
+    demographic_data:
+        Whether the class collects demographic data (e.g. data
+        with breakdowns by age, race, sex, etc.) False by default.
     """
 
     autodag: bool = True
@@ -162,6 +166,7 @@ class DatasetBase(ABC):
     location_type: Optional[str]
     base_path: Path
     source: str
+    demographic_data: bool = False
 
     # this list of tuples specifies categories for which the first
     # category listed should always be less than or equal to the second

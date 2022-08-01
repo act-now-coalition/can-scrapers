@@ -12,6 +12,7 @@ class ILVaccineRace(StateDashboard):
     state_fips = int(us.states.lookup("Illinois").fips)
     url = "https://idph.illinois.gov/DPHPublicInformation/api/covidvaccine/getVaccineAdministrationDemos?countyname={county}"
     location_type = "county"
+    demographic_data = True
 
     variables = {
         "PersonsVaccinatedOneDose": variables.INITIATING_VACCINATIONS_ALL,

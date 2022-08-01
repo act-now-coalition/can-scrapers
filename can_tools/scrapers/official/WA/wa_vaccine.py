@@ -153,6 +153,7 @@ class WashingtonVaccine(MicrosoftBIDashboard):
 
 class WashingtonVaccineCountyRace(WashingtonVaccine):
 
+    demographic_data = True
     col_mapping = {
         "G0": "location_name",
         "M_1_DM3_{demo}_C_1": "initiated",

@@ -14,6 +14,7 @@ class HawaiiVaccineRace(HawaiiVaccineCounty):
     filterFunctionName = "[sqlproxy.0td6cgz0bpiy7x131qvze0jvbqr1].[none:County:nk]"
     counties = ["Maui", "Hawaii", "Honolulu", "Kauai"]
     baseurl = "https://public.tableau.com"
+    demographic_data = True
 
     variables = {
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,

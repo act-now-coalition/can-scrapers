@@ -20,6 +20,7 @@ class SCVaccineRace(StateDashboard):
     demographic = "race"
     demographic_column = "Assigned Race For Rate-value"
     demographic_table = "at least 1 3 Age Groups x B W"
+    demographic_data = True
 
     def fetch(self):
         engine = TableauScraper()

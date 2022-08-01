@@ -77,6 +77,7 @@ class CaliforniaVaccineDemographics(CaliforniaVaccineCounty):
             unit="people",
         ),
     }
+    demographic_data = True
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         data = self._rename_or_add_date_and_location(

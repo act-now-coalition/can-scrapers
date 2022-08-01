@@ -124,6 +124,7 @@ class TexasStateVaccine(TexasCountyVaccine):
 class TXVaccineCountyAge(TexasVaccineParent):
     location_type = "county"
     has_location = False
+    demographic_data = True
     cmus = {
         "Doses Administered": CMU(
             category="total_vaccine_doses_administered",

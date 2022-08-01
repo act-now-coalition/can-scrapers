@@ -15,6 +15,7 @@ class NHVaccineRace(StateDashboard):
     source = "https://www.covid19.nh.gov/dashboard/vaccination"
     source_name = "New Hampshire DHHS"
     location_type = "county"
+    demographic_data = True
 
     state_fips = us.states.lookup("New Hampshire").fips
 

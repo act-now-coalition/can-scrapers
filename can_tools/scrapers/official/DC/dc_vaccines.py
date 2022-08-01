@@ -77,6 +77,7 @@ class DCVaccineDemographics(DCVaccine):
         "sex": "Gender",
         "ethnicity": "Ethnicity",
     }
+    demographic_data = True
 
     def fetch(self):
         dfs = {}
