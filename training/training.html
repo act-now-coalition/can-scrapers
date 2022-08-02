@@ -583,8 +583,6 @@ The unit tests do the following:
 </li>
 </ul>
 </li>
-<li>The <code>validate</code> method runs without any issues and returns <code>True</code>
-</li>
 </ul>
 
 <p>
@@ -740,8 +738,6 @@ The scrapers are defined by 4 operations:
 </li>
 <li>Normalize: Ingests raw data and spits out normalized data
 </li>
-<li>Validate: Makes sure that the new normalized data is sensible
-</li>
 <li>Put: Puts data into our database
 </li>
 </ol>
@@ -850,15 +846,13 @@ As seen in <a href="#sec-6">Scraper Library</a>, a scraper requires 4 methods:
 </li>
 <li><code>normalize</code>
 </li>
-<li><code>validate</code>
-</li>
 <li><code>put</code>
 </li>
 </ol>
 
 <p>
-Most scrapers will <b>not</b> require one to write the <code>validate</code> or <code>put</code> methods
-because the generic methods should be able to validate the data and dump it into
+Most scrapers will <b>not</b> require one to write the <code>put</code> method
+because the generic methods should be able to dump the data into
 the database
 </p>
 </div>

@@ -125,7 +125,6 @@ We will do this by writing code needed for running the scraper
     scraper = NewJerseyVaccineCounty()
     raw = scraper.fetch()
     clean = scraper.normalize(raw)
-    scraper.validate(clean)
     scraper.put(engine, clean)
 
 The line by line description of this code is
@@ -133,5 +132,4 @@ The line by line description of this code is
 1. Create an instance of the scraper class. We can optionally pass ``execution_dt`` as an argument
 2. Call the ``.fetch`` method to do network requests and get ``raw`` data. This method is typically defined directly in the child class
 3. Call the ``.normalize(raw)`` method to get a cleaned DataFrame. This method is also typically defined directly in the child class. Implementing the ``.fetch`` and ``.normalize`` methods is the core of what we mean when we say "write a scraper"
-4. Call the ``.validate(clean)`` method to check the data. There is a default ``validate`` method in ``DatasetBase``, but you can override if you know something specific needs to be checked for the scraper you are working on
-5. Call ``.put(engine, clean)`` to store the data in the database backing the sqlalchemy Engine ``engine``. This is written in ``StateDashboard`` and should not need to be overwridden in child classes
+4. Call ``.put(engine, clean)`` to store the data in the database backing the sqlalchemy Engine ``engine``. This is written in ``StateDashboard`` and should not need to be overwridden in child classes

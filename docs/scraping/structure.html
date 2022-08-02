@@ -182,7 +182,6 @@ to new location_name</p></li>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">scraper</span> <span class="o">=</span> <span class="n">NewJerseyVaccineCounty</span><span class="p">()</span>
 <span class="linenos">2</span><span class="n">raw</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
 <span class="linenos">3</span><span class="n">clean</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
-<span class="linenos">4</span><span class="n">scraper</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
 <span class="linenos">5</span><span class="n">scraper</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -191,7 +190,6 @@ to new location_name</p></li>
 <li><p>Create an instance of the scraper class. We can optionally pass <code class="docutils literal notranslate"><span class="pre">execution_dt</span></code> as an argument</p></li>
 <li><p>Call the <code class="docutils literal notranslate"><span class="pre">.fetch</span></code> method to do network requests and get <code class="docutils literal notranslate"><span class="pre">raw</span></code> data. This method is typically defined directly in the child class</p></li>
 <li><p>Call the <code class="docutils literal notranslate"><span class="pre">.normalize(raw)</span></code> method to get a cleaned DataFrame. This method is also typically defined directly in the child class. Implementing the <code class="docutils literal notranslate"><span class="pre">.fetch</span></code> and <code class="docutils literal notranslate"><span class="pre">.normalize</span></code> methods is the core of what we mean when we say “write a scraper”</p></li>
-<li><p>Call the <code class="docutils literal notranslate"><span class="pre">.validate(clean)</span></code> method to check the data. There is a default <code class="docutils literal notranslate"><span class="pre">validate</span></code> method in <code class="docutils literal notranslate"><span class="pre">DatasetBase</span></code>, but you can override if you know something specific needs to be checked for the scraper you are working on</p></li>
 <li><p>Call <code class="docutils literal notranslate"><span class="pre">.put(engine,</span> <span class="pre">clean)</span></code> to store the data in the database backing the sqlalchemy Engine <code class="docutils literal notranslate"><span class="pre">engine</span></code>. This is written in <code class="docutils literal notranslate"><span class="pre">StateDashboard</span></code> and should not need to be overwridden in child classes</p></li>
 </ol>
 </section>

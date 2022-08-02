@@ -52,12 +52,6 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task()
-def validate(d: DatasetBase):
-    # validation either completes successfully or raises an exception
-    d._validate()
-
-
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")

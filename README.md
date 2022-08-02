@@ -84,7 +84,7 @@ example, scrapers that extract data from North Carolina Deparment of Health are 
 ## Writing a new scraper
 
 Behind the scenes of every scraper written in `can-tools` are abstract base
-classes (ABC). These ABCs define abstract methods `fetch`, `normalize`, `validate`,
+classes (ABC). These ABCs define abstract methods `fetch`, `normalize`,
 and `put` which must be implemented in order to create a scraper.
 
 * The `fetch` method is responsible for making network requests. It should request
@@ -95,14 +95,12 @@ and `put` which must be implemented in order to create a scraper.
   and return a DataFrame with columns `(vintage, dt, location, category,
   measurement, unit, age, race, ethnicity, sex, value)`. See existing methods for
   examples
-* The `validate` method should verify the data to ensure that it passes any
-  necessary sanity checks.
 * The `put` method takes a SQL connection and a DataFrame and then puts the
   DataFrame into the SQL database. This is taken care of by parent classes and
   does not need to be updated manuallly
 
-Most scrapers will not require one to write the `validate` or put methods because
-the generic methods should be able to validate the data and dump it into the database
+Most scrapers will not require one to write the put methods because
+the generic methods should be able to dump the data into the database
 
 All scrapers must inherit from `DatasetBase`, but this typically happens by subclassing 
 a resource specific parent class like `TableauDashboard` or `ArcGIS`.

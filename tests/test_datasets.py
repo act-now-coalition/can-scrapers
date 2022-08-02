@@ -68,8 +68,6 @@ def test_datasets(cls):
     assert clean.shape[0] > 0
     _test_data_structure(d, clean)
 
-    d.validate(clean, None)
-
     try:
         d.put(engine, clean)
     except sa.exc.IntegrityError:
