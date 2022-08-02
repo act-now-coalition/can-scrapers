@@ -205,3 +205,4 @@ janssen_vaccine_completed,new,people
 hospital_admissions_covid,new_7_day,people_per_100k
 hospital_beds_in_use_covid,rolling_average_7_day,percentage
 cdc_community,current,risk_level
+monkeypox_cases,cumulative,people
