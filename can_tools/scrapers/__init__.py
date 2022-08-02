@@ -2,7 +2,9 @@ from can_tools.scrapers import util
 from can_tools.scrapers.base import CMU, DatasetBase
 from can_tools.scrapers.nytimes.nyt_cases_deaths import NYTimesCasesDeaths
 
-from can_tools.scrapers.monkeypox.federal.CDC.current_cases import CDCCurrentMonkeypoxCases
+from can_tools.scrapers.monkeypox.federal.CDC.current_cases import (
+    CDCCurrentMonkeypoxCases,
+)
 
 from can_tools.scrapers.official.AL.al_vaccine import (
     ALCountyVaccine,
