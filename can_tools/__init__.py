@@ -38,13 +38,45 @@ def all_subclasses(cls):
     )
 
 
-def scrapers_for_flow(cls):
-
+def unblocked_scrapers(cls):
+    # TableauDashboard, CDCTestingBase and PennsylvaniaVaccineDemographics
+    # are base classes that are not functional scrapers, so we explicitly remove them.
     blocked = [PennsylvaniaVaccineDemographics, TableauDashboard, CDCTestingBase]
-
     return list(
         x for x in all_subclasses(cls) if not inspect.isabstract(x) and x not in blocked
     )
 
 
-ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = scrapers_for_flow(scrapers.DatasetBase)
+ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = unblocked_scrapers(
+    scrapers.DatasetBase
+)
+
+
+# Data sources currently used by the CAN site/API to be included in Prefect flows.
+# We're currently minimizing our list of active scrapers in order to reduce our Prefect costs.
+# Last updated 08/01/2022
+ACTIVE_SCRAPERS = [
+    # National/federal dataset scrapers
+    scrapers.NYTimesCasesDeaths,
+    scrapers.USAFactsCases,
+    scrapers.USAFactsDeaths,
+    scrapers.HHSReportedPatientImpactHospitalCapacityFacility,
+    scrapers.HHSReportedPatientImpactHospitalCapacityState,
+    scrapers.HHSTestingState,
+    scrapers.CDCCommunityLevelMetrics,
+    scrapers.CDCHistoricalCountyVaccine,
+    scrapers.CDCOriginallyPostedTestingDataset,
+    scrapers.CDCHistoricalTestingDataset,
+    scrapers.CDCUSAVaccine,
+    # State- and county-specific scrapers
+    scrapers.PhiladelphiaVaccine,
+    scrapers.PennsylvaniaCountyVaccines,
+    scrapers.CaliforniaVaccineCounty,
+    scrapers.NewMexicoVaccineCounty,
+    scrapers.VirginiaVaccine,
+    scrapers.VermontCountyVaccine,
+    scrapers.HawaiiVaccineCounty,
+    scrapers.NCVaccine,
+    # Demographic data scrapers
+    *[scraper for scraper in ALL_SCRAPERS if scraper.demographic_data == True],
+]

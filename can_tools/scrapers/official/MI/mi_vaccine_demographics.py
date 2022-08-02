@@ -11,6 +11,7 @@ class MIVaccineRaceAge(StateDashboard):
     state_fips = int(us.states.lookup("Michigan").fips)
     url = "https://www.michigan.gov/documents/coronavirus/Ethnicity-Race_Coverage_by_County-20210820_733398_7.xlsx"
     location_type = "county"
+    demographic_data = True
 
     variables = {
         "Initiation": variables.INITIATING_VACCINATIONS_ALL,

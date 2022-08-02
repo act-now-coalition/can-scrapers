@@ -35,6 +35,7 @@ class OregonVaccineRace(TableauDashboard):
 
     data_tableau_table = "Cty Race"
     timezone = "US/Pacific"
+    demographic_data = True
 
     def fetch(self):
         counties = self._retrieve_counties()

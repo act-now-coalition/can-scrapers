@@ -62,6 +62,7 @@ class VirginiaCountyVaccineDemographics(VirginiaVaccine):
     filterFunctionValue = None
     has_location = False
     location_type = "county"
+    demographic_data = True
 
     secondaryFilterFunctionName = "[Parameters].[Parameter 1]"
     secondaryFilterValues = ["full", "one"]

@@ -209,6 +209,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
         "Out-of-State*",
     ]
     location_names_to_replace = {"Mckean": "McKean"}
+    demographic_data = True
 
     # Reshape
     variables = {

@@ -8,6 +8,7 @@ class MaricopaVaccineRace(ArizonaMaricopaVaccine):
     variables = {
         1: variables.INITIATING_VACCINATIONS_ALL,
     }
+    demographic_data = True
 
     def fetch(self) -> requests.models.Response:
         url = "https://datawrapper.dwcdn.net/T99SS/4/"

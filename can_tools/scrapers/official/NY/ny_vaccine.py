@@ -53,6 +53,7 @@ class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
     demographic = "age"
     demographic_column = "Age Group-alias"
     data_tableau_table = "Demographics by Age"
+    demographic_data = True
 
     variables = {
         "People with at least one Vaccine Dose": variables.INITIATING_VACCINATIONS_ALL,

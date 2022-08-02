@@ -84,6 +84,7 @@ class MontanaStateVaccine(MontanaCountyVaccine):
         "Total_Montanans_Immunized": variables.FULLY_VACCINATED_ALL,
         "Total_Doses_Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
+    demographic_data = True
 
     def fetch(self):
         return self.get_all_jsons("COVID_Vaccination_PRD_View", 1, "")

@@ -14,6 +14,7 @@ class SDVaccineSex(MicrosoftBIDashboard):
     has_location = False
     location_type = "county"
     state_fips = int(us.states.lookup("South Dakota").fips)
+    demographic_data = True
 
     source = "https://doh.sd.gov/COVID/Dashboard.aspx"
     source_name = "South Dakota Department of Health"

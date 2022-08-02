@@ -15,6 +15,7 @@ class MassachusettsVaccineDemographics(StateDashboard):
     location_type = "county"
     state_fips = int(us.states.lookup("Massachusetts").fips)
     has_location = False
+    demographic_data = True
 
     variables = {
         "Fully vaccinated individuals": variables.FULLY_VACCINATED_ALL,
