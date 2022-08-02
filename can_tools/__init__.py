@@ -79,4 +79,6 @@ ACTIVE_SCRAPERS = [
     scrapers.NCVaccine,
     # Demographic data scrapers
     *[scraper for scraper in ALL_SCRAPERS if scraper.demographic_data == True],
+    # Monkeypox scrapers
+    scrapers.CDCCurrentMonkeypoxCases,
 ]
