@@ -78,12 +78,6 @@ class RequestError(Exception):
     pass
 
 
-class ValidateDataFailedError(Exception):
-    """Error raised when data vailidation fails."""
-
-    pass
-
-
 class ValidateRelativeOrderOfCategoriesError(Exception):
     def __init__(self, category_small, category_large, problems):
         self.category_small = category_small
@@ -526,49 +520,6 @@ class DatasetBase(ABC):
 
         return issues
 
-    def validate(self, df, df_hist):
-        """
-        The `validate` method checks what the tentative clean data looks
-        like and then checks whether the updates are sensible -- If they
-        are then it returns True otherwise it returns False and stops
-        the fetch->normalize->validate->put DAG
-
-        Raises Exceptions if validation fails
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            The data that is being proposed for put
-        df_hist : pd.DataFrame
-            Historical data
-
-        """
-        # TODO (SL, 2021-04-12): we aren't ready with other tooling for dealing
-        # nicely with validation errors and exception lists. Until then we will
-        # disable validation
-        return
-        issues = []
-        if utils.is_time_series(df):
-            issues.extend(self._validate_time_series(df))
-
-        issues.extend(self._validate_order_of_variables(df))
-
-        if len(issues) > 0:
-            raise ValidationErrors(issues)
-
-    def _validate(self):
-        """
-        The `_validate` method loads the appropriate data and then
-        checks the data using `validate` and determines whether the
-        data has been validated
-        """
-        # Load cleaned data
-        df = self._read_clean()
-        df_hist = None
-
-        # Validate data
-        return self.validate(df, df_hist)
-
     def put(self, engine: Engine, df: pd.DataFrame) -> bool:
         """
         Read DataFrame `df` from storage and put into corresponding
@@ -629,8 +580,5 @@ class DatasetBase(ABC):
     def reprocess_from_already_fetched_data(self, engine: Engine):
         """Reprocesses data from fetched data - useful to fix errors after fetch."""
         self._normalize()
-
-        # validate will either succeed or raise an Exception
-        self._validate()
 
         self._put(engine)

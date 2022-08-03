@@ -220,7 +220,6 @@ Finally the =data.covid_providers= table
     - Verify that the =normalize= method returns a DataFrame that
       - Is not empty
       - Has the correct columns
-    - The =validate= method runs without any issues and returns =True=
 
     The integration tests test that the =put= method can successfully load the
     data into a test instance of the database (see below).
@@ -309,8 +308,7 @@ The scrapers are defined by 4 operations:
 
 1. Fetch: Retrieves raw data from dashboard
 2. Normalize: Ingests raw data and spits out normalized data
-3. Validate: Makes sure that the new normalized data is sensible
-4. Put: Puts data into our database
+3. Put: Puts data into our database
 
 #+CAPTION: Scraper flow chart
 #+NAME: fig:CANSRAPERS
@@ -338,7 +336,6 @@ It is found in =can-scrapers/can_tools/scrapers/base.py=
 **Methods that will be defined for you**
 
 - =put=
-- =validate=: a very basic version
 - =
 
 *** =StateDashboard= or =CountyDashboard=
@@ -369,11 +366,10 @@ As seen in [[Scraper Library]], a scraper requires 4 methods:
 
 1. =fetch=
 2. =normalize=
-3. =validate=
-4. =put=
+3. =put=
 
-Most scrapers will *not* require one to write the =validate= or =put= methods
-because the generic methods should be able to validate the data and dump it into
+Most scrapers will *not* require one to write the =put= method
+because the generic methods should be able to dump the data it into
 the database
 
 * Example Scrapers

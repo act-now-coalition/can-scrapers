@@ -52,12 +52,6 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task()
-def validate(d: DatasetBase):
-    # validation either completes successfully or raises an exception
-    d._validate()
-
-
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def put(d: DatasetBase, connstr: str):
     logger = prefect.context.get("logger")
@@ -123,13 +117,11 @@ def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
             d = create_scraper(cls)
             fetched = fetch(d)
             normalized = normalize(d)
-            validated = validate(d)
             done = put(d, connstr)
 
             d.set_upstream(sentry_sdk_task)
             normalized.set_upstream(fetched)
-            validated.set_upstream(normalized)
-            done.set_upstream(validated)
+            done.set_upstream(normalized)
 
         with case(new_data, False):
             skip_cached_flow()
