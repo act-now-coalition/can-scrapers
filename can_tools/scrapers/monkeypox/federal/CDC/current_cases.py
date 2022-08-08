@@ -36,11 +36,15 @@ class CDCCurrentMonkeypoxCases(FederalDashboard):
             return await page.evaluate("x => x.outerHTML", table)
 
     def fetch(self):
-        return asyncio.get_event_loop().run_until_complete(self._get_table_from_browser())
+        return asyncio.get_event_loop().run_until_complete(
+            self._get_table_from_browser()
+        )
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
         data = pd.read_html(data)[0].assign(
-            location=lambda row: row["LocationSort by location in no order"].map(_lookup), 
-            dt=self._retrieve_dt()
+            location=lambda row: row["LocationSort by location in no order"].map(
+                _lookup
+            ),
+            dt=self._retrieve_dt(),
         )
         return self._reshape_variables(data=data, variable_map=self.variables)
