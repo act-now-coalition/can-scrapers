@@ -1,7 +1,8 @@
 from can_tools.scrapers.base import CMU
 from can_tools.scrapers.official.base import FederalDashboard
 import pandas as pd
-import requests
+from can_tools.scrapers.puppet import with_page
+import asyncio
 import us
 
 
@@ -21,21 +22,29 @@ class CDCCurrentMonkeypoxCases(FederalDashboard):
     provider = "cdc"
 
     variables = {
-        "Cases": CMU(
+        "CasesSort by cases in no order": CMU(
             category="monkeypox_cases",
             measurement="cumulative",
             unit="people",
         )
     }
 
+    async def _get_table_from_browser(self):
+        async with with_page(headless=True) as page:
+            await page.goto(self.source)
+            table = await page.J(".data-table")
+            return await page.evaluate("x => x.outerHTML", table)
+
     def fetch(self):
-        response = requests.get(self.fetch_url)
-        response.raise_for_status()
-        return response.json()
+        return asyncio.get_event_loop().run_until_complete(
+            self._get_table_from_browser()
+        )
 
     def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        data = pd.DataFrame.from_records(data["data"])
-        data = data.loc[data["State"] != "Non-US Resident"].assign(
-            location=lambda row: row["State"].map(_lookup), dt=self._retrieve_dt()
+        data = pd.read_html(data)[0].assign(
+            location=lambda row: row["LocationSort by location in no order"].map(
+                _lookup
+            ),
+            dt=self._retrieve_dt(),
         )
         return self._reshape_variables(data=data, variable_map=self.variables)
