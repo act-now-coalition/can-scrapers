@@ -56,7 +56,6 @@ from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
     CDCStateVaccine,
     CDCUSAVaccine,
 )
-from can_tools.scrapers.official.federal.CDC.cdc_county_vaccines import CDCCountyVaccine
 
 from can_tools.scrapers.official.federal.CDC.cdc_historical_vaccine import (
     CDCHistoricalCountyVaccine,
