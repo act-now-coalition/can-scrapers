@@ -66,6 +66,9 @@ ACTIVE_SCRAPERS = [
     scrapers.CDCCommunityLevelMetrics,
     scrapers.CDCHistoricalCountyVaccine,
     scrapers.CDCOriginallyPostedTestingDataset,
+    # TODO(sean) 2022-08-31: Disabling this scraper as the dataset is currently empty.
+    # Re-enable once the dataset is updated.
+    # scrapers.CDCHistoricalTestingDataset,
     scrapers.CDCUSAVaccine,
     scrapers.CDCStateVaccine,
     # State- and county-specific scrapers
