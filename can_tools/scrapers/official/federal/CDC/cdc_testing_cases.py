@@ -82,21 +82,9 @@ class CDCTestingBase(FederalDashboard, ETagCacheMixin):
         return data.groupby(group_columns).agg({"value": "last"}).reset_index()
 
 
-class CDCHistoricalTestingDataset(CDCTestingBase):
-    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
-    fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
-    date_column = "date"
-    cache_file = "cdc_historical_testing.txt"
-
-    # We used to also collect CDC testing data via the CDCCovidDataTracker class.
-    # In order to not overwrite/mix the data sources we use the cdc2 provider instead of cdc.
-    # 11/1/21: This is the offical CDC testing dataset and the one that is used by the pipeline downstream.
-    provider = "cdc2"
-
-
 class CDCOriginallyPostedTestingDataset(CDCTestingBase):
-    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/8396-v7yb"
-    fetch_url = "https://data.cdc.gov/resource/8396-v7yb.json"
+    source = "https://data.cdc.gov/Public-Health-Surveillance/Weekly-COVID-19-County-Level-of-Community-Transmis/dt66-w6m6/"
+    fetch_url = "https://data.cdc.gov/resource/dt66-w6m6.json"
     date_column = "report_date"
     cache_file = "cdc_originally_posted_testing.txt"
 
