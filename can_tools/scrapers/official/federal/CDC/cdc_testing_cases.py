@@ -83,8 +83,8 @@ class CDCTestingBase(FederalDashboard, ETagCacheMixin):
 
 
 class CDCHistoricalTestingDataset(CDCTestingBase):
-    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/nra9-vzzn/data"
-    fetch_url = "https://data.cdc.gov/resource/nra9-vzzn.json"
+    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/jgk8-6dpn/"
+    fetch_url = "https://data.cdc.gov/resource/jgk8-6dpn.json"
     date_column = "date"
     cache_file = "cdc_historical_testing.txt"
 
@@ -95,8 +95,8 @@ class CDCHistoricalTestingDataset(CDCTestingBase):
 
 
 class CDCOriginallyPostedTestingDataset(CDCTestingBase):
-    source = "https://data.cdc.gov/Public-Health-Surveillance/United-States-COVID-19-County-Level-of-Community-T/8396-v7yb"
-    fetch_url = "https://data.cdc.gov/resource/8396-v7yb.json"
+    source = "https://data.cdc.gov/Public-Health-Surveillance/Weekly-COVID-19-County-Level-of-Community-Transmis/dt66-w6m6/"
+    fetch_url = "https://data.cdc.gov/resource/dt66-w6m6.json"
     date_column = "report_date"
     cache_file = "cdc_originally_posted_testing.txt"
 
