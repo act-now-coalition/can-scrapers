@@ -66,7 +66,6 @@ ACTIVE_SCRAPERS = [
     scrapers.CDCCommunityLevelMetrics,
     scrapers.CDCHistoricalCountyVaccine,
     scrapers.CDCOriginallyPostedTestingDataset,
-    scrapers.CDCHistoricalTestingDataset,
     scrapers.CDCUSAVaccine,
     scrapers.CDCStateVaccine,
     # State- and county-specific scrapers
