@@ -20,8 +20,10 @@ class CDCStateVaccine(FederalDashboard):
     provider = "cdc"
 
     variables = {
+        "Distributed": variables.TOTAL_VACCINE_DISTRIBUTED,
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
+        "Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "Additional_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
