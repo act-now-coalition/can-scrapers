@@ -24,9 +24,6 @@ class CDCTestingBase(FederalDashboard, ETagCacheMixin):
 
     # SODA API stream has different variable names than the CSV and online dataset -- but the columns appear to be the same.
     variables = {
-        "cases_per_100k_7_day_count": CMU(
-            category="cases", measurement="new_7_day", unit="cases_per_100k"
-        ),
         "percent_test_results_reported": CMU(
             category="pcr_tests_positive",
             measurement="rolling_average_7_day",

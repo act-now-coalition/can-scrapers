@@ -40,9 +40,6 @@ class CDCCommunityLevelMetrics(FederalDashboard):
             measurement="new_7_day",
             unit="people_per_100k",
         ),
-        "covid_cases_per_100k": CMU(
-            category="cases", measurement="new_7_day", unit="cases_per_100k"
-        ),
         "covid-19_community_level": CMU(
             category="cdc_community", measurement="current", unit="risk_level"
         ),
