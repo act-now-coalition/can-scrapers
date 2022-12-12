@@ -108,7 +108,11 @@ from can_tools.scrapers.official.MA.ma_vaccines import MassachusettsVaccineDemog
 # the scraper from list that drives the Prefect tasks, so this scraper will not be included in any flows (because it isn't functional)
 # from can_tools.scrapers.official.NE.ne_cases import NebraskaCases
 
+from can_tools.scrapers.official.NC.nc_vaccine import NCVaccine
+
 from can_tools.scrapers.official.NH.nh_demographics import NHVaccineRace
+
+from can_tools.scrapers.official.NM.nm_vaccine import NewMexicoVaccineCounty
 
 from can_tools.scrapers.official.NY.ny_vaccine import (
     NewYorkVaccineCounty,
@@ -149,8 +153,6 @@ from can_tools.scrapers.official.SD.sd_vaccine_demographics import (
 )
 
 from can_tools.scrapers.official.TX.texas_vaccine import (
-    TexasCountyVaccine,
-    TexasStateVaccine,
     TXVaccineCountyAge,
     TXVaccineCountyRace,
 )
