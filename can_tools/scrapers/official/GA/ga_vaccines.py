@@ -6,8 +6,7 @@ from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import StateDashboard
 
 
-class GeorgiaCountyVaccine(StateDashboard):
-
+class GeorgiaCountyVaccineAge(StateDashboard):
     has_location = True
     location_type = "county"
     state_fips = int(us.states.lookup("Georgia").fips)
@@ -17,36 +16,9 @@ class GeorgiaCountyVaccine(StateDashboard):
     )
     fetch_url = "https://georgiadph.maps.arcgis.com/sharing/rest/content/items/e7378d64d3fa4bc2a67b2ea40e4748b0/data"
 
-    variables = {
-        "PERSONCVAX": variables.FULLY_VACCINATED_ALL,
-        "PERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
-    }
-
-    def fetch(self) -> requests.models.Response:
-        return requests.get(self.fetch_url)
-
-    def normalize(self, data: requests.models.Response) -> pd.DataFrame:
-        sheet = pd.read_excel(data.content, sheet_name="COUNTY_SUMMARY")
-
-        # doses are stored in separate sheets, parse both
-        data = self._rename_or_add_date_and_location(
-            data=sheet,
-            location_column="COUNTY_ID",
-            # Remove unwanted fips codes
-            # 0 = Georgia
-            # 99999 = Unknown
-            locations_to_drop=[0, 99999],
-            timezone="US/Eastern",
-        )
-
-        return self._reshape_variables(data=data, variable_map=self.variables)
-
-
-class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
     demographic = "age"
     sheet_name = "AGE_BY_COUNTY"
     location_column = "COUNTYFIPS"
-    has_location = True
     variables = {"PERSONVAX": variables.INITIATING_VACCINATIONS_ALL}
     demographic_formatting = {
         "00_04": "0-4",
@@ -63,6 +35,9 @@ class GeorgiaCountyVaccineAge(GeorgiaCountyVaccine):
         "85PLUS": "85_plus",
     }
     demographic_data = True
+
+    def fetch(self) -> requests.models.Response:
+        return requests.get(self.fetch_url)
 
     def normalize(self, data: requests.models.Response) -> pd.DataFrame:
         sheet = pd.read_excel(data.content, sheet_name=self.sheet_name)

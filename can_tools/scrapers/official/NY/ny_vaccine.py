@@ -1,50 +1,22 @@
 import us
 import pandas as pd
-import os
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
 from typing import List
 
 
-class NewYorkVaccineCounty(TableauDashboard):
+class NewYorkVaccineCountyAge(TableauDashboard):
     has_location = False
     source = "https://covid19vaccine.health.ny.gov/covid-19-vaccine-tracker"
     source_name = "New York State Department of Health"
     state_fips = int(us.states.lookup("New York").fips)
     location_type = "county"
     baseurl = "https://public.tableau.com"
-    viewPath = "Vaccine_County_Public/NYSCountyVaccinations"
 
-    data_tableau_table = "Total Doses by County"
     location_name_col = "County-alias"
     timezone = "US/Eastern"
 
-    cmus = {
-        "First Dose": variables.INITIATING_VACCINATIONS_ALL,
-        "Series Complete": variables.FULLY_VACCINATED_ALL,
-    }
-
-    def normalize(self, data: pd.DataFrame) -> pd.DataFrame:
-        columns = {
-            "Measure Names-alias": "variable",
-            "County-value": "location_name",
-            "Measure Values-alias": "value",
-        }
-        data = (
-            data.loc[:, list(columns.keys())]
-            .rename(columns=columns)
-            .assign(
-                dt=self._retrieve_dt(),
-                vintage=self._retrieve_vintage(),
-                value=lambda row: pd.to_numeric(row["value"].str.replace(",", "")),
-            )
-            .pipe(self.extract_CMU, cmu=self.cmus)
-        )
-        return data
-
-
-class NewYorkVaccineCountyAge(NewYorkVaccineCounty):
     viewPath = "Gender_Age_Public/VaccinationbyAge"
     filterFunctionName = (
         "[federated.1nz68qa0ypytxa16suf0a0hhpoyr].[none:PAT_ZIP_COUNTY_DESC:nk]"

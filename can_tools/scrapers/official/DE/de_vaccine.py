@@ -10,47 +10,13 @@ from can_tools.scrapers.official.base import StateDashboard
 from can_tools.scrapers import variables
 
 
-class DelawareCountyVaccine(StateDashboard):
+class DelawareVaccineDemographics(StateDashboard):
     url_base = "https://myhealthycommunity.dhss.delaware.gov/locations/county-{county}/covid19_vaccine_fully_vaccinated"
     has_location = False
     location_type = "county"
     source = "https://myhealthycommunity.dhss.delaware.gov"
     source_name = "Delaware Health and Social Services"
     state_fips = int(us.states.lookup("Delaware").fips)
-
-    variables = {
-        "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
-        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
-    }
-
-    def fetch(self) -> List[pd.DataFrame]:
-        return [
-            pd.read_html(
-                self.url_base.format(county=county),
-                attrs={"class": "table c-dash-table__table c-dash-table--striped-by-2"},
-            )[0].assign(location_name=county)
-            for county in ("kent", "new-castle", "sussex")
-        ]
-
-    def normalize(self, data: List[pd.DataFrame]) -> pd.DataFrame:
-        return (
-            pd.concat(data)
-            .query("`People Vaccinated` == 'All ages'")
-            .assign(
-                location_name=(
-                    lambda row: row["location_name"].str.title().str.replace("-", " ")
-                ),
-            )
-            .pipe(
-                self._rename_or_add_date_and_location,
-                timezone="US/Eastern",
-                location_name_column="location_name",
-            )
-            .pipe(self._reshape_variables, variable_map=self.variables)
-        )
-
-
-class DelawareVaccineDemographics(DelawareCountyVaccine):
 
     variables = {
         "have_received_at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,

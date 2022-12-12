@@ -3,67 +3,15 @@ import us
 
 from can_tools.scrapers import variables
 from can_tools.scrapers.official.base import TableauDashboard
-from tableauscraper import TableauScraper as TS
 
-
-class DCVaccine(TableauDashboard):
+# TODO: 12/12/2022 broken scraper
+class DCVaccineDemographics(TableauDashboard):
     has_location = True
     source = "https://coronavirus.dc.gov/data/vaccination"
     source_name = "DC Health"
     state_fips = int(us.states.lookup("District of Columbia").fips)
     location_type = "state"
     baseurl = "https://dataviz1.dc.gov/t/OCTO"
-    viewPath = "Vaccine_Public/Administration"
-    data_tableau_table = "Sheet 29"
-
-    variables = {
-        "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
-        "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
-    }
-
-    def _get_date(self):
-        # 'last updated' date is stored in a 1x1 df
-        df = self.get_tableau_view(
-            url=(self.baseurl + "/views/Vaccine_Public/Administration")
-        )["Admin Update"]
-        return pd.to_datetime(df.iloc[0]["MaxDate-alias"]).date()
-
-    def normalize(self, data):
-        df = (
-            # keep only DC residents (in and out of state)
-            data.query(
-                "`Measure Names-alias` in"
-                "['Fully Vaccinated', 'At Least One Dose', 'Total Administrations']"
-                "and `Type of Resident-value` in"
-                "['DC Resident (outside DC)', 'DC Resident (within DC)', 'DC Resident (Federal Entity)']"
-            )
-            .assign(
-                value=lambda x: pd.to_numeric(
-                    x["Measure Values-alias"].str.replace(",", ""), errors="coerce"
-                )
-            )
-            .rename(columns={"Measure Names-alias": "variable"})
-        )
-
-        # combine DC resident (within DC) and DC resident (outside DC) into one variable
-        out = (
-            df.loc[:, ["value", "variable"]]
-            .groupby("variable")
-            .sum()
-            .reset_index()
-            .assign(
-                vintage=self._retrieve_vintage(),
-                dt=self._get_date(),
-                location=self.state_fips,
-            )
-        )
-
-        # transform
-        out = self.extract_CMU(df=out, cmu=self.variables)
-        return out.drop(columns="variable")
-
-
-class DCVaccineDemographics(DCVaccine):
     viewPath = "Vaccine_Public/Demographics"
     filterFunctionName = "[Parameters].[Parameter 9]"
     variables = {

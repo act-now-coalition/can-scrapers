@@ -1,7 +1,8 @@
 import pandas as pd
 import us
 
-from can_tools.scrapers import HawaiiVaccineCounty, variables
+from can_tools.scrapers import variables
+from can_tools.scrapers.official.HI.hi_county import HawaiiVaccineCounty
 
 pd.set_option("display.max_rows", 500)
 
