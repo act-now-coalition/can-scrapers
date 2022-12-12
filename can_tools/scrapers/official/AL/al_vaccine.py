@@ -18,7 +18,6 @@ class ALCountyVaccine(ArcGIS):
     variables = {
         "PERSONVAX": variables.INITIATING_VACCINATIONS_ALL,
         "PERSONCVAX": variables.FULLY_VACCINATED_ALL,
-        "NADMIN_RES": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
     service = "Vaccination_Dashboard_AGOL_v4_PUBLIC_VIEW"
     sheet = 1

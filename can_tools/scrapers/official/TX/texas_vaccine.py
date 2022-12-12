@@ -35,102 +35,11 @@ class TexasVaccineParent(StateDashboard, ABC):
         ).assign(dt=self._retrieve_dtm1d("US/Eastern"))
 
 
-class TexasCountyVaccine(TexasVaccineParent):
-    has_location = False
-    location_type = "county"
-
-    def _rename_and_reshape(self, df):
-        # Rename columns
-        df = df.rename(columns={"County Name": "location_name"})
-
-        # Exclude other locations
-        df = df.query(
-            "location_name != '*Other' & "
-            "location_name != 'Federal Long-Term Care Vaccination Program'"
-        )
-
-        # Reshape and set values to numeric types
-        out = df.melt(
-            id_vars=["dt", "location_name"], value_vars=crename.keys()
-        ).dropna()
-        out.loc[:, "value"] = pd.to_numeric(out["value"])
-        out = self.extract_CMU(out, crename)
-
-        out["vintage"] = self._retrieve_vintage()
-
-        return out
-
-    def normalize(self, data) -> pd.DataFrame:
-        # Read excel file and set date
-        df = self.excel_to_dataframe(data, "By County")
-        df = self._rename_and_reshape(df)
-        non_counties = [
-            "Texas",
-            "Federal Pharmacy Retail Vaccination Program",
-            "Other",
-            "Grand Total",
-            "* Other",
-        ]
-        # Drop state data which we retrieve with another scraper
-        # Drop data where location_name is "Federal Pharmacy Retail Vaccination Program"
-        df = df.query("location_name not in @non_counties")
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location_name",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-        return df.loc[:, cols_to_keep]
-
-
-class TexasStateVaccine(TexasCountyVaccine):
-    has_location = True
-    location_type = "state"
-    # just statewide data
-
-    def normalize(self, data) -> pd.DataFrame:
-        # Read excel file and set date
-        df = self.excel_to_dataframe(data, "By County")
-        df = self._rename_and_reshape(df)
-
-        # Drop state data which we retrieve with another scraper
-        df = df.query("location_name == 'Texas'")
-        df["location"] = self.state_fips
-
-        cols_to_keep = [
-            "vintage",
-            "dt",
-            "location",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "race",
-            "ethnicity",
-            "sex",
-            "value",
-        ]
-        return df.loc[:, cols_to_keep]
-
-
 class TXVaccineCountyAge(TexasVaccineParent):
     location_type = "county"
     has_location = False
     demographic_data = True
     cmus = {
-        "Doses Administered": CMU(
-            category="total_vaccine_doses_administered",
-            measurement="cumulative",
-            unit="doses",
-        ),
         "People Vaccinated with at least One Dose": CMU(
             category="total_vaccine_initiated",
             measurement="cumulative",

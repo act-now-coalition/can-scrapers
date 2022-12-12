@@ -24,7 +24,6 @@ class CaliforniaVaccineCounty(StateDashboard):
     variables = {
         "cumulative_fully_vaccinated": variables.FULLY_VACCINATED_ALL,
         "cumulative_at_least_one_dose": variables.INITIATING_VACCINATIONS_ALL,
-        "cumulative_total_doses": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "cumulative_booster_recip_count": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 

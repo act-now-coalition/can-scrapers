@@ -16,7 +16,6 @@ class ArizonaMaricopaVaccine(CountyDashboard):
     source = "https://www.maricopa.gov/5671/Public-Vaccine-Data"
     source_name = "ASIIS"
     variables = {
-        "total_doses_administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "total_vaccine_completed": variables.FULLY_VACCINATED_ALL,
         "total_vaccine_initiated": variables.INITIATING_VACCINATIONS_ALL,
     }

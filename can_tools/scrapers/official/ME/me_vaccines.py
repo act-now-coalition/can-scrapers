@@ -215,7 +215,6 @@ class MaineCountyVaccines(MicrosoftBIDashboard):
 
         # Reshape
         variables = {
-            "total_vaccine_administered": v.TOTAL_DOSES_ADMINISTERED_ALL,
             "total_vaccine_initiated": v.INITIATING_VACCINATIONS_ALL,
             "total_vaccine_completed": v.FULLY_VACCINATED_ALL,
             "total_vaccine_completed_percent": v.PERCENTAGE_PEOPLE_COMPLETING_VACCINE,

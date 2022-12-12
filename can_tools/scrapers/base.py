@@ -243,7 +243,7 @@ class DatasetBase(ABC):
         return out
 
     def _retrieve_dtm1d(self, tz: str = "US/Eastern") -> pd.Timestamp:
-        """Get the datetime of one day ago in a specific timezone """
+        """Get the datetime of one day ago in a specific timezone"""
         return self._retrieve_dt(tz) - pd.Timedelta(days=1)
 
     def _retrieve_vintage(self) -> pd.Timestamp:

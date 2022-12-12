@@ -19,7 +19,6 @@ class DCVaccine(TableauDashboard):
     variables = {
         "Fully Vaccinated": variables.FULLY_VACCINATED_ALL,
         "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
-        "Total Administrations": variables.TOTAL_DOSES_ADMINISTERED_ALL,
     }
 
     def _get_date(self):

@@ -48,11 +48,6 @@ class MichiganVaccineCounty(StateDashboard):
             "PfizerSecondDose": _make_cmu("pfizer_vaccine_completed"),
             "total_initiated": _make_cmu("total_vaccine_initiated"),
             "total_completed": _make_cmu("total_vaccine_completed"),
-            "total": CMU(
-                category="total_vaccine_doses_administered",
-                measurement="cumulative",
-                unit="doses",
-            ),
         }
         not_counties = ["No County", "Non-Michigan Resident"]  # noqa
 
