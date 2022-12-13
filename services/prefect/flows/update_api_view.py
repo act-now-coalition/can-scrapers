@@ -16,6 +16,22 @@ CSV_FN = DATA_PATH / "can_scrape_api_covid_us.csv"
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}"
 
+DATATYPES = {
+    "provider": "category",
+    "location_id": "category",
+    "location": "int32",
+    "location_type": "category",
+    "variable_name": "category",
+    "measurement": "category",
+    "unit": "category",
+    "age": "category",
+    "race": "category",
+    "sex": "category",
+    "ethnicity": "category",
+    "source_url": "object",
+    "source_name": "object",
+    "value": "float64",
+}
 
 @task(max_retries=3, retry_delay=timedelta(minutes=1))
 def export_to_csv(connstr: str):
@@ -44,7 +60,7 @@ def create_parquet(_success):
     vintage_fn = FN_STR.format(dt_str) + ".parquet"
     fn = FN_STR.format("") + ".parquet"
 
-    df = pd.read_csv(CSV_FN, parse_dates=["dt"])
+    df = pd.read_csv(CSV_FN, parse_dates=["dt", "last_updated"], dtype=DATATYPES)
     df.to_parquet(DATA_PATH / vintage_fn, index=False)
     df.to_parquet(DATA_PATH / fn, index=False)
     return vintage_fn, fn
