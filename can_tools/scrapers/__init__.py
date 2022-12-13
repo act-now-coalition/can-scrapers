@@ -60,9 +60,7 @@ from can_tools.scrapers.official.federal.CDC.cdc_vaccines import (
 from can_tools.scrapers.official.federal.CDC.cdc_historical_vaccine import (
     CDCHistoricalCountyVaccine,
 )
-from can_tools.scrapers.official.federal.CDC.cdc_variant_tracker import (
-    CDCVariantTracker,
-)
+
 from can_tools.scrapers.official.federal.HHS.facility import (
     HHSReportedPatientImpactHospitalCapacityFacility,
 )
