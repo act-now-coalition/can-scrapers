@@ -24,6 +24,7 @@ from can_tools.scrapers.official.AZ.counties.maricopa_vaccine import (
     ArizonaMaricopaVaccine,
 )
 from can_tools.scrapers.official.AZ.counties.maricopa_race import MaricopaVaccineRace
+from can_tools.scrapers.official.CA.ca_test_positivity import CaliforniaTestPositivity
 from can_tools.scrapers.official.CA.ca_vaccine import (
     CaliforniaVaccineCounty,
     CaliforniaVaccineDemographics,
