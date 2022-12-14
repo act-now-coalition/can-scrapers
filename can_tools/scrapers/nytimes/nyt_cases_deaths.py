@@ -125,10 +125,13 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
     }
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        # use the commits page so that we update whenever a new commit is pushed for any files.
+        # NOTE (2022/12/14): We used to use https://api.github.com/repos/nytimes/covid-19-data/commits for the cache_url,
+        # so that it would pick up any changes to the repo, but NYT makes several commits per day to files we don't need, so
+        # for now we just use https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv and hope that
+        # it always updates when us-counties updates.
         ETagCacheMixin.initialize_cache(
             self,
-            cache_url="https://api.github.com/repos/nytimes/covid-19-data/commits",
+            cache_url="https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
             cache_file="nyt_cases_deaths.txt",
         )
         super().__init__(execution_dt=execution_dt)
