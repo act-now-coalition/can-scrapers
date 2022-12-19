@@ -1,4 +1,3 @@
-from functools import cached_property
 import pandas as pd
 from numpy import nan
 from typing import List, Optional, Tuple, Dict
