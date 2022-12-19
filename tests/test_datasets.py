@@ -64,7 +64,6 @@ def test_datasets(cls):
     # so we only test a subset of their data.
     if cls.__name__ == "NYTimesCasesDeaths":
         files = {
-            "county": ["us-counties-2022.csv"],
             "state": ["us-states.csv"],
             "nation": ["us.csv"],
         }
