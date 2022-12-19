@@ -1,3 +1,5 @@
+from abc import ABC
+import multiprocessing
 import pandas as pd
 import us
 from typing import Dict
@@ -7,7 +9,7 @@ from can_tools.scrapers.official.base import TableauDashboard
 from tableauscraper import TableauScraper, TableauWorkbook
 
 
-class NCVaccine(TableauDashboard):
+class NCVaccineBase(TableauDashboard, ABC):
     has_location = False
     source = "https://covid19.ncdhhs.gov/dashboard/vaccinations"
     source_name = (
@@ -15,65 +17,81 @@ class NCVaccine(TableauDashboard):
     )
     state_fips = int(us.states.lookup("North Carolina").fips)
     location_type = "county"
-    fetch_url = "https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/VaccinationDashboard"
+    fetch_url = (
+        "https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/All"
+    )
 
-    data_tableau_table = "County Map"
-    location_name_col = "County-alias"
     timezone = "US/Eastern"
 
     # map wide form column names into CMUs
     cmus = {
-        "AGG(Calc.At Least One Dose Vaccinated)-alias": variables.INITIATING_VACCINATIONS_ALL,
-        "AGG(Calc.Fully Vaccinated)-alias": variables.FULLY_VACCINATED_ALL,
-        "AGG(Calc.Additional/Booster Dose)-alias": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
+        "At Least One Dose": variables.INITIATING_VACCINATIONS_ALL,
+        "Initial Series Complete": variables.FULLY_VACCINATED_ALL,
+        "At Least One Original Booster": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
     }
 
-    def fetch(self):
-        scraper_instance = TableauScraper()
-        scraper_instance.loads(self.fetch_url)
-        workbook = scraper_instance.getWorkbook()
-        return workbook.getWorksheet("County Map").data
-
     def normalize(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = super().normalize(df)
-        df.location_name = df.location_name.str.replace(
-            " County", ""
-        ).str.strip()  # Strip whitespace
-        df.loc[df["location_name"] == "Mcdowell", "location_name"] = "McDowell"
+        df = (
+            self._rename_or_add_date_and_location(
+                df,
+                location_name_column="location_name",
+                timezone=self.timezone,
+                location_names_to_replace={"Mcdowell": "McDowell"},
+            )
+            .rename(
+                columns={
+                    "SUM(metric_count)-alias": "value",
+                    "calc. label colors-alias": "variable",
+                }
+            )
+            .drop(
+                columns=[
+                    "calc. label colors-value",
+                    "AGG(calc. 1 (labels))-value",
+                    "AGG(calc. 1 (labels))-alias",
+                    "ATTR(calc. tooltip na county)-alias",
+                    "AGG(calc. percent labels)-alias",
+                ]
+            )
+            .query("variable != 'Updated Booster'")
+        )
+
+        df["vintage"] = self._retrieve_vintage()
+        df = self.extract_CMU(df, self.cmus)
         return df
 
 
-class NCVaccineState(NCVaccine):
-    location_type = "state"
-    has_location = True
+class NCVaccineCounty(NCVaccineBase):
+    def fetch(self):
+        counties = self._retrieve_counties()
+        pool = multiprocessing.Pool()
+        dfs = pool.map(self._fetch_county, counties)
+        return pd.concat(dfs)
 
-    variables = {
-        "First of Two": variables.INITIATING_VACCINATIONS_ALL,
-        "Second of Two": variables.FULLY_VACCINATED_ALL,
-        "Additional Dose": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
-    }
+    def _fetch_county(self, county: str) -> pd.DataFrame:
+        scraper_instance = TableauScraper()
+        scraper_instance.loads(self.fetch_url)
+        workbook = scraper_instance.getWorkbook()
+
+        full_county = f"{county} County"
+        county_workbook = workbook.setParameter("county Parameter", full_county)
+        init_completed = county_workbook.getWorksheet("VaxWaffle_Label_All").data
+        booster = county_workbook.getWorksheet("BoosterWaffle_Label_All").data
+        data = pd.concat([init_completed, booster])
+        data["location_name"] = county
+        return data
+
+
+class NCVaccineState(NCVaccineBase):
+    location_type = "state"
+    has_location = False
 
     def fetch(self) -> TableauWorkbook:
         scraper_instance = TableauScraper()
         scraper_instance.loads(self.fetch_url)
-        return scraper_instance.getWorkbook()
-
-    def normalize(self, workbook: TableauWorkbook) -> pd.DataFrame:
-        data: Dict[str, int] = {}
-        variables = ["Single Shot", "First of Two", "Second of Two", "Additional Dose"]
-        for variable in variables:
-            frame = workbook.getWorksheet(f"Total Card {variable}").data
-            data[variable] = frame["AGG(Calc.Total Card Administered)-alias"].values[0]
-
-        # add J&J doses to match our initiated and completed definitions
-        data["First of Two"] += data["Single Shot"]
-        data["Second of Two"] += data["Single Shot"]
-
-        data = pd.DataFrame.from_dict(data, orient="index").reset_index()
-        data.columns = ["variable", "value"]
-        data = data.assign(
-            dt=self._retrieve_dt(),
-            vintage=self._retrieve_vintage(),
-            location=self.state_fips,
-        ).query("variable != 'Single Shot'")
-        return self.extract_CMU(data, self.variables)
+        workbook = scraper_instance.getWorkbook()
+        init_completed = workbook.getWorksheet("VaxWaffle_Label_All").data
+        booster = workbook.getWorksheet("BoosterWaffle_Label_All").data
+        data = pd.concat([init_completed, booster])
+        data["location_name"] = "North Carolina"
+        return data
