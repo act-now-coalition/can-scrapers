@@ -7,11 +7,12 @@ import pandas as pd
 import pytest
 import sqlalchemy as sa
 
-from can_tools import ACTIVE_SCRAPERS
 from can_tools.models import Base, create_dev_engine
 from can_tools import utils
 
-SORTED_SCRAPERS = sorted(ACTIVE_SCRAPERS, key=lambda x: x.__name__)
+from tests.utils import ModifiedClassSelector
+
+MODIFIED_SCRAPERS = ModifiedClassSelector().get_classes_to_test()
 
 CONN_STR = os.environ.get("CAN_PG_CONN_STR", None)
 VERBOSE = bool(os.environ.get("CAN_TESTS_VERBOSE", False))
@@ -53,7 +54,7 @@ def _test_data_structure(cls, df):
         _covid_dataset_tests(cls, df)
 
 
-@pytest.mark.parametrize("cls", SORTED_SCRAPERS)
+@pytest.mark.parametrize("cls", MODIFIED_SCRAPERS)
 def test_datasets(cls):
     execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
         "%Y-%m-%d"
@@ -85,24 +86,24 @@ def test_datasets(cls):
         raise Exception(error_msg)
 
 
-@pytest.mark.parametrize("cls", SORTED_SCRAPERS)
+@pytest.mark.parametrize("cls", MODIFIED_SCRAPERS)
 def test_all_dataset_has_type(cls):
     assert hasattr(cls, "data_type")
 
 
-@pytest.mark.parametrize("cls", SORTED_SCRAPERS)
+@pytest.mark.parametrize("cls", MODIFIED_SCRAPERS)
 def test_all_dataset_has_location_type(cls):
     assert hasattr(cls, "location_type")
 
 
-@pytest.mark.parametrize("cls", SORTED_SCRAPERS)
+@pytest.mark.parametrize("cls", MODIFIED_SCRAPERS)
 def test_covid_dataset_has_source(cls):
     if getattr(cls, "data_type", False) == "covid":
         assert hasattr(cls, "source")
         assert hasattr(cls, "state_fips") or getattr(cls, "has_location", False)
 
 
-@pytest.mark.parametrize("cls", SORTED_SCRAPERS)
+@pytest.mark.parametrize("cls", MODIFIED_SCRAPERS)
 def test_all_datasets_has_source_name(cls):
     assert hasattr(cls, "source_name")
 
