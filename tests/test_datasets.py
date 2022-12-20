@@ -7,11 +7,11 @@ import pandas as pd
 import pytest
 import sqlalchemy as sa
 
-from can_tools import ALL_SCRAPERS
+from can_tools import ACTIVE_SCRAPERS
 from can_tools.models import Base, create_dev_engine
 from can_tools import utils
 
-SORTED_SCRAPERS = sorted(ALL_SCRAPERS, key=lambda x: x.__name__)
+SORTED_SCRAPERS = sorted(ACTIVE_SCRAPERS, key=lambda x: x.__name__)
 
 CONN_STR = os.environ.get("CAN_PG_CONN_STR", None)
 VERBOSE = bool(os.environ.get("CAN_TESTS_VERBOSE", False))
@@ -58,9 +58,18 @@ def test_datasets(cls):
     execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
         "%Y-%m-%d"
     )
-    d = cls(execution_date)
+    d: DatasetBase = cls(execution_date)
 
-    raw = d.fetch()
+    # NYT scraper runs out of memory on GitHub Actions test runner
+    # so we only test a subset of their data.
+    if cls.__name__ == "NYTimesCasesDeaths":
+        files = {
+            "state": ["us-states.csv"],
+            "nation": ["us.csv"],
+        }
+        raw = d.fetch(files=files)
+    else:
+        raw = d.fetch()
 
     assert raw is not None
     clean = d.normalize(raw)
@@ -96,13 +105,18 @@ def test_covid_dataset_has_source(cls):
 def test_all_datasets_has_source_name(cls):
     assert hasattr(cls, "source_name")
 
+
 def _create_put_error_msg(engine: Engine, data: pd.DataFrame, cls: DatasetBase):
     """Find unknown/missing variable entries and format an error message"""
-    unk_demographics = utils.find_unknown_demographic_id(data, engine=engine, csv_rows=True)
+    unk_demographics = utils.find_unknown_demographic_id(
+        data, engine=engine, csv_rows=True
+    )
     unk_variables = utils.find_unknown_variable_id(data, engine=engine, csv_rows=True)
     if cls.location_type in ["county", "state"] or cls.has_location == True:
-        unk_locations = utils.find_unknown_location_id(data, engine=engine, state_fips=cls.state_fips, csv_rows=True)
-    
+        unk_locations = utils.find_unknown_location_id(
+            data, engine=engine, state_fips=cls.state_fips, csv_rows=True
+        )
+
     error_msg = (
         "Exception encountered during scraper put() method. "
         "This may be due to unknown values in the scraper output. Verify any unknown rows are expected and add them to the corresponding files "
