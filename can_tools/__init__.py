@@ -73,6 +73,7 @@ ACTIVE_SCRAPERS = [
     scrapers.PhiladelphiaVaccine,
     scrapers.PennsylvaniaCountyVaccines,
     scrapers.CaliforniaVaccineCounty,
+    scrapers.CaliforniaTestPositivity,
     scrapers.NewMexicoVaccineCounty,
     scrapers.VirginiaVaccine,
     scrapers.VermontCountyVaccine,
