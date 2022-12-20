@@ -11,9 +11,13 @@ from can_tools import ACTIVE_SCRAPERS
 class ModifiedClassSelector:
     """Selects tests to run based on modified files"""
 
-    def __init__(self, base_branch: Optional[str], modules_path: Optional[str] = None):
-        self.base_branch = base_branch or "main"
-        self.modules_path = modules_path or "can_tools/scrapers/**/*.py"
+    def __init__(
+        self,
+        base_branch: Optional[str] = "main",
+        modules_path: Optional[str] = "can_tools/scrapers/**/*.py",
+    ):
+        self.base_branch = base_branch
+        self.modules_path = modules_path
 
     @property
     def all_modified_files(self, base_branch: Optional[str] = None):
