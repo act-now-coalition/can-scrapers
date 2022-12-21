@@ -1,6 +1,6 @@
 import pandas as pd
 from numpy import nan
-from typing import List, Optional, Tuple, Dict
+from typing import List, Tuple, Dict
 from can_tools.scrapers.official.base import FederalDashboard, ETagCacheMixin
 
 from can_tools.scrapers.variables import (
@@ -136,13 +136,9 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
         )
         super().__init__(execution_dt=execution_dt)
 
-    def fetch(self, files=Optional[Dict[str, List[str]]]) -> pd.DataFrame:
-        # Allow us to pass in a subset of files to speed up testing.
-        if files is None:
-            files = self.file_slugs
-
+    def fetch(self) -> pd.DataFrame:
         data = []
-        for location_type, files in files.items():
+        for location_type, files in self.file_slugs.items():
             for file in files:
                 location = pd.read_csv(
                     NYTIMES_RAW_BASE_URL + file, dtype={"fips": str}

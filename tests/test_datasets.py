@@ -58,18 +58,9 @@ def test_datasets(cls):
     execution_date = (pd.Timestamp.today() - pd.Timedelta("1 days")).strftime(
         "%Y-%m-%d"
     )
-    d: DatasetBase = cls(execution_date)
+    d = cls(execution_date)
 
-    # NYT scraper runs out of memory on GitHub Actions test runner
-    # so we only test a subset of their data.
-    if cls.__name__ == "NYTimesCasesDeaths":
-        files = {
-            "state": ["us-states.csv"],
-            "nation": ["us.csv"],
-        }
-        raw = d.fetch(files=files)
-    else:
-        raw = d.fetch()
+    raw = d.fetch()
 
     assert raw is not None
     clean = d.normalize(raw)
