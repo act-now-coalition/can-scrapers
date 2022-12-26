@@ -45,7 +45,8 @@ infections. Antibodies can take several days or weeks to develop after you have
 an infection and may stay in your blood for several weeks or more after
 recovery. Because of this, antibody tests should not be used to diagnose
 COVID-19. At this time researchers do not know if the presence of antibodies
-means that you are immune to COVID-19 in the future. #+END_QUOTE
+means that you are immune to COVID-19 in the future.
+#+END_QUOTE
 
 **** Diagnostic tests
 
@@ -61,7 +62,8 @@ A diagnostic test can show if you have an active coronavirus infection and
 should take steps to quarantine or isolate yourself from others. Currently there
 are two types of diagnostic tests– molecular tests, such as RT-PCR tests, that
 detect the virus’s genetic material, and antigen tests that detect specific
-proteins from the virus. #+END_QUOTE
+proteins from the virus. 
+#+END_QUOTE
 
 *** Measurements
 
