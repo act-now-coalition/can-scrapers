@@ -28,6 +28,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
+      - name: Authorize git
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
       - run: black --check ./can_tools
       - name: run tests
         run: pytest -v .
