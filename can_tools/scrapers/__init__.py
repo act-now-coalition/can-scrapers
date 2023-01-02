@@ -105,6 +105,7 @@ from can_tools.scrapers.official.ME.me_vaccines import MaineCountyVaccines
 from can_tools.scrapers.official.MI.mi_vaccine import (
     MichiganVaccineCounty,
 )
+from can_tools.scrapers.official.IA_two.ia_vaccine_county import IowaCountyVaccineCopy
 from can_tools.scrapers.official.MI.mi_vaccine_demographics import MIVaccineRaceAge
 from can_tools.scrapers.official.ME.me_vaccines import (
     MaineCountyVaccines,

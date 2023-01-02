@@ -80,6 +80,7 @@ ACTIVE_SCRAPERS = [
     scrapers.HawaiiVaccineCounty,
     scrapers.NCVaccineCounty,
     scrapers.NCVaccineState,
+    scrapers.IowaCountyVaccineCopy,
     # Demographic data scrapers
     *[scraper for scraper in ALL_SCRAPERS if scraper.demographic_data == True],
     # Monkeypox scrapers

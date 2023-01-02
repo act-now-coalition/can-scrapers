@@ -7,12 +7,12 @@ import pandas as pd
 import pytest
 import sqlalchemy as sa
 
+from tests.utils import get_modified_scrapers
 from can_tools.models import Base, create_dev_engine
 from can_tools import utils
 
-from tests.utils import ModifiedClassSelector
 
-MODIFIED_SCRAPERS = ModifiedClassSelector().get_classes_to_test()
+MODIFIED_SCRAPERS = get_modified_scrapers()
 
 CONN_STR = os.environ.get("CAN_PG_CONN_STR", None)
 VERBOSE = bool(os.environ.get("CAN_TESTS_VERBOSE", False))

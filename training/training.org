@@ -242,6 +242,9 @@ pytest -v .
 pytest -v -k Wyoming .
     #+end_src
 
+   If you are working on a new scraper, you need to stage any new/added files
+   in order for the tests to be picked up by the testing suite, (e.g. with =git add WY/=)  
+
 **** Extra: Using PostgreSQL
 
      Our production environment uses PostgreSQL as the database engine.
