@@ -30,8 +30,6 @@ from can_tools.scrapers.official.CA.ca_vaccine import (
     CaliforniaVaccineDemographics,
 )
 from can_tools.scrapers.official.CT.ct_vaccine import CTCountyVaccine
-from can_tools.scrapers.official.DC.dc_cases import DCCases
-from can_tools.scrapers.official.DC.dc_deaths import DCDeaths
 
 from can_tools.scrapers.official.DE.de_vaccine import (
     DelawareCountyVaccine,
