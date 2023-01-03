@@ -12,9 +12,7 @@ from can_tools.scrapers.official.AL.al_vaccine import (
     ALCountyVaccineRace,
     ALCountyVaccineAge,
 )
-from can_tools.scrapers.official.AK.ak_vaccine import (
-    AlaskaCountyVaccine,
-)
+
 from can_tools.scrapers.official.AZ.az_vaccine import (
     ArizonaVaccineCounty,
 )
