@@ -114,6 +114,7 @@ class NYTimesCasesDeaths(FederalDashboard, ETagCacheMixin):
             "us-counties-2020.csv",
             "us-counties-2021.csv",
             "us-counties-2022.csv",
+            "us-counties-2023.csv",
         ],
         "state": ["us-states.csv"],
         "nation": ["us.csv"],
