@@ -129,8 +129,8 @@ All of the data that is collected is stored in a PostgreSQL database hosted on
 Google Cloud. This database is structured in three schemas:
 
 1. =api= : This is the public facing schema. It does not contain any tables
-   itself but rather contains views and materialized views
-2. =data= : This schema is where data that is collected is stored
+   itself but rather contains views and materialized views.
+2. =data= : This schema is where data that is collected is stored.
 3. =meta= : This schema contains meta information about geographies and
    variables. It is information that will only be changed/updated infrequently.
 
