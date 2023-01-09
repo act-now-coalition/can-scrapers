@@ -15,6 +15,10 @@ class CDCHistoricalCountyVaccine(FederalDashboard, ETagCacheMixin):
         "Administered_Dose1_Recip": variables.INITIATING_VACCINATIONS_ALL,
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
         "Booster_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
+        # CDC has authorized bivalent vaccines for people as young as 6 months
+        # but the CDC doesn't appear to have data for this age group
+        # https://www.fda.gov/news-events/press-announcements/coronavirus-covid-19-update-fda-authorizes-updated-bivalent-covid-19-vaccines-children-down-6-months
+        "Bivalent_Booster_5Plus": variables.PEOPLE_VACCINATED_BIVALENT_DOSE,
     }
 
     # Send URL and filename that Mixin will use to check the etag
