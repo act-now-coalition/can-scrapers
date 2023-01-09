@@ -3,7 +3,7 @@ name: Bootstrap CSVs
 on:
   push:
     paths:
-      - "can_tools/bootstrap_data"
+      - "can_tools/bootstrap_data/**"
     branches:
       - main
 
