@@ -44,6 +44,12 @@ PEOPLE_VACCINATED_ADDITIONAL_DOSE: CMU = CMU(
     unit="people",
 )
 
+PEOPLE_VACCINATED_BIVALENT_DOSE: CMU = CMU(
+    category="total_vaccine_bivalent_dose",
+    measurement="cumulative",
+    unit="people",
+)
+
 CUMULATIVE_CASES_PEOPLE: CMU = CMU(
     category="cases",
     measurement="cumulative",

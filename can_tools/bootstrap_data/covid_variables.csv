@@ -192,6 +192,7 @@ total_vaccine_distributed,cumulative,doses
 total_vaccine_initiated,cumulative,people
 total_vaccine_completed,cumulative,people
 total_vaccine_additional_dose,cumulative,people
+total_vaccine_bivalent_dose,cumulative,people
 total_vaccine_completed,new,people
 total_vaccine_completed,new,doses
 total_vaccine_completed,new_7_day,people
