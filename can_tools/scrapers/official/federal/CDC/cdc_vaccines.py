@@ -28,6 +28,10 @@ class CDCStateVaccine(FederalDashboard):
         "Series_Complete_Yes": variables.FULLY_VACCINATED_ALL,
         "Administered": variables.TOTAL_DOSES_ADMINISTERED_ALL,
         "Additional_Doses": variables.PEOPLE_VACCINATED_ADDITIONAL_DOSE,
+        # CDC has authorized bivalent vaccines for people as young as 6 months
+        # but the CDC doesn't appear to have data for this age group
+        # https://www.fda.gov/news-events/press-announcements/coronavirus-covid-19-update-fda-authorizes-updated-bivalent-covid-19-vaccines-children-down-6-months
+        "Bivalent_Booster_5Plus": variables.PEOPLE_VACCINATED_BIVALENT_DOSE
     }
 
     def fetch(self, test=False):
