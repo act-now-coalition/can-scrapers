@@ -39,10 +39,18 @@ from can_tools.scrapers.official.DC.dc_vaccines import (
     DCVaccineDemographics,
 )
 
-from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import (
+from can_tools.scrapers.official.federal.CDC.cdc_testing import (
     CDCHistoricalTestingDataset,
     CDCOriginallyPostedTestingDataset,
     CDCTestingBase,
+)
+
+from can_tools.scrapers.official.federal.CDC.cdc_state_cases_deaths import (
+    CDCStateCasesDeaths,
+)
+
+from can_tools.scrapers.official.federal.CDC.cdc_county_cases_deaths import (
+    CDCCountyCasesDeaths,
 )
 
 from can_tools.scrapers.official.federal.CDC.cdc_community_level import (
