@@ -12,7 +12,9 @@ from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES
 class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
-    source = "https://www.cdc.gov/coronavirus/2019-ncov/your-health/covid-by-county.html"
+    source = (
+        "https://www.cdc.gov/coronavirus/2019-ncov/your-health/covid-by-county.html"
+    )
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
     fetch_url = "https://covid.cdc.gov/covid-data-tracker/COVIDData/getAjaxData?id=integrated_county_timeseries_fips_{county_fips}_external"
