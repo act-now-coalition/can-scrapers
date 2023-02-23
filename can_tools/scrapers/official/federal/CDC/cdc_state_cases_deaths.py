@@ -42,7 +42,11 @@ class CDCStateCasesDeaths(FederalDashboard, ETagCacheMixin):
 
 
 def _combine_ny_and_nyc(data: pd.DataFrame):
-    """NYC data is reported separately from NY data. Combine them into one row."""
+    """NYC data is reported separately from NY data. Combine them into one row.
+    
+    See "Number of Jurisdictions Reporting" footnote in the data source:
+    https://data.cdc.gov/Case-Surveillance/Weekly-United-States-COVID-19-Cases-and-Deaths-by-/pwn4-m3yp
+    """
     ny = data[data["state"] == "NY"]
     nyc = data[data["state"] == "NYC"]
     nyc["state"] = "NY"
