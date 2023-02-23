@@ -4,6 +4,7 @@ from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
 from can_tools.scrapers import variables
 from multiprocessing import get_context
 import requests
+import logging
 
 from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES
 
@@ -55,7 +56,10 @@ class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
         ).pipe(self._reshape_variables, self.variables, drop_duplicates=True)
 
     def _fetch_county(self, county_fips):
-        print(f"Fetching {county_fips}...")
         url = self.fetch_url.format(county_fips=county_fips)
-        data = requests.get(url).json()
+        try:
+            data = requests.get(url).json()
+        except requests.exceptions.JSONDecodeError:
+            logging.warn("Failed to fetch %s...", county_fips)
+            return pd.DataFrame()
         return pd.DataFrame(data["integrated_county_timeseries_external_data"])
