@@ -33,10 +33,6 @@ class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
             for state in ALL_STATES_PLUS_DC
         ]
         county_fips = [item.zfill(5) for sublist in county_fips for item in sublist]
-        data = []
-        # for fips in county_fips:
-        #     data.append(self._fetch_county(fips))
-        # return pd.concat(data, axis=0)
         with get_context("spawn").Pool(processes=16) as pool:
             data = pool.map(self._fetch_county, county_fips)
         return pd.concat(data, axis=0)
