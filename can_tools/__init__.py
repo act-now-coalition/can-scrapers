@@ -29,7 +29,7 @@ from typing import List, Type
 from can_tools import scrapers
 from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers.official.PA.pa_vaccines import PennsylvaniaVaccineDemographics
-from can_tools.scrapers.official.federal.CDC.cdc_testing_cases import CDCTestingBase
+from can_tools.scrapers.official.federal.CDC.cdc_testing import CDCTestingBase
 
 
 def all_subclasses(cls):
@@ -69,6 +69,8 @@ ACTIVE_SCRAPERS = [
     scrapers.CDCHistoricalTestingDataset,
     scrapers.CDCUSAVaccine,
     scrapers.CDCStateVaccine,
+    scrapers.CDCStateCasesDeaths,
+    scrapers.CDCCountyCasesDeaths,
     # State- and county-specific scrapers
     scrapers.PhiladelphiaVaccine,
     scrapers.PennsylvaniaCountyVaccines,
