@@ -1,6 +1,7 @@
 import pandas as pd
 from can_tools.scrapers import CMU
 from can_tools.scrapers.official.base import FederalDashboard
+from can_tools.scrapers import variables
 
 
 COMMUNITY_LEVEL_MAP = {

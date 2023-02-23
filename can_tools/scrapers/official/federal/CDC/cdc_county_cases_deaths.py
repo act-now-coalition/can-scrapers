@@ -5,13 +5,13 @@ from can_tools.scrapers import variables
 from multiprocessing import get_context
 import requests
 
-from can_tools.scrapers.base import ALL_STATES_PLUS_DC
+from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES
 
 
 class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
     has_location = True
     location_type = "county"
-    source = "https://data.cdc.gov/Case-Surveillance/Weekly-United-States-COVID-19-Cases-and-Deaths-by-/pwn4-m3yp"
+    source = "https://www.cdc.gov/coronavirus/2019-ncov/your-health/covid-by-county.html"
     source_name = "Centers for Disease Control and Prevention"
     provider = "cdc"
     fetch_url = "https://covid.cdc.gov/covid-data-tracker/COVIDData/getAjaxData?id=integrated_county_timeseries_fips_{county_fips}_external"
@@ -30,7 +30,7 @@ class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
     def fetch(self):
         county_fips: List[str] = [
             self._retrieve_counties(state=state, fips=True)
-            for state in ALL_STATES_PLUS_DC
+            for state in ALL_STATES_PLUS_TERRITORIES
         ]
         county_fips = [item.zfill(5) for sublist in county_fips for item in sublist]
         with get_context("spawn").Pool(processes=16) as pool:
