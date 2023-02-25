@@ -26,7 +26,9 @@ class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
         ETagCacheMixin.initialize_cache(
-            self, cache_url=self.fetch_url, cache_file="cdc_county_cases_deaths.txt"
+            self,
+            cache_url=self.fetch_url.format(county_fips="06075"),
+            cache_file="cdc_county_cases_deaths.txt",
         )
         super().__init__(execution_dt=execution_dt)
 
