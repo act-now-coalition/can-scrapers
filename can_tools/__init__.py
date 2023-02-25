@@ -82,8 +82,4 @@ ACTIVE_SCRAPERS = [
     scrapers.HawaiiVaccineCounty,
     scrapers.NCVaccineCounty,
     scrapers.NCVaccineState,
-    # Demographic data scrapers
-    *[scraper for scraper in ALL_SCRAPERS if scraper.demographic_data == True],
-    # Monkeypox scrapers
-    scrapers.CDCCurrentMonkeypoxCases,
 ]
