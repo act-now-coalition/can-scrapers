@@ -1,6 +1,7 @@
+from pathlib import Path
 from typing import List
 import pandas as pd
-from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard, CacheMixin
+from can_tools.scrapers.official.base import FederalDashboard, CacheMixin
 from can_tools.scrapers import variables
 from multiprocessing import get_context
 import requests
@@ -11,10 +12,12 @@ from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES
 
 class CDCCountyCasesDeathsCacheMixin(CacheMixin):
 
+    cache_dir: Path = Path(__file__).parents[3]
+
     def check_if_new_data_and_update(self):
         res = requests.get(self.cache_url.format(county_fips="06037"))
         data = res.json()
-        runid = data["runid"]
+        runid = str(data["runid"])
         cached_runid = self._read_cache()
 
         # if the runid is the same, then we don't need to update
@@ -23,6 +26,7 @@ class CDCCountyCasesDeathsCacheMixin(CacheMixin):
 
         self._write_cache(runid)
         return True
+
 
 class CDCCountyCasesDeaths(FederalDashboard, CDCCountyCasesDeathsCacheMixin):
     has_location = True

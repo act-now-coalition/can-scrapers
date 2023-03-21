@@ -10,6 +10,7 @@ from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.parse import parse_qs, urlparse
+from functools import cached_property
 
 import datetime
 import jmespath
@@ -1221,9 +1222,10 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
         rawJson = str(requests.post(url, json=body).content)
         return rawJson
 
+
 class CacheMixin(ABC):
     """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
-    
+
     This is used in the `create_cached_flow_for_scraper` flow, to determine whether
     to ingest the data (execute the fetch, normalize, and put methods)."""
 
@@ -1246,11 +1248,11 @@ class CacheMixin(ABC):
                 return vf.readline().rstrip("\n")
         return None
 
-    def _write_cache(self) -> None:
+    def _write_cache(self, contents: str) -> None:
         stamp = datetime.datetime.utcnow().isoformat()
         version_path = self.cache_dir / self.cache_file
         with version_path.open("w+") as vf:
-            vf.write(f"{self.etag}\n")
+            vf.write(f"{contents}\n")
             vf.write(f"Updated on {stamp}")
 
 
@@ -1263,7 +1265,7 @@ class ETagCacheMixin(CacheMixin):
 
     cache_dir: Path = Path(__file__).parents[1]
 
-    @property
+    @cached_property
     def etag(self):
         res = requests.get(self.cache_url)
         if "Etag" not in res.headers:
@@ -1286,6 +1288,5 @@ class ETagCacheMixin(CacheMixin):
             return False
 
         # update etag and return true
-        self._write_cache()
+        self._write_cache(contents=self.etag)
         return True
-
