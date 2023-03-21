@@ -1240,9 +1240,9 @@ class CacheMixin(ABC):
     @abstractmethod
     def check_if_new_data_and_update(self):
         """Check if there is new data and update the cache if so.
-        
+
         To be implemented by child classes.
-        
+
         Returns:
             bool: True if there is new data, False otherwise."""
         pass
