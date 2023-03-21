@@ -10,7 +10,6 @@ from base64 import b64decode
 from contextlib import closing
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from urllib.parse import parse_qs, urlparse
-from functools import cached_property
 
 import datetime
 import jmespath
@@ -1271,7 +1270,7 @@ class ETagCacheMixin(CacheMixin):
 
     cache_dir: Path = Path(__file__).parents[1]
 
-    @cached_property
+    @property
     def etag(self):
         res = requests.get(self.cache_url)
         if "Etag" not in res.headers:
