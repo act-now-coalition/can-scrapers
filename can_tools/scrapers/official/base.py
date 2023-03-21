@@ -1221,8 +1221,40 @@ class GoogleDataStudioDashboard(StateDashboard, ABC):
         rawJson = str(requests.post(url, json=body).content)
         return rawJson
 
+class CacheMixin(ABC):
+    """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
+    
+    This is used in the `create_cached_flow_for_scraper` flow, to determine whether
+    to ingest the data (execute the fetch, normalize, and put methods)."""
 
-class ETagCacheMixin:
+    cache_dir: Path
+    cache_url: str
+    cache_file: str
+
+    def initialize_cache(self, cache_url, cache_file):
+        self.cache_url = cache_url
+        self.cache_file = cache_file
+
+    @abstractmethod
+    def check_if_new_data_and_update(self):
+        pass
+
+    def _read_cache(self):
+        version_path = self.cache_dir / self.cache_file
+        if version_path.is_file():
+            with version_path.open("r") as vf:
+                return vf.readline().rstrip("\n")
+        return None
+
+    def _write_cache(self) -> None:
+        stamp = datetime.datetime.utcnow().isoformat()
+        version_path = self.cache_dir / self.cache_file
+        with version_path.open("w+") as vf:
+            vf.write(f"{self.etag}\n")
+            vf.write(f"Updated on {stamp}")
+
+
+class ETagCacheMixin(CacheMixin):
     """Mixin class to add the ability to check whether a dataset has been updated since last viewed.
 
     This is used in the `create_cached_flow_for_scraper` flow, to determine whether
@@ -1230,10 +1262,6 @@ class ETagCacheMixin:
     """
 
     cache_dir: Path = Path(__file__).parents[1]
-
-    def initialize_cache(self, cache_url, cache_file):
-        self.cache_url = cache_url
-        self.cache_file = cache_file
 
     @property
     def etag(self):
@@ -1244,33 +1272,20 @@ class ETagCacheMixin:
             )
         return res.headers["Etag"]
 
-    def check_if_new_data(self):
+    def check_if_new_data_and_update(self):
         """Check etag of data source and update the stored etag if necessary.
 
         returns:
             True if etag has been updated since last check.
             False if data has not been updated.
         """
-        cached_etag = self._read_etag_version()
+        cached_etag = self._read_cache()
 
         # if etag has not changed then do nothing.
         if cached_etag == self.etag:
             return False
 
         # update etag and return true
-        self._write_etag_version()
+        self._write_cache()
         return True
 
-    def _read_etag_version(self):
-        version_path = self.cache_dir / self.cache_file
-        if version_path.is_file():
-            with version_path.open("r") as vf:
-                return vf.readline().rstrip("\n")
-        return None
-
-    def _write_etag_version(self) -> None:
-        stamp = datetime.datetime.utcnow().isoformat()
-        version_path = self.cache_dir / self.cache_file
-        with version_path.open("w+") as vf:
-            vf.write(f"{self.etag}\n")
-            vf.write(f"Updated on {stamp}")

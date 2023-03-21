@@ -11,7 +11,7 @@ from prefect.engine import signals
 from prefect.schedules import CronSchedule
 from prefect.tasks.secrets import EnvVarSecret
 from prefect.tasks.prefect.flow_run import StartFlowRun
-from can_tools.scrapers.official.base import ETagCacheMixin
+from can_tools.scrapers.official.base import CacheMixin
 from services.prefect.flows.utils import (
     etag_caching_terminal_state_handler, skip_if_running_handler
 )
@@ -89,8 +89,8 @@ def skip_cached_flow():
 
 @task
 def check_if_new_data_for_flow(cls):
-    if issubclass(cls, ETagCacheMixin):
-        return cls().check_if_new_data()
+    if issubclass(cls, CacheMixin):
+        return cls().check_if_new_data_and_update()
     return True  # if class does not have etag checking always execute the scraper
 
 
