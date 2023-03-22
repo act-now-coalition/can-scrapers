@@ -1,6 +1,7 @@
+from pathlib import Path
 from typing import List
 import pandas as pd
-from can_tools.scrapers.official.base import ETagCacheMixin, FederalDashboard
+from can_tools.scrapers.official.base import FederalDashboard, CacheMixin
 from can_tools.scrapers import variables
 from multiprocessing import get_context
 import requests
@@ -9,7 +10,25 @@ import logging
 from can_tools.scrapers.base import ALL_STATES_PLUS_TERRITORIES
 
 
-class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
+class CDCCountyCasesDeathsCacheMixin(CacheMixin):
+
+    cache_dir: Path = Path(__file__).parents[3]
+
+    def check_if_new_data_and_update(self):
+        res = requests.get(self.cache_url.format(county_fips="06037"))
+        data = res.json()
+        runid = str(data["runid"])
+        cached_runid = self._read_cache()
+
+        # if the runid is the same, then we don't need to update
+        if cached_runid == runid:
+            return False
+
+        self._write_cache(runid)
+        return True
+
+
+class CDCCountyCasesDeaths(FederalDashboard, CDCCountyCasesDeathsCacheMixin):
     has_location = True
     location_type = "county"
     source = (
@@ -25,10 +44,8 @@ class CDCCountyCasesDeaths(FederalDashboard, ETagCacheMixin):
     }
 
     def __init__(self, execution_dt: pd.Timestamp = pd.Timestamp.utcnow()):
-        ETagCacheMixin.initialize_cache(
-            self,
-            cache_url=self.fetch_url.format(county_fips="06075"),
-            cache_file="cdc_county_cases_deaths.txt",
+        CDCCountyCasesDeathsCacheMixin.initialize_cache(
+            self, cache_url=self.fetch_url, cache_file="cdc_county_cases_deaths.txt"
         )
         super().__init__(execution_dt=execution_dt)
 
