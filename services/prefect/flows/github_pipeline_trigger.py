@@ -33,59 +33,24 @@ def init_update_datasets_flow():
     flow.register("can-scrape")
 
 
-def init_scheduled_nyt_updater_flow():
-    """Flow to check the NYT source for new data, ingest the data, and update the parquet file.
+def init_scheduled_updater_flow():
+    """Initialize a flow to update the Parquet file and kick off the covid-data-model pipeline.
 
-    Flow runs every 30 minutes. If no new data is detected then UpdateParquetFiles and
-    TriggerUpdateCombinedDatasets are skipped.
-    
-    This is the main updater responsible for updating and ingesting the NYT cases and deaths data.
-    """
+    Runs every day at 2am ET. Kicks off the Update Combined Datasets Github action on successful parquet update."""
     with Flow(
-        "NYTParquetScheduledUpdater",
-        schedule=CronSchedule("*/30 * * * *"),
+        "ParquetGithubPipelineUpdater",
+        schedule=CronSchedule("0 6 * * *"),  # every day at 2am ET
         state_handlers=[
             slack_notifier(only_states=[Failed])
         ],  # only alert us on failure
     ) as parent_flow:
 
-        # Note that the below code relies on NYTimesCasesDeaths and UpdateParquetFiles flows
-        # already being registered via generated_flows.py and update_api_view.py.
-        # If the MainFlow flow is running, this generally means that these flows have been registered.
-        nyt_flow = create_flow_run(
-            flow_name="NYTimesCasesDeaths",
-            project_name="can-scrape",
-            task_args=dict(name="Create NYTimesCasesDeaths flow"),
-        )
-
-        # NOTE (sean) 3/14/2022: Temporarily adding USAFacts flow to track at what time of day
-        # USA Facts is typically updated. To be removed after a few days of data collection. 
-        usa_facts_flow = create_flow_run(
-            flow_name="USAFactsCases",
-            project_name="can-scrape",
-            task_args=dict(name="Create USAFactsCases flow"),
-        )
-        wait_for_usa_facts = wait_for_flow_run(
-            usa_facts_flow,
-            raise_final_state=False,
-            stream_logs=True,
-            task_args=dict(name="run USAFactsCases flow"),
-        )
-
-        wait_for_nyt = wait_for_flow_run(
-            nyt_flow,
-            raise_final_state=True,
-            stream_logs=True,
-            task_args=dict(name="run NYTimesCasesDeaths flow"),
-        )
-
         # Execute on success, skip on skipped result of wait_for_nyt
         parquet_flow = create_flow_run(
             flow_name="UpdateParquetFiles",
             project_name="can-scrape",
-            upstream_tasks=[wait_for_nyt],
             task_args=dict(
-                name="Create UpdateParquetFiles flow", skip_on_upstream_skip=True
+                name="Create UpdateParquetFiles flow",
             ),
         )
         wait_for_parquet_flow = wait_for_flow_run(
@@ -118,4 +83,4 @@ def init_scheduled_nyt_updater_flow():
 
 if __name__ == "__main__":
     init_update_datasets_flow()
-    init_scheduled_nyt_updater_flow()
+    init_scheduled_updater_flow()
