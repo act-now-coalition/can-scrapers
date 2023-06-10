@@ -17,18 +17,19 @@ env:
   CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2 # Checking out the repo
-
-    - name: Install dependencies
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command: install -d # Install all dependencies, including development ones
-    
-    - name: Test
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command: run test # Run custom `test` command defined in the `[scripts]` block of Pipfile
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10.12
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Run tests
+        run: |
+          pipenv install --dev
+          pipenv run black
+          pipenv run test
