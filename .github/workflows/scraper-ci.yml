@@ -21,13 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
+
       - name: Install dependencies
-        run: |
-          pip install -e .
-      - run: black --check ./can_tools
-      - name: run tests
-        run: pytest -v .
+        uses: VaultVulp/action-pipenv@v2.0.1
+        with:
+          command: install -d
+      
+      - name: Test
+        uses: VaultVulp/action-pipenv@v2.0.1
+        with:
+          command: run test

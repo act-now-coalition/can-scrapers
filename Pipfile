@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 beautifulsoup4 = "*"
-black = "*"
+black = "==20.8b"
 geopandas = "*"
 numpy = "*"
 pandas = "*"
@@ -19,7 +19,7 @@ tableauscraper = "*"
 lxml = "*"
 sentry-sdk = "*"
 jmespath = "*"
-click = "*"
+click = "==8.0.2"
 pyarrow = "*"
 prefect = "==2.10"
 
