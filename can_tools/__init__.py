@@ -79,7 +79,6 @@ ACTIVE_SCRAPERS = [
     scrapers.NewMexicoVaccineCounty,
     scrapers.VirginiaVaccine,
     scrapers.VermontCountyVaccine,
-    scrapers.HawaiiVaccineCounty,
     scrapers.NCVaccineCounty,
     scrapers.NCVaccineState,
 ]

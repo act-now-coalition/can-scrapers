@@ -15,7 +15,7 @@ class NCVaccineBase(TableauDashboard, ABC):
     source_name = (
         "North Carolina Department of Health and Human Services Covid-19 Response"
     )
-    state_fips = int(us.states.lookup("North Carolina").fips)
+    state_fips = int(us.states.lookup("NC").fips)
     location_type = "county"
     fetch_url = (
         "https://public.tableau.com/views/NCDHHS_COVID-19_Dashboard_Vaccinations/All"

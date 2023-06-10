@@ -8,7 +8,7 @@ from can_tools.scrapers import variables
 
 
 class VirginiaVaccine(TableauDashboard):
-    state_fips = int(us.states.lookup("Virginia").fips)
+    state_fips = int(us.states.lookup("VA").fips)
     source = "https://www.vdh.virginia.gov/coronavirus/covid-19-vaccine-summary/"
     source_name = "Virginia Department of Health"
     baseurl = "https://public.tableau.com"

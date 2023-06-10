@@ -9,7 +9,7 @@ from can_tools.scrapers.util import requests_retry_session
 
 
 class NewMexicoBase(StateDashboard):
-    state_fips = int(us.states.lookup("New Mexico").fips)
+    state_fips = int(us.states.lookup("NM").fips)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
