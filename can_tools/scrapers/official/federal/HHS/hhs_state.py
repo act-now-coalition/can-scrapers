@@ -1,5 +1,3 @@
-from io import StringIO
-
 import pandas as pd
 import us
 
@@ -108,25 +106,18 @@ class HHSReportedPatientImpactHospitalCapacityState(HHSDataset):
         }
 
         # Put into long form
-        out = df.melt(id_vars=["dt", "location"], value_vars=crename.keys())
+        out: pd.DataFrame = df.melt(
+            id_vars=["dt", "location"], value_vars=crename.keys()
+        )
         out.loc[:, "value"] = pd.to_numeric(
             out["value"].astype(str).str.replace(",", "").replace("nan", None)
         )
+        # Dropping missing values. As of 2023-06-11 all missing values are from
+        # before 2020-08-06.
+        out = out.dropna(subset=["value"])
 
         # Add category, measurement, unit, age, sex, race
         out = self.extract_CMU(out, crename)
         out["vintage"] = self._retrieve_vintage()
-        cols_2_keep = [
-            "vintage",
-            "dt",
-            "location",
-            "category",
-            "measurement",
-            "unit",
-            "age",
-            "sex",
-            "race",
-            "value",
-        ]
 
         return out
