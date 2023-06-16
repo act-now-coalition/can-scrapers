@@ -1,14 +1,11 @@
 import requests
-from datetime import timedelta
-from prefect import Flow, task
-from prefect.engine.state import Failed
-from prefect.schedules import CronSchedule
-from prefect.tasks.secrets import PrefectSecret
-from prefect.utilities.notifications import slack_notifier
-from prefect.tasks.prefect import create_flow_run, wait_for_flow_run
+from prefect import flow, task
+from prefect.blocks.system import Secret
+from prefect.deployments import Deployment
+from services.prefect.flows.update_api_view import update_parquet_flow
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task
 def make_request(github_token):
     dispatch_url = (
         "https://api.github.com/repos/covid-projections/covid-data-model/"
@@ -25,62 +22,16 @@ def make_request(github_token):
     response.raise_for_status()  # raise status in case of failure
 
 
-def init_update_datasets_flow():
-    """Initialize a flow to kick off the covid-data-model Update Combined Datasets Github action"""
-    with Flow("TriggerUpdateCombinedDatasets") as flow:
-        github_token = PrefectSecret("GITHUB_ACTION_PAT")
-        make_request(github_token=github_token)
-    flow.register("can-scrape")
+@flow
+def github_pipeline_trigger():
+    github_token = Secret.load("github-action-pat").get()
+    update_parquet_flow()
+    make_request(github_token)
 
 
-def init_scheduled_updater_flow():
-    """Initialize a flow to update the Parquet file and kick off the covid-data-model pipeline.
-
-    Runs every day at 2am ET. Kicks off the Update Combined Datasets Github action on successful parquet update."""
-    with Flow(
-        "ParquetGithubPipelineUpdater",
-        schedule=CronSchedule("0 6 * * *"),  # every day at 2am ET
-        state_handlers=[
-            slack_notifier(only_states=[Failed])
-        ],  # only alert us on failure
-    ) as parent_flow:
-
-        # Execute on success, skip on skipped result of wait_for_nyt
-        parquet_flow = create_flow_run(
-            flow_name="UpdateParquetFiles",
-            project_name="can-scrape",
-            task_args=dict(
-                name="Create UpdateParquetFiles flow",
-            ),
-        )
-        wait_for_parquet_flow = wait_for_flow_run(
-            parquet_flow,
-            raise_final_state=True,
-            stream_logs=True,
-            task_args=dict(name="Run UpdateParquetFiles flow"),
-        )
-
-        trigger_update_datasets_flow = create_flow_run(
-            flow_name="TriggerUpdateCombinedDatasets",
-            project_name="can-scrape",
-            upstream_tasks=[wait_for_parquet_flow],
-            task_args=dict(
-                name="Create TriggerUpdateCombinedDatasets flow",
-                skip_on_upstream_skip=True,
-            ),
-        )
-
-        # Wait for this flow to succeed/fail before setting the final state of parent_flow
-        run_trigger_update_datasets_flow = wait_for_flow_run(
-            trigger_update_datasets_flow,
-            raise_final_state=True,
-            stream_logs=True,
-            task_args=dict(name="Run TriggerUpdateCombinedDatasets flow"),
-        )
-
-    parent_flow.register("can-scrape")
-
-
-if __name__ == "__main__":
-    init_update_datasets_flow()
-    init_scheduled_updater_flow()
+def deploy_github_pipeline_trigger():
+    deployment: Deployment = Deployment.build_from_flow(
+        flow=github_pipeline_trigger,
+        name="github_pipeline_trigger",
+    )
+    deployment.apply()
