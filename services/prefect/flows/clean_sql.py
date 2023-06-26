@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from prefect.blocks.system import Secret
 
 from prefect.deployments import Deployment
+from prefect.server.schemas.schedules import CronSchedule
 
 
 @task
@@ -39,18 +40,16 @@ def build_table_flow_deployments(table_names: List[str]) -> List[Deployment]:
                 create_flow_for_table,
                 name=f"clean-sql-{table_name}",
                 parameters=dict(table_name=table_name),
+                # At 50 minutes past the hour, every 4 hours
+                schedule=CronSchedule(cron="50 */4 * * *", timezone="America/New_York"),
             )
         )
     return deployments
 
 
-def deploy_table_flows():
+def deploy_clean_sql_flows():
     deployments: List[Deployment] = build_table_flow_deployments(
         ["temp_official_no_location", "temp_official_has_location"]
     )
     for deployment in deployments:
         deployment.apply()
-
-
-if __name__ == "__main__":
-    deploy_table_flows()

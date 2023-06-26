@@ -2,6 +2,8 @@ import requests
 from prefect import flow, task
 from prefect.blocks.system import Secret
 from prefect.deployments import Deployment
+from prefect.server.schemas.schedules import CronSchedule
+
 from services.prefect.flows.update_api_view import update_parquet_flow
 
 
@@ -29,9 +31,11 @@ def github_pipeline_trigger():
     make_request(github_token)
 
 
-def deploy_github_pipeline_trigger():
+def deploy_github_pipeline_trigger_flow():
     deployment: Deployment = Deployment.build_from_flow(
         flow=github_pipeline_trigger,
         name="github_pipeline_trigger",
+        # At 2:00 AM EST, every day
+        schedule=CronSchedule(cron="0 2 * * *", timezone="America/New_York"),
     )
     deployment.apply()

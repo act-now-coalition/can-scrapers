@@ -1,5 +1,4 @@
 from typing import Any, Type, List
-import sentry_sdk
 import sqlalchemy as sa
 
 from can_tools import ACTIVE_SCRAPERS
@@ -10,6 +9,7 @@ from prefect.blocks.system import Secret
 
 from can_tools.scrapers.official.base import CacheMixin
 from prefect.deployments import Deployment
+from prefect.server.schemas.schedules import CronSchedule
 
 
 @task
@@ -20,7 +20,7 @@ def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
     return cls(execution_dt=dt, **kwargs)
 
 
-@task
+@task(retries=3, retry_delay_seconds=30)
 def fetch(d: DatasetBase):
     logger = get_run_logger()
     logger.info("About to run {}._fetch".format(d.__class__.__name__))
@@ -30,7 +30,7 @@ def fetch(d: DatasetBase):
     logger.info("Saved raw data to: {}".format(fn))
 
 
-@task()
+@task
 def normalize(d: DatasetBase):
     logger = get_run_logger()
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
@@ -40,7 +40,7 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task
+@task(retries=3, retry_delay_seconds=30)
 def put(d: DatasetBase, engine: sa.engine.Engine):
     logger = get_run_logger()
     logger.info("About to run {}._put".format(d.__class__.__name__))
@@ -114,6 +114,9 @@ def deploy_scraper_flows():
         deployment.apply()
 
     main_flow_deployment: Deployment = Deployment.build_from_flow(
-        create_main_flow, name="main_flow"
+        create_main_flow,
+        name="main_flow",
+        # cron schedule to run every 5 hours
+        schedule=CronSchedule(cron="0 */5 * * *", timezone="America/New_York"),
     )
     main_flow_deployment.apply()

@@ -7,6 +7,8 @@ from prefect import task, flow, context
 from prefect.deployments import Deployment
 from prefect_shell import shell_run_command
 from prefect.blocks.system import Secret
+from prefect.server.schemas.schedules import CronSchedule
+
 
 DATA_PATH = pathlib.Path(os.environ["DATAPATH"]) / "final"
 # DATA_PATH = pathlib.Path("~/data/covid/can-scrape/final").expanduser()
@@ -32,7 +34,7 @@ DATATYPES = {
 }
 
 
-@task
+@task(retries=3, retry_delay_seconds=30)
 def export_to_csv(connstr: str):
     db = sa.create_engine(connstr)
     with open(CSV_FN, "w") as f:
@@ -45,7 +47,7 @@ def export_to_csv(connstr: str):
     return True
 
 
-@task
+@task(retries=3, retry_delay_seconds=30)
 def create_parquet():
     ts = context.get_run_context().start_time
     dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H%M%S")
@@ -74,6 +76,7 @@ def update_parquet_flow():
 
 def deploy_update_parquet_flow():
     deployment: Deployment = Deployment.build_from_flow(
-        update_parquet_flow, name="update-parquet-flow"
+        update_parquet_flow,
+        name="update-parquet-flow",
     )
     deployment.apply()
