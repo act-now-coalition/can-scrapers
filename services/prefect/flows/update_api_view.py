@@ -11,7 +11,6 @@ from prefect.server.schemas.schedules import CronSchedule
 
 
 DATA_PATH = pathlib.Path(os.environ["DATAPATH"]) / "final"
-# DATA_PATH = pathlib.Path("~/data/covid/can-scrape/final").expanduser()
 CSV_FN = DATA_PATH / "can_scrape_api_covid_us.csv"
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 FN_STR = "can_scrape_api_covid_us{}"
@@ -78,5 +77,7 @@ def deploy_update_parquet_flow():
     deployment: Deployment = Deployment.build_from_flow(
         update_parquet_flow,
         name="update-parquet-flow",
+        # at 4 am every day
+        schedule=CronSchedule(cron="0 4 * * *", timezone="America/New_York"),
     )
     deployment.apply()

@@ -92,13 +92,13 @@ def create_scraper_flow(cls_name: str) -> None:
 @flow
 def create_main_flow() -> None:
     """Main flow for orchestrating all scraper runs."""
-    for scraper in ACTIVE_SCRAPERS[2:5]:
+    for scraper in ACTIVE_SCRAPERS:
         create_scraper_flow(scraper.__name__)
 
 
 def build_scraper_flow_deployments() -> List[Deployment]:
     deployments = []
-    for scraper in ACTIVE_SCRAPERS[2:5]:
+    for scraper in ACTIVE_SCRAPERS:
         deployments.append(
             Deployment.build_from_flow(
                 create_scraper_flow,
