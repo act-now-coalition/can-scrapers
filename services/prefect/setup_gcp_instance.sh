@@ -1,42 +1,15 @@
-# set up docker
-sudo apt-get update
-
-sudo apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common \
-    make \
-    ffmpeg \
-    libsm6 \
-    libxext6
-
+# docker
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+sudo apt install docker-ce
 
-sudo apt-key fingerprint 0EBFCD88
-
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
-
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-sudo usermod -aG docker $USER
-sudo su - $USER  # hack to activate docker group for current user
-
-# set up docker compose
-sudo curl -L "https://github.com/docker/compose/releases/download/1.28.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+# docker compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-# set up gh cli
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-sudo apt-add-repository https://cli.github.com/packages
-sudo apt update
-sudo apt install -y gh
-
-# install miniconda
+# miniconda
 curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh -p ~/miniconda -b
 rm Miniconda3-latest-Linux-x86_64.sh
@@ -47,42 +20,33 @@ conda install -y -c conda-forge mamba
 conda init bash
 sudo su - $USER  # hack to apply conda settings
 
-# set up conda env
-mamba create -n prefect-can-scrapers python=3.7
+# create python environment
+mamba create -n prefect-can-scrapers python=3.11
 conda activate prefect-can-scrapers
 
-# install python deps
+sudo apt install gcc
 pip install -r requirements.txt
 pip install -e .
-pip install prefect pyarrow
-prefect backend cloud
 
-# set up gcsfuse for storing dag outputs
-# install
+# install gcsfuse
+sudo apt-get install fuse
 export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
-echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | sudo tee /etc/apt/sources.list.d/gcsfuse.list
+echo "deb https://packages.cloud.google.com/apt $GCSFUSE_REPO main" | sudo tee /etc/apt/sources.list.d/gcsfuse.list
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 sudo apt-get update
-sudo apt-get install -y gcsfuse
-sudo usermod -a -G fuse $USER
-sudo su - $USER  # hack to enable gcsfuse
+sudo apt-get install gcsfuse
+sudo groupadd fuse
+sudo usermod -aG fuse $USER
 
-# setup
+# mount scraper bucket
 mkdir ~/scraper-outputs
-echo "can-scrape-outputs /home/sglyon/scraper-outputs gcsfuse rw,noauto,user" | sudo tee -a /etc/fstab > /dev/null
+echo "can-scrape-outputs /home/sean/scraper-outputs gcsfuse rw,noauto,user" | sudo tee -a /etc/fstab > /dev/null
+echo "export DATAPATH=/home/sean/scraper-outputs" | tee -a ~/.bashrc > /dev/null
 mount ~/scraper-outputs
 
-# add environment variable for the scraper-outputs
-echo "export DATAPATH=/home/sglyon/scraper-outputs" | tee -a ~/.bashrc > /dev/nul
-
-# setup nginx for reverse proxy
+# misc
 sudo apt-get install -y nginx
 sudo snap install core
 sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
-
-# install go
-sudo snap install --classic go
-go get github.com/adnanh/webhook
-go build github.com/adnanh/webhook

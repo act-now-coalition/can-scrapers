@@ -22,11 +22,13 @@ TODO
 - Copied `~/.ssh/id_ed25519.pub` to a deploy key on the repo [here](https://github.com/covid-projections/can-scrapers/settings/keys/new)
 - Cloned the repo: `git clone git@github.com:covid-projections/can-scrapers.git`
 - Cd into the repo: `cd can-scrapers`
-- Edited the file `services/prefect/prefect-agent.service` and add a line `Environment="COVID_DB_CONN_URI=postgresql://pguser:PASSWORD@35.245.78.43:5432/covid"` where `PASSWORD` is replaced by the actual password for the postgres db
-- Ran the setup script: `bash services/prefect/setup_gcp_instance.sh`
+- Ran the setup script: `bash services/prefect/setup_gcp_instance.sh` (it might be necessary to instead run the commands in this script one by one)
 - Reboot the instance (will log you out -- wait a minute and ssh in again): `sudo reboot`
 
 **Launch steps**:
+
+Generate an API key for Prefect Cloud at `https://app.prefect.cloud/my/profile`.
+We'll use this to login to Prefect cloud in the CLI.  
 
 ```shell
 mount ~/scraper-outputs
@@ -34,24 +36,30 @@ cd can-scrapers/services/prefect
 make sync_services
 make start_services
 conda activate prefect-can-scrapers
-prefect server create-tenant --name can --slug can
-prefect create project can-scrape
-make setup_nginx
-sudo certbot --nginx
+prefect prefect cloud login -k <API_KEY>
 ```
-
 
 **Setup Flows**:
 
 ```shell
 conda activate prefect-can-scrapers
-cd ~/can-scrapers/services/prefect/flows
-python generated_flows.py
-python clean_sql.py
-python update_api_view.py
+cd ~/can-scrapers
+python -m services.prefect.deployment deploy-flows -c all
 ```
 
-**Setup webhook**:
+**Set Prefect secrets**:
+
+Configure Prefect Blocks that hold secrets, including the database connection and Github access token.
+These secrets can be found in 1password.
+
+Go to `https://app.prefect.cloud/` > Blocks > Add new block (the +).
+
+Add secrets
+
+- `covid-db-conn-uri` with the connection string for the Postgres database
+- `github-action-pat` with a Github Personal Access Token with repo access to `can-scrapers`
+
+**Setup webhook (Currently deprecated as of 06/26/2023)**:
 
 - Generate a random password
 - Add Change the field `[0].trigger-rule.and[0].match.secret` from `PASSWORD` to your random password
