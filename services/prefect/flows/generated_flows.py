@@ -93,7 +93,13 @@ def create_scraper_flow(cls_name: str) -> None:
 def create_main_flow() -> None:
     """Main flow for orchestrating all scraper runs."""
     for scraper in ACTIVE_SCRAPERS:
-        create_scraper_flow(scraper.__name__)
+        try:
+            create_scraper_flow(scraper.__name__)
+        except Exception as e:
+            logger = get_run_logger()
+            logger.error(
+                f"Failed to create scraper flow for {scraper.__name__} with error {e}"
+            )
 
 
 def build_scraper_flow_deployments() -> List[Deployment]:
