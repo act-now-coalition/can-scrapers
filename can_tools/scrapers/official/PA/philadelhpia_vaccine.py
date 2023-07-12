@@ -11,7 +11,7 @@ from can_tools.scrapers.util import requests_retry_session
 
 
 class PhiladelphiaVaccine(TableauDashboard):
-    state_fips = int(states.lookup("Pennsylvania").fips)
+    state_fips = int(states.lookup("PA").fips)
     has_location = True
     location_type = "county"
     provider = "county"

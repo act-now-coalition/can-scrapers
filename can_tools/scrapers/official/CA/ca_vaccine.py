@@ -13,7 +13,7 @@ class CaliforniaVaccineCounty(StateDashboard):
         "resource/130d7ba2-b6eb-438d-a412-741bde207e1c"
     )
     source_name = "California Health & Human Services Agency"
-    state_fips = int(us.states.lookup("California").fips)
+    state_fips = int(us.states.lookup("CA").fips)
     location_type = "county"
 
     url = (

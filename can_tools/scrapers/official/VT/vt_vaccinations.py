@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 class VermontCountyVaccine(MicrosoftBIDashboard):
     has_location = False
     location_type = "county"
-    state_fips = int(us.states.lookup("Vermont").fips)
+    state_fips = int(us.states.lookup("VT").fips)
     source = "https://www.healthvermont.gov/covid-19/vaccine/covid-19-vaccine-dashboard"
     source_name = "Vermont Department of Health"
     powerbi_url = "https://wabi-us-gov-virginia-api.analysis.usgovcloudapi.net"

@@ -15,7 +15,7 @@ class PennsylvaniaCountyVaccines(MicrosoftBIDashboard):
 
     has_location = False
     location_type = "county"
-    state_fips = int(us.states.lookup("Pennsylvania").fips)
+    state_fips = int(us.states.lookup("PA").fips)
 
     source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Dashboard.aspx"
 
@@ -189,7 +189,7 @@ class PennsylvaniaVaccineDemographics(MicrosoftBIDashboard, ABC):
 
     has_location = False
     location_type = ""
-    state_fips = int(us.states.lookup("Pennsylvania").fips)
+    state_fips = int(us.states.lookup("PA").fips)
 
     # source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Vaccine.aspx"
     source = "https://www.health.pa.gov/topics/disease/coronavirus/Vaccine/Pages/Dashboard.aspx"

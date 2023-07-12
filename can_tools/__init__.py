@@ -57,7 +57,6 @@ ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = unblocked_scrapers(
 # Last updated 08/01/2022
 ACTIVE_SCRAPERS = [
     # National/federal dataset scrapers
-    scrapers.NYTimesCasesDeaths,
     scrapers.USAFactsCases,
     scrapers.USAFactsDeaths,
     scrapers.HHSReportedPatientImpactHospitalCapacityFacility,
@@ -79,7 +78,6 @@ ACTIVE_SCRAPERS = [
     scrapers.NewMexicoVaccineCounty,
     scrapers.VirginiaVaccine,
     scrapers.VermontCountyVaccine,
-    scrapers.HawaiiVaccineCounty,
     scrapers.NCVaccineCounty,
     scrapers.NCVaccineState,
 ]

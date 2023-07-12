@@ -13,7 +13,7 @@ class CaliforniaTestPositivity(StateDashboard):
         "resource/046cdd2b-31e5-4d34-9ed3-b48cdbc4be7a"
     )
     source_name = "California Health & Human Services Agency"
-    state_fips = int(us.states.lookup("California").fips)
+    state_fips = int(us.states.lookup("CA").fips)
     location_type = "county"
 
     url = (
