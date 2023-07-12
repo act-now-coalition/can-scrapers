@@ -1,6 +1,6 @@
 # Covid Act Now Scraping Tools
 
-developer-docs: https://covid-projections.github.io/can-scrapers/index.html
+developer-docs: https://act-now-coalition.github.io/can-scrapers/index.html
 
 
 ## Creating a development environment for scraping
