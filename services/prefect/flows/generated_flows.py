@@ -1,40 +1,28 @@
 from typing import Any, Type, List
-from datetime import timedelta
-import sentry_sdk
 import sqlalchemy as sa
 
-from can_tools import ACTIVE_SCRAPERS, scrapers
+from can_tools import ACTIVE_SCRAPERS
+import can_tools
 from can_tools.scrapers.base import DatasetBase
-import prefect
-from prefect import Flow, task, case
-from prefect.engine import signals
-from prefect.schedules import CronSchedule
-from prefect.tasks.secrets import EnvVarSecret
-from prefect.tasks.prefect.flow_run import StartFlowRun
-from can_tools.scrapers.official.base import CacheMixin
-from services.prefect.flows.utils import (
-    etag_caching_terminal_state_handler, skip_if_running_handler
-)
+from prefect import flow, task, get_run_logger, context, runtime
+from prefect.blocks.system import Secret
 
-# A list of flows that we want to be registered, but not included in the MainFlow runs.
-# NYTimesCasesDeaths: We have a dedicated flow that checks the NYT source every 30 minutes, 
-# and runs the scraper, updates the parquet file, and kicks off a Github action pipeline run upon new data. 
-# As such, its unnecessary for this flow to run in the MainFlow, and it can cause issues 
-# where the NYT data will update, but a snapshot will not be kicked off. 
-FLOWS_EXCLUDED_FROM_MAIN_FLOW: List[Flow] = [scrapers.NYTimesCasesDeaths]
+from can_tools.scrapers.official.base import CacheMixin
+from prefect.deployments import Deployment
+from prefect.server.schemas.schedules import CronSchedule
 
 
 @task
 def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
-    logger = prefect.context.get("logger")
-    dt = prefect.context.get("scheduled_start_time")
+    logger = get_run_logger()
+    dt = context.get_run_context().start_time
     logger.info("Creating class {} with dt = {}".format(cls, dt))
     return cls(execution_dt=dt, **kwargs)
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
+@task(retries=3, retry_delay_seconds=30)
 def fetch(d: DatasetBase):
-    logger = prefect.context.get("logger")
+    logger = get_run_logger()
     logger.info("About to run {}._fetch".format(d.__class__.__name__))
     logger.info("In fetch and have execution_dt = {}".format(d.execution_dt))
     fn = d._fetch()
@@ -42,9 +30,9 @@ def fetch(d: DatasetBase):
     logger.info("Saved raw data to: {}".format(fn))
 
 
-@task()
+@task
 def normalize(d: DatasetBase):
-    logger = prefect.context.get("logger")
+    logger = get_run_logger()
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
     logger.info("In _normalize and have execution_dt = {}".format(d.execution_dt))
     fn = d._normalize()
@@ -52,12 +40,9 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task(max_retries=3, retry_delay=timedelta(minutes=1))
-def put(d: DatasetBase, connstr: str):
-    logger = prefect.context.get("logger")
-
-    engine = sa.create_engine(connstr)
-
+@task(retries=3, retry_delay_seconds=30)
+def put(d: DatasetBase, engine: sa.engine.Engine):
+    logger = get_run_logger()
     logger.info("About to run {}._put".format(d.__class__.__name__))
     logger.info("In _put and have execution_dt = {}".format(d.execution_dt))
     success, rows_in, rows_out = d._put(engine)
@@ -70,23 +55,6 @@ def put(d: DatasetBase, connstr: str):
     return success
 
 
-@task()
-def initialize_sentry(sentry_dsn: str):
-    """Initialize sentry SDK for Flow. """
-    sentry_sdk.init(sentry_dsn)
-    sentry_sdk.set_tag("flow", prefect.context.flow_name)
-
-
-@task
-def skip_cached_flow():
-    # Set the task state to skipped. The flow's terminal state
-    # handler (etag_caching_terminal_state_handler) will see the etag_skip_flag
-    # context item and will in turn set the final state of the flow to skipped.
-    message = "No new source data. Skipping..."
-    skip_signal = signals.SKIP(message=message, context=dict(etag_skip_flag=True))
-    raise skip_signal
-
-
 @task
 def check_if_new_data_for_flow(cls):
     if issubclass(cls, CacheMixin):
@@ -94,83 +62,67 @@ def check_if_new_data_for_flow(cls):
     return True  # if class does not have etag checking always execute the scraper
 
 
-def create_flow_for_scraper(ix: int, cls: Type[DatasetBase], schedule=True):
-    sched = None
-    if schedule:
-        sched = CronSchedule(f"{ix % 60} */4 * * *")
-
-    with Flow(
-        cls.__name__, sched, 
-        state_handlers=[skip_if_running_handler],
-        terminal_state_handler=etag_caching_terminal_state_handler
-    ) as flow:
-
-        # check if scraper has etag checking
-        # if so and the data has been updated since the last check set new_data to True
-        new_data = check_if_new_data_for_flow(cls)
-
-        with case(new_data, True):
-            connstr = EnvVarSecret("COVID_DB_CONN_URI")
-            sentry_dsn = EnvVarSecret("SENTRY_DSN")
-            sentry_sdk_task = initialize_sentry(sentry_dsn)
-
-            d = create_scraper(cls)
-            fetched = fetch(d)
-            normalized = normalize(d)
-            done = put(d, connstr)
-
-            d.set_upstream(sentry_sdk_task)
-            normalized.set_upstream(fetched)
-            done.set_upstream(normalized)
-
-        with case(new_data, False):
-            skip_cached_flow()
-
-    return flow
+@task
+def get_scraper_from_classname(cls_name: str) -> Type[DatasetBase]:
+    cls = getattr(can_tools.scrapers, cls_name)
+    if cls is None:
+        raise ValueError(f"Could not find scraper class {cls_name}")
+    return cls
 
 
-def create_main_flow(flows: List[Flow], project_name):
-    schedule = CronSchedule("0 */5 * * *")
+@flow(flow_run_name="{cls_name}")
+def create_scraper_flow(cls_name: str) -> None:
+    cls = get_scraper_from_classname(cls_name)
 
-    with Flow("MainFlow", schedule) as main_flow:
-        tasks = []
-        for flow in flows:
-            task = StartFlowRun(
-                flow_name=flow.name,
-                project_name=project_name,
-                wait=True,
-                timeout=7200,  # timeout flows after 2 hours
-            )
-            tasks.append(task)
+    if check_if_new_data_for_flow(cls):
+        connstr = Secret.load("covid-db-conn-uri").get()
+        engine = sa.create_engine(connstr)
 
-        parquet_flow = StartFlowRun(
-            flow_name="UpdateParquetFiles",
-            project_name=project_name,
-            wait=True,
-            timeout=3600,  # timeout parquet flow after 1 hour
+        scraper = create_scraper(cls)
+        fetch(scraper)
+        normalize(scraper)
+        put(scraper, engine)
+    else:
+        logger = get_run_logger()
+        logger.info(
+            f"Skipping {cls_name} because no new data was found since last run."
         )
-        # Always run parquet flow
-        parquet_flow.trigger = prefect.triggers.all_finished
-
-        for task in tasks:
-            task.set_downstream(parquet_flow)
-
-    return main_flow
 
 
-def init_flows():
-    flows = []
-    for ix, cls in enumerate(ACTIVE_SCRAPERS):
-        if not cls.autodag:
-            continue
-        flow = create_flow_for_scraper(ix, cls, schedule=False)
-        flows.append(flow)
-        flow.register(project_name="can-scrape")
+@flow
+def create_main_flow() -> None:
+    """Main flow for orchestrating all scraper runs."""
+    for scraper in ACTIVE_SCRAPERS:
+        try:
+            create_scraper_flow(scraper.__name__)
+        except Exception as e:
+            logger = get_run_logger()
+            logger.error(
+                f"Failed to create scraper flow for {scraper.__name__} with error {e}"
+            )
 
-    flows = [flow for flow in flows if flow not in FLOWS_EXCLUDED_FROM_MAIN_FLOW]
-    flow = create_main_flow(flows, "can-scrape")
-    flow.register(project_name="can-scrape")
+
+def build_scraper_flow_deployments() -> List[Deployment]:
+    deployments = []
+    for scraper in ACTIVE_SCRAPERS:
+        deployments.append(
+            Deployment.build_from_flow(
+                create_scraper_flow,
+                name=scraper.__name__,
+                parameters=dict(cls_name=scraper.__name__),
+            )
+        )
+    return deployments
 
 
-if __name__ == "__main__":
-    init_flows()
+def deploy_scraper_flows():
+    for deployment in build_scraper_flow_deployments():
+        deployment.apply()
+
+    main_flow_deployment: Deployment = Deployment.build_from_flow(
+        create_main_flow,
+        name="main_flow",
+        # cron schedule to run every 5 hours
+        schedule=CronSchedule(cron="0 */5 * * *", timezone="America/New_York"),
+    )
+    main_flow_deployment.apply()

@@ -27,6 +27,7 @@ import inspect
 from typing import List, Type
 
 from can_tools import scrapers
+from can_tools.scrapers.base import DatasetBase
 from can_tools.scrapers.official.base import TableauDashboard
 from can_tools.scrapers.official.PA.pa_vaccines import PennsylvaniaVaccineDemographics
 from can_tools.scrapers.official.federal.CDC.cdc_testing import CDCTestingBase
@@ -55,7 +56,7 @@ ALL_SCRAPERS: List[Type[scrapers.DatasetBase]] = unblocked_scrapers(
 # Data sources currently used by the CAN site/API to be included in Prefect flows.
 # We're currently minimizing our list of active scrapers in order to reduce our Prefect costs.
 # Last updated 08/01/2022
-ACTIVE_SCRAPERS = [
+ACTIVE_SCRAPERS: List[Type[DatasetBase]] = [
     # National/federal dataset scrapers
     scrapers.USAFactsCases,
     scrapers.USAFactsDeaths,

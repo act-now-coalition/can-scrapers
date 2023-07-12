@@ -3,7 +3,9 @@ from contextlib import closing
 from typing import List, Optional, Type, Union
 
 import pandas as pd
+from prefect import get_run_logger
 from sqlalchemy.engine.base import Engine
+import sqlalchemy as sa
 
 from can_tools.models import TemptableOfficialHasLocation, TemptableOfficialNoLocation
 
@@ -17,7 +19,6 @@ def fast_append_to_sql(
 ):
     table = table_type.__table__
     cols = [x.name for x in table.columns if x.name != "id"]
-    colnames = [f'"{x}"' for x in cols]
     temp_df = df.reset_index()
 
     # make sure we have the columns
@@ -28,18 +29,15 @@ def fast_append_to_sql(
         raise ValueError(msg)
 
     with closing(engine.connect()) as con:
-
         if engine.dialect.name == "postgresql":
-            dest = (
-                "{}.{}".format(table.schema, table.name)
-                if table.schema is not None
-                else table.name
-            )
             with io.StringIO() as csv:
                 temp_df.to_csv(csv, sep="\t", columns=cols, index=False, header=False)
                 csv.seek(0)
                 with closing(con.connection.cursor()) as cur:
-                    cur.copy_from(csv, dest, columns=colnames, null="")
+                    # Restrict to the required schema
+                    # See https://github.com/psycopg/psycopg2/issues/1294
+                    cur.execute(f"SET search_path TO {table.schema}")
+                    cur.copy_from(csv, table.name, columns=cols, null="")
                     cur.connection.commit()
         elif engine.dialect.name == "sqlite":
             # pandas is ok for sqlite
