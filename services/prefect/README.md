@@ -98,22 +98,40 @@ Now any time a push is made to the master branch of the repo, a push event will 
   - Click the “SSH” button then select “continue” to open a connection to the VM. 
 - Mount the “scraper-outputs” storage bucket and restart the Prefect server and agent. 
   - To do these next steps, we will need to access Spencer’s account:
-    - Run `sudo su sglyon` to gain access to his account and navigate to `/home/sglyon`
+    - Run `sudo su sean` to gain access to his account and navigate to `/home/sean`
     - Remount the storage bucket by running `mount scraper-outputs`
     - Restart the Prefect infrastructure by running `make restart_services`
 
 
 ### Troubleshooting
 
+#### Restarting GCSFuse
+
 If gcsfuse is killed it might be necessary to remount the file system. Symptoms of this can include:
 
 * Scrapers failing on the `create_scraper` task with the message, 
-  >`[Errno 107] Transport endpoint is not connected: '/home/sglyon/scraper-outputs.`
+  >`[Errno 107] Transport endpoint is not connected: '/home/sean/scraper-outputs.`
 * The Prefect console reading a message like, `Jun 21 10:14:55 prefect kernel ...  Killed process ... (gcsfuse)`
 
 The steps to fix this are to:
-* Follow the steps above to SSH into the VM and navigate to /home/sglyon,
+* Follow the steps above to SSH into the VM and navigate to /home/sean,
 * Un-mount the current filesystem using `fusermount -u scraper-outputs`
-* If the above fails with the error `fusermount: failed to unmount /home/sglyon/scraper-outputs: Device or resource busy`, un-mount the filesystem using `sudo umount -l scraper-outputs`
+* If the above fails with the error `fusermount: failed to unmount /home/sean/scraper-outputs: Device or resource busy`, un-mount the filesystem using `sudo umount -l scraper-outputs`
 * Re-mount the filesystem using `mount ~/scraper-outputs`. This runs gcsfuse and links the ~/scraper-outputs directory to the cloud storage bucket
 * Check the Prefect server dashboard to ensure that the flows have commenced. 
+
+#### Restarting Prefect Agent Service
+
+If flows are being scheduled but not executed, it's possible that the Prefect Agent service has broken.
+To check the status and restart the service, follow the steps:
+
+```bash
+# SSH into `prefect` VM in `covidactnow-dev` google cloud console
+
+# Restart prefect agent service
+sudo su sean
+sudo systemctl restart prefect-agent
+
+# Check status with 
+sudo systemctl status prefect-agent
+```
