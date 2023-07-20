@@ -129,7 +129,7 @@ To check the status and restart the service, follow the steps:
 # SSH into `prefect` VM in `covidactnow-dev` google cloud console
 
 # Restart prefect agent service
-sudo su sean
+sudo su sean  # if prompted, password is `password1`
 sudo systemctl restart prefect-agent
 
 # Check status with 
