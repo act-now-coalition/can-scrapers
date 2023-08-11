@@ -99,8 +99,10 @@ Now any time a push is made to the master branch of the repo, a push event will 
 - Mount the “scraper-outputs” storage bucket and restart the Prefect server and agent. 
   - To do these next steps, we will need to access Spencer’s account:
     - Run `sudo su sean` to gain access to his account and navigate to `/home/sean`
-    - Remount the storage bucket by running `mount scraper-outputs`
+    - Remount the storage bucket by running `mount scraper-outputs` *
     - Restart the Prefect infrastructure by running `make restart_services`
+
+* Make sure that if `~/scraper-outputs` exists and is not mounted already that it is an empty directory. The mount will fail if there are already local files (meaning files not from the storage bucket) in the directory. 
 
 
 ### Troubleshooting
