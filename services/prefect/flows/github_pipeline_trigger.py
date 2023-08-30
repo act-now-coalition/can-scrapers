@@ -7,7 +7,7 @@ from prefect.server.schemas.schedules import CronSchedule
 from services.prefect.flows.update_api_view import update_parquet_flow
 
 
-@task(timeout_seconds=60*60)
+@task(timeout_seconds=3*60*60)
 def make_request(github_token):
     dispatch_url = (
         "https://api.github.com/repos/covid-projections/covid-data-model/"

@@ -33,7 +33,7 @@ DATATYPES = {
 }
 
 
-@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=3*60*60)
 def export_to_csv(connstr: str):
     db = sa.create_engine(connstr)
     with open(CSV_FN, "w") as f:
@@ -46,7 +46,7 @@ def export_to_csv(connstr: str):
     return True
 
 
-@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=3*60*60)
 def create_parquet():
     ts = context.get_run_context().start_time
     dt_str = pd.to_datetime(ts).strftime("%Y-%m-%dT%H%M%S")
@@ -59,7 +59,7 @@ def create_parquet():
     return vintage_fn, fn
 
 
-@task(timeout_seconds=60*60)
+@task(timeout_seconds=3*60*60)
 def get_gcs_cmd(fn):
     return f"gsutil acl ch -u AllUsers:R gs://can-scrape-outputs/final/{fn}"
 
