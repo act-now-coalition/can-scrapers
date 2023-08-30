@@ -15,10 +15,7 @@ class CDCCountyCasesDeathsCacheMixin(CacheMixin):
     cache_dir: Path = Path(__file__).parents[3]
 
     def check_if_new_data_and_update(self):
-        res = requests.get(
-            self.cache_url.format(county_fips="06037"),
-            timeout=60*60
-            )
+        res = requests.get(self.cache_url.format(county_fips="06037"), timeout=60 * 60)
         data = res.json()
         runid = str(data["runid"])
         cached_runid = self._read_cache()

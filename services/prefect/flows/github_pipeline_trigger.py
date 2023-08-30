@@ -7,7 +7,7 @@ from prefect.server.schemas.schedules import CronSchedule
 from services.prefect.flows.update_api_view import update_parquet_flow
 
 
-@task(timeout_seconds=3*60*60)
+@task(timeout_seconds=3 * 60 * 60)
 def make_request(github_token):
     dispatch_url = (
         "https://api.github.com/repos/covid-projections/covid-data-model/"
@@ -20,7 +20,7 @@ def make_request(github_token):
             "Accept": "application/vnd.github.v3+json",
         },
         data='{"ref": "main"}',
-        timeout=5*60  # Just a guess on timeout
+        timeout=5 * 60,  # Just a guess on timeout
     )
     response.raise_for_status()  # raise status in case of failure
 

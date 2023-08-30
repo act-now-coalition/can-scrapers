@@ -6,7 +6,7 @@ developer-docs: https://act-now-coalition.github.io/can-scrapers/index.html
 ## Creating a development environment for scraping
 
 1. Install `conda` (either [anaconda](https://www.anaconda.com/products/individual) or [miniconda](https://docs.conda.io/en/latest/miniconda.html))
-2. Create conda environment for this project, `conda create -n can-scrapers python=3`
+2. Create conda environment for this project, `conda create -n can-scrapers python=3.10`
 3. Activate the environment, `conda activate can-scrapers`
 4. Move your command line or terminal into the `can-scrapers` directory
 5. (Windows/Mac users only) Install required package, `conda install fiona`
