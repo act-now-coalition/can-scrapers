@@ -36,7 +36,7 @@ cd can-scrapers/services/prefect
 make sync_services
 make start_services
 conda activate prefect-can-scrapers
-prefect prefect cloud login -k <API_KEY>
+prefect cloud login -k <API_KEY>
 ```
 
 **Setup Flows**:
