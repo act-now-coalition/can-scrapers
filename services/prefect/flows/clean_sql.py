@@ -7,7 +7,7 @@ from prefect.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule
 
 
-@task(retries=3, retry_delay_seconds=30)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
 def truncate_table(connstr: str, table_name: str):
     engine = sa.create_engine(connstr)
     sql = f"truncate table {table_name}"
@@ -15,7 +15,7 @@ def truncate_table(connstr: str, table_name: str):
     return True
 
 
-@task(retries=3, retry_delay_seconds=30)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
 def reset_sequence(connstr: str, seq_name: str, _ready: bool):
     engine = sa.create_engine(connstr)
     sql = f"alter sequence {seq_name} restart"

@@ -12,7 +12,7 @@ from prefect.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule
 
 
-@task
+@task(timeout_seconds=60*60)
 def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
     logger = get_run_logger()
     dt = context.get_run_context().start_time
@@ -20,7 +20,7 @@ def create_scraper(cls: Type[DatasetBase], **kwargs) -> DatasetBase:
     return cls(execution_dt=dt, **kwargs)
 
 
-@task(retries=3, retry_delay_seconds=30)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
 def fetch(d: DatasetBase):
     logger = get_run_logger()
     logger.info("About to run {}._fetch".format(d.__class__.__name__))
@@ -30,7 +30,7 @@ def fetch(d: DatasetBase):
     logger.info("Saved raw data to: {}".format(fn))
 
 
-@task
+@task(timeout_seconds=60*60)
 def normalize(d: DatasetBase):
     logger = get_run_logger()
     logger.info("About to run {}._normalize".format(d.__class__.__name__))
@@ -40,7 +40,7 @@ def normalize(d: DatasetBase):
     logger.info("Saved clean data to: {}".format(fn))
 
 
-@task(retries=3, retry_delay_seconds=30)
+@task(retries=3, retry_delay_seconds=30, timeout_seconds=60*60)
 def put(d: DatasetBase, engine: sa.engine.Engine):
     logger = get_run_logger()
     logger.info("About to run {}._put".format(d.__class__.__name__))
@@ -55,14 +55,14 @@ def put(d: DatasetBase, engine: sa.engine.Engine):
     return success
 
 
-@task
+@task(timeout_seconds=60*60)
 def check_if_new_data_for_flow(cls):
     if issubclass(cls, CacheMixin):
         return cls().check_if_new_data_and_update()
     return True  # if class does not have etag checking always execute the scraper
 
 
-@task
+@task(timeout_seconds=60*60)
 def get_scraper_from_classname(cls_name: str) -> Type[DatasetBase]:
     cls = getattr(can_tools.scrapers, cls_name)
     if cls is None:
